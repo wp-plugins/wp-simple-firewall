@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://www.icontrolwp.com/
 Description: A Simple WordPress Firewall
-Version: 1.0.1
+Version: 1.0.2
 Author: iControlWP
 Author URI: http://icwp.io/v
 */
@@ -39,7 +39,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	const InputPrefix				= 'icwp_wpsf_';
 	const OptionPrefix				= 'icwp_wpsf_'; //ALL database options use this as the prefix.
 	
-	static public $VERSION			= '1.0.1'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '1.0.2'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_Base;
@@ -537,7 +537,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		//Ensures we're actually getting this request from WP.
 		check_admin_referer( $this->getSubmenuId('firewall').'_config' );
 
-		self::updateOption( 'firewall_processor', false );
+		$this->clearFirewallProcessorCache();
 		
 		if ( !isset($_POST[self::OptionPrefix.'all_options_input']) ) {
 			return;
@@ -553,6 +553,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		self::updateOption( 'firewall_log', array() );
 		wp_safe_redirect( admin_url( "admin.php?page=".$this->getSubmenuId('firewall-log') ) ); //means no admin message is displayed
 		exit();
+	}
+	
+	protected function clearFirewallProcessorCache() {
+		self::updateOption( 'firewall_processor', false );
 	}
 	
 	public function onWpPrintStyles() {
@@ -615,6 +619,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 		$aDiff = array_diff( $aWhitelistIpsFiltered, $aWhitelistIps );
 		if ( !empty( $aDiff ) ) {
+			$this->clearFirewallProcessorCache();
 			self::updateOption( 'ips_whitelist', $this->verifyIpAddressList( $aWhitelistIpsFiltered ) );
 		}
 
@@ -629,6 +634,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 		$aDiff = array_diff( $aBlacklistIpsFiltered, $aBlacklistIps );
 		if ( !empty( $aDiff ) ) {
+			$this->clearFirewallProcessorCache();
 			self::updateOption( 'ips_blacklist', $this->verifyIpAddressList( $aBlacklistIpsFiltered ) );
 		}
 	}

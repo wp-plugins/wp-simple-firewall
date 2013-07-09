@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 
 WordPress Simple Firewall
 
@@ -72,6 +72,7 @@ who's IP address is not on the whitelist.
 = I've locked myself out from the WordPress login screen! =
 
 This happens when ALL the following 3 conditions are all met:
+
 *	you turn on the option to restrict access to wp-login.php,
 *	you have at least 1 IP address in the IP Whitelist, and
 *	your current IP address is not on the IP Whitelist.
@@ -97,10 +98,10 @@ Whitelist. So if you have the same address in both lists, it'll be whitelisted a
 
 == Changelog ==
 
-= 1.0.1 =
+= 1.0.2 =
 *	First Release
 
 == Upgrade Notice ==
 
-= 1.0.1 =
+= 1.0.2 =
 *	First Release
