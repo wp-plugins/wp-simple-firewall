@@ -20,6 +20,7 @@ that hasn't been updated for more than 2 years.
 This plugin is built for reliability of operation, ease of extension, and overall... simplicity.
 
 It adds extra features over WordPress Firewall 2, including:
+
 *	Option to completely block access to wp-login.php based on IP Address whitelist
 *	Added a Blacklist option so you can completely block based on IP address.
 *	Option to easily turn on / off the whole firewall. This means you don't have to disable certain settings or even disable the plugin to temporarily turn it off.
