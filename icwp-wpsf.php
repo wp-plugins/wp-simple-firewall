@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://www.icontrolwp.com/
 Description: A Simple WordPress Firewall
-Version: 1.0
+Version: 1.0.1
 Author: iControlWP
 Author URI: http://icwp.io/v
 */
@@ -39,7 +39,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	const InputPrefix				= 'icwp_wpsf_';
 	const OptionPrefix				= 'icwp_wpsf_'; //ALL database options use this as the prefix.
 	
-	static public $VERSION			= '1.0'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '1.0.1'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_Base;
@@ -412,7 +412,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
 					<input type="hidden" value="1" name="<?php echo self::OptionPrefix; ?>hide_update_notice" id="<?php echo self::OptionPrefix; ?>hide_update_notice">
 					<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
-					<h4 style="margin:10px 0 3px;">WordPress Firewall plugin has been updated- there may or may not be <a href="http://icwp.io/1v" id="fromIcwp" title="Twitter Bootstrap Plugin Shortcodes" target="_blank">updates to shortcodes</a> or the Bootstrap CSS may have changed quite a bit.</h4>
+					<h4 style="margin:10px 0 3px;">WordPress Firewall plugin has been updated- there may or may not be <a href="http://icwp.io/27" id="fromIcwp" title="WordPress Simple Firewall Plugin" target="_blank">important updates to know about</a>.</h4>
 					<input type="submit" value="Show me and hide this notice." name="submit" class="button" style="float:left; margin-bottom:10px;">
 					<div style="clear:both;"></div>
 				</form>
@@ -605,11 +605,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected function filterIpsLists() {
 
 		$aWhitelistIps = self::getOption('ips_whitelist');
-		if ( is_array($aWhitelistIps) ) {
+		if ( !is_array($aWhitelistIps) ) {
 			$aWhitelistIps = array();
 			self::updateOption( 'ips_whitelist', $aWhitelistIps );
 		}
 		$aWhitelistIpsFiltered = apply_filters( 'icwp_simple_firewall_whitelist_ips', $aWhitelistIps );
+		if ( !is_array( $aWhitelistIpsFiltered ) ) {
+			$aWhitelistIpsFiltered = array();
+		}
 		$aDiff = array_diff( $aWhitelistIpsFiltered, $aWhitelistIps );
 		if ( !empty( $aDiff ) ) {
 			self::updateOption( 'ips_whitelist', $this->verifyIpAddressList( $aWhitelistIpsFiltered ) );
@@ -621,6 +624,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			self::updateOption( 'ips_blacklist', $aBlacklistIps );
 		}
 		$aBlacklistIpsFiltered = apply_filters( 'icwp_simple_firewall_blacklist_ips', $aBlacklistIps );
+		if ( !is_array( $aBlacklistIpsFiltered ) ) {
+			$aBlacklistIpsFiltered = array();
+		}
 		$aDiff = array_diff( $aBlacklistIpsFiltered, $aBlacklistIps );
 		if ( !empty( $aDiff ) ) {
 			self::updateOption( 'ips_blacklist', $this->verifyIpAddressList( $aBlacklistIpsFiltered ) );
