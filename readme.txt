@@ -20,17 +20,17 @@ that hasn't been updated for more than 2 years.
 This plugin is built for reliability of operation, ease of extension, and overall... simplicity.
 
 It adds extra features over WordPress Firewall 2, including:
-* Option to completely block access to wp-login.php based on IP Address whitelist
-* Added a Blacklist option so you can completely block based on IP address.
-* Option to easily turn on / off the whole firewall. This means you don't have to disable certain settings or even disable the plugin to temporarily turn it off.
+*	Option to completely block access to wp-login.php based on IP Address whitelist
+*	Added a Blacklist option so you can completely block based on IP address.
+*	Option to easily turn on / off the whole firewall. This means you don't have to disable certain settings or even disable the plugin to temporarily turn it off.
   To debug the plugin, just turn off the firewall in the Firewall Options screen and all settings are ignored.
-* Filesystem based plugin override. This means if you accidentally lock yourself out, you can forcefully turn off the firewall using FTP. You can also
+*	Filesystem based plugin override. This means if you accidentally lock yourself out, you can forcefully turn off the firewall using FTP. You can also
   turn back on the firewall using the same method.
-* Automatic caching to reduce database calls when determining Firewall settings: 1-3 database calls per page load.
-* Ability to easily turn on and off firewall logging.
-* Ability to view the complete log of the firewall and all its messages.
-* Ability to clear the whole log.
-* For developers - ability to programmatically add to the IP address whitelist/blacklist - this is
+*	Automatic caching to reduce database calls when determining Firewall settings: 1-3 database calls per page load.
+*	Ability to easily turn on and off firewall logging.
+*	Ability to view the complete log of the firewall and all its messages.
+*	Ability to clear the whole log.
+*	For developers - ability to programmatically add to the IP address whitelist/blacklist - this is
   useful for 3rd party services that connect to the site using other plugins. E.g. [iControlWP](http://www.icontrolwp.com/).
 
 == Installation ==
@@ -97,9 +97,9 @@ Whitelist. So if you have the same address in both lists, it'll be whitelisted a
 == Changelog ==
 
 = 1.0 =
-* First Release
+*	First Release
 
 == Upgrade Notice ==
 
 = 1.0 =
-* First Release
+*	First Release
