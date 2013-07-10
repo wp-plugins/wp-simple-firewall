@@ -337,7 +337,7 @@ class ICWP_WPSF_Base_Plugin {
 			$sCurrentOptionVal = self::getOption( $sOptionKey );
 			if ( $sOptionType == 'ip_addresses' ) {
 				if ( !empty( $sCurrentOptionVal ) ) {
-					$sCurrentOptionVal = implode( "\n", $sCurrentOptionVal );
+					$sCurrentOptionVal = implode( "\n", self::ConvertIpListForDisplay( $sCurrentOptionVal ) );
 				}
 				else {
 					$sCurrentOptionVal = '';
@@ -345,6 +345,29 @@ class ICWP_WPSF_Base_Plugin {
 			}
 			$aOptionParams[1] = ($sCurrentOptionVal == '' )? $sOptionDefault : $sCurrentOptionVal;
 		}
+	}
+	
+	public static function ConvertIpListForDisplay( $inaIpList = array() ) {
+
+		$aDisplay = array();
+		if ( empty( $inaIpList ) || empty( $inaIpList['ips'] ) ) {
+			return $aDisplay;
+		}
+		
+		foreach( $inaIpList['ips'] as $sAddress ) {
+			
+			if ( strpos( $sAddress, '-' ) === false ) { //plain IP address
+				$sDisplayText = long2ip( $sAddress );
+			}
+			else {
+				list($nStart, $nEnd) = explode( '-', $sAddress );
+				$sDisplayText = long2ip( $nStart ) .'-'. long2ip( $nEnd );
+			}
+			$sLabel = $inaIpList['meta'][ md5($sAddress) ];
+			$sLabel = trim( $sLabel, '()' );
+			$aDisplay[] = $sDisplayText . ' ('.$sLabel.')';
+		}
+		return $aDisplay;
 	}
 
 	/**
@@ -364,7 +387,7 @@ class ICWP_WPSF_Base_Plugin {
 			$sOptionValue = $this->getAnswerFromPost( $sOptionKey );
 			if ( is_null($sOptionValue) ) {
 				
-				if ( $sOptionType == 'text' ) { //if it was a text box, and it's null, don't update anything
+				if ( $sOptionType == 'text' || $sOptionType == 'email' ) { //if it was a text box, and it's null, don't update anything
 					continue;
 				} else if ( $sOptionType == 'checkbox' ) { //if it was a checkbox, and it's null, it means 'N'
 					$sOptionValue = 'N';
@@ -379,6 +402,9 @@ class ICWP_WPSF_Base_Plugin {
 					}
 					$oProcessor = new ICWP_DataProcessor();
 					$sOptionValue = $oProcessor->ExtractIpAddresses( $sOptionValue );
+				}
+				else if ( $sOptionType == 'email' && function_exists( 'is_email' ) && !is_email( $sOptionValue ) ) {
+					$sOptionValue = '';
 				}
 			}
 			$this->updateOption( $sOptionKey, $sOptionValue );
@@ -460,6 +486,23 @@ class ICWP_WPSF_Base_Plugin {
 		}
 		
 	}//deleteAllPluginDbOptions
+
+	/**
+	 * Cloudflare compatible.
+	 * @return number
+	 */
+	public static function GetVisitorIpAddress() {
+	
+		$sIpAddress = empty($_SERVER["HTTP_X_FORWARDED_FOR"]) ? $_SERVER["REMOTE_ADDR"] : $_SERVER["HTTP_X_FORWARDED_FOR"];
+	
+		if( strpos($sIpAddress, ',') !== false ) {
+			$sIpAddress = explode(',', $sIpAddress);
+			$sIpAddress = $sIpAddress[0];
+		}
+	
+		return $sIpAddress;
+	
+	}//GetVisitorIpAddress
 
 	protected function getAnswerFromPost( $insKey, $insPrefix = null ) {
 		if ( is_null( $insPrefix ) ) {

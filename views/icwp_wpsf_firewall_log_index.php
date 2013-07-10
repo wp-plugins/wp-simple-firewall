@@ -47,6 +47,7 @@ $aLogTypes = array(
 			
 				<table class="table table-bordered table-hover table-condensed">
 					<tr>
+						<th>&nbsp;</th>
 						<th>Time</th>
 						<th>Message Type</th>
 						<th>Message</th>
@@ -55,13 +56,14 @@ $aLogTypes = array(
 					list( $sRequestIp, $sRequestId ) = explode( '_', $sId );
 				?>
 					<tr>
-						<td colspan="3">IP: <?php echo $sRequestIp; ?> (Request ID: <?php echo $sRequestId; ?>)</td>
+						<td colspan="4">IP: <?php echo $sRequestIp; ?> (Request ID: <?php echo $sRequestId; ?>)</td>
 					</tr>
 					<?php foreach( $aLogData as $aLogItem ) :
 						list( $sTime, $sLogType, $sLogMessage ) = $aLogItem;
 					?>
 						<tr class="row-<?php echo $aLogTypes[$sLogType]; ?>">
-							<td><?php echo $sTime; ?></td>
+							<td>&nbsp;</td>
+							<td><?php echo date( 'Y/m/d H:i:s', $sTime ); ?></td>
 							<td><?php echo $aLogTypes[$sLogType] ?></td>
 							<td><?php echo $sLogMessage; ?></td>
 						</tr>

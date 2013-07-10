@@ -109,6 +109,19 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 			
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 			
+		} else if ( $mOptionType === 'email' ) {
+			$sTextInput = esc_attr( $sOptionSaved );
+			$sHtml .= '
+				<p>'.$sOptionTitle.'</p>
+				<input type="text"
+						name="'.$insVarPrefix.$sOptionKey.'"
+						value="'.$sTextInput.'"
+						placeholder="'.$sTextInput.'"
+						id="'.$insVarPrefix.$sOptionKey.'"
+						class="span5" />';
+			
+			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
+			
 		} else if ( is_array($mOptionType) ) { //it's a select, or radio
 			
 			$sInputType = array_shift($mOptionType);

@@ -26,7 +26,7 @@ class ICWP_FirewallProcessor {
 	const LOG_MESSAGE_TYPE_CRITICAL = 2;
 
 	protected $m_sRequestId;
-	protected $m_sRequestIp;
+	protected $m_nRequestIp;
 	
 	protected $m_aBlockSettings;
 	protected $m_sBlockResponse;
@@ -39,6 +39,11 @@ class ICWP_FirewallProcessor {
 	protected $m_aRequestUriParts;
 	
 	protected $m_aLog;
+
+	/**
+	 * @var string
+	 */
+	protected $m_sListItemLabel;
 
 	/**
 	 * A combination of the current request $_GET and $_POST
@@ -62,8 +67,8 @@ class ICWP_FirewallProcessor {
 	}
 	
 	public function reset() {
-		$this->m_sRequestIp = self::GetVisitorIpAddress();
-		$this->m_sRequestId = $this->m_sRequestIp.'_'.uniqid();
+		$this->m_nRequestIp = self::GetVisitorIpAddress();
+		$this->m_sRequestId =  long2ip( $this->m_nRequestIp ).'_'.uniqid();
 		$this->m_aRequestUriParts = array();
 		$this->m_aPageParams = array();
 		$this->m_aPageParamValues = array();
@@ -97,21 +102,25 @@ class ICWP_FirewallProcessor {
 		
 		//Check if the visitor is excluded from the firewall from the outset.
 		if ( $this->isVisitorOnWhitelist() ) {
-			$this->logInfo( 'Visitor is whitelisted by IP Address' );
+			$this->logInfo(
+				sprintf( 'Visitor is whitelisted by IP Address. Label: %s',
+					empty( $this->m_sListItemLabel )? 'No label.' : $this->m_sListItemLabel
+				)
+			);
 			return true;
-		}
-		else {
-			$this->logInfo( 'Visitor is NOT whitelisted by IP Address' );
 		}
 		
 		//Check if the visitor is excluded from the firewall from the outset.
 		if ( $this->isVisitorOnBlacklist() ) {
-			$this->logWarning( 'Visitor is blacklisted by IP Address' );
+			$this->logWarning(
+				sprintf( 'Visitor is blacklisted by IP Address. Label: %s',
+					empty( $this->m_sListItemLabel )? 'No label.' : $this->m_sListItemLabel
+				)
+			);
 			return false;
 		}
-		else {
-			$this->logInfo( 'Visitor is NOT blacklisted by IP Address' );
-		}
+		
+		$this->logInfo( 'Visitor is neither whitelisted nor blacklisted by IP Address' );
 		
 		// if we can't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
 		if ( !$this->setRequestUriPageParts() ) {
@@ -425,21 +434,43 @@ class ICWP_FirewallProcessor {
 	}
 	
 	public function isVisitorOnWhitelist() {
-		return $this->isIpOnlist( $this->m_aWhitelistIps, $this->m_sRequestIp );
+		return $this->isIpOnlist( $this->m_aWhitelistIps, $this->m_nRequestIp );
 	}
 	
 	public function isVisitorOnBlacklist() {
-		return $this->isIpOnlist( $this->m_aBlacklistIps, $this->m_sRequestIp );
+		return $this->isIpOnlist( $this->m_aBlacklistIps, $this->m_nRequestIp );
 	}
 	
-	public function isIpOnlist( $inaList, $insIpAddress = '' ) {
+	public function isIpOnlist( $inaIpList, $innIpAddress = '' ) {
 		
-		if ( empty( $insIpAddress ) ) {
+		if ( empty( $innIpAddress ) || !isset( $inaIpList['ips'] ) ) {
 			return true;
 		}
-		return in_array( $insIpAddress, $inaList );
+		
+		foreach( $inaIpList['ips'] as $mWhitelistAddress ) {
+			
+			if ( strpos( $mWhitelistAddress, '-' ) === false ) { //not a range
+				if ( $innIpAddress == $mWhitelistAddress ) {
+					$this->m_sListItemLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
+					return true;
+				}
+			}
+			else {
+				list( $sStart, $sEnd ) = explode( '-', $mWhitelistAddress, 2 );
+				if ( $sStart <= $mWhitelistAddress && $mWhitelistAddress <= $sEnd ) {
+					$this->m_sListItemLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
+	/**
+	 * Cloudflare compatible.
+	 * 
+	 * @return number
+	 */
 	public static function GetVisitorIpAddress() {
 	
 		$sIpAddress = empty($_SERVER["HTTP_X_FORWARDED_FOR"]) ? $_SERVER["REMOTE_ADDR"] : $_SERVER["HTTP_X_FORWARDED_FOR"];
@@ -449,7 +480,7 @@ class ICWP_FirewallProcessor {
 			$sIpAddress = $sIpAddress[0];
 		}
 	
-		return $sIpAddress;
+		return ip2long( $sIpAddress );
 	
 	}//GetVisitorIpAddress
 
@@ -477,21 +508,21 @@ class ICWP_FirewallProcessor {
 		$aMessage = array(
 			'WordPress Simple Firewall has blocked a visitor to your site.',
 			'Log details for this visitor are below:',
-			'- IP Address: '.$this->m_sRequestIp
+			'- IP Address: '.$this->m_nRequestIp
 		);
 		foreach( $this->m_aLog[ $this->m_sRequestId ] as $aLogItem ) {
 			list( $sTime, $sLogType, $sLogMessage ) = $aLogItem;
 			$aMessage[] = '-  '.$aLogItem[2];
 		}
 		
-		$aMessage[] = 'You could look up the offending IP Address here: http://ip-lookup.net/?ip='. $this->m_sRequestIp;
+		$aMessage[] = 'You could look up the offending IP Address here: http://ip-lookup.net/?ip='. $this->m_nRequestIp;
 		$sEmailSubject = 'Firewall Block Alert: ' . home_url();
 		$sSiteName = get_bloginfo('name');
 		$aHeaders   = array(
 			'MIME-Version: 1.0',
 			'Content-type: text/plain; charset=iso-8859-1',
 			"From: Simple Firewall Plugin - $sSiteName <$insEmailAddress>",
-			'Reply-To: Site Admin <receiver@domain3.com>',
+			"Reply-To: Site Admin <$insEmailAddress>",
 			'Subject: '.$sEmailSubject,
 			'X-Mailer: PHP/'.phpversion()
 		);

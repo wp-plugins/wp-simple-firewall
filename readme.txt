@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.0.2
+Stable tag: 1.1.0
 
 WordPress Simple Firewall
 
@@ -98,10 +98,23 @@ Whitelist. So if you have the same address in both lists, it'll be whitelisted a
 
 == Changelog ==
 
+= 1.1.0 =
+
+*	You can now specify IP ranges in whitelists and blacklists. To do this separate the start and end address with a hypen (-)	E.g. For everything between 1.2.3.4 and 1.2.3.10, you would do: 1.2.3.4-1.2.3.10
+*	You can now specify which email address to send the notification emails.
+*	You can now add a comment to IP addresses in the whitelist/blacklist. To do this, write your IP address then type a SPACE and write whatever you want (don't take a new line).
+*	You can now set to delete ALL firewall settings when you deactivate the plugin.
+*	Improved formatting of the firewall log.
+
 = 1.0.2 =
 *	First Release
 
 == Upgrade Notice ==
 
-= 1.0.2 =
-*	First Release
+= 1.1.0 =
+
+*	You can now specify IP ranges in whitelists and blacklists. To do this separate the start and end address with a hypen (-)	E.g. For everything between 1.2.3.4 and 1.2.3.10, you would do: 1.2.3.4-1.2.3.10
+*	You can now specify which email address to send the notification emails.
+*	You can now add a comment to IP addresses in the whitelist/blacklist. To do this, write your IP address then type a SPACE and write whatever you want (don't take a new line).
+*	You can now set to delete ALL firewall settings when you deactivate the plugin.
+*	Improved formatting of the firewall log.

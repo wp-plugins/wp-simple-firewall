@@ -57,11 +57,21 @@ $sPluginName = 'WordPress Simple Firewall';
 							}
 						?>
 						</li>
-						<li>You have <?php echo count($icwp_aIpWhitelist);?> whitelisted IP addresses.
-							<?php foreach( $icwp_aIpWhitelist as $sIp ) : ?>
-							<p><?php echo $sIp; ?><p>
-							<?php endforeach; ?>
-						</li>
+						<?php if ( isset($icwp_aIpWhitelist['ips']) ) : ?>
+							<li>You have <?php echo count( $icwp_aIpWhitelist['ips'] );?> whitelisted IP addresses:
+								<?php foreach( $icwp_aIpWhitelist['ips'] as $sIp ) : ?>
+								<br /><?php echo long2ip($sIp); ?> labelled as <?php echo $icwp_aIpWhitelist['meta'][md5( $sIp )]?>
+								<?php endforeach; ?>
+							</li>
+						<?php endif; ?>
+						
+						<?php if ( isset($icwp_aIpBlacklist['ips']) ) : ?>
+							<li>You have <?php echo count( $icwp_aIpBlacklist['ips'] );?> blacklisted IP addresses:
+								<?php foreach( $icwp_aIpBlacklist['ips'] as $sIp ) : ?>
+								<br /><?php echo long2ip($sIp); ?> labelled as <?php echo $icwp_aIpWhitelist['meta'][md5( $sIp )]?>
+								<?php endforeach; ?>
+							</li>
+						<?php endif; ?>
 						<li>Firewall blocks WP Login Access: <?php echo $icwp_fBlockLogin? 'ON' : 'OFF'; ?>
 							<?php if ( $icwp_fBlockLogin && count($icwp_aIpWhitelist) == 0 ) : ?>
 								<strong>But, there are no whitelisted IPs so it is effectively off.</strong>
@@ -79,6 +89,19 @@ $sPluginName = 'WordPress Simple Firewall';
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
+				<h3>Change log for the v1.1.x release:</h3>
+				<p>The following summarises the main changes to the plugin in the 1.1.x release</p>
+				<p><span class="label ">new</span> means for the absolute latest release.</p>
+				
+					<ul>
+						<li><span class="label ">new</span> You can now specify IP ranges in whitelists and blacklists.
+							<br />To do this separate the start and end address with a hypen (-)
+							<br />E.g. For everything between 1.2.3.4 and 1.2.3.10, you would do: <code>1.2.3.4<strong>-</strong>1.2.3.10</code></li>
+						<li><span class="label ">new</span> You can now specify which email address to send the notification emails.</li>
+						<li><span class="label ">new</span> You can now add a comment to IP addresses in the whitelist/blacklist. To do this, write your IP address then type a SPACE and write whatever you want (don't take a new line).</li>
+						<li><span class="label ">new</span> You can now set to delete ALL firewall settings when you deactivate the plugin.</li>
+						<li><span class="label ">new</span> Improved formatting of the firewall log.</li>
+					<ul>
 			  </div>
 		  </div><!-- / span6 -->
 		</div><!-- / row -->

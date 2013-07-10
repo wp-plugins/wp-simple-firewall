@@ -21,47 +21,89 @@ if ( !class_exists('ICWP_DataProcessor') ):
 
 class ICWP_DataProcessor {
 	
+	public static $fUseFilter = false;
+	
 	static public function ExtractIpAddresses( $insAddresses = '' ) {
 		
-		$aAddresses = array();
+		$aRawAddresses = array();
 		
 		if ( empty( $insAddresses ) ) {
-			return $aAddresses;
+			return $aRawAddresses;
 		}
 		$aRawList = array_map( 'trim', explode( "\n", $insAddresses ) );
+
+		self::$fUseFilter = function_exists('filter_var') && defined( FILTER_VALIDATE_IP );
+
+		foreach( $aRawList as $sKey => $sRawAddressLine ) {
+			
+			if ( empty( $sRawAddressLine ) ) {
+				continue;
+			}
+			
+			// Each line can have a Label which is the IP separated with a space.
+			$aParts = explode( ' ', $sRawAddressLine, 2 );
+			if ( count( $aParts ) == 1 ) {
+				$aParts[] = '';
+			}
+			$aRawAddresses[ $aParts[0] ] = trim( $aParts[1] );
+		}
+		return self::Add_New_Raw_Ips( array(), $aRawAddresses );
+	}
+	
+	public static function Add_New_Raw_Ips( $inaCurrent, $inaNewRawAddresses ) {
 		
-		foreach( $aRawList as $sKey => $sRawAddress ) {
-			$aRawList[ $sKey ] = self::Clean_Ip( $sRawAddress );;
+		if ( empty( $inaNewRawAddresses ) ) {
+			return $inaCurrent;
 		}
 		
-		if ( function_exists('filter_var') && defined( FILTER_VALIDATE_IP )  ) {
-			$fUseFilter = true;
+		if ( !array_key_exists( 'ips', $inaCurrent ) ) {
+			$inaCurrent['ips'] = array();
 		}
-		else {
-			$fUseFilter = false;
+		if ( !array_key_exists( 'meta', $inaCurrent ) ) {
+			$inaCurrent['meta'] = array();
 		}
-		
-		foreach( $aRawList as $sAddress ) {
-			if ( self::Verify_Ip( $sAddress, $fUseFilter ) ) {
-				$aAddresses[] = $sAddress;
+
+		foreach( $inaNewRawAddresses as $sRawIpAddress => $sLabel ) {
+			$mVerifiedIp = self::Verify_Ip( $sRawIpAddress );
+			if ( $mVerifiedIp !== false && !in_array( $mVerifiedIp, $inaCurrent['ips'] ) ) {
+				$inaCurrent['ips'][] = $mVerifiedIp;
+				if ( empty($sLabel) ) {
+					$sLabel = 'no label';
+				}
+				$inaCurrent['meta'][ md5( $mVerifiedIp ) ] = $sLabel;
 			}
 		}
 		
-		return array_unique( $aAddresses );
+		return $inaCurrent;
 	}
 	
+	public static function Verify_Ip( $insIpAddress ) {
+		
+		$sAddress = self::Clean_Ip( $insIpAddress );
+		
+		// Now, determine if this is an IP range, or just a plain IP address.
+		if ( strpos( $sAddress, '-' ) === false ) { //plain IP address
+			return self::Verify_Ip_Address( $sAddress );
+		}
+		else {
+			return self::Verify_Ip_Range( $sAddress );
+		}
+	}
+
 	public static function Clean_Ip( $insRawAddress ) {
 		$insRawAddress = preg_replace( '/[a-z\s]/i', '', $insRawAddress );
 		$insRawAddress = str_replace( '.', 'PERIOD', $insRawAddress );
+		$insRawAddress = str_replace( '-', 'HYPEN', $insRawAddress );
 		$insRawAddress = preg_replace( '/[^a-z0-9]/i', '', $insRawAddress );
 		$insRawAddress = str_replace( 'PERIOD', '.', $insRawAddress );
+		$insRawAddress = str_replace( 'HYPEN', '-', $insRawAddress );
 		return $insRawAddress;
 	}
 	
-	public static function Verify_Ip( $insIpAddress, $infUseFilter = false ) {
-		if ( $infUseFilter ) {
+	public static function Verify_Ip_Address( $insIpAddress ) {
+		if ( self::$fUseFilter ) {
 			if ( filter_var( $insIpAddress, FILTER_VALIDATE_IP ) ) {
-				return true;
+				return (string)ip2long( $insIpAddress );
 			}
 		}
 		else {
@@ -73,9 +115,25 @@ class ICWP_DataProcessor {
 						return false;
 					}
 				}
-				return true;
+				return (string)ip2long( $insIpAddress );
 			}
 		}
+		return false;
+	}
+	
+	/**
+	 * The only ranges currently accepted are a.b.c.d-f.g.h.j
+	 * @param string $insIpAddressRange
+	 * @return string|boolean
+	 */
+	public static function Verify_Ip_Range( $insIpAddressRange ) {
+		
+		list( $sIpRangeStart, $sIpRangeEnd ) = explode( '-', $insIpAddressRange, 2 );
+		
+		if ( self::Verify_Ip_Address( $sIpRangeStart ) && self::Verify_Ip_Address( $sIpRangeEnd ) ) {
+			return ip2long( $sIpRangeStart ).'-'.ip2long( $sIpRangeEnd );
+		}
+		return false;
 	}
 	
 }

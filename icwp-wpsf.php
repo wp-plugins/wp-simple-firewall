@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://www.icontrolwp.com/
 Description: A Simple WordPress Firewall
-Version: 1.0.2
+Version: 1.1.0
 Author: iControlWP
 Author URI: http://icwp.io/v
 */
@@ -39,14 +39,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	const InputPrefix				= 'icwp_wpsf_';
 	const OptionPrefix				= 'icwp_wpsf_'; //ALL database options use this as the prefix.
 	
-	static public $VERSION			= '1.0.2'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '1.1.0'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_Base;
 	protected $m_aPluginOptions_BlockTypesSection;
-	protected $m_aPluginOptions_BlockSection;
 	protected $m_aPluginOptions_WhitelistSection;
 	protected $m_aPluginOptions_BlacklistSection;
+	protected $m_aPluginOptions_BlockSection;
+	protected $m_aPluginOptions_MiscOptionsSection;
 	
 	public function __construct() {
 		parent::__construct();
@@ -62,7 +63,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		self::$OPTION_PREFIX = self::OptionPrefix;
 
 		$this->m_sParentMenuIdSuffix = 'wpsf';
-		
+
+		$this->clearFirewallProcessorCache();
 		$this->override();
 		
 		if ( self::getOption( 'enable_firewall' ) == 'Y' ) {
@@ -79,6 +81,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		else if ( is_file( self::$PLUGIN_DIR . 'forceOn' ) ) {
 			self::updateOption( 'enable_firewall', 'Y' );
 		}
+		else {
+			return true;
+		}
+		$this->clearFirewallProcessorCache();
 	}
 	
 	/**
@@ -166,7 +172,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$this->updateLogStore( $oFP->getLog() );
 			
 			if ( self::getOption( 'block_send_email' ) === 'Y' ) {
-				$sEmail = get_option('admin_email');
+				$sEmail = self::getOption( 'block_send_email_address');
+				if ( empty($sEmail) || !is_email($sEmail) ) {
+					$sEmail = get_option('admin_email');
+				}
 				if ( is_email( $sEmail ) ) {
 					$oFP->sendBlockEmail( $sEmail );
 				}
@@ -264,8 +273,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->m_aPluginOptions_BlockSection = array(
 			'section_title' => 'Choose Firewall Block Response',
 			'section_options' => array(
-				array( 'block_response',	'',	'none',	$this->m_aRedirectOptions,	'Block Response',	'Choose how the firewall responds when it blocks a request', '' ),
-				array( 'block_send_email',	'',	'N',	'checkbox',	'Send Email Report',	'When a visitor is blocked it will send an email to the blog admin', 'Use with caution - if you get hit by automated bots you may send out too many emails and you could get blocked by your host.' ),
+				array( 'block_response',			'',	'none',	$this->m_aRedirectOptions,	'Block Response',	'Choose how the firewall responds when it blocks a request', '' ),
+				array( 'block_send_email',			'',	'N',	'checkbox',	'Send Email Report',	'When a visitor is blocked it will send an email to the blog admin', 'Use with caution - if you get hit by automated bots you may send out too many emails and you could get blocked by your host.' ),
+				array( 'block_send_email_address',	'',	'',		'email',	'Report Email',		'Where to send email reports', 'If this is empty, it will default to the blog admin email address.' ),
 			)
 		);
 		
@@ -279,7 +289,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					'ip_addresses',
 					'Whitelist IP Addresses',
 					'Choose IP Addresses that are never subjected to Firewall Rules',
-					'Take a new line per address. Each IP Address must be valid and will be checked.'
+					sprintf( 'Take a new line per address. Your IP address is: %s', '<span class="code">'.self::GetVisitorIpAddress().'</span>' )
 				)
 			)
 		);
@@ -298,13 +308,28 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				)
 			)
 		);
+		$this->m_aPluginOptions_MiscOptionsSection = array(
+			'section_title' => 'Miscellaneous Plugin Options',
+			'section_options' => array(
+				array(
+					'delete_on_deactivate',
+					'',
+					'N',
+					'checkbox',
+					'Delete Plugin Settings',
+					'Delete All Plugin Setting Upon Plugin Deactivation',
+					'Careful: Removes all plugin options when you deactivite the plugin.'
+				),
+			),
+		);
 
 		$this->m_aAllPluginOptions = array(
 			&$this->m_aPluginOptions_Base,
 			&$this->m_aPluginOptions_BlockSection,
 			&$this->m_aPluginOptions_WhitelistSection,
 			&$this->m_aPluginOptions_BlacklistSection,
-			&$this->m_aPluginOptions_BlockTypesSection
+			&$this->m_aPluginOptions_BlockTypesSection,
+			&$this->m_aPluginOptions_MiscOptionsSection
 		);
 
 		return true;
@@ -330,7 +355,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 		
 		// This is only done on WP Admin loads so as not to affect the front-end.
-		$this->filterIpsLists();
+		$this->filterIpLists();
 		
 		//Multilingual support.
 		load_plugin_textdomain( 'hlt-wordpress-bootstrap-css', false, basename( dirname( __FILE__ ) ) . '/languages' );
@@ -343,9 +368,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$this->getSubmenuPageTitle( 'Log' ) => array( 'Log', $this->getSubmenuId('firewall-log'), 'onDisplayFirewallLog' )
 		);
 	}//createPluginSubMenuItems
-	
+
 	/**
-	 * Handles the upgrade from version 1 to version 2 of Twitter Bootstrap as well as any other plugin upgrade
 	 */
 	protected function handlePluginUpgrade() {
 		
@@ -353,10 +377,37 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 		if ( $sCurrentPluginVersion !== self::$VERSION && current_user_can( 'manage_options' ) ) {
 
-			//Do any upgrade handling here.
+			// introduced IP ranges in version 1.1.0 so anyone that is less than this must convert their IPs.
+			if ( version_compare( $sCurrentPluginVersion, '1.1.0', '<' ) ) {
+				
+				$aIpWhitelist = self::getOption( 'ips_whitelist' );
+				if ( !empty( $aIpWhitelist ) ) {
+					$aNewList = array();
+					foreach( $aIpWhitelist as $sAddress ) {
+						$aNewList[ $sAddress ] = '';
+					}
+					
+					if ( !class_exists('ICWP_DataProcessor') ) {
+						require_once ( dirname(__FILE__).'/src/icwp-data-processor.php' );
+					}
+					self::updateOption( 'ips_whitelist', ICWP_DataProcessor::Add_New_Raw_Ips( array(), $aNewList ) );
+				}
+				
+				$aIpBlacklist = self::getOption( 'ips_blacklist' );
+				if ( !empty($aIpBlacklist) ) {
+					$aNewList = array();
+					foreach( $aIpBlacklist as $sAddress ) {
+						$aNewList[ $sAddress ] = '';
+					}
+					self::updateOption( 'ips_blacklist', ICWP_DataProcessor::Add_New_Raw_Ips( array(), $aNewList ) );
+				}
+			}
 			
 			//Set the flag so that this update handler isn't run again for this version.
 			self::updateOption( 'current_plugin_version', self::$VERSION );
+			
+			$this->clearFirewallProcessorCache();
+			
 		}//if
 		
 		//Someone clicked the button to acknowledge the update
@@ -381,60 +432,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->adminNoticeVersionUpgrade();
 		$this->adminNoticeOptionsUpdated();
 	}
-	
-	/**
-	 * Shows the update notification - will bail out if the current user is not an admin 
-	 */
-	private function adminNoticeVersionUpgrade() {
-
-		$oCurrentUser = wp_get_current_user();
-		if ( !($oCurrentUser instanceof WP_User) ) {
-			return;
-		}
-		$nUserId = $oCurrentUser->ID;
-		$sCurrentVersion = get_user_meta( $nUserId, self::OptionPrefix.'current_version', true );
-		// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
-		// If we can never set it, we shouldn't force the Ads on those users who can't get rid of it.
-		if ( $sCurrentVersion === false ) { //the value has never been set, or it's been installed for the first time.
-			$result = update_user_meta( $nUserId, self::OptionPrefix.'current_version', self::$VERSION );
-			return; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
-		}
-
-		if ( $sCurrentVersion !== self::$VERSION ) {
-			
-			$sRedirectPage = isset( $GLOBALS['pagenow'] ) ? $GLOBALS['pagenow'] : 'index.php';
-			ob_start();
-			?>
-				<style>
-					a#fromIcwp { padding: 0 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); color: blue; font-weight: bold; }
-				</style>
-				<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall-config'); ?>">
-					<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
-					<input type="hidden" value="1" name="<?php echo self::OptionPrefix; ?>hide_update_notice" id="<?php echo self::OptionPrefix; ?>hide_update_notice">
-					<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
-					<h4 style="margin:10px 0 3px;">WordPress Firewall plugin has been updated- there may or may not be <a href="http://icwp.io/27" id="fromIcwp" title="WordPress Simple Firewall Plugin" target="_blank">important updates to know about</a>.</h4>
-					<input type="submit" value="Show me and hide this notice." name="submit" class="button" style="float:left; margin-bottom:10px;">
-					<div style="clear:both;"></div>
-				</form>
-			<?php
-			$sNotice = ob_get_contents();
-			ob_end_clean();
-			
-			$this->getAdminNotice( $sNotice, 'updated', true );
-		}
-		
-	}//adminNoticeVersionUpgrade
-	
-	private function adminNoticeOptionsUpdated() {
-		
-		$sAdminFeedbackNotice = $this->getOption( 'feedback_admin_notice' );
-		if ( !empty( $sAdminFeedbackNotice ) ) {
-			$sNotice = '<p>'.$sAdminFeedbackNotice.'</p>';
-			$this->getAdminNotice( $sNotice, 'updated', true );
-			$this->updateOption( 'feedback_admin_notice', '' );
-		}
-		
-	}//adminNoticeOptionsUpdated
 	
 	public function onDisplayMainMenu() {
 
@@ -463,19 +460,20 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 
 		$this->display( 'icwp_'.$this->m_sParentMenuIdSuffix.'_index', $aData );
 	}
-	
+
 	public function onDisplayFirewallConfig() {
 		
 		//populates plugin options with existing configuration
 		$this->readyAllPluginOptions();
-		
+
 		//Specify what set of options are available for this page
 		$aAvailableOptions = array(
 			&$this->m_aPluginOptions_Base,
 			&$this->m_aPluginOptions_BlockSection,
 			&$this->m_aPluginOptions_WhitelistSection,
 			&$this->m_aPluginOptions_BlacklistSection,
-			&$this->m_aPluginOptions_BlockTypesSection
+			&$this->m_aPluginOptions_BlockTypesSection,
+			&$this->m_aPluginOptions_MiscOptionsSection
 		);
 
 		$sAllFormInputOptions = $this->collateAllFormInputsForAllOptions( $aAvailableOptions );
@@ -576,11 +574,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected function deleteAllPluginDbOptions() {
 		
 		parent::deleteAllPluginDbOptions();
-		
 		if ( !current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		
 	}
 	
 	public function onWpDeactivatePlugin() {
@@ -589,8 +585,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$this->deleteAllPluginDbOptions();
 		}
 		
-		$this->deleteOption( 'current_plugin_version' );
-		$this->deleteOption( 'feedback_admin_notice' );
+		$aExtras = array(
+			'current_plugin_version',
+			'feedback_admin_notice',
+			'firewall_log',
+			'firewall_processor'
+		);
+		foreach( $aExtras as $sOption ) {
+			$this->deleteOption( $sOption );
+		}
 		
 	}//onWpDeactivatePlugin
 	
@@ -606,58 +609,119 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	/**
 	 * 
 	 */
-	protected function filterIpsLists() {
+	protected function filterIpLists() {
 
-		$aWhitelistIps = self::getOption('ips_whitelist');
+		$aWhitelistIps = self::getOption( 'ips_whitelist' );
 		if ( !is_array($aWhitelistIps) ) {
 			$aWhitelistIps = array();
 			self::updateOption( 'ips_whitelist', $aWhitelistIps );
 		}
-		$aWhitelistIpsFiltered = apply_filters( 'icwp_simple_firewall_whitelist_ips', $aWhitelistIps );
-		if ( !is_array( $aWhitelistIpsFiltered ) ) {
-			$aWhitelistIpsFiltered = array();
-		}
-		$aDiff = array_diff( $aWhitelistIpsFiltered, $aWhitelistIps );
-		if ( !empty( $aDiff ) ) {
+		$mResult = $this->processIpFilter( $aWhitelistIps, 'icwp_simple_firewall_whitelist_ips' );
+		if ( $mResult !== false ) {
 			$this->clearFirewallProcessorCache();
-			self::updateOption( 'ips_whitelist', $this->verifyIpAddressList( $aWhitelistIpsFiltered ) );
+			self::updateOption( 'ips_whitelist', $mResult );
 		}
 
-		$aBlacklistIps = self::getOption('ips_blacklist');
+		$aBlacklistIps = self::getOption( 'ips_blacklist' );
 		if ( !is_array($aBlacklistIps) ) {
 			$aBlacklistIps = array();
 			self::updateOption( 'ips_blacklist', $aBlacklistIps );
 		}
-		$aBlacklistIpsFiltered = apply_filters( 'icwp_simple_firewall_blacklist_ips', $aBlacklistIps );
-		if ( !is_array( $aBlacklistIpsFiltered ) ) {
-			$aBlacklistIpsFiltered = array();
-		}
-		$aDiff = array_diff( $aBlacklistIpsFiltered, $aBlacklistIps );
-		if ( !empty( $aDiff ) ) {
+		$mResult = $this->processIpFilter( $aBlacklistIps, 'icwp_simple_firewall_blacklist_ips' );
+		if ( $mResult !== false ) {
 			$this->clearFirewallProcessorCache();
-			self::updateOption( 'ips_blacklist', $this->verifyIpAddressList( $aBlacklistIpsFiltered ) );
+			self::updateOption( 'ips_blacklist', $mResult );
 		}
 	}
 
-	protected function verifyIpAddressList( $inaIpList ) {
-
-		if ( function_exists('filter_var') && defined( FILTER_VALIDATE_IP )  ) {
-			$fUseFilter = true;
-		}
-		else {
-			$fUseFilter = false;
-		}
-
-		if ( !class_exists('ICWP_DataProcessor') ) {
-			require_once ( dirname(__FILE__).'/src/icwp-data-processor.php' );
-		}
-		foreach( $inaIpList as $sKey => $sIpAddress ) {
-			if ( !ICWP_DataProcessor::Verify_Ip( $sIpAddress, $fUseFilter ) ) {
-				unset( $inaIpList[ $sKey ] );
+	/**
+	 * @param array $inaRawIpList
+	 * @return array
+	 */
+	protected function processIpFilter( $inaExistingList, $insFilterName ) {
+		
+		$aFilterIps = array();
+		$aFilterIps = apply_filters( $insFilterName, $aFilterIps );
+		
+		if ( !empty( $aFilterIps ) ) {
+			
+			$aNewIps = array();
+			
+			foreach( $aFilterIps as $mKey => $sValue ) {
+				
+				if ( is_string( $mKey ) ) { //it's the IP
+					$sIP = $mKey;
+					$sLabel = $sValue;
+				}
+				else { //it's not an associative array, so the value is the IP
+					$sIP = $sValue;
+					$sLabel = '';
+				}
+				$aNewIps[ $sIP ] = $sLabel;
 			}
+			if ( !class_exists('ICWP_DataProcessor') ) {
+				require_once ( dirname(__FILE__).'/src/icwp-data-processor.php' );
+			}
+			return ICWP_DataProcessor::Add_New_Raw_Ips( $inaExistingList, $aNewIps );
 		}
-		return $inaIpList;
+		return false;
 	}
+	
+
+	/**
+	 * Shows the update notification - will bail out if the current user is not an admin
+	 */
+	private function adminNoticeVersionUpgrade() {
+	
+		$oCurrentUser = wp_get_current_user();
+		if ( !($oCurrentUser instanceof WP_User) ) {
+			return;
+		}
+		$nUserId = $oCurrentUser->ID;
+		$sCurrentVersion = get_user_meta( $nUserId, self::OptionPrefix.'current_version', true );
+		// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
+		// If we can never set it, we shouldn't force the Ads on those users who can't get rid of it.
+		if ( $sCurrentVersion === false ) { //the value has never been set, or it's been installed for the first time.
+			$result = update_user_meta( $nUserId, self::OptionPrefix.'current_version', self::$VERSION );
+			return; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
+		}
+	
+		if ( $sCurrentVersion !== self::$VERSION ) {
+				
+			$sRedirectPage = isset( $GLOBALS['pagenow'] ) ? $GLOBALS['pagenow'] : 'index.php';
+			$sRedirectPage = 'admin.php?page=icwp-wpsf';
+			ob_start();
+			?>
+					<style>
+						a#fromIcwp { padding: 0 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); color: blue; font-weight: bold; }
+					</style>
+					<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall-config'); ?>">
+						<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
+						<input type="hidden" value="1" name="<?php echo self::OptionPrefix; ?>hide_update_notice" id="<?php echo self::OptionPrefix; ?>hide_update_notice">
+						<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
+						<h4 style="margin:10px 0 3px;">WordPress Firewall plugin has been updated- there may or may not be <a href="http://icwp.io/27" id="fromIcwp" title="WordPress Simple Firewall Plugin" target="_blank">important updates to know about</a>.</h4>
+						<input type="submit" value="Show me and hide this notice." name="submit" class="button" style="float:left; margin-bottom:10px;">
+						<div style="clear:both;"></div>
+					</form>
+				<?php
+				$sNotice = ob_get_contents();
+				ob_end_clean();
+				
+				$this->getAdminNotice( $sNotice, 'updated', true );
+			}
+			
+		}//adminNoticeVersionUpgrade
+		
+		private function adminNoticeOptionsUpdated() {
+			
+			$sAdminFeedbackNotice = $this->getOption( 'feedback_admin_notice' );
+			if ( !empty( $sAdminFeedbackNotice ) ) {
+				$sNotice = '<p>'.$sAdminFeedbackNotice.'</p>';
+				$this->getAdminNotice( $sNotice, 'updated', true );
+				$this->updateOption( 'feedback_admin_notice', '' );
+			}
+			
+		}//adminNoticeOptionsUpdated
 }
 
 endif;
