@@ -92,17 +92,31 @@ $sPluginName = 'WordPress Simple Firewall';
 				<h3>Change log for the v1.1.x release:</h3>
 				<p>The following summarises the main changes to the plugin in the 1.1.x release</p>
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
-				
-					<ul>
-						<li><span class="label ">new</span> Fix: Block email not showing the IPv4 friendly address.</li>
-						<li><span class="label ">new</span> You can now specify IP ranges in whitelists and blacklists.
-							<br />To do this separate the start and end address with a hypen (-)
-							<br />E.g. For everything between 1.2.3.4 and 1.2.3.10, you would do: <code>1.2.3.4<strong>-</strong>1.2.3.10</code></li>
-						<li><span class="label ">new</span> You can now specify which email address to send the notification emails.</li>
-						<li><span class="label ">new</span> You can now add a comment to IP addresses in the whitelist/blacklist. To do this, write your IP address then type a SPACE and write whatever you want (don't take a new line).</li>
-						<li><span class="label ">new</span> You can now set to delete ALL firewall settings when you deactivate the plugin.</li>
-						<li><span class="label ">new</span> Improved formatting of the firewall log.</li>
-					<ul>
+				<?php 
+				$aNewLog = array(
+					'Firewall logging now has its own dedicated database table.'
+				);
+				?>
+				<ul>
+				<?php foreach( $aNewLog as $sItem ) : ?>
+					<li><span class="label">new</span> <?php echo $sItem; ?></li>
+				<?php endforeach; ?>
+				</ul>
+				<?php
+				$aLog = array(
+					'Fix: Block email not showing the IPv4 friendly address.',
+					'You can now specify IP ranges in whitelists and blacklists.',
+					'You can now specify which email address to send the notification emails.',
+					"You can now add a comment to IP addresses in the whitelist/blacklist. To do this, write your IP address then type a SPACE and write whatever you want (don't take a new line').",
+					'You can now set to delete ALL firewall settings when you deactivate the plugin.',
+					'Improved formatting of the firewall log.'
+				);
+				?>
+				<ul>
+				<?php foreach( $aLog as $sItem ) : ?>
+					<li><?php echo $sItem; ?></li>
+				<?php endforeach; ?>
+				</ul>
 			  </div>
 		  </div><!-- / span6 -->
 		</div><!-- / row -->

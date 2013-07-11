@@ -30,7 +30,6 @@ $aLogTypes = array(
 		
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
-			
 			<?php if ( !$icwp_firewall_log ) : ?>
 				<?php echo 'There are currently no logs to display.'; ?>
 			<?php else : ?>
@@ -52,18 +51,18 @@ $aLogTypes = array(
 						<th>Message Type</th>
 						<th>Message</th>
 					</tr>
-				<?php foreach( $icwp_firewall_log as $sId => $aLogData ) :
-					list( $sRequestIp, $sRequestId ) = explode( '_', $sId );
-				?>
+				<?php foreach( $icwp_firewall_log as $sId => $aLogData ) : ?>
 					<tr>
-						<td colspan="4">IP: <?php echo $sRequestIp; ?> (Request ID: <?php echo $sRequestId; ?>)</td>
+						<td colspan="4">IP: <?php echo $aLogData['ip']; ?> (Request ID: <?php echo $aLogData['request_id']; ?>)</td>
 					</tr>
-					<?php foreach( $aLogData as $aLogItem ) :
-						list( $sTime, $sLogType, $sLogMessage ) = $aLogItem;
+					<?php
+					$aMessages = unserialize( $aLogData['messages'] );
+					foreach( $aMessages as $aLogItem ) :
+						list( $sLogType, $sLogMessage ) = $aLogItem;
 					?>
 						<tr class="row-<?php echo $aLogTypes[$sLogType]; ?>">
 							<td>&nbsp;</td>
-							<td><?php echo date( 'Y/m/d H:i:s', $sTime ); ?></td>
+							<td><?php echo date( 'Y/m/d H:i:s', $aLogData['created_at'] ); ?></td>
 							<td><?php echo $aLogTypes[$sLogType] ?></td>
 							<td><?php echo $sLogMessage; ?></td>
 						</tr>

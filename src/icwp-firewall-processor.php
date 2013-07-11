@@ -27,6 +27,7 @@ class ICWP_FirewallProcessor {
 
 	protected $m_sRequestId;
 	protected $m_nRequestIp;
+	protected $m_nRequestTimestamp;
 	
 	protected $m_aBlockSettings;
 	protected $m_sBlockResponse;
@@ -37,8 +38,9 @@ class ICWP_FirewallProcessor {
 	protected $m_aWhitelistPagesPatterns;
 
 	protected $m_aRequestUriParts;
-	
+
 	protected $m_aLog;
+	protected $m_aLogMessages;
 
 	/**
 	 * @var string
@@ -67,35 +69,53 @@ class ICWP_FirewallProcessor {
 	}
 	
 	public function reset() {
+		
+		$this->setRequestUriPageParts();
+		$this->setPageParams();
+		
 		$this->m_nRequestIp = self::GetVisitorIpAddress();
-		$this->m_sRequestId =  long2ip( $this->m_nRequestIp ).'_'.uniqid();
-		$this->m_aRequestUriParts = array();
-		$this->m_aPageParams = array();
-		$this->m_aPageParamValues = array();
+		$this->m_sRequestId = uniqid();
+		$this->m_nRequestTimestamp = time();
+		$this->m_aPageParamValues = array_values( $this->m_aPageParams );
 		$this->resetLog();
 	}
 	
 	public function resetLog() {
-		if ( !is_array($this->m_aLog) ) {
-			$this->m_aLog = array();
-		}
-		$this->m_aLog[ $this->m_sRequestId ] = array();
+		$this->m_aLogMessages = array();
 	}
 	
-	public function getLog() {
+	public function getLogData() {
+		$this->m_aLog = array(
+			'request_id'		=> $this->m_sRequestId,
+			'messages'			=> serialize( $this->m_aLogMessages ),
+			'created_at'		=> $this->m_nRequestTimestamp,
+			'ip'				=> long2ip( $this->m_nRequestIp ),
+			'ip_long'			=> $this->m_nRequestIp,
+			'uri'				=> serialize( $this->m_aRequestUriParts ),
+			'params'			=> serialize( $this->m_aPageParams ),
+		);
 		return $this->m_aLog;
+		/*
+		`request_id` varchar(255) NOT NULL DEFAULT '',
+		`type` int(1) NOT NULL DEFAULT '0',
+		`created_at` int(15) NOT NULL DEFAULT '0',
+		`deleted_at` int(15) NOT NULL DEFAULT '0',
+		`ip` varchar(20) NOT NULL DEFAULT '',
+		`ip_long` longint(20) NOT NULL DEFAULT '',
+		`uri` varchar(255) NOT NULL DEFAULT '',
+		`referrer` varchar(255) NOT NULL DEFAULT '',
+		*/
 	}
 	
 	/**
-	 * 
 	 * @param string $insLogMessage
 	 * @param string $insMessageType
 	 */
 	public function writeLog( $insLogMessage = '', $insMessageType = self::LOG_MESSAGE_TYPE_INFO ) {
-		if ( !isset( $this->m_aLog[ $this->m_sRequestId ] ) ) {
+		if ( !is_array( $this->m_aLogMessages ) ) {
 			$this->resetLog();
 		}
-		$this->m_aLog[ $this->m_sRequestId ][] = array( time(), $insMessageType, $insLogMessage );
+		$this->m_aLogMessages[] = array( $insMessageType, $insLogMessage );
 	}
 	
 	public function doFirewallCheck() {
@@ -145,9 +165,6 @@ class ICWP_FirewallProcessor {
 		if ( $fIsPermittedVisitor && $this->isPageWhitelisted() ) {
 			return true;
 		}
-		
-		// ensures we have a simple array with all the values that need to be checked.
-		$this->m_aPageParamValues = array_values( $this->m_aPageParams );
 		
 		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_dir_traversal' ] ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockDirTraversal();
@@ -505,19 +522,17 @@ class ICWP_FirewallProcessor {
 
 	public function sendBlockEmail( $insEmailAddress ) {
 
-		$sIp4 = long2ip($this->m_nRequestIp);
-		
 		$aMessage = array(
 			'WordPress Simple Firewall has blocked a visitor to your site.',
 			'Log details for this visitor are below:',
-			'- IP Address: '.$sIp4
+			'- IP Address: '.$this->m_aLog['ip'],
 		);
-		foreach( $this->m_aLog[ $this->m_sRequestId ] as $aLogItem ) {
-			list( $sTime, $sLogType, $sLogMessage ) = $aLogItem;
-			$aMessage[] = '-  '.$aLogItem[2];
+		foreach( $this->m_aLogMessages as $aLogItem ) {
+			list( $sLogType, $sLogMessage ) = $aLogItem;
+			$aMessage[] = '-  '.$sLogMessage;
 		}
 		
-		$aMessage[] = 'You could look up the offending IP Address here: http://ip-lookup.net/?ip='. $sIp4;
+		$aMessage[] = 'You could look up the offending IP Address here: http://ip-lookup.net/?ip='. $this->m_aLog['ip'];
 		$sEmailSubject = 'Firewall Block Alert: ' . home_url();
 		$sSiteName = get_bloginfo('name');
 		$aHeaders   = array(

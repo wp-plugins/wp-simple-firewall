@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://www.icontrolwp.com/
 Description: A Simple WordPress Firewall
-Version: 1.1.1
+Version: 1.1.2
 Author: iControlWP
 Author URI: http://icwp.io/v
 */
@@ -27,10 +27,11 @@ Author URI: http://icwp.io/v
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
 require_once( dirname(__FILE__).'/src/icwp-plugins-base.php' );
+require_once( dirname(__FILE__).'/src/icwp-firewall-processor.php' );
+require_once( dirname(__FILE__).'/src/icwp-database-processor.php' );
 
 if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
@@ -39,7 +40,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	const InputPrefix				= 'icwp_wpsf_';
 	const OptionPrefix				= 'icwp_wpsf_'; //ALL database options use this as the prefix.
 	
-	static public $VERSION			= '1.1.1'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '1.1.2'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_Base;
@@ -48,6 +49,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected $m_aPluginOptions_BlacklistSection;
 	protected $m_aPluginOptions_BlockSection;
 	protected $m_aPluginOptions_MiscOptionsSection;
+
+	/**
+	 * @var ICWP_FirewallProcessor
+	 */
+	protected $m_oFirewallProcessor;
+	/**
+	 * @var ICWP_DatabaseProcessor
+	 */
+	protected $m_oDbProcessor;
+	/**
+	 * @var string
+	 */
+	protected $m_sDbTablePrefix;
 	
 	public function __construct() {
 		parent::__construct();
@@ -61,14 +75,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		self::$PLUGIN_DIR	= WP_PLUGIN_DIR.WORPIT_DS.self::$PLUGIN_PATH.WORPIT_DS;
 		self::$PLUGIN_URL	= plugins_url( '/', __FILE__ ) ;
 		self::$OPTION_PREFIX = self::OptionPrefix;
-
+		
+		$this->m_sDbTablePrefix = self::OptionPrefix;
 		$this->m_sParentMenuIdSuffix = 'wpsf';
 
-		$this->clearFirewallProcessorCache();
 		$this->override();
 		
 		if ( self::getOption( 'enable_firewall' ) == 'Y' ) {
-			require_once( dirname(__FILE__).'/src/icwp-firewall-processor.php' );
+			$this->m_oFirewallProcessor = self::getOption( 'firewall_processor' );
 			$this->runFirewallProcess();
 		}
 
@@ -98,13 +112,26 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( self::getOption( 'enable_firewall_log' ) != 'Y' ) {
 			return true;
 		}
-		
-		//Save the firewall log
-		$aFullLog = self::getOption( 'firewall_log' );
-		if ( !$aFullLog ) {
-			$aFullLog = array();
+
+		$aLogData = $this->m_oFirewallProcessor->getLogData();
+		if ( !isset( $this->m_oDbProcessor ) ) {
+			$this->m_oDbProcessor = new ICWP_DatabaseProcessor( $this->m_sDbTablePrefix );
 		}
-		return self::updateOption( 'firewall_log', array_merge( $inaNewLogData, $aFullLog ) );
+		$this->m_oDbProcessor->insertToTable( 'log', $aLogData );
+	}
+	
+	protected function createLogStore() {
+		if ( !isset( $this->m_oDbProcessor ) ) {
+			$this->m_oDbProcessor = new ICWP_DatabaseProcessor( $this->m_sDbTablePrefix );
+		}
+		$this->m_oDbProcessor->createTables();
+	}
+	
+	protected function getLogStore() {
+		if ( !isset( $this->m_oDbProcessor ) ) {
+			$this->m_oDbProcessor = new ICWP_DatabaseProcessor( $this->m_sDbTablePrefix );
+		}
+		return $this->m_oDbProcessor->selectAllFromTable( 'log' );
 	}
 	
 	/**
@@ -115,8 +142,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 */
 	public function runFirewallProcess() {
 		
-		$oFP = self::getOption( 'firewall_processor', $oFP );
-		if ( empty( $oFP ) ) {
+		if ( empty( $this->m_oFirewallProcessor ) ) {
 			
 			//collect up all the settings to pass to the processor
 			$aSettingSlugs = array(
@@ -141,35 +167,35 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				$aIpBlacklist = array();
 			}
 			$sBlockResponse = self::getOption( 'block_response' );
-			$oFP = new ICWP_FirewallProcessor( $aBlockSettings, $aIpWhitelist, $aIpBlacklist, $sBlockResponse );
+			$this->m_oFirewallProcessor = new ICWP_FirewallProcessor( $aBlockSettings, $aIpWhitelist, $aIpBlacklist, $sBlockResponse );
 			
-			self::updateOption( 'firewall_processor', $oFP );
+			self::updateOption( 'firewall_processor', $this->m_oFirewallProcessor );
 			
 		} else {
-			$oFP->reset();
+			$this->m_oFirewallProcessor->reset();
 		}
 
-		$fFirewallBlockUser = !$oFP->doFirewallCheck();
+		$fFirewallBlockUser = !$this->m_oFirewallProcessor->doFirewallCheck();
 
 		if ( $fFirewallBlockUser ) {
 			switch( $sBlockResponse ) {
 				case 'redirect_home':
-					$oFP->logWarning(
+					$this->m_oFirewallProcessor->logWarning(
 						sprintf( 'Firewall Block: Visitor was sent HOME: %s', home_url() )
 					);
 					break;
 				case 'redirect_404':
-					$oFP->logWarning(
+					$this->m_oFirewallProcessor->logWarning(
 						sprintf( 'Firewall Block: Visitor was sent 404: %s', home_url().'/404?testfirewall' )
 					);
 					break;
 				case 'redirect_die':
-					$oFP->logWarning(
+					$this->m_oFirewallProcessor->logWarning(
 						sprintf( 'Firewall Block: Visitor connection was killed with %s', 'die()' )
 					);
 					break;
 			}
-			$this->updateLogStore( $oFP->getLog() );
+			$this->updateLogStore( $this->m_oFirewallProcessor->getLogData() );
 			
 			if ( self::getOption( 'block_send_email' ) === 'Y' ) {
 				$sEmail = self::getOption( 'block_send_email_address');
@@ -177,14 +203,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					$sEmail = get_option('admin_email');
 				}
 				if ( is_email( $sEmail ) ) {
-					$oFP->sendBlockEmail( $sEmail );
+					$this->m_oFirewallProcessor->sendBlockEmail( $sEmail );
 				}
 			}
-			$oFP->doFirewallBlock();
+			$this->m_oFirewallProcessor->doFirewallBlock();
 			
 		}
 		else {
-			$this->updateLogStore( $oFP->getLog() );
+			$this->updateLogStore( $this->m_oFirewallProcessor->getLogData() );
 		}
 	}
 	
@@ -376,7 +402,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$sCurrentPluginVersion = self::getOption( 'current_plugin_version' );
 		
 		if ( $sCurrentPluginVersion !== self::$VERSION && current_user_can( 'manage_options' ) ) {
-
+			
+			//create new log database table
+			$this->createLogStore();
+			// delete the old option.
+			if ( version_compare( $sCurrentPluginVersion, '1.1.1', '<' ) ) {
+				$this->deleteOption( 'firewall_log' );
+			}
+			
 			// introduced IP ranges in version 1.1.0 so anyone that is less than this must convert their IPs.
 			if ( version_compare( $sCurrentPluginVersion, '1.1.0', '<' ) ) {
 				
@@ -496,7 +529,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$aData = array(
 			'plugin_url'		=> self::$PLUGIN_URL,
 			'var_prefix'		=> self::OptionPrefix,
-			'firewall_log'		=> self::getOption( 'firewall_log' ),
+			'firewall_log'		=> array_reverse( $this->getLogStore() ),
 			'fShowAds'			=> $this->isShowMarketing(),
 			'nonce_field'		=> $this->getSubmenuId('firewall').'_log',
 			'form_action'		=> 'admin.php?page='.$this->getSubmenuId('firewall-log'),
@@ -548,7 +581,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		check_admin_referer( $this->getSubmenuId('firewall').'_log' );
 		
 		// At the time of writing the page only has 1 form submission item - clear log
-		self::updateOption( 'firewall_log', array() );
+		$this->m_oDbProcessor->emptyTable( 'log' );
 		wp_safe_redirect( admin_url( "admin.php?page=".$this->getSubmenuId('firewall-log') ) ); //means no admin message is displayed
 		exit();
 	}
@@ -577,22 +610,23 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( !current_user_can( 'manage_options' ) ) {
 			return;
 		}
+		
+		$this->m_oDbProcessor->deleteAllTables();
+		
+		$aExtras = array(
+			'current_plugin_version',
+			'feedback_admin_notice',
+			'firewall_processor'
+		);
+		foreach( $aExtras as $sOption ) {
+			$this->deleteOption( $sOption );
+		}
 	}
 	
 	public function onWpDeactivatePlugin() {
 		
 		if ( $this->getOption('delete_on_deactivate') == 'Y' ) {
 			$this->deleteAllPluginDbOptions();
-		}
-		
-		$aExtras = array(
-			'current_plugin_version',
-			'feedback_admin_notice',
-			'firewall_log',
-			'firewall_processor'
-		);
-		foreach( $aExtras as $sOption ) {
-			$this->deleteOption( $sOption );
 		}
 		
 	}//onWpDeactivatePlugin
