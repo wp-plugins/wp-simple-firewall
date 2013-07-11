@@ -505,17 +505,19 @@ class ICWP_FirewallProcessor {
 
 	public function sendBlockEmail( $insEmailAddress ) {
 
+		$sIp4 = long2ip($this->m_nRequestIp);
+		
 		$aMessage = array(
 			'WordPress Simple Firewall has blocked a visitor to your site.',
 			'Log details for this visitor are below:',
-			'- IP Address: '.$this->m_nRequestIp
+			'- IP Address: '.$sIp4
 		);
 		foreach( $this->m_aLog[ $this->m_sRequestId ] as $aLogItem ) {
 			list( $sTime, $sLogType, $sLogMessage ) = $aLogItem;
 			$aMessage[] = '-  '.$aLogItem[2];
 		}
 		
-		$aMessage[] = 'You could look up the offending IP Address here: http://ip-lookup.net/?ip='. $this->m_nRequestIp;
+		$aMessage[] = 'You could look up the offending IP Address here: http://ip-lookup.net/?ip='. $sIp4;
 		$sEmailSubject = 'Firewall Block Alert: ' . home_url();
 		$sSiteName = get_bloginfo('name');
 		$aHeaders   = array(

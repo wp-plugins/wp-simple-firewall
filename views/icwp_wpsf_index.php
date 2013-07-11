@@ -94,6 +94,7 @@ $sPluginName = 'WordPress Simple Firewall';
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				
 					<ul>
+						<li><span class="label ">new</span> Fix: Block email not showing the IPv4 friendly address.</li>
 						<li><span class="label ">new</span> You can now specify IP ranges in whitelists and blacklists.
 							<br />To do this separate the start and end address with a hypen (-)
 							<br />E.g. For everything between 1.2.3.4 and 1.2.3.10, you would do: <code>1.2.3.4<strong>-</strong>1.2.3.10</code></li>

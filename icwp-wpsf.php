@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://www.icontrolwp.com/
 Description: A Simple WordPress Firewall
-Version: 1.1.0
+Version: 1.1.1
 Author: iControlWP
 Author URI: http://icwp.io/v
 */
@@ -39,7 +39,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	const InputPrefix				= 'icwp_wpsf_';
 	const OptionPrefix				= 'icwp_wpsf_'; //ALL database options use this as the prefix.
 	
-	static public $VERSION			= '1.1.0'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '1.1.1'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_Base;
