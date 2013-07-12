@@ -7,7 +7,6 @@ $aLogTypes = array(
 	1	=>	'Warning',
 	2	=>	'Critical'
 );
-
 ?>
 <style>
 	tr.row-Info td {
@@ -17,6 +16,21 @@ $aLogTypes = array(
 	}
 	tr.row-Critical td {
 		background-color: #DBAFB0;
+	}
+	tr.row-log-header td {
+		border-top: 2px solid #999 !important;
+	}
+	td.cell-log-type {
+		text-align: right !important;
+	}
+	td .cell-section {
+		display: inline-block;
+		width: 48%;
+	}
+	td .section-ip {
+	}
+	td .section-timestamp {
+		text-align: right;
 	}
 </style>
 
@@ -40,20 +54,38 @@ $aLogTypes = array(
 					?>
 					<div class="form-actions">
 						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-						<button type="submit" class="btn btn-primary" name="submit"><?php _hlt_e( 'Clear Log'); ?></button>
+						<button type="submit" class="btn btn-primary" name="clear_log_submit"><?php _hlt_e( 'Clear Log'); ?></button>
 					</div>
 				</form>
 			
 				<table class="table table-bordered table-hover table-condensed">
 					<tr>
-						<th>&nbsp;</th>
-						<th>Time</th>
 						<th>Message Type</th>
 						<th>Message</th>
 					</tr>
 				<?php foreach( $icwp_firewall_log as $sId => $aLogData ) : ?>
-					<tr>
-						<td colspan="4">IP: <?php echo $aLogData['ip']; ?> (Request ID: <?php echo $aLogData['request_id']; ?>)</td>
+					<tr class="row-log-header">
+						<td>IP: <strong><?php echo $aLogData['ip']; ?></strong></td>
+						<td colspan="2">
+							<span class="cell-section section-ip">
+								[ <a href="http://whois.domaintools.com/<?php echo $aLogData['ip']; ?>" target="_blank">IPWHOIS Lookup</a> ]
+								[
+								<?php if ( in_array( $aLogData['ip_long'], $icwp_ip_blacklist ) ) : ?>
+									<a href="<?php echo $icwp_form_action; ?>&unblackip=<?php echo $aLogData['ip']; ?>&nonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Remove From Blacklist</a>
+								<?php else: ?>
+									<a href="<?php echo $icwp_form_action; ?>&blackip=<?php echo $aLogData['ip']; ?>&nonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Add To Blacklist</a>
+								<?php endif; ?>
+								]
+								[
+								<?php if ( in_array( $aLogData['ip_long'], $icwp_ip_whitelist ) ) : ?>
+									<a href="<?php echo $icwp_form_action; ?>&unwhiteip=<?php echo $aLogData['ip']; ?>&nonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Remove From Whitelist</a>
+								<?php else: ?>
+									<a href="<?php echo $icwp_form_action; ?>&whiteip=<?php echo $aLogData['ip']; ?>&nonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Add To Whitelist</a>
+								<?php endif; ?>
+								]
+							</span>
+							<span class="cell-section section-timestamp"><?php echo date( 'Y/m/d H:i:s', $aLogData['created_at'] ); ?></span>
+						</td>
 					</tr>
 					<?php
 					$aMessages = unserialize( $aLogData['messages'] );
@@ -61,9 +93,7 @@ $aLogTypes = array(
 						list( $sLogType, $sLogMessage ) = $aLogItem;
 					?>
 						<tr class="row-<?php echo $aLogTypes[$sLogType]; ?>">
-							<td>&nbsp;</td>
-							<td><?php echo date( 'Y/m/d H:i:s', $aLogData['created_at'] ); ?></td>
-							<td><?php echo $aLogTypes[$sLogType] ?></td>
+							<td class="cell-log-type"><?php echo $aLogTypes[$sLogType] ?></td>
 							<td><?php echo $sLogMessage; ?></td>
 						</tr>
 					<?php endforeach; ?>

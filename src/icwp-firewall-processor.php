@@ -133,14 +133,14 @@ class ICWP_FirewallProcessor {
 		//Check if the visitor is excluded from the firewall from the outset.
 		if ( $this->isVisitorOnBlacklist() ) {
 			$this->logWarning(
-				sprintf( 'Visitor is blacklisted by IP Address. Label: %s',
+				sprintf( 'Visitor was blacklisted by IP Address. Label: %s',
 					empty( $this->m_sListItemLabel )? 'No label.' : $this->m_sListItemLabel
 				)
 			);
 			return false;
 		}
 		
-		$this->logInfo( 'Visitor is neither whitelisted nor blacklisted by IP Address' );
+		$this->logInfo( 'Visitor IP address was neither whitelisted nor blacklisted.' );
 		
 		// if we can't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
 		if ( !$this->setRequestUriPageParts() ) {
@@ -544,6 +544,9 @@ class ICWP_FirewallProcessor {
 			'X-Mailer: PHP/'.phpversion()
 		);
 		mail( $insEmailAddress, $sEmailSubject, implode( "\r\n", $aMessage ), implode( "\r\n", $aHeaders ) );
+		$this->logInfo(
+			sprintf( 'Block email sent to %s', $insEmailAddress )
+		);
 	}
 }
 

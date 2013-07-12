@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://www.icontrolwp.com/
 Description: A Simple WordPress Firewall
-Version: 1.1.2
+Version: 1.1.3
 Author: iControlWP
 Author URI: http://icwp.io/v
 */
@@ -32,6 +32,7 @@ Author URI: http://icwp.io/v
 require_once( dirname(__FILE__).'/src/icwp-plugins-base.php' );
 require_once( dirname(__FILE__).'/src/icwp-firewall-processor.php' );
 require_once( dirname(__FILE__).'/src/icwp-database-processor.php' );
+require_once( dirname(__FILE__).'/src/icwp-data-processor.php' );
 
 if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
@@ -40,7 +41,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	const InputPrefix				= 'icwp_wpsf_';
 	const OptionPrefix				= 'icwp_wpsf_'; //ALL database options use this as the prefix.
 	
-	static public $VERSION			= '1.1.2'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '1.1.3'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_Base;
@@ -82,8 +83,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->override();
 		
 		if ( self::getOption( 'enable_firewall' ) == 'Y' ) {
-			$this->m_oFirewallProcessor = self::getOption( 'firewall_processor' );
-			$this->runFirewallProcess();
+			
+			require_once( ABSPATH . 'wp-includes/pluggable.php' );
+			if ( self::getOption( 'whitelist_admins' ) != 'Y' && is_super_admin()  ) {
+				$this->m_oFirewallProcessor = self::getOption( 'firewall_processor' );
+				$this->runFirewallProcess();
+			}
 		}
 
 	}//__construct
@@ -114,36 +119,27 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 
 		$aLogData = $this->m_oFirewallProcessor->getLogData();
-		if ( !isset( $this->m_oDbProcessor ) ) {
-			$this->m_oDbProcessor = new ICWP_DatabaseProcessor( $this->m_sDbTablePrefix );
-		}
+		$this->loadDatabaseProcessor();
 		$this->m_oDbProcessor->insertToTable( 'log', $aLogData );
 	}
 	
 	protected function createLogStore() {
-		if ( !isset( $this->m_oDbProcessor ) ) {
-			$this->m_oDbProcessor = new ICWP_DatabaseProcessor( $this->m_sDbTablePrefix );
-		}
+		$this->loadDatabaseProcessor();
 		$this->m_oDbProcessor->createTables();
 	}
 	
 	protected function getLogStore() {
-		if ( !isset( $this->m_oDbProcessor ) ) {
-			$this->m_oDbProcessor = new ICWP_DatabaseProcessor( $this->m_sDbTablePrefix );
-		}
+		$this->loadDatabaseProcessor();
 		return $this->m_oDbProcessor->selectAllFromTable( 'log' );
 	}
 	
 	/**
-	 * Should be called from the constructor so as to ensure it is called as early as possible.
 	 * 
-	 * @param array $inaNewLogData
-	 * @return boolean
 	 */
-	public function runFirewallProcess() {
+	protected function loadFirewallProcessor( $infReset = false ) {
 		
+		$this->m_oFirewallProcessor = self::getOption( 'firewall_processor' );
 		if ( empty( $this->m_oFirewallProcessor ) ) {
-			
 			//collect up all the settings to pass to the processor
 			$aSettingSlugs = array(
 				'block_wplogin_access',
@@ -167,14 +163,32 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				$aIpBlacklist = array();
 			}
 			$sBlockResponse = self::getOption( 'block_response' );
+			
 			$this->m_oFirewallProcessor = new ICWP_FirewallProcessor( $aBlockSettings, $aIpWhitelist, $aIpBlacklist, $sBlockResponse );
-			
 			self::updateOption( 'firewall_processor', $this->m_oFirewallProcessor );
-			
-		} else {
+		} else if ( $infReset ) {
 			$this->m_oFirewallProcessor->reset();
 		}
-
+	}
+	
+	/**
+	 * 
+	 */
+	protected function loadDatabaseProcessor( $infReset = false ) {
+		if ( !isset( $this->m_oDbProcessor ) ) {
+			$this->m_oDbProcessor = new ICWP_DatabaseProcessor( $this->m_sDbTablePrefix );
+		}
+	}
+	
+	/**
+	 * Should be called from the constructor so as to ensure it is called as early as possible.
+	 * 
+	 * @param array $inaNewLogData
+	 * @return boolean
+	 */
+	public function runFirewallProcess() {
+		
+		$this->loadFirewallProcessor( true );
 		$fFirewallBlockUser = !$this->m_oFirewallProcessor->doFirewallCheck();
 
 		if ( $fFirewallBlockUser ) {
@@ -195,7 +209,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					);
 					break;
 			}
-			$this->updateLogStore( $this->m_oFirewallProcessor->getLogData() );
 			
 			if ( self::getOption( 'block_send_email' ) === 'Y' ) {
 				$sEmail = self::getOption( 'block_send_email_address');
@@ -206,6 +219,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					$this->m_oFirewallProcessor->sendBlockEmail( $sEmail );
 				}
 			}
+			
+			$this->updateLogStore( $this->m_oFirewallProcessor->getLogData() );
 			$this->m_oFirewallProcessor->doFirewallBlock();
 			
 		}
@@ -316,6 +331,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					'Whitelist IP Addresses',
 					'Choose IP Addresses that are never subjected to Firewall Rules',
 					sprintf( 'Take a new line per address. Your IP address is: %s', '<span class="code">'.self::GetVisitorIpAddress().'</span>' )
+				),
+				array(
+					'whitelist_admins',
+					'',
+					'N',
+					'checkbox',
+					'Ignore Administrators',
+					'Ignore users logged in as Administrator',
+					'Authenticated administrator users will not be processed by the firewall.'
 				)
 			)
 		);
@@ -524,12 +548,16 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}
 	
 	public function onDisplayFirewallLog() {
-		
-		$sAllFormInputOptions = $this->collateAllFormInputsForAllOptions( $aAvailableOptions );
+
+		$aIpWhitelist = self::getOption( 'ips_whitelist' );
+		$aIpBlacklist = self::getOption( 'ips_blacklist' );
+
 		$aData = array(
 			'plugin_url'		=> self::$PLUGIN_URL,
 			'var_prefix'		=> self::OptionPrefix,
 			'firewall_log'		=> array_reverse( $this->getLogStore() ),
+			'ip_whitelist'		=> isset( $aIpWhitelist['ips'] )? $aIpWhitelist['ips'] : array(),
+			'ip_blacklist'		=> isset( $aIpBlacklist['ips'] )? $aIpBlacklist['ips'] : array(),
 			'fShowAds'			=> $this->isShowMarketing(),
 			'nonce_field'		=> $this->getSubmenuId('firewall').'_log',
 			'form_action'		=> 'admin.php?page='.$this->getSubmenuId('firewall-log'),
@@ -540,7 +568,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	
 	protected function handlePluginFormSubmit() {
 		
-		if ( !isset( $_POST['icwp_plugin_form_submit'] ) ) {
+		if ( !isset( $_POST['icwp_plugin_form_submit'] ) && !isset( $_GET['icwp_link_action'] ) ) {
 			return;
 		}
 		
@@ -577,11 +605,27 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}
 	
 	protected function handleSubmit_FirewallLog() {
-		//Ensures we're actually getting this request from WP.
-		check_admin_referer( $this->getSubmenuId('firewall').'_log' );
+
+		// Ensures we're actually getting this request from a valid WP submission.
+		wp_verify_nonce ( $this->getSubmenuId('firewall').'_log' );
 		
 		// At the time of writing the page only has 1 form submission item - clear log
-		$this->m_oDbProcessor->emptyTable( 'log' );
+		if ( isset( $_POST['clear_log_submit'] ) ) {
+			$this->loadDatabaseProcessor();
+			$this->m_oDbProcessor->emptyTable( 'log' );
+		}
+		else if ( isset( $_GET['blackip'] ) ) {
+			$this->addRawIpsToList( 'ips_blacklist', array( $_GET['blackip'] ) );
+		}
+		else if ( isset( $_GET['unblackip'] ) ) {
+			$this->removeRawIpsFromList( 'ips_blacklist', array( $_GET['unblackip'] ) );
+		}
+		else if ( isset( $_GET['whiteip'] ) ) {
+			$this->addRawIpsToList( 'ips_whitelist', array( $_GET['whiteip'] ) );
+		}
+		else if ( isset( $_GET['unwhiteip'] ) ) {
+			$this->removeRawIpsFromList( 'ips_whitelist', array( $_GET['unwhiteip'] ) );
+		}
 		wp_safe_redirect( admin_url( "admin.php?page=".$this->getSubmenuId('firewall-log') ) ); //means no admin message is displayed
 		exit();
 	}
@@ -610,7 +654,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( !current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		
+
+		$this->loadDatabaseProcessor();
 		$this->m_oDbProcessor->deleteAllTables();
 		
 		$aExtras = array(
@@ -640,6 +685,34 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		wp_enqueue_style( 'worpit_bootstrap_wpadmin_css_fixes' );
 	}
 
+	public function addRawIpsToList( $insListName, $inaNewIps ) {
+		
+		$aIplist = self::getOption( $insListName );
+		if ( empty( $aIplist ) ) {
+			$aIplist = array();
+		}
+		$aNewList = array();
+		foreach( $inaNewIps as $sAddress ) {
+			$aNewList[ $sAddress ] = '';
+		}
+		self::updateOption( $insListName, ICWP_DataProcessor::Add_New_Raw_Ips( $aIplist, $aNewList ) );
+		$this->clearFirewallProcessorCache();
+	}
+
+	public function removeRawIpsFromList( $insListName, $inaRemoveIps ) {
+		
+		$aIplist = self::getOption( $insListName );
+		if ( empty( $aIplist ) || empty( $inaRemoveIps ) ) {
+			return;
+		}
+		self::updateOption( $insListName, ICWP_DataProcessor::Remove_Raw_Ips( $aIplist, $inaRemoveIps ) );
+		$this->clearFirewallProcessorCache();
+	}
+	
+	public function addRawIpToBlacklist() {
+		
+	}
+	
 	/**
 	 * 
 	 */
@@ -693,15 +766,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				}
 				$aNewIps[ $sIP ] = $sLabel;
 			}
-			if ( !class_exists('ICWP_DataProcessor') ) {
-				require_once ( dirname(__FILE__).'/src/icwp-data-processor.php' );
-			}
 			return ICWP_DataProcessor::Add_New_Raw_Ips( $inaExistingList, $aNewIps );
 		}
 		return false;
 	}
 	
-
 	/**
 	 * Shows the update notification - will bail out if the current user is not an admin
 	 */

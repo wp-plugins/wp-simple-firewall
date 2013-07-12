@@ -77,6 +77,32 @@ class ICWP_DataProcessor {
 		return $inaCurrent;
 	}
 	
+	public static function Remove_Raw_Ips( $inaCurrent, $inaRawAddresses ) {
+		if ( empty( $inaRawAddresses ) ) {
+			return $inaCurrent;
+		}
+		
+		if ( !array_key_exists( 'ips', $inaCurrent ) ) {
+			$inaCurrent['ips'] = array();
+		}
+		if ( !array_key_exists( 'meta', $inaCurrent ) ) {
+			$inaCurrent['meta'] = array();
+		}
+		
+		foreach( $inaRawAddresses as $sRawIpAddress ) {
+			$mVerifiedIp = self::Verify_Ip( $sRawIpAddress );
+			if ( $mVerifiedIp === false ) {
+				continue;
+			}
+			$mKey = array_search( $mVerifiedIp, $inaCurrent['ips'] );
+			if ( $mKey !== false ) {
+				unset( $inaCurrent['ips'][$mKey] );
+				unset( $inaCurrent['meta'][ md5( $mVerifiedIp ) ] );
+			}
+		}
+		return $inaCurrent;
+	}
+	
 	public static function Verify_Ip( $insIpAddress ) {
 		
 		$sAddress = self::Clean_Ip( $insIpAddress );
