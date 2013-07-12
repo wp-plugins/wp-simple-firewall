@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 
 WordPress Simple Firewall
 
@@ -97,6 +97,10 @@ Whitelist. So if you have the same address in both lists, it'll be whitelisted a
 == Screenshots ==
 
 == Changelog ==
+
+= 1.1.4 =
+
+*	FIX: Left test path in plugin.
 
 = 1.1.3 =
 

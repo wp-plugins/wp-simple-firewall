@@ -185,7 +185,7 @@ class ICWP_FirewallProcessor {
 			$fIsPermittedVisitor = $this->doPassCheckBlockLoadingSchema();
 		}
 
-		return $fIsPermittedVisitor || isset($_GET['testfirewall']); //testing
+		return $fIsPermittedVisitor; //testing
 	}
 	
 	/**
@@ -323,11 +323,11 @@ class ICWP_FirewallProcessor {
 		switch( $this->m_sBlockResponse ) {
 
 			case 'redirect_home':
-				header( "Location: ".home_url().'?testfirewall' );
+				header( "Location: ".home_url() );
 				exit();
 				break;
 			case 'redirect_404':
-				header( "Location: ".home_url().'/404?testfirewall' );
+				header( "Location: ".home_url().'/404' );
 				exit();
 				break;
 			case 'redirect_die':
