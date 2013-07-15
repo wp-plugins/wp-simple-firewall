@@ -36,6 +36,7 @@ class ICWP_FirewallProcessor {
 
 	protected $m_aWhitelistPages;
 	protected $m_aWhitelistPagesPatterns;
+	protected $m_aCustomWhitelistPageParams;
 
 	protected $m_aRequestUriParts;
 
@@ -59,24 +60,26 @@ class ICWP_FirewallProcessor {
 	 */
 	protected $m_aPageParamValues;
 	
-	public function __construct( $inaBlockSettings, $inaIpWhitelist, $inaIpBlacklist, $insBlockResponse ) {
+	public function __construct( $inaBlockSettings, $inaIpWhitelist, $inaIpBlacklist, $inaPageParamWhitelist, $insBlockResponse ) {
 
-		$this->reset();
 		$this->m_aBlockSettings = $inaBlockSettings;
 		$this->m_sBlockResponse = $insBlockResponse;
 		$this->m_aWhitelistIps = $inaIpWhitelist;
 		$this->m_aBlacklistIps = $inaIpBlacklist;
+		$this->m_aCustomWhitelistPageParams = empty( $inaPageParamWhitelist )? array() : $inaPageParamWhitelist;
+		$this->reset();
 	}
 	
 	public function reset() {
 		
 		$this->setRequestUriPageParts();
 		$this->setPageParams();
+		$this->filterWhitelistedPagesAndParams();
 		
 		$this->m_nRequestIp = self::GetVisitorIpAddress();
 		$this->m_sRequestId = uniqid();
 		$this->m_nRequestTimestamp = time();
-		$this->m_aPageParamValues = array_values( $this->m_aPageParams );
+		$this->m_aPageParamValuesToCheck = array_values( $this->m_aPageParams );
 		$this->resetLog();
 	}
 	
@@ -92,7 +95,7 @@ class ICWP_FirewallProcessor {
 			'ip'				=> long2ip( $this->m_nRequestIp ),
 			'ip_long'			=> $this->m_nRequestIp,
 			'uri'				=> serialize( $this->m_aRequestUriParts ),
-			'params'			=> serialize( $this->m_aPageParams ),
+			'params'			=> serialize( $this->m_aOrigPageParams ),
 		);
 		return $this->m_aLog;
 		/*
@@ -160,7 +163,7 @@ class ICWP_FirewallProcessor {
 			$this->logInfo( 'There were no page parameters to check on this visit.' );
 			return true;
 		}
-		
+
 		// Check if the page and its parameters are whitelisted.
 		if ( $fIsPermittedVisitor && $this->isPageWhitelisted() ) {
 			return true;
@@ -182,7 +185,7 @@ class ICWP_FirewallProcessor {
 			$fIsPermittedVisitor = $this->doPassCheckBlockExeFileUploads();
 		}
 		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_leading_schema' ] ) {
-			$fIsPermittedVisitor = $this->doPassCheckBlockLoadingSchema();
+			$fIsPermittedVisitor = $this->doPassCheckBlockLeadingSchema();
 		}
 
 		return $fIsPermittedVisitor; //testing
@@ -221,9 +224,9 @@ class ICWP_FirewallProcessor {
 			'proc/self/environ',
 			'../'
 		);
-		$fPass = $this->doPassCheck( $this->m_aPageParamValues, $aTerms );
+		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms );
 		if ( !$fPass ) {
-			$this->logWarning( 'Requested: Block Directory Traversal. This visitor.' );
+			$this->logWarning( 'Blocked Directory Traversal.' );
 		}
 		return $fPass;
 	}
@@ -234,7 +237,7 @@ class ICWP_FirewallProcessor {
 			'/group_concat/i',
 			'/union.*select/i'
 		);
-		$fPass = $this->doPassCheck( $this->m_aPageParamValues, $aTerms, true );
+		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$this->logWarning( 'Requested: Block access to wp-login.php, but this was skipped because whitelisted IPs list was empty.' );
 		}
@@ -249,7 +252,11 @@ class ICWP_FirewallProcessor {
 			'/0x[0-9a-f][0-9a-f]/i',
 			'/\/\*\*\//'
 		);
-		return $this->doPassCheck( $this->m_aPageParamValues, $aTerms, true );
+		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
+		if ( !$fPass ) {
+			$this->logWarning( 'Blocked WordPress Terms.' );
+		}
+		return $fPass;
 	}
 	
 	protected function doPassCheckBlockFieldTruncation() {
@@ -257,7 +264,11 @@ class ICWP_FirewallProcessor {
 			'/\s{49,}/i',
 			'/\x00/'
 		);
-		return $this->doPassCheck( $this->m_aPageParamValues, $aTerms, true );
+		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
+		if ( !$fPass ) {
+			$this->logWarning( 'Blocked Field Truncation.' );
+		}
+		return $fPass;
 	}
 	
 	protected function doPassCheckBlockExeFileUploads() {
@@ -273,42 +284,49 @@ class ICWP_FirewallProcessor {
 					$aFileNames[] = $aFile['name'];
 				}
 			}
-			return $this->doPassCheck( $aFileNames, $aTerms, true );
+			$fPass = $this->doPassCheck( $aFileNames, $aTerms, true );
+			if ( !$fPass ) {
+				$this->logWarning( 'Blocked EXE File Uploads.' );
+			}
+			return $fPass;
 		}
-		
 		return true;
 	}
 	
-	protected function doPassCheckBlockLoadingSchema() {
+	protected function doPassCheckBlockLeadingSchema() {
 		$aTerms = array(
 			'/^http/i', '/\.shtml$/i'
 		);
-		return $this->doPassCheck( $this->m_aPageParamValues, $aTerms, true );
+		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
+		if ( !$fPass ) {
+			$this->logWarning( 'Blocked Leading Schema.' );
+		}
+		return $fPass;
 	}
 	
 	/**
 	 * Returns false when check fails - that is to say, it should be blocked by the firewall.
 	 * 
-	 * @param array $inaValues
-	 * @param array $inaTerms
+	 * @param array $inaParamValues
+	 * @param array $inaMatchTerms
 	 * @param boolean $infRegex
 	 * @return boolean
 	 */
-	private function doPassCheck( $inaValues, $inaTerms, $infRegex = false ) {
+	private function doPassCheck( $inaParamValues, $inaMatchTerms, $infRegex = false ) {
 		
-		foreach ( $inaValues as $sValue ) {
-			foreach ( $inaTerms as $sTerm ) {
+		foreach ( $inaParamValues as $sValue ) {
+			foreach ( $inaMatchTerms as $sTerm ) {
 				
 				if ( $infRegex && preg_match( $sTerm, $sValue ) ) { //dodgy term pattern found in a parameter value
 					$this->logWarning( 
-						sprintf( 'Page parameter failed firewall check. The value was %s and the term is matched was %s', $sValue, $sTerm )
+						sprintf( 'Page parameter failed firewall check. The value was %s and the term matched was %s', $sValue, $sTerm )
 					);
 					return false;
 				}
 				else {
 					if ( strpos( $sValue, $sTerm ) !== false ) { //dodgy term found in a parameter value
 						$this->logWarning(
-							sprintf( 'Page parameter failed firewall check. The value was %s and the search term it matched was %s', $sValue, $sTerm )
+							sprintf( 'Page parameter failed firewall check. The value was %s and the term matched was %s', $sValue, $sTerm )
 						);
 						return false;
 					}
@@ -335,7 +353,15 @@ class ICWP_FirewallProcessor {
 		}
 	}
 	
+	/**
+	 * 
+	 * @return boolean
+	 */
 	public function isPageWhitelisted() {
+		return empty( $this->m_aPageParams );
+	}
+	
+	public function filterWhitelistedPagesAndParams() {
 
 		if ( empty( $this->m_aWhitelistPages ) ) {
 			$this->setWhitelistPages();
@@ -343,21 +369,17 @@ class ICWP_FirewallProcessor {
 		if ( empty( $this->m_aWhitelistPages ) ) {
 			return false;
 		}
-
 		// Check normal whitelisting pages without patterns.
 		if ( $this->checkPagesForWhiteListing( $this->m_aWhitelistPages ) ) {
 			return true;
 		}
 		// Check pattern-based whitelisting pages.
-		if ( $this->checkPagesForWhiteListing( $this->m_aWhitelistPagesPatterns ) ) {
+		if ( $this->checkPagesForWhiteListing( $this->m_aWhitelistPagesPatterns, true ) ) {
 			return true;
 		}
-		
-		return false;
 	}
 	
 	/**
-	 * 
 	 * @param array $inaWhitelistPagesParams
 	 * @param boolean $infUseRegex
 	 * @return boolean
@@ -371,28 +393,43 @@ class ICWP_FirewallProcessor {
 		
 		// 1. Is the page in the list of white pages?
 		$fPageWhitelisted = false;
-		if ( $infUseRegex ) {
-			foreach ( $aWhitelistPages as $sPagePattern ) {
-				if ( preg_match( $sPagePattern, $sRequestPage ) ) {
+		foreach ( $inaWhitelistPagesParams as $sPageName => $aWhitlistedParams ) {
+
+			if ( $infUseRegex ) {
+				if ( preg_match( $sPageName, $sRequestPage ) ) {
+					$fPageWhitelisted = true;
+					break;
+				}
+			}
+			else {
+				if ( preg_match( self::PcreDelimiter. preg_quote( $sPageName, self::PcreDelimiter ).'$'.self::PcreDelimiter, $sRequestPage ) ) {
 					$fPageWhitelisted = true;
 					break;
 				}
 			}
 		}
-		else if ( in_array( $sRequestPage, $aWhitelistPages ) ) {
-			$fPageWhitelisted = true;
-		}
 		
-		if ( $fPageWhitelisted ) {
-			// the current page is whitelisted - now check if it has request parameters.
-			if ( empty( $inaWhitelistPagesParams[$sRequestPage] ) ) {
-				return true; //because it's just plain whitelisted
-			}
-			foreach ( $inaWhitelistPagesParams[$sRequestPage] as $sWhitelistParam ) {
+		// There's a list of globally whitelisted parameters (i.e. parameter ignored for all pages)
+		if ( array_key_exists( '*', $inaWhitelistPagesParams ) ) {
+			foreach ( $inaWhitelistPagesParams['*'] as $sWhitelistParam ) {
 				if ( array_key_exists( $sWhitelistParam, $this->m_aPageParams ) ) {
 					unset( $this->m_aPageParams[ $sWhitelistParam ] );
 				}
 			}
+		}
+		
+		// There's a list of globally whitelisted parameters (i.e. parameter ignored for all pages)
+		if ( $fPageWhitelisted ) {
+			// the current page is whitelisted - now check if it has request parameters.
+			if ( empty( $aWhitlistedParams ) ) {
+				return true; //because it's just plain whitelisted as represented by an empty or unset array
+			}
+			foreach ( $aWhitlistedParams as $sWhitelistParam ) {
+				if ( array_key_exists( $sWhitelistParam, $this->m_aPageParams ) ) {
+					unset( $this->m_aPageParams[ $sWhitelistParam ] );
+				}
+			}
+
 			// After removing all the whitelisted params, we now check if there are any params left that'll
 			// need matched later in the firewall checking. If there are no parameters left, we return true.
 			if ( empty( $this->m_aPageParams ) ) {
@@ -416,6 +453,7 @@ class ICWP_FirewallProcessor {
 	
 	protected function setPageParams() {
 		$this->m_aPageParams = array_merge( $_GET, $_POST );
+		$this->m_aOrigPageParams = $this->m_aPageParams;
 		return true;
 	}
 	
@@ -426,7 +464,7 @@ class ICWP_FirewallProcessor {
 			'/wp-admin/post-new.php'		=> array(),
 			'/wp-admin/page-new.php'		=> array(),
 			'/wp-admin/link-add.php'		=> array(),
-			'/wp-admin/media-upload.php'		=> array(),
+			'/wp-admin/media-upload.php'	=> array(),
 			'/wp-admin/post.php'			=> array(),
 			'/wp-admin/page.php'			=> array(),
 			'/wp-admin/admin-ajax.php'		=> array(),
@@ -438,12 +476,11 @@ class ICWP_FirewallProcessor {
 				'redirect_to'
 			)
 		);
-		
-		// add in custom whitelisted pages later
-		
-		$this->m_aWhitelistPages = $aDefaultWlPages;
+
+		$this->m_aWhitelistPages = array_merge( $aDefaultWlPages, $this->m_aCustomWhitelistPageParams );
+// 		$this->m_aWhitelistPages = $aDefaultWlPages;
 		$this->m_aWhitelistPagesPatterns = array(
-			'/wp-admin/\*' => array(
+			self::PcreDelimiter.'\/wp-admin\/\*'.self::PcreDelimiter => array(
 				'_wp_original_http_referer',
 				'_wp_http_referer'
 			),

@@ -96,7 +96,8 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 			
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 
-		} else if ( $mOptionType === 'text' ) {
+		}
+		else if ( $mOptionType === 'text' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$sHtml .= '
 				<p>'.$sOptionTitle.'</p>
@@ -109,7 +110,8 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 			
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 			
-		} else if ( $mOptionType === 'email' ) {
+		}
+		else if ( $mOptionType === 'email' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$sHtml .= '
 				<p>'.$sOptionTitle.'</p>
@@ -122,7 +124,8 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 			
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 			
-		} else if ( is_array($mOptionType) ) { //it's a select, or radio
+		}
+		else if ( is_array($mOptionType) ) { //it's a select, or radio
 			
 			$sInputType = array_shift($mOptionType);
 
@@ -144,7 +147,8 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 			
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 			
-		} else if ( $mOptionType === 'ip_addresses' ) {
+		}
+		else if ( $mOptionType === 'ip_addresses' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$nRows = substr_count( $sTextInput, "\n" ) + 1;
 			$sHtml .= '
@@ -157,7 +161,23 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 						class="span5">'.$sTextInput.'</textarea>';
 			
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
-		} else {
+		
+		}
+		else if ( $mOptionType === 'comma_separated_lists' ) {
+			$sTextInput = esc_attr( $sOptionSaved );
+			$nRows = substr_count( $sTextInput, "\n" ) + 1;
+			$sHtml .= '
+				<p>'.$sOptionTitle.'</p>
+				<textarea type="text"
+						name="'.$insVarPrefix.$sOptionKey.'"
+						placeholder="'.$sTextInput.'"
+						id="'.$insVarPrefix.$sOptionKey.'"
+						rows="'.$nRows.'"
+						class="span5">'.$sTextInput.'</textarea>';
+			
+			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
+		}
+		else {
 			$sHtml .= 'we should never reach this point';
 		}
 		

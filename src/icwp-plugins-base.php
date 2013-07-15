@@ -334,16 +334,28 @@ class ICWP_WPSF_Base_Plugin {
 		foreach ( $inaOptionsSection['section_options'] as &$aOptionParams ) {
 			
 			list( $sOptionKey, $sOptionCurrent, $sOptionDefault, $sOptionType ) = $aOptionParams;
-			$sCurrentOptionVal = self::getOption( $sOptionKey );
+			$mCurrentOptionVal = self::getOption( $sOptionKey );
 			if ( $sOptionType == 'ip_addresses' ) {
-				if ( !empty( $sCurrentOptionVal ) ) {
-					$sCurrentOptionVal = implode( "\n", self::ConvertIpListForDisplay( $sCurrentOptionVal ) );
+				if ( !empty( $mCurrentOptionVal ) ) {
+					$mCurrentOptionVal = implode( "\n", self::ConvertIpListForDisplay( $mCurrentOptionVal ) );
 				}
 				else {
-					$sCurrentOptionVal = '';
+					$mCurrentOptionVal = '';
 				}
 			}
-			$aOptionParams[1] = ($sCurrentOptionVal == '' )? $sOptionDefault : $sCurrentOptionVal;
+			else if ( $sOptionType == 'comma_separated_lists' ) {
+				if ( !empty( $mCurrentOptionVal ) ) {
+					$aNewValues = array();
+					foreach( $mCurrentOptionVal as $sPage => $aParams ) {
+						$aNewValues[] = $sPage.', '. implode( ", ", $aParams );
+					}
+					$mCurrentOptionVal = implode( "\n", $aNewValues );
+				}
+				else {
+					$mCurrentOptionVal = '';
+				}
+			}
+			$aOptionParams[1] = ($mCurrentOptionVal == '' )? $sOptionDefault : $mCurrentOptionVal;
 		}
 	}
 	
@@ -405,6 +417,13 @@ class ICWP_WPSF_Base_Plugin {
 				}
 				else if ( $sOptionType == 'email' && function_exists( 'is_email' ) && !is_email( $sOptionValue ) ) {
 					$sOptionValue = '';
+				}
+				else if ( $sOptionType == 'comma_separated_lists' ) {
+					if ( !class_exists('ICWP_DataProcessor') ) {
+						require_once ( dirname(__FILE__).'/icwp-data-processor.php' );
+					}
+					$oProcessor = new ICWP_DataProcessor();
+					$sOptionValue = $oProcessor->ExtractCommaSeparatedList( $sOptionValue );
 				}
 			}
 			$this->updateOption( $sOptionKey, $sOptionValue );

@@ -50,7 +50,44 @@ class ICWP_DataProcessor {
 		return self::Add_New_Raw_Ips( array(), $aRawAddresses );
 	}
 	
-	public static function Add_New_Raw_Ips( $inaCurrent, $inaNewRawAddresses ) {
+	static public function ExtractCommaSeparatedList( $insRawList = '' ) {
+		
+		$aRawList = array();
+		if ( empty( $insRawList ) ) {
+			return $aRawList;
+		}
+		$aRawList = array_map( 'trim', explode( "\n", $insRawList ) );
+		$aNewList = array();
+		$fHadStar = false;
+		foreach( $aRawList as $sKey => $sRawLine ) {
+			
+			if ( empty( $sRawLine ) ) {
+				continue;
+			}
+			$sRawLine = str_replace( ' ', '', $sRawLine );
+			$aParts = explode( ',', $sRawLine, 2 );
+			// we only permit 1x line beginning with *
+			if ( $aParts[0] == '*' ) {
+				if ( $fHadStar ) {
+					continue;
+				}
+				$fHadStar = true;
+			}
+			else {
+				//If there's only 1 item on the line, we assume it to be a global
+				// parameter rule
+				if ( count( $aParts ) == 1 || empty( $aParts[1] ) ) { // there was no comma in this line in the first place
+					array_unshift( $aParts, '*' );
+				}
+			}
+			
+			$aParams = empty( $aParts[1] )? array() : explode( ',', $aParts[1] );
+			$aNewList[ $aParts[0] ] = $aParams;
+		}
+		return $aNewList;
+	}
+	
+	public static function Add_New_Raw_Ips( $inaCurrent, $inaNewRawAddresses, &$outnNewAdded = 0 ) {
 		
 		if ( empty( $inaNewRawAddresses ) ) {
 			return $inaCurrent;
@@ -71,12 +108,18 @@ class ICWP_DataProcessor {
 					$sLabel = 'no label';
 				}
 				$inaCurrent['meta'][ md5( $mVerifiedIp ) ] = $sLabel;
+				$outnNewAdded++;
 			}
 		}
 		
 		return $inaCurrent;
 	}
 	
+	/**
+	 * @param array $inaCurrent
+	 * @param array $inaRawAddresses - should be a plain numerical array of IPv4 addresses
+	 * @return array:
+	 */
 	public static function Remove_Raw_Ips( $inaCurrent, $inaRawAddresses ) {
 		if ( empty( $inaRawAddresses ) ) {
 			return $inaCurrent;

@@ -94,9 +94,8 @@ $sPluginName = 'WordPress Simple Firewall';
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php 
 				$aNewLog = array(
-					'Option to completely ignore logged-in Administrators from the Firewall processing (they wont even trigger logging etc).',
-					'Ability to (un)blacklist and (un)whitelist IP addresses directly from within the log.',
-					'Helpful link to IP WHOIS from within the log.',
+					'Ability to whitelist particular pages and their parameters.',
+					'Quite a few improvements made to the reliability of the firewall processing.',
 				);
 				?>
 				<ul>
@@ -106,6 +105,9 @@ $sPluginName = 'WordPress Simple Firewall';
 				</ul>
 				<?php
 				$aLog = array(
+					'Option to completely ignore logged-in Administrators from the Firewall processing (they wont even trigger logging etc).',
+					'Ability to (un)blacklist and (un)whitelist IP addresses directly from within the log.',
+					'Helpful link to IP WHOIS from within the log.',
 					'Firewall logging now has its own dedicated database table.',
 					'Fix: Block email not showing the IPv4 friendly address.',
 					'You can now specify IP ranges in whitelists and blacklists.',

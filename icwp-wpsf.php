@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://www.icontrolwp.com/
 Description: A Simple WordPress Firewall
-Version: 1.1.4
+Version: 1.1.5
 Author: iControlWP
 Author URI: http://icwp.io/v
 */
@@ -41,7 +41,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	const InputPrefix				= 'icwp_wpsf_';
 	const OptionPrefix				= 'icwp_wpsf_'; //ALL database options use this as the prefix.
 	
-	static public $VERSION			= '1.1.4'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '1.1.5'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_Base;
@@ -162,9 +162,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			if ( empty($aIpBlacklist) ) {
 				$aIpBlacklist = array();
 			}
+			$aPageWhitelist = self::getOption( 'page_params_whitelist' );
+			if ( empty($aPageWhitelist) ) {
+				$aPageWhitelist = array();
+			}
 			$sBlockResponse = self::getOption( 'block_response' );
 			
-			$this->m_oFirewallProcessor = new ICWP_FirewallProcessor( $aBlockSettings, $aIpWhitelist, $aIpBlacklist, $sBlockResponse );
+			$this->m_oFirewallProcessor = new ICWP_FirewallProcessor( $aBlockSettings, $aIpWhitelist, $aIpBlacklist, $aPageWhitelist, $sBlockResponse );
 			self::updateOption( 'firewall_processor', $this->m_oFirewallProcessor );
 		} else if ( $infReset ) {
 			$this->m_oFirewallProcessor->reset();
@@ -321,7 +325,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		);
 		
 		$this->m_aPluginOptions_WhitelistSection = array(
-			'section_title' => 'Choose IP Addresses To Whitelist',
+			'section_title' => 'Whitelist - IPs, Pages, Parameters, and Users that by-pass the Firewall',
 			'section_options' => array(
 				array(
 					'ips_whitelist',
@@ -331,6 +335,16 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					'Whitelist IP Addresses',
 					'Choose IP Addresses that are never subjected to Firewall Rules',
 					sprintf( 'Take a new line per address. Your IP address is: %s', '<span class="code">'.self::GetVisitorIpAddress().'</span>' )
+				),
+				array(
+					'page_params_whitelist',
+					'',
+					'',
+					'comma_separated_lists',
+					'Whitelist Paramaters',
+					'Detail pages and parameters that are whitelisted (ignored)',
+					'This should be used with caution and you should only provide parameter names that you need to have excluded.'
+						.' [<a href="http://icwp.io/2a" target="_blank">Help</a>]'
 				),
 				array(
 					'whitelist_admins',
@@ -723,8 +737,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$aWhitelistIps = array();
 			self::updateOption( 'ips_whitelist', $aWhitelistIps );
 		}
-		$mResult = $this->processIpFilter( $aWhitelistIps, 'icwp_simple_firewall_whitelist_ips' );
-		if ( $mResult !== false ) {
+		$nNewAddedCount = 0;
+		$mResult = $this->processIpFilter( $aWhitelistIps, 'icwp_simple_firewall_whitelist_ips', $nNewAddedCount );
+		if ( $mResult !== false && $nNewAddedCount > 0 ) {
 			$this->clearFirewallProcessorCache();
 			self::updateOption( 'ips_whitelist', $mResult );
 		}
@@ -734,10 +749,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$aBlacklistIps = array();
 			self::updateOption( 'ips_blacklist', $aBlacklistIps );
 		}
-		$mResult = $this->processIpFilter( $aBlacklistIps, 'icwp_simple_firewall_blacklist_ips' );
-		if ( $mResult !== false ) {
-			$this->clearFirewallProcessorCache();
+		$nNewAddedCount = 0;
+		$mResult = $this->processIpFilter( $aBlacklistIps, 'icwp_simple_firewall_blacklist_ips', $nNewAddedCount );
+		if ( $mResult !== false && $nNewAddedCount > 0 ) {
 			self::updateOption( 'ips_blacklist', $mResult );
+			$this->clearFirewallProcessorCache();
 		}
 	}
 
@@ -745,7 +761,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * @param array $inaRawIpList
 	 * @return array
 	 */
-	protected function processIpFilter( $inaExistingList, $insFilterName ) {
+	protected function processIpFilter( $inaExistingList, $insFilterName, &$outnNewAdded = 0 ) {
 		
 		$aFilterIps = array();
 		$aFilterIps = apply_filters( $insFilterName, $aFilterIps );
@@ -766,7 +782,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				}
 				$aNewIps[ $sIP ] = $sLabel;
 			}
-			return ICWP_DataProcessor::Add_New_Raw_Ips( $inaExistingList, $aNewIps );
+			return ICWP_DataProcessor::Add_New_Raw_Ips( $inaExistingList, $aNewIps, $outnNewAdded );
 		}
 		return false;
 	}

@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 
 WordPress Simple Firewall
 
@@ -94,9 +94,36 @@ Remember: If you leave one of these files on the server, it will override your o
 
 Whitelist. So if you have the same address in both lists, it'll be whitelisted and allowed to pass before the blacklist comes into effect.
 
+= How does the pages/parameters whitelist work? =
+
+It is a comma-separated list of pages and parameters. A NEW LINE should be taken for each new page name and its associated parameters.
+
+The first entry on each line (before the first comma) is the page name. The rest of the items on the line are the parameters.
+
+The following are some simple examples to illustrate:
+
+**edit.php, featured**
+
+On the edit.php page, the parameter with the name 'featured' will be ignored.
+
+**admin.php, url, param01, password**
+
+Any parameters that are passed to the page ending in 'admin.php' with the names 'url', 'param01' and 'password' will
+be excluded from the firewall processing.
+
+** *, url, param, password **
+
+Putting a star first means that these exclusions apply to all pages.  So for every page that is accessed, all the parameters
+that are url, param and password will be ignored by the firewall.
+
 == Screenshots ==
 
 == Changelog ==
+
+= 1.1.5 =
+
+*	ADDED: Ability to whitelist particular pages and their parameters (see FAQ)
+*	CHANGED: Quite a few improvements made to the reliability of the firewall processing.
 
 = 1.1.4 =
 
