@@ -111,7 +111,7 @@ On the edit.php page, the parameter with the name 'featured' will be ignored.
 Any parameters that are passed to the page ending in 'admin.php' with the names 'url', 'param01' and 'password' will
 be excluded from the firewall processing.
 
-** *, url, param, password **
+*, url, param, password
 
 Putting a star first means that these exclusions apply to all pages.  So for every page that is accessed, all the parameters
 that are url, param and password will be ignored by the firewall.
