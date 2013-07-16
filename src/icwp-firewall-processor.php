@@ -453,6 +453,9 @@ class ICWP_FirewallProcessor {
 	
 	protected function setPageParams() {
 		$this->m_aPageParams = array_merge( $_GET, $_POST );
+		if ( $this->m_aBlockSettings[ 'include_cookie_checks' ] ) {
+			$this->m_aPageParams = array_merge( $this->m_aPageParams, $_COOKIE );
+		}
 		$this->m_aOrigPageParams = $this->m_aPageParams;
 		return true;
 	}

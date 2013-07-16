@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://www.icontrolwp.com/
 Description: A Simple WordPress Firewall
-Version: 1.1.5
+Version: 1.1.6
 Author: iControlWP
 Author URI: http://icwp.io/v
 */
@@ -41,7 +41,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	const InputPrefix				= 'icwp_wpsf_';
 	const OptionPrefix				= 'icwp_wpsf_'; //ALL database options use this as the prefix.
 	
-	static public $VERSION			= '1.1.5'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '1.1.6'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_Base;
@@ -142,6 +142,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( empty( $this->m_oFirewallProcessor ) ) {
 			//collect up all the settings to pass to the processor
 			$aSettingSlugs = array(
+				'include_cookie_checks',
 				'block_wplogin_access',
 				'block_dir_traversal',
 				'block_sql_queries',
@@ -245,6 +246,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->m_aPluginOptions_BlockTypesSection = 	array(
 			'section_title' => 'Firewall Blocking Options',
 			'section_options' => array(
+				array(
+					'include_cookie_checks',
+					'',
+					'N',
+					'checkbox',
+					'Include Cookies',
+					'Also Test Cookie Values In Firewall Tests',
+					'The firewall will test GET and POST, but with this option checked, it will also COOKIE values for the same.'
+				),
 				array(
 					'block_wplogin_access',
 					'',
