@@ -56,7 +56,8 @@ class ICWP_DataProcessor {
 		if ( empty( $insRawList ) ) {
 			return $aRawList;
 		}
-		$aRawList = array_map( 'trim', explode( "\n", $insRawList ) );
+// 		$aRawList = array_map( 'trim', explode( "\n", $insRawList ) );
+		$aRawList = array_map( 'trim', preg_split( '/\r\n|\r|\n/', $insRawList ) );
 		$aNewList = array();
 		$fHadStar = false;
 		foreach( $aRawList as $sKey => $sRawLine ) {
@@ -87,6 +88,15 @@ class ICWP_DataProcessor {
 		return $aNewList;
 	}
 	
+	/**
+	 * Given a list of new IPv4 address ($inaNewRawAddresses) it'll add them to the existing list
+	 * ($inaCurrent) where they're not already found
+	 * 
+	 * @param array $inaCurrent			- the list to which to add the new addresses
+	 * @param array $inaNewRawAddresses	- the new IPv4 addresses
+	 * @param int $outnNewAdded		- the count of newly added IPs
+	 * @return unknown|Ambigous <multitype:multitype: , string>
+	 */
 	public static function Add_New_Raw_Ips( $inaCurrent, $inaNewRawAddresses, &$outnNewAdded = 0 ) {
 		
 		if ( empty( $inaNewRawAddresses ) ) {
@@ -111,7 +121,6 @@ class ICWP_DataProcessor {
 				$outnNewAdded++;
 			}
 		}
-		
 		return $inaCurrent;
 	}
 	
@@ -172,7 +181,7 @@ class ICWP_DataProcessor {
 	public static function Verify_Ip_Address( $insIpAddress ) {
 		if ( self::$fUseFilter ) {
 			if ( filter_var( $insIpAddress, FILTER_VALIDATE_IP ) ) {
-				return (string)ip2long( $insIpAddress );
+				return ip2long( $insIpAddress );
 			}
 		}
 		else {
@@ -184,7 +193,7 @@ class ICWP_DataProcessor {
 						return false;
 					}
 				}
-				return (string)ip2long( $insIpAddress );
+				return ip2long( $insIpAddress );
 			}
 		}
 		return false;

@@ -23,12 +23,14 @@ class ICWP_DatabaseProcessor {
 
 	/**
 	 * A link to the WordPress Database object so we don't have to "global" that each time.
-	 * @var unknown_type
+	 * 
+	 * @var wpdb
 	 */
 	protected $m_oWpdb;
 	
 	/**
-	 * A link to the WordPress Database object so we don't have to "global" that each time.
+	 * The database table prefix.
+	 * 
 	 * @var unknown_type
 	 */
 	protected $m_sTablePrefix;
@@ -46,7 +48,7 @@ class ICWP_DatabaseProcessor {
 	
 		// Set up log table
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
-			`id` int(11) NOT NULL AUTO_INCREMENT ,
+			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`request_id` varchar(255) NOT NULL DEFAULT '',
 			`messages` text NOT NULL,
 			`created_at` int(15) NOT NULL DEFAULT '0',
@@ -90,6 +92,7 @@ class ICWP_DatabaseProcessor {
 	private function getTableName( $insTableName ) {
 		return $this->m_sTablePrefix . $insTableName;
 	}
+	
 	private function getFullTableName( $insTableName ) {
 		return $this->m_oWpdb->base_prefix . $this->getTableName( $insTableName );
 	}

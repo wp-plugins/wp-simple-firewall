@@ -89,12 +89,15 @@ $sPluginName = 'WordPress Simple Firewall';
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
-				<h3>Change log for the v1.1.x release:</h3>
-				<p>The following summarises the main changes to the plugin in the 1.1.x release</p>
+				<h3>Change log for the v1.2.x release:</h3>
+				<p>The following summarises the main changes to the plugin in the 1.2.x release</p>
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
-				<?php 
+				<?php
 				$aNewLog = array(
-					'Option to check Cookies values in firewall testing.'
+					'Added new Login Protect feature where you can add 2-Factor Authentication to your WordPress user logins.',
+					'Improved method for processing the IP address lists to be more cross-platform reliable.',
+					'Improved .htaccess rules (thanks MickeyRoush).',
+					'Mailing method now uses WP_MAIL.',
 				);
 				?>
 				<ul>
@@ -104,6 +107,17 @@ $sPluginName = 'WordPress Simple Firewall';
 				</ul>
 				<?php
 				$aLog = array(
+				);
+				?>
+				<ul>
+				<?php foreach( $aLog as $sItem ) : ?>
+					<li><?php echo $sItem; ?></li>
+				<?php endforeach; ?>
+				</ul>
+				<h3>Change log for the v1.1.x release:</h3>
+				<?php
+				$aLog = array(
+					'Option to check Cookies values in firewall testing.',
 					'Ability to whitelist particular pages and their parameters.',
 					'Quite a few improvements made to the reliability of the firewall processing.',
 					'Option to completely ignore logged-in Administrators from the Firewall processing (they wont even trigger logging etc).',

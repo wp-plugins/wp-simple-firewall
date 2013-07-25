@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://www.icontrolwp.com/
 Description: A Simple WordPress Firewall
-Version: 1.1.6
+Version: 1.2.0
 Author: iControlWP
 Author URI: http://icwp.io/v
 */
@@ -31,6 +31,7 @@ Author URI: http://icwp.io/v
 
 require_once( dirname(__FILE__).'/src/icwp-plugins-base.php' );
 require_once( dirname(__FILE__).'/src/icwp-firewall-processor.php' );
+require_once( dirname(__FILE__).'/src/icwp-login-processor.php' );
 require_once( dirname(__FILE__).'/src/icwp-database-processor.php' );
 require_once( dirname(__FILE__).'/src/icwp-data-processor.php' );
 
@@ -41,7 +42,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	const InputPrefix				= 'icwp_wpsf_';
 	const OptionPrefix				= 'icwp_wpsf_'; //ALL database options use this as the prefix.
 	
-	static public $VERSION			= '1.1.6'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '1.2.0'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_Base;
@@ -51,14 +52,24 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected $m_aPluginOptions_BlockSection;
 	protected $m_aPluginOptions_MiscOptionsSection;
 
+	protected $m_aPluginOptions_LoginProtectSection;
+	protected $m_aPluginOptions_LoginProtectTwoFactorSection;
+
 	/**
 	 * @var ICWP_FirewallProcessor
 	 */
 	protected $m_oFirewallProcessor;
+	
+	/**
+	 * @var ICWP_LoginProcessor
+	 */
+	protected $m_oLoginProcessor;
+	
 	/**
 	 * @var ICWP_DatabaseProcessor
 	 */
 	protected $m_oDbProcessor;
+	
 	/**
 	 * @var string
 	 */
@@ -80,7 +91,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->m_sDbTablePrefix = self::OptionPrefix;
 		$this->m_sParentMenuIdSuffix = 'wpsf';
 
+		// checks for filesystem based firewall overrides
 		$this->override();
+
+		// generates the plugin's unique secret key. 
+		$this->genSecretKey();
 		
 		if ( self::getOption( 'enable_firewall' ) == 'Y' ) {
 			
@@ -90,20 +105,33 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				$this->runFirewallProcess();
 			}
 		}
+		
+		if ( self::getOption( 'enable_login_protect' ) == 'Y' ) {
+			$this->runLoginProtectProcess();
+		}
 
 	}//__construct
 	
 	protected function override() {
 		if ( is_file( self::$PLUGIN_DIR . 'forceOff' ) ) {
 			self::updateOption( 'enable_firewall', 'N' );
+			self::updateOption( 'enable_login_protect', 'N' );
 		}
 		else if ( is_file( self::$PLUGIN_DIR . 'forceOn' ) ) {
 			self::updateOption( 'enable_firewall', 'Y' );
+			self::updateOption( 'enable_login_protect', 'Y' );
 		}
 		else {
 			return true;
 		}
 		$this->clearFirewallProcessorCache();
+	}
+	
+	protected function genSecretKey() {
+		if ( self::getOption( 'secret_key' ) === false ) {
+			$sKey = md5( mt_rand() );
+			self::updateOption( 'secret_key', $sKey );
+		}
 	}
 	
 	/**
@@ -175,13 +203,22 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$this->m_oFirewallProcessor->reset();
 		}
 	}
-	
+
 	/**
-	 * 
+	 * @param boolean $infReset
 	 */
 	protected function loadDatabaseProcessor( $infReset = false ) {
 		if ( !isset( $this->m_oDbProcessor ) ) {
 			$this->m_oDbProcessor = new ICWP_DatabaseProcessor( $this->m_sDbTablePrefix );
+		}
+	}
+	
+	/**
+	 * @param boolean $infReset
+	 */
+	protected function loadLoginProcessor( $infReset = false ) {
+		if ( !isset( $this->m_oLoginProcessor ) ) {
+			$this->m_oLoginProcessor = new ICWP_LoginProcessor( 'login_auth' );
 		}
 	}
 	
@@ -231,6 +268,132 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 		else {
 			$this->updateLogStore( $this->m_oFirewallProcessor->getLogData() );
+		}
+	}
+	
+	/**
+	 * Handles the creation of the database necessary for managing login protection.
+	 */
+	public function createLoginProtectStore() {
+		$this->loadLoginProcessor();
+		$this->m_oLoginProcessor->createTable();
+	}
+	
+	/**
+	 * Handles the running of all login protection processes.
+	 */
+	public function runLoginProtectProcess() {
+		
+		$this->loadLoginProcessor( true );
+		
+		if ( self::getOption( 'enable_two_factor_auth_by_ip' ) == 'Y' ) {
+			
+			// User has clicked a link in their email to validate their IP addres for login.
+			if ( isset( $_GET['wpsf-action'] ) && $_GET['wpsf-action'] == 'linkauth' ) {
+				$this->validateUserAuthLink();
+			}
+			
+			// At this stage (30,3) WordPress has already authenticated the user. So if the login
+			// is valid, the filter will have a valid WP_User object passed to it.
+			add_filter( 'authenticate', array( $this, 'checkUserAuthLogin' ), 30, 3);
+			
+			// Check the logged-in current user every page load.
+			add_action( 'init', array( $this, 'checkCurrentUserAuth' ) );
+		}
+	}
+	
+	/**
+	 * Checks the link details to ensure all is valid before setting the currently pending IP to active
+	 * 
+	 * @return boolean
+	 */
+	public function validateUserAuthLink() {
+		// wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid
+		
+		if ( !isset( $_GET['wpsfkey'] ) && $_GET['wpsfkey'] !== self::getOption('secret_key') ) {
+			return false;
+		}
+		if ( empty( $_GET['username'] ) || empty( $_GET['uniqueid'] ) ) {
+			return false;
+		}
+		
+		$aWhere = array(
+			'unique_id'		=> $_GET['uniqueid'],
+			'wp_username'	=> $_GET['username']
+		);
+		if ( $this->m_oLoginProcessor->loginAuthMakeActive( $aWhere ) ) {
+			header( "Location: ".home_url().'/wp-login.php' );
+		}
+	}
+	
+	/**
+	 * If $inoUser is a valid WP_User object, then the user logged in correctly.
+	 * 
+	 * The flow is as follows:
+	 * 0. If username is empty, there was no login attempt.
+	 * 1. First we determine whether the user's login credentials were valid according to WordPress ($fUserLoginSuccess)
+	 * 2. Then we ask our 2-factor processor whether the current IP address + username combination is authenticated.
+	 * 		a) if yes, we return the WP_User object and login proceeds as per usual.
+	 * 		b) if no, we return null, which will send the message back to the user that the login details were invalid.
+	 * 3. If however the user's IP address + username combination is not authenticated, we react differently. We do not want
+	 * 	to give away whether a login was successful, or even the login username details exist. So:
+	 * 		a) if the login was a success we add a pending record to the authentication DB for this username+IP address combination and send the appropriate verification email
+	 * 		b) then, we give back a message saying that if the login was successful, they would have received a verification email. In this way we give nothing away.
+	 * 		c) note at this stage, if the username was empty, we give back nothing (this happens when wp-login.php is loaded as normal.
+	 * 
+	 * @param WP_User|string $inmUser	- the docs say the first parameter a string, WP actually gives a WP_User object (or null)
+	 * @param string $insUsername
+	 * @param string $insPassword
+	 * @return WP_Error|WP_User|null	- WP_User when the login success AND the IP is authenticated. null when login not successful but IP is valid. WP_Error otherwise.
+	 */
+	public function checkUserAuthLogin( $inoUser, $insUsername, $insPassword ) {
+		
+		if ( empty( $insUsername ) ) {
+			return $inoUser;
+		}
+
+		$fUserLoginSuccess = is_object( $inoUser ) && ( $inoUser instanceof WP_User );
+		
+		$aData = array( 'wp_username'	=> $insUsername );
+		if ( $this->m_oLoginProcessor->isUserAuthenticated( $aData ) ) {
+			if ( $fUserLoginSuccess ) {
+				$oUser = $inoUser;
+			}
+			else {
+				$oUser = null; 
+			}
+			return $oUser;
+		}
+		else {
+			if ( $fUserLoginSuccess ) {
+				// Create a new 2-factor auth pending entry
+				$aNewAuthData = $this->m_oLoginProcessor->loginAuthAddPending( array( 'wp_username' => $inoUser->user_login ) );
+
+				// Now send email with authentication link for user.
+				if ( is_array( $aNewAuthData ) ) {
+					$sAuthLink = $this->m_oLoginProcessor->getAuthenticationLink( self::getOption('secret_key'), $inoUser->user_login, $aNewAuthData['unique_id'] );
+					$this->m_oLoginProcessor->sendLoginAuthenticationEmail( $inoUser->user_email, $aNewAuthData['ip'], $sAuthLink );
+				}
+			}
+			$sErrorString = "Login is protected by 2-factor authentication. If your login details were correct, you would have received an email to verify this IP address.";
+			return new WP_Error( 'loginauth', $sErrorString );
+		}
+	}
+	
+	/**
+	 * Checks whether the current user that is logged-in is authenticated by IP address.
+	 */
+	public function checkCurrentUserAuth() {
+		
+		$fIsLoggedIn = is_user_logged_in();
+		if ( $fIsLoggedIn ) {
+			$oUser = wp_get_current_user();
+			$aData = array( 'wp_username' => $oUser->user_login );
+			$fIsAuthenticated = $this->m_oLoginProcessor->isUserAuthenticated( $aData );
+			
+			if ( !$fIsAuthenticated ) {
+				wp_logout();
+			}
 		}
 	}
 	
@@ -396,6 +559,35 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				),
 			),
 		);
+		
+		$this->m_aPluginOptions_LoginProtectSection = array(
+			'section_title' => 'Login Protection Options',
+			'section_options' => array(
+				array(
+					'enable_login_protect',
+					'',
+					'N',
+					'checkbox',
+					'Turn On/Off Login Protect',
+					'Turn On/Off All Login Protection Features',
+					'Regardless of any settings below, this option will turn Off the login protection functionality, or enable your options below.'
+				),
+			),
+		);
+		$this->m_aPluginOptions_LoginProtectTwoFactorSection = array(
+			'section_title' => 'Two-Factor Authentication Protection Options',
+			'section_options' => array(
+				array(
+					'enable_two_factor_auth_by_ip',
+					'',
+					'N',
+					'checkbox',
+					'Two-Factor Authentication',
+					'Two-Factor Login Authentication By IP Address',
+					'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address.'
+				),
+			),
+		);
 
 		$this->m_aAllPluginOptions = array(
 			&$this->m_aPluginOptions_Base,
@@ -403,7 +595,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			&$this->m_aPluginOptions_WhitelistSection,
 			&$this->m_aPluginOptions_BlacklistSection,
 			&$this->m_aPluginOptions_BlockTypesSection,
-			&$this->m_aPluginOptions_MiscOptionsSection
+			&$this->m_aPluginOptions_MiscOptionsSection,
+			&$this->m_aPluginOptions_LoginProtectSection,
+			&$this->m_aPluginOptions_LoginProtectTwoFactorSection
 		);
 
 		return true;
@@ -439,6 +633,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->m_aPluginMenu = array(
 			//Menu Page Title => Menu Item name, page ID (slug), callback function for this page - i.e. what to do/load.
 			$this->getSubmenuPageTitle( 'Firewall' ) => array( 'Firewall', $this->getSubmenuId('firewall-config'), 'onDisplayFirewallConfig' ),
+			$this->getSubmenuPageTitle( 'Login Protect' ) => array( 'Login Protect', $this->getSubmenuId('login-protect'), 'onDisplayLoginProtect' ),
 			$this->getSubmenuPageTitle( 'Log' ) => array( 'Log', $this->getSubmenuId('firewall-log'), 'onDisplayFirewallLog' )
 		);
 	}//createPluginSubMenuItems
@@ -451,7 +646,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 		if ( $sCurrentPluginVersion !== self::$VERSION && current_user_can( 'manage_options' ) ) {
 			
-			//create new log database table
+			// Added Login Protect since v1.2.0
+			$this->createLoginProtectStore();
+			
+			// create new log database table
 			$this->createLogStore();
 			// delete the old option.
 			if ( version_compare( $sCurrentPluginVersion, '1.1.1', '<' ) ) {
@@ -590,6 +788,31 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->display( 'icwp_wpsf_firewall_log_index', $aData );
 	}
 	
+	public function onDisplayLoginProtect() {
+		
+		//populates plugin options with existing configuration
+		$this->readyAllPluginOptions();
+
+		//Specify what set of options are available for this page
+		$aAvailableOptions = array(
+			&$this->m_aPluginOptions_LoginProtectSection,
+			&$this->m_aPluginOptions_LoginProtectTwoFactorSection
+		);
+
+		$sAllFormInputOptions = $this->collateAllFormInputsForAllOptions( $aAvailableOptions );
+		$aData = array(
+			'plugin_url'		=> self::$PLUGIN_URL,
+			'var_prefix'		=> self::OptionPrefix,
+			'fShowAds'			=> $this->isShowMarketing(),
+			'aAllOptions'		=> $aAvailableOptions,
+			'all_options_input'	=> $sAllFormInputOptions,
+			'nonce_field'		=> $this->getSubmenuId('login-protect'),
+			'form_action'		=> 'admin.php?page='.$this->getSubmenuId('login-protect'),
+		);
+
+		$this->display( 'icwp_wpsf_login_protect_config_index', $aData );
+	}
+	
 	protected function handlePluginFormSubmit() {
 		
 		if ( !isset( $_POST['icwp_plugin_form_submit'] ) && !isset( $_GET['icwp_link_action'] ) ) {
@@ -603,6 +826,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					break;
 				case $this->getSubmenuId( 'firewall-log' ):
 					$this->handleSubmit_FirewallLog();
+					break;
+				case $this->getSubmenuId( 'login-protect' ):
+					$this->handleSubmit_LoginProtect();
 					break;
 			}
 		}
@@ -619,6 +845,18 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected function handleSubmit_FirewallConfigOptions() {
 		//Ensures we're actually getting this request from WP.
 		check_admin_referer( $this->getSubmenuId('firewall').'_config' );
+
+		$this->clearFirewallProcessorCache();
+		
+		if ( !isset($_POST[self::OptionPrefix.'all_options_input']) ) {
+			return;
+		}
+		$this->updatePluginOptionsFromSubmit( $_POST[self::OptionPrefix.'all_options_input'] );
+	}
+	
+	protected function handleSubmit_LoginProtect() {
+		//Ensures we're actually getting this request from WP.
+		wp_verify_nonce ( $this->getSubmenuId('login-protect' ) );
 
 		$this->clearFirewallProcessorCache();
 		

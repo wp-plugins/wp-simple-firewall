@@ -16,15 +16,12 @@
  *
  */
 
-if ( !class_exists('ICWP_DataProcessor') ):
+require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-class ICWP_FirewallProcessor {
+if ( !class_exists('ICWP_FirewallProcessor') ):
+
+class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	
-	const PcreDelimiter = '/';
-	const LOG_MESSAGE_TYPE_INFO = 0;
-	const LOG_MESSAGE_TYPE_WARNING = 1;
-	const LOG_MESSAGE_TYPE_CRITICAL = 2;
-
 	protected $m_sRequestId;
 	protected $m_nRequestIp;
 	protected $m_nRequestTimestamp;
@@ -39,9 +36,6 @@ class ICWP_FirewallProcessor {
 	protected $m_aCustomWhitelistPageParams;
 
 	protected $m_aRequestUriParts;
-
-	protected $m_aLog;
-	protected $m_aLogMessages;
 
 	/**
 	 * @var string
@@ -71,6 +65,7 @@ class ICWP_FirewallProcessor {
 	}
 	
 	public function reset() {
+		parent::reset();
 		
 		$this->setRequestUriPageParts();
 		$this->setPageParams();
@@ -80,11 +75,6 @@ class ICWP_FirewallProcessor {
 		$this->m_sRequestId = uniqid();
 		$this->m_nRequestTimestamp = time();
 		$this->m_aPageParamValuesToCheck = array_values( $this->m_aPageParams );
-		$this->resetLog();
-	}
-	
-	public function resetLog() {
-		$this->m_aLogMessages = array();
 	}
 	
 	public function getLogData() {
@@ -111,16 +101,8 @@ class ICWP_FirewallProcessor {
 	}
 	
 	/**
-	 * @param string $insLogMessage
-	 * @param string $insMessageType
+	 * @return boolean - true if visitor is permitted, false if it should be blocked.
 	 */
-	public function writeLog( $insLogMessage = '', $insMessageType = self::LOG_MESSAGE_TYPE_INFO ) {
-		if ( !is_array( $this->m_aLogMessages ) ) {
-			$this->resetLog();
-		}
-		$this->m_aLogMessages[] = array( $insMessageType, $insLogMessage );
-	}
-	
 	public function doFirewallCheck() {
 		
 		//Check if the visitor is excluded from the firewall from the outset.
@@ -188,7 +170,7 @@ class ICWP_FirewallProcessor {
 			$fIsPermittedVisitor = $this->doPassCheckBlockLeadingSchema();
 		}
 
-		return $fIsPermittedVisitor; //testing
+		return $fIsPermittedVisitor;
 	}
 	
 	/**
@@ -524,42 +506,8 @@ class ICWP_FirewallProcessor {
 	}
 
 	/**
-	 * Cloudflare compatible.
-	 * 
-	 * @return number
+	 * @param string $insEmailAddress
 	 */
-	public static function GetVisitorIpAddress() {
-	
-		$sIpAddress = empty($_SERVER["HTTP_X_FORWARDED_FOR"]) ? $_SERVER["REMOTE_ADDR"] : $_SERVER["HTTP_X_FORWARDED_FOR"];
-	
-		if( strpos($sIpAddress, ',') !== false ) {
-			$sIpAddress = explode(',', $sIpAddress);
-			$sIpAddress = $sIpAddress[0];
-		}
-	
-		return ip2long( $sIpAddress );
-	
-	}//GetVisitorIpAddress
-
-	/**
-	 * @param string $insLogMessage
-	 */
-	public function logInfo( $insLogMessage ) {
-		$this->writeLog( $insLogMessage, self::LOG_MESSAGE_TYPE_INFO );
-	}
-	/**
-	 * @param string $insLogMessage
-	 */
-	public function logWarning( $insLogMessage ) {
-		$this->writeLog( $insLogMessage, self::LOG_MESSAGE_TYPE_WARNING );
-	}
-	/**
-	 * @param string $insLogMessage
-	 */
-	public function logCritical( $insLogMessage ) {
-		$this->writeLog( $insLogMessage, self::LOG_MESSAGE_TYPE_CRITICAL );
-	}
-
 	public function sendBlockEmail( $insEmailAddress ) {
 
 		$aMessage = array(
@@ -574,19 +522,10 @@ class ICWP_FirewallProcessor {
 		
 		$aMessage[] = 'You could look up the offending IP Address here: http://ip-lookup.net/?ip='. $this->m_aLog['ip'];
 		$sEmailSubject = 'Firewall Block Alert: ' . home_url();
-		$sSiteName = get_bloginfo('name');
-		$aHeaders   = array(
-			'MIME-Version: 1.0',
-			'Content-type: text/plain; charset=iso-8859-1',
-			"From: Simple Firewall Plugin - $sSiteName <$insEmailAddress>",
-			"Reply-To: Site Admin <$insEmailAddress>",
-			'Subject: '.$sEmailSubject,
-			'X-Mailer: PHP/'.phpversion()
-		);
-		mail( $insEmailAddress, $sEmailSubject, implode( "\r\n", $aMessage ), implode( "\r\n", $aHeaders ) );
 		$this->logInfo(
 			sprintf( 'Block email sent to %s', $insEmailAddress )
 		);
+		$this->sendEmail( $insEmailAddress, $sEmailSubject, $aMessage );
 	}
 }
 
