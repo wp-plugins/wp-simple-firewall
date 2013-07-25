@@ -116,6 +116,7 @@ class ICWP_BaseProcessor {
 		$aHeaders   = array(
 			'MIME-Version: 1.0',
 			'Content-type: text/plain;',
+			"From: Simple Firewall Plugin - $sSiteName",
 			"Reply-To: Site Admin <$insEmailAddress>",
 			'Subject: '.$insEmailSubject,
 			'X-Mailer: PHP/'.phpversion()

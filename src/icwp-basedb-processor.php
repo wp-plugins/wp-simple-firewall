@@ -41,6 +41,15 @@ class ICWP_BaseDbProcessor extends ICWP_BaseProcessor {
 		$this->m_oWpdb = $wpdb;
 		$this->setTableName( $insTableName );
 	}
+
+	/**
+	 * Resets the object values to be re-used anew
+	 */
+	public function reset() {
+		global $wpdb;
+		$this->m_oWpdb = $wpdb;
+		$this->resetLog();
+	}
 	
 	public function insertIntoTable( $inaData ) {
 		$this->m_oWpdb->insert( $this->m_sTableName, $inaData );

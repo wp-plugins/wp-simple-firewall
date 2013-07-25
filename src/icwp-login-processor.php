@@ -21,8 +21,118 @@ if ( !class_exists('ICWP_LoginProcessor') ):
 
 class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	
-	public function __construct( $insTableName ) {
+	protected $m_nRequiredLoginInterval;
+	protected $m_nLastLoginTime;
+	protected $m_sSecretKey;
+	
+	public function __construct( $insTableName, $innRequiredLoginInterval, $insSecretKey ) {
 		parent::__construct( $insTableName );
+		$this->m_nRequiredLoginInterval = ( $innRequiredLoginInterval < 0 )? 0 : $innRequiredLoginInterval;
+		$this->m_sSecretKey = $insSecretKey;
+	}
+	
+	// WordPress Hooks and Filters:
+
+	/**
+	 * Shouild be a filter added to WordPress's "authenticate" filter, but before WordPress performs
+	 * it's own authentication (theirs is priority 30, so we could go in at around 20).
+	 * 
+	 * @param null|WP_User|WP_Error $inoUser
+	 * @param string $insUsername
+	 * @param string $insPassword
+	 * @return unknown|WP_Error
+	 */
+	public function checkLoginInterval_Filter( $inoUser, $insUsername, $insPassword ) {
+	
+		// No login attempt was made.
+		if ( empty( $insUsername ) ) {
+			return $inoUser;
+		}
+	
+		// Is there an interval set?
+		$nRequiredLoginInterval = $this->m_nRequiredLoginInterval;
+		if ( $nRequiredLoginInterval === false || $nRequiredLoginInterval == 0 ) {
+			return $inoUser;
+		}
+	
+		// Get the last login time (and update it also for the next time)
+		$sNow = time();
+		$nLastLoginTime = $this->m_nLastLoginTime;
+	
+		if ( $nLastLoginTime == false || $nLastLoginTime < 0 ) {
+			$nLastLoginTime = 0;
+		}
+
+		// If we're outside the interval, let the login process proceed as per normal.
+		$nLoginInterval = $sNow - $nLastLoginTime;
+		if ( $nLoginInterval > $nRequiredLoginInterval ) {
+			$this->m_nLastLoginTime = $sNow;
+			return $inoUser;
+		}
+	
+		// At this point someone has attempted to login within the previous login wait interval
+		// So we remove WordPress's authentication filter, and our own user check authentication
+		// And finally return a WP_Error which will be reflected back to the user.
+		remove_filter( 'authenticate', 'wp_authenticate_username_password', 20, 3 );  // wp-includes/user.php
+	
+		$sErrorString = sprintf( "Sorry, you must wait %s seconds before attempting to login again.", ($nRequiredLoginInterval - $nLoginInterval ) );
+		$oError = new WP_Error( 'wpsf_logininterval', $sErrorString );
+		return $oError;
+	}
+
+	/**
+	 * If $inoUser is a valid WP_User object, then the user logged in correctly.
+	 *
+	 * The flow is as follows:
+	 * 0. If username is empty, there was no login attempt.
+	 * 1. First we determine whether the user's login credentials were valid according to WordPress ($fUserLoginSuccess)
+	 * 2. Then we ask our 2-factor processor whether the current IP address + username combination is authenticated.
+	 * 		a) if yes, we return the WP_User object and login proceeds as per usual.
+	 * 		b) if no, we return null, which will send the message back to the user that the login details were invalid.
+	 * 3. If however the user's IP address + username combination is not authenticated, we react differently. We do not want
+	 * 	to give away whether a login was successful, or even the login username details exist. So:
+	 * 		a) if the login was a success we add a pending record to the authentication DB for this username+IP address combination and send the appropriate verification email
+	 * 		b) then, we give back a message saying that if the login was successful, they would have received a verification email. In this way we give nothing away.
+	 * 		c) note at this stage, if the username was empty, we give back nothing (this happens when wp-login.php is loaded as normal.
+	 *
+	 * @param WP_User|string $inmUser	- the docs say the first parameter a string, WP actually gives a WP_User object (or null)
+	 * @param string $insUsername
+	 * @param string $insPassword
+	 * @return WP_Error|WP_User|null	- WP_User when the login success AND the IP is authenticated. null when login not successful but IP is valid. WP_Error otherwise.
+	 */
+	public function checkUserAuthLogin_Filter( $inoUser, $insUsername, $insPassword ) {
+	
+		if ( empty( $insUsername ) ) {
+			return $inoUser;
+		}
+	
+		$fUserLoginSuccess = is_object( $inoUser ) && ( $inoUser instanceof WP_User );
+	
+		if ( is_wp_error( $inoUser ) ) {
+			$aCodes = $inoUser->get_error_codes();
+			if ( in_array( 'wpsf_logininterval', $aCodes ) ) {
+				return $inoUser;
+			}
+		} else if ( $fUserLoginSuccess ) {
+			
+			$aData = array( 'wp_username' => $insUsername );
+			if ( $this->isUserVerified( $aData ) ) {
+				return $inoUser;
+			}
+			else {
+				// Create a new 2-factor auth pending entry
+				$aNewAuthData = $this->loginAuthAddPending( array( 'wp_username' => $inoUser->user_login ) );
+	
+				// Now send email with authentication link for user.
+				if ( is_array( $aNewAuthData ) ) {
+					$sAuthLink = $this->getTwoFactorVerifyLink( $this->m_sSecretKey, $inoUser->user_login, $aNewAuthData['unique_id'] );
+					$this->sendEmailTwoFactorVerify( $inoUser->user_email, $aNewAuthData['ip'], $sAuthLink );
+				}
+			}
+		}
+		
+		$sErrorString = "Login is protected by 2-factor authentication. If your login details were correct, you would have received an email to verify this IP address.";
+		return new WP_Error( 'wpsf_loginauth', $sErrorString );
 	}
 	
 	/**
@@ -111,7 +221,7 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	 * @param array $inaWhere
 	 * @return boolean
 	 */
-	public function isUserAuthenticated( $inaWhere ) {
+	public function isUserVerified( $inaWhere ) {
 		
 		$aChecks = array( 'wp_username' );
 		if ( !$this->validateInputData( $inaWhere, $aChecks) ) {
@@ -137,11 +247,19 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		$mResult = $this->selectCustomFromTable( $sQuery );
 		return ( is_array( $mResult ) && count( $mResult ) == 1 )? true : false; 
 	}
+	
+	public function getTwoFactorVerifyLink( $insKey, $insUser, $insUniqueId ) {
+		$sSiteUrl = home_url() . '?wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid=%s';
+		$sAction = 'linkauth';
+		return sprintf( $sSiteUrl, $insKey, $sAction, $insUser, $insUniqueId ); 
+	}
 
 	/**
 	 * @param string $insEmailAddress
+	 * @param string $insIpAddress
+	 * @param string $insAuthLink
 	 */
-	public function sendLoginAuthenticationEmail( $insEmailAddress, $insIpAddress, $insAuthLink ) {
+	public function sendEmailTwoFactorVerify( $insEmailAddress, $insIpAddress, $insAuthLink ) {
 	
 		$aMessage = array(
 			'You, or someone pretending to be you, just attempted to login into your WordPress site.',
@@ -152,12 +270,6 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		);
 		$sEmailSubject = 'Two-Factor Login Verification: ' . home_url();
 		$this->sendEmail( $insEmailAddress, $sEmailSubject, $aMessage );
-	}
-	
-	public function getAuthenticationLink( $insKey, $insUser, $insUniqueId ) {
-		$sSiteUrl = home_url() . '?wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid=%s';
-		$sAction = 'linkauth';
-		return sprintf( $sSiteUrl, $insKey, $sAction, $insUser, $insUniqueId ); 
 	}
 	
 	public function createTable() {
@@ -179,16 +291,12 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		$mResult = $this->doSql( $sSqlTables );
 	}
 	
-	public function reset() {
-		parent::reset();
-	}
-	
 	public function getLogData() {
 		return parent::getLogData();
 	}
 	
 	/**
-	 * Assumes that unique_id AND wp_username have been set correctly in the data array (no checking).
+	 * Assumes that unique_id AND wp_username have been set correctly in the data array (no checking done).
 	 * 
 	 * @param array $inaData
 	 * @return array

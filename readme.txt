@@ -6,33 +6,61 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 
-WordPress Simple Firewall
+WordPress Simple Firewall and Login Protection.
 
 == Description ==
 
-Principally based on functionality provided by the [WordPress Firewall 2 plugin](http://wordpress.org/plugins/wordpress-firewall-2/).
+Protects your WordPress site in 2 main ways:
 
-The WordPress Simple Firewall is built to be principally easy to use. It takes a lead from the WordPress Firewall 2 plugin that is already quite old and
-that hasn't been updated for more than 2 years.
+1.	A simple, easily configured Firewall.
+1.	WordPress 2-Factor Authentication Login.
 
-This plugin is built for reliability of operation, ease of extension, and overall... simplicity.
+= Firewall =
+
+The firewall is based on functionality provided by the [WordPress Firewall 2 plugin](http://wordpress.org/plugins/wordpress-firewall-2/).
+
+The WordPress Simple Firewall is built to be easy to use by anyone, reliable and overall... simple.
 
 It adds extra features over WordPress Firewall 2, including:
 
-*	Option to completely block access to wp-login.php based on IP Address whitelist
+*	Option to completely block access to wp-login.php based on an IP Address whitelist
 *	Added a Blacklist option so you can completely block based on IP address.
 *	Option to easily turn on / off the whole firewall. This means you don't have to disable certain settings or even disable the plugin to temporarily turn it off.
   To debug the plugin, just turn off the firewall in the Firewall Options screen and all settings are ignored.
 *	Filesystem based plugin override. This means if you accidentally lock yourself out, you can forcefully turn off the firewall using FTP. You can also
   turn back on the firewall using the same method.
 *	Automatic caching to reduce database calls when determining Firewall settings: 1-3 database calls per page load.
-*	Ability to easily turn on and off firewall logging.
 *	Ability to view the complete log of the firewall and all its messages.
+*	Ability to easily turn on and off firewall logging.
 *	Ability to clear the whole log.
 *	For developers - ability to programmatically add to the IP address whitelist/blacklist - this is
   useful for 3rd party services that connect to the site using other plugins. E.g. [iControlWP](http://www.icontrolwp.com/).
+  
+= Login Protection =
+
+Note: Login Protection is a completely independent feature to the Firewall. IP Address whitelists are not shared.
+
+There are many way to protect your WordPress site from attacks on your user login. This part of the plugin is design to implement some of the most simplest
+and thereby effective forms of protection.
+
+As of version 1.2.0 you now have the option to add simple, email-based 2-Factor Login Authentication based on IP address.
+
+What does this mean?
+
+Once this feature is activated, every user login must have a matching IP address, and they can only have ONE.  If they are not logged in, or attempt to login
+to the site from an IP address that is different to their verified IP address, they will receive an email with a verification link.
+
+They must click this link to verify their IP address.  Then, and only then, will they be permitted to log into the site.
+
+How does this protect your site?
+
+1.	You are protected against brute force login attacks against your site.
+1.	If you leave your WordPress account logged in, simply login from another location and your previous session will be automatically invalidated.
+1.	You reduce the risk that accounts will be shared and re-used with 3rd parties.
+
+There are many more login protection features coming...
 
 == Installation ==
 
@@ -120,9 +148,17 @@ that are url, param and password will be ignored by the firewall.
 
 == Changelog ==
 
+= 1.2.1 =
+
+*	ADDED:		New Feature - Login Wait Interval. To reduce the effectiveness of brute force login attacks, you can add an interval by
+				which WordPress will wait before processing any more login attempts on a site.
+*	CHANGED:	Optimized some settings for performance.
+*	CHANGED:	Cleaned up the UI when the Firewall / Login Protect features are disabled (more to come).
+*	CHANGED:	Further code improvements (more to come).
+
 = 1.2.0 =
 
-*	ADDED:		New Feature: **Login Protect**. Added 2-Factor Login Authentication for all users and their associated IP addresses.
+*	ADDED:		New Feature - **Login Protect**. Added 2-Factor Login Authentication for all users and their associated IP addresses.
 *	CHANGED:	The method for processing the IP address lists is improved.
 *	CHANGED:	Improved .htaccess rules (thanks MickeyRoush)
 *	CHANGED:	Mailing method now uses WP_MAIL

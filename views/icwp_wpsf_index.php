@@ -94,10 +94,9 @@ $sPluginName = 'WordPress Simple Firewall';
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					'Added new Login Protect feature where you can add 2-Factor Authentication to your WordPress user logins.',
-					'Improved method for processing the IP address lists to be more cross-platform reliable.',
-					'Improved .htaccess rules (thanks MickeyRoush).',
-					'Mailing method now uses WP_MAIL.',
+					'New Feature - Login Wait Interval.',
+					'Performance optimizations.',
+					'UI Cleanup and code improvements.'
 				);
 				?>
 				<ul>
@@ -107,6 +106,10 @@ $sPluginName = 'WordPress Simple Firewall';
 				</ul>
 				<?php
 				$aLog = array(
+					'Added new Login Protect feature where you can add 2-Factor Authentication to your WordPress user logins.',
+					'Improved method for processing the IP address lists to be more cross-platform reliable.',
+					'Improved .htaccess rules (thanks MickeyRoush).',
+					'Mailing method now uses WP_MAIL.'
 				);
 				?>
 				<ul>

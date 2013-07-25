@@ -127,8 +127,8 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 		
 		$this->logInfo( 'Visitor IP address was neither whitelisted nor blacklisted.' );
 		
-		// if we can't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
-		if ( !$this->setRequestUriPageParts() ) {
+		// if we couldn't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
+		if ( empty( $this->m_aRequestUriParts ) ) {
 			return true;
 		}
 		

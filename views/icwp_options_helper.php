@@ -177,6 +177,19 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 			
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 		}
+		else if ( $mOptionType === 'integer' ) {
+			$sTextInput = esc_attr( $sOptionSaved );
+			$sHtml .= '
+				<p>'.$sOptionTitle.'</p>
+				<input type="text"
+						name="'.$insVarPrefix.$sOptionKey.'"
+						value="'.$sTextInput.'"
+						placeholder="'.$sTextInput.'"
+						id="'.$insVarPrefix.$sOptionKey.'"
+						class="span5" />';
+			
+			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
+		}
 		else {
 			$sHtml .= 'we should never reach this point';
 		}

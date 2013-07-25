@@ -403,11 +403,16 @@ class ICWP_WPSF_Base_Plugin {
 					continue;
 				} else if ( $sOptionType == 'checkbox' ) { //if it was a checkbox, and it's null, it means 'N'
 					$sOptionValue = 'N';
+				} else if ( $sOptionType == 'integer' ) { //if it was a integer, and it's null, it means '0'
+					$sOptionValue = 0;
 				}
 			}
 			else { //handle any pre-processing we need to.
 
-				if ( $sOptionType == 'ip_addresses' ) { //ip addresses are textareas, where each is separated by newline
+				if ( $sOptionType == 'integer' ) {
+					$sOptionValue = intval( $sOptionValue );
+				}
+				else if ( $sOptionType == 'ip_addresses' ) { //ip addresses are textareas, where each is separated by newline
 					
 					if ( !class_exists('ICWP_DataProcessor') ) {
 						require_once ( dirname(__FILE__).'/icwp-data-processor.php' );
@@ -539,7 +544,7 @@ class ICWP_WPSF_Base_Plugin {
 	}
 
 	static public function updateOption( $insKey, $insValue ) {
-		if ( self::getOption( $insKey ) == $insValue ) {
+		if ( !is_object( $insValue ) && self::getOption( $insKey ) == $insValue ) {
 			return true;
 		}
 		$fResult = update_option( self::$OPTION_PREFIX.$insKey, $insValue );
