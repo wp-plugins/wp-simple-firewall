@@ -368,7 +368,9 @@ class ICWP_WPSF_Base_Plugin {
 		
 		foreach( $inaIpList['ips'] as $sAddress ) {
 			
-			if ( strpos( $sAddress, '-' ) === false ) { //plain IP address
+			$mPos = strpos( $sAddress, '-' );
+			
+			if ( $mPos === false || $mPos === 0 ) { //plain IP address
 				$sDisplayText = long2ip( $sAddress );
 			}
 			else {

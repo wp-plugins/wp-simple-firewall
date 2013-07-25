@@ -462,8 +462,13 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 			)
 		);
 
-		$this->m_aWhitelistPages = array_merge( $aDefaultWlPages, $this->m_aCustomWhitelistPageParams );
-// 		$this->m_aWhitelistPages = $aDefaultWlPages;
+		if ( is_array($this->m_aCustomWhitelistPageParams) ) {
+			$this->m_aWhitelistPages = array_merge( $aDefaultWlPages, $this->m_aCustomWhitelistPageParams );
+		}
+		else {
+			$this->m_aWhitelistPages = $aDefaultWlPages;
+		}
+
 		$this->m_aWhitelistPagesPatterns = array(
 			self::PcreDelimiter.'\/wp-admin\/\*'.self::PcreDelimiter => array(
 				'_wp_original_http_referer',

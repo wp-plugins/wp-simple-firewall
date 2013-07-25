@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 
 WordPress Simple Firewall and Login Protection.
 
@@ -147,6 +147,10 @@ that are url, param and password will be ignored by the firewall.
 == Screenshots ==
 
 == Changelog ==
+
+= 1.2.2 =
+
+*	FIX:		Some warnings and display bugs.
 
 = 1.2.1 =
 
