@@ -34,12 +34,9 @@ $sPluginName = 'WordPress Simple Firewall';
 				<h3>Current Firewall Configuration</h3>
 				<p>The following summarises your current firewall configuration:</p>
 				
-				<?php if ( !$icwp_fFirewallOn ) : ?>
-					Firewall is currently OFF.
-				<?php else: ?>
-				
+				<h4 style="margin-top:20px;">Firewall is currently <?php echo $icwp_fFirewallOn? 'ON' : 'OFF'; ?>. [ <a href="admin.php?page=icwp-wpsf-firewall-config">Turn it <?php echo !$icwp_fFirewallOn? 'ON' : 'OFF'; ?></a> ]</h4>
+				<?php if ( $icwp_fFirewallOn ) : ?>
 					<ul>
-						<li>Firewall is: <?php echo $icwp_fFirewallOn? 'ON' : 'OFF'; ?></li>
 						<li>Firewall logging is: <?php echo $icwp_fFirewallLogOn? 'ON' : 'OFF'; ?></li>
 						<li>When the firewall blocks a visit, it <?php echo $icwp_fBlockSendEmail? 'will': 'will not'; ?> send an email and then :
 							<?php
@@ -85,6 +82,14 @@ $sPluginName = 'WordPress Simple Firewall';
 						<li>Firewall blocks Leading Schemas (HTTPS / HTTP): <?php echo $icwp_fBlockSchema? 'ON' : 'OFF'; ?></li>
 					</ul>
 				<?php endif; ?>
+				
+				<h4 style="margin-top:20px;">Login Protection is currently <?php echo $icwp_fLoginProtectOn? 'ON' : 'OFF'; ?>. [ <a href="admin.php?page=icwp-wpsf-login-protect">Turn it <?php echo !$icwp_fLoginProtectOn? 'ON' : 'OFF'; ?></a> ]</h4>
+				<?php if ( $icwp_fLoginProtectOn ) : ?>
+					<ul>
+						<li>Two Factor Login Authentication is: <?php echo $icwp_fTwoFactorIpOn? 'ON' : 'OFF'; ?></li>
+						<li>Login Cooldown Interval is: <?php echo ($icwp_sLoginLimitInterval == 0)? 'OFF' : $icwp_sLoginLimitInterval.' seconds'; ?></li>
+					</ul>
+				<?php endif; ?>
 			  </div>
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
@@ -94,7 +99,7 @@ $sPluginName = 'WordPress Simple Firewall';
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					'New Feature - Login Wait Interval.',
+					'New Feature - Login Cooldown Interval.',
 					'Performance optimizations.',
 					'UI Cleanup and code improvements.'
 				);

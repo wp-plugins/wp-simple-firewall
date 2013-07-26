@@ -486,9 +486,9 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	}
 	
 	public function isIpOnlist( $inaIpList, $innIpAddress = '' ) {
-		
+
 		if ( empty( $innIpAddress ) || !isset( $inaIpList['ips'] ) ) {
-			return true;
+			return false;
 		}
 		
 		foreach( $inaIpList['ips'] as $mWhitelistAddress ) {
