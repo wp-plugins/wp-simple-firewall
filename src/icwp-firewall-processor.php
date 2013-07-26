@@ -462,7 +462,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 			)
 		);
 
-		if ( is_array($this->m_aCustomWhitelistPageParams) ) {
+		if ( !is_null($this->m_aCustomWhitelistPageParams) && is_array($this->m_aCustomWhitelistPageParams) ) {
 			$this->m_aWhitelistPages = array_merge( $aDefaultWlPages, $this->m_aCustomWhitelistPageParams );
 		}
 		else {
