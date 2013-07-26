@@ -15,13 +15,13 @@ WordPress Simple Firewall and Login Protection.
 Protects your WordPress site in 2 main ways:
 
 1.	A simple, easily configured Firewall.
-1.	WordPress 2-Factor Authentication Login.
+1.	WordPress Login Protection against Bots and Brute Force Attacks.
 
 = Firewall =
 
-The firewall is based on functionality provided by the [WordPress Firewall 2 plugin](http://wordpress.org/plugins/wordpress-firewall-2/).
+The WordPress Simple Firewall is built to be easy to use by anyone, reliable and overall... very simple to use.
 
-The WordPress Simple Firewall is built to be easy to use by anyone, reliable and overall... simple.
+The firewall is based on functionality provided by the [WordPress Firewall 2 plugin](http://wordpress.org/plugins/wordpress-firewall-2/).
 
 It adds extra features over WordPress Firewall 2, including:
 
@@ -42,25 +42,16 @@ It adds extra features over WordPress Firewall 2, including:
 
 Note: Login Protection is a completely independent feature to the Firewall. IP Address whitelists are not shared.
 
-There are many way to protect your WordPress site from attacks on your user login. This part of the plugin is design to implement some of the most simplest
-and thereby effective forms of protection.
+As of version 1.2.0+ you now have several ways to add simple protection to your WordPress Login system.
 
-As of version 1.2.0 you now have the option to add simple, email-based 2-Factor Login Authentication based on IP address.
+1.	[Email-based 2-Factor Login Authentication](http://www.icontrolwp.com/2013/07/add-two-factor-authentication-login-wordpress-sites/) based on IP address! (prevents brute force login attacks)
+1.	Login Cooldown interval - WordPress will only process 1 login per interval in seconds (prevents brute force login attacks)
+1.	Anti-Bot Login Form Protection - Adds 2 protection checks for all WordPress login attempts (prevents brute force login attacks using Bots)
 
-What does this mean?
+These options alone will protect your WordPress sites from nearly all forms of Brute Force
+login attacks.
 
-Once this feature is activated, every user login must have a matching IP address, and they can only have ONE.  If they are not logged in, or attempt to login
-to the site from an IP address that is different to their verified IP address, they will receive an email with a verification link.
-
-They must click this link to verify their IP address.  Then, and only then, will they be permitted to log into the site.
-
-How does this protect your site?
-
-1.	You are protected against brute force login attacks against your site.
-1.	If you leave your WordPress account logged in, simply login from another location and your previous session will be automatically invalidated.
-1.	You reduce the risk that accounts will be shared and re-used with 3rd parties.
-
-There are many more login protection features coming...
+And you don't have to configure anything!  Simply check the options to turn them on, set the a cooldown interval and you're instantly protected.
 
 == Installation ==
 
