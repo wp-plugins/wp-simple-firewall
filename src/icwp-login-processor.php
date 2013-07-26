@@ -25,10 +25,13 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	protected $m_nLastLoginTime;
 	protected $m_sSecretKey;
 	
+	protected $m_sGaspKey;
+	
 	public function __construct( $insTableName, $innRequiredLoginInterval, $insSecretKey ) {
 		parent::__construct( $insTableName );
 		$this->m_nRequiredLoginInterval = ( $innRequiredLoginInterval < 0 )? 0 : $innRequiredLoginInterval;
 		$this->m_sSecretKey = $insSecretKey;
+		$this->m_sGaspKey = uniqid();
 	}
 	
 	// WordPress Hooks and Filters:
@@ -133,6 +136,79 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		
 		$sErrorString = "Login is protected by 2-factor authentication. If your login details were correct, you would have received an email to verify this IP address.";
 		return new WP_Error( 'wpsf_loginauth', $sErrorString );
+	}
+	
+	public function checkLoginForGasp_Filter( $inoUser, $insUsername, $insPassword ) {
+
+		if ( empty( $insUsername ) ) {
+			return $inoUser;
+		}
+		
+		if ( !isset( $_POST[ $this->getGaspCheckboxName() ] ) ) {
+			wp_die( 'You must check that box.' );
+		}
+		else if ( isset( $_POST['icwp_wpsf_login_email'] ) && $_POST['icwp_wpsf_login_email'] !== '' ){
+			wp_die( 'You smell like a bot.' );
+		}
+	}
+
+	public function getGaspLoginHtml() {
+	
+		$sLabel = "I'm not a Bot.";
+		$sAlert = "Please check the box to show us you're not a Bot.";
+	
+		$sUniqElem = 'icwp_wpsf_login_p'.uniqid();
+		
+		$sStyles = '
+			<style>
+				#'.$sUniqElem.' {
+					clear:both;
+					border: 1px solid #888;
+					padding: 6px 8px 4px 10px;
+					margin: 0 0px 12px !important;
+					border-radius: 2px;
+					background-color: #f9f9f9;
+				}
+				#'.$sUniqElem.' input {
+					margin-right: 5px;
+				}
+			</style>
+		';
+	
+		$sHtml =
+			$sStyles.
+			'<p id="'.$sUniqElem.'"></p>
+			<script type="text/javascript">
+				var icwp_wpsf_login_p		= document.getElementById("'.$sUniqElem.'");
+				var icwp_wpsf_login_cb		= document.createElement("input");
+				var icwp_wpsf_login_text	= document.createTextNode(" '.$sLabel.'");
+				icwp_wpsf_login_cb.type		= "checkbox";
+				icwp_wpsf_login_cb.id		= "'.$this->getGaspCheckboxName().'";
+				icwp_wpsf_login_cb.name		= "'.$this->getGaspCheckboxName().'";
+				icwp_wpsf_login_p.appendChild( icwp_wpsf_login_cb );
+				icwp_wpsf_login_p.appendChild( icwp_wpsf_login_text );
+				var frm = icwp_wpsf_login_cb.form;
+				frm.onsubmit = icwp_wpsf_login_it;
+				function icwp_wpsf_login_it(){
+					if(icwp_wpsf_login_cb.checked != true){
+						alert("'.$sAlert.'");
+						return false;
+					}
+					return true;
+				}
+			</script>
+			<noscript>You MUST enable Javascript to be able to login</noscript>
+			<input type="hidden" id="icwp_wpsf_login_email" name="icwp_wpsf_login_email" value="" />
+		';
+
+		return $sHtml;
+	}
+	
+	protected function getGaspCheckboxName() {
+		if ( empty( $this->m_sGaspKey ) ) {
+			$this->m_sGaspKey = uniqid();
+		}
+		return "icwp_wpsf_$this->m_sGaspKey";
 	}
 	
 	/**
@@ -248,6 +324,14 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		return ( is_array( $mResult ) && count( $mResult ) == 1 )? true : false; 
 	}
 	
+	/**
+	 * Given the necessary components, creates the 2-factor verification link for giving to the user.
+	 * 
+	 * @param string $insKey
+	 * @param string $insUser
+	 * @param string $insUniqueId
+	 * @return string
+	 */
 	public function getTwoFactorVerifyLink( $insKey, $insUser, $insUniqueId ) {
 		$sSiteUrl = home_url() . '?wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid=%s';
 		$sAction = 'linkauth';

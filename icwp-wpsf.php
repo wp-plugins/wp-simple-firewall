@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.2.4
+Version: 1.2.5
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -44,7 +44,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.2.4';
+	static public $VERSION			= '1.2.5';
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_FirewallBase;
@@ -142,6 +142,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * @return boolean
 	 */
 	public function isFirewallEnabled() {
+		
+		if ( is_file( self::$PLUGIN_DIR . 'forceOff' ) ) {
+			return false;
+		}
+		else if ( is_file( self::$PLUGIN_DIR . 'forceOn' ) ) {
+			return true;
+		}
 		return self::getOption( 'enable_firewall' ) == 'Y';
 	}
 	
@@ -149,6 +156,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * @return boolean
 	 */
 	public function isLoginProtectEnabled() {
+		
+		if ( is_file( self::$PLUGIN_DIR . 'forceOff' ) ) {
+			return false;
+		}
+		else if ( is_file( self::$PLUGIN_DIR . 'forceOn' ) ) {
+			return true;
+		}
 		return self::getOption( 'enable_login_protect' ) == 'Y';
 	}
 	
@@ -180,7 +194,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}
 	
 	/**
+	 * Loads the Firewall Processor for use throughout.  Will draw upon the db-cached object where
+	 * appropriate.
 	 * 
+	 * @param boolean $infReset
 	 */
 	protected function loadFirewallProcessor( $infReset = false ) {
 		
@@ -190,7 +207,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			
 			$this->m_oFirewallProcessor = self::getOption( 'firewall_processor' );
 			
-			if ( is_object( $this->m_oFirewallProcessor ) && ( $this->m_oFirewallProcessor instanceof ICWP_LoginProcessor ) ) {
+			if ( is_object( $this->m_oFirewallProcessor ) && ( $this->m_oFirewallProcessor instanceof ICWP_FirewallProcessor ) ) {
 				$this->m_oFirewallProcessor->reset();
 			}
 			else {
@@ -234,7 +251,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				self::updateOption( 'firewall_processor', $this->m_oFirewallProcessor ); // save it for the future
 			}
 			
-		} else if ( $infReset ) {
+		}
+		else if ( $infReset ) {
 			$this->m_oFirewallProcessor->reset();
 		}
 	}
@@ -345,14 +363,37 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			if ( isset( $_GET['wpsf-action'] ) && $_GET['wpsf-action'] == 'linkauth' ) {
 				$this->validateUserAuthLink();
 			}
-			add_action( 'wp_authenticate', array( $this, 'prepareLoginProcessor_Action' ) );
+			
+			// If their click was successful we give them a lovely message
+			if ( isset( $_GET['wpsfipverified']) ) {
+				add_filter( 'login_message', array( $this, 'displayVerifiedUserMessage_Filter' ) );
+			}
+			
+			// Add GASP checking to the login form.
+			if ( self::getOption( 'enable_login_gasp_check' ) == 'Y' ) {
+				add_action( 'login_form', array( $this, 'printGaspLoginCheck_Action' ) );
+				add_filter( 'login_form_middle', array( $this, 'printGaspLoginCheck_Filter' ) );
+			}
 		
+			// Performs all the custom login authentication checking
+			add_action( 'wp_authenticate', array( $this, 'prepareLoginProcessor_Action' ) );
+			
 			// Check the current logged-in user every page load.
 			add_action( 'init', array( $this, 'checkCurrentUserAuth_Action' ) );
 			
 			// we can hook this to the end because unlike the firewall, it doesn't kill a page load or redirect.
 			add_action( 'shutdown', array( $this, 'saveLoginProcessor_Action' ) );
 		}
+	}
+	
+	public function printGaspLoginCheck_Action() {
+		$this->loadLoginProcessor();
+		echo $this->m_oLoginProcessor->getGaspLoginHtml();
+	}
+	
+	public function printGaspLoginCheck_Filter() {
+		$this->loadLoginProcessor();
+		return $this->m_oLoginProcessor->getGaspLoginHtml();
 	}
 	
 	/**
@@ -379,11 +420,16 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	
 	/**
 	 * By hooking this action to the wp_authenticate action hook, we ensure we only load the login processor
-	 * when it's necessary to do so - i.e. when there's an authenticated login in progress.
+	 * when it's necessary to do so - i.e. when there's a login in progress.
 	 */
 	public function prepareLoginProcessor_Action() {
 
 		$this->loadLoginProcessor();
+		
+		// We give it a priority of 9 so we can check that the GASP requirements before all else.
+		if ( self::getOption( 'enable_login_gasp_check' ) == 'Y' ) {
+			add_filter( 'authenticate', array( $this->m_oLoginProcessor, 'checkLoginForGasp_Filter' ), 9, 3);
+		}
 		
 		// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
 		add_filter( 'authenticate', array( $this->m_oLoginProcessor, 'checkLoginInterval_Filter' ), 10, 3);
@@ -410,7 +456,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	public function validateUserAuthLink() {
 		// wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid
 		
-		if ( !isset( $_GET['wpsfkey'] ) && $_GET['wpsfkey'] !== self::getOption('secret_key') ) {
+		if ( !isset( $_GET['wpsfkey'] ) || $_GET['wpsfkey'] !== self::getOption('secret_key') ) {
 			return false;
 		}
 		if ( empty( $_GET['username'] ) || empty( $_GET['uniqueid'] ) ) {
@@ -425,8 +471,17 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		);
 		
 		if ( $this->m_oLoginProcessor->loginAuthMakeActive( $aWhere ) ) {
-			header( "Location: ".home_url().'/wp-login.php' );
+			header( "Location: ".site_url().'/wp-login.php?wpsfipverified=1' );
 		}
+		else {
+			header( "Location: ".home_url() );
+		}
+	}
+	
+	public function displayVerifiedUserMessage_Filter( $insMessage ) {
+		$sStyles .= 'background-color: #FAFFE8; border: 1px solid #DDDDDD; margin: 8px 0 10px 8px; padding: 16px;';
+		$insMessage .= '<h3 style="'.$sStyles.'">You successfully verified your IP address - you may now login.</h3>';
+		return $insMessage;
 	}
 	
 	protected function initPluginOptions() {
@@ -645,6 +700,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					'Limit login attempts to every X seconds',
 					'WordPress will process only ONE login attempt for every number of seconds specified. Zero (0) turns this off.'
 				),
+				array(
+					'enable_login_gasp_check',
+					'',
+					'0',
+					'checkbox',
+					'G.A.S.P Protection',
+					'Prevent Login By Bots using G.A.S.P. Protection',
+					'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques.'
+				),
 			),
 		);
 		
@@ -703,8 +767,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 
 	public function onWpInit() {
 		parent::onWpInit();
-		add_action( 'wp_enqueue_scripts', array( $this, 'onWpPrintStyles' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'onWpEnqueueScripts' ) );
 	}//onWpInit
 	
 	public function onWpAdminInit() {
