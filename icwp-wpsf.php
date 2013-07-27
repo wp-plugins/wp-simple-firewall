@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.2.5
+Version: 1.2.6
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -44,7 +44,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.2.5';
+	static public $VERSION			= '1.2.6';
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_FirewallBase;
@@ -1019,6 +1019,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 
 		$this->clearFirewallProcessorCache();
 		
+		if ( isset($_POST[ 'import-wpf2-submit' ] ) ) {
+			$this->importFromFirewall2Plugin();
+			return;
+		}
+		
 		if ( !isset($_POST[self::OptionPrefix.'all_options_input']) ) {
 			return;
 		}
@@ -1071,6 +1076,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected function clearLoginProcessorCache() {
 		$this->m_oLoginProcessor = false;
 		self::updateOption( 'login_processor', $this->m_oLoginProcessor );
+	}
+	
+	protected function importFromFirewall2Plugin() {
+
+		require_once( dirname(__FILE__).'/src/icwp-import-wpf2-processor.php' );
+		$oImportProcessor = new ICWP_ImportWpf2Processor( self::$OPTION_PREFIX );
+		$oImportProcessor->runImport();
 	}
 	
 	public function onWpPluginActionLinks( $inaLinks, $insFile ) {

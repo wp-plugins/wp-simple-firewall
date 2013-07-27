@@ -99,7 +99,7 @@ $sPluginName = 'WordPress Simple Firewall';
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					'New Feature - Login Form GASP-based Anti-Bot Protection.',
+					'New Feature - Ability to import settings from WordPress Firewall 2 Plugin.',
 				);
 				?>
 				<ul>
@@ -109,6 +109,7 @@ $sPluginName = 'WordPress Simple Firewall';
 				</ul>
 				<?php
 				$aLog = array(
+					'New Feature - Login Form GASP-based Anti-Bot Protection.',
 					'New Feature - Login Cooldown Interval.',
 					'Performance optimizations.',
 					'UI Cleanup and code improvements.',

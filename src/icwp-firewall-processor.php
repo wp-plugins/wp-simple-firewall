@@ -36,6 +36,8 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	protected $m_aCustomWhitelistPageParams;
 
 	protected $m_aRequestUriParts;
+	
+	private $m_nLoopProtect;
 
 	/**
 	 * @var string
@@ -296,25 +298,49 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	 */
 	private function doPassCheck( $inaParamValues, $inaMatchTerms, $infRegex = false ) {
 		
+		// Protection against an infinite loop and we limit depth to 3.
+		if ( !isset ($this->m_nLoopProtect) ) {
+			$this->m_nLoopProtect = 0;
+		}
+		else if ( $this->m_nLoopProtect > 3 ) {
+			$this->m_nLoopProtect = 0;
+			return true;
+		}
+		else {
+			$this->m_nLoopProtect++;
+		}
+		
 		foreach ( $inaParamValues as $sValue ) {
-			foreach ( $inaMatchTerms as $sTerm ) {
-				
-				if ( $infRegex && preg_match( $sTerm, $sValue ) ) { //dodgy term pattern found in a parameter value
-					$this->logWarning( 
-						sprintf( 'Page parameter failed firewall check. The value was %s and the term matched was %s', $sValue, $sTerm )
-					);
+			if ( is_array( $sValue ) ) {
+				if ( !$this->doPassCheck( $inaParamValues, $inaMatchTerms, $infRegex ) ) {
+					$this->m_nLoopProtect = 0;
 					return false;
 				}
-				else {
-					if ( strpos( $sValue, $sTerm ) !== false ) { //dodgy term found in a parameter value
-						$this->logWarning(
+			}
+			else {
+				$sValue = (string) $sValue;
+				foreach ( $inaMatchTerms as $sTerm ) {
+					
+					if ( $infRegex && preg_match( $sTerm, $sValue ) ) { //dodgy term pattern found in a parameter value
+						$this->logWarning( 
 							sprintf( 'Page parameter failed firewall check. The value was %s and the term matched was %s', $sValue, $sTerm )
 						);
+						$this->m_nLoopProtect = 0;
 						return false;
+					}
+					else {
+						if ( strpos( $sValue, $sTerm ) !== false ) { //dodgy term found in a parameter value
+							$this->logWarning(
+								sprintf( 'Page parameter failed firewall check. The value was %s and the term matched was %s', $sValue, $sTerm )
+							);
+							$this->m_nLoopProtect = 0;
+							return false;
+						}
 					}
 				}
 			}
 		}
+		$this->m_nLoopProtect = 0;
 		return true;
 	}
 

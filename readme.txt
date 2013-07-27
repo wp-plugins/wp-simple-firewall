@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.2.5
+Stable tag: 1.2.6
 
 WordPress Simple Firewall and Login Protection.
 
@@ -138,6 +138,15 @@ that are url, param and password will be ignored by the firewall.
 == Screenshots ==
 
 == Changelog ==
+
+= TODO =
+
+*	MOVE:		wp-login.php login protection to the Login Protect section with its own unique IP address whitelist.
+
+= 1.2.6 =
+
+*	ADDED:		Ability to import settings from WordPress Firewall 2 plugin options - note, doesn't import page and variables whitelisting.
+*	FIX:		A reported bug - parameter values could also be arrays.
 
 = 1.2.5 =
 

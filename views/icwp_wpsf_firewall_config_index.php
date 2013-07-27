@@ -18,10 +18,11 @@ include_once( dirname(__FILE__).WORPIT_DS.'widgets'.WORPIT_DS.'icwp_widgets.php'
 					wp_nonce_field( $icwp_nonce_field );
 					printAllPluginOptionsForm( $icwp_aAllOptions, $icwp_var_prefix, 1 );
 				?>
-				<div class="form-actions">
-					<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
-					<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-					<button type="submit" class="btn btn-primary" name="submit"><?php _hlt_e( 'Save All Settings'); ?></button>
+					<div class="form-actions">
+						<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
+						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
+						<button type="submit" class="btn btn-primary" name="submit"><?php _hlt_e( 'Save All Settings'); ?></button>
+						<button type="submit" class="btn btn-warning" name="import-wpf2-submit"><?php _hlt_e( 'Import From WordPress Firewall 2'); ?></button>
 					</div>
 				</form>
 				
