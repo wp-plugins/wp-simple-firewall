@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.2.6
+Version: 1.2.7
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -44,7 +44,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.2.6';
+	static public $VERSION			= '1.2.7';
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_FirewallBase;
@@ -368,22 +368,25 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			if ( isset( $_GET['wpsfipverified']) ) {
 				add_filter( 'login_message', array( $this, 'displayVerifiedUserMessage_Filter' ) );
 			}
-			
-			// Add GASP checking to the login form.
-			if ( self::getOption( 'enable_login_gasp_check' ) == 'Y' ) {
-				add_action( 'login_form', array( $this, 'printGaspLoginCheck_Action' ) );
-				add_filter( 'login_form_middle', array( $this, 'printGaspLoginCheck_Filter' ) );
-			}
 		
 			// Performs all the custom login authentication checking
 			add_action( 'wp_authenticate', array( $this, 'prepareLoginProcessor_Action' ) );
-			
+				
 			// Check the current logged-in user every page load.
 			add_action( 'init', array( $this, 'checkCurrentUserAuth_Action' ) );
 			
-			// we can hook this to the end because unlike the firewall, it doesn't kill a page load or redirect.
-			add_action( 'shutdown', array( $this, 'saveLoginProcessor_Action' ) );
 		}
+
+		// Add GASP checking to the login form.
+		if ( self::getOption( 'enable_login_gasp_check' ) == 'Y' ) {
+			$this->loadLoginProcessor();
+			add_action( 'login_form', array( $this, 'printGaspLoginCheck_Action' ) );
+			add_filter( 'login_form_middle', array( $this, 'printGaspLoginCheck_Filter' ) );
+			add_filter( 'authenticate', array( $this->m_oLoginProcessor, 'checkLoginForGasp_Filter' ), 9, 3);
+		}
+		
+		// we can hook this to the end because unlike the firewall, it doesn't kill a page load or redirect.
+		add_action( 'shutdown', array( $this, 'saveLoginProcessor_Action' ) );
 	}
 	
 	public function printGaspLoginCheck_Action() {
@@ -425,11 +428,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	public function prepareLoginProcessor_Action() {
 
 		$this->loadLoginProcessor();
-		
-		// We give it a priority of 9 so we can check that the GASP requirements before all else.
-		if ( self::getOption( 'enable_login_gasp_check' ) == 'Y' ) {
-			add_filter( 'authenticate', array( $this->m_oLoginProcessor, 'checkLoginForGasp_Filter' ), 9, 3);
-		}
 		
 		// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
 		add_filter( 'authenticate', array( $this->m_oLoginProcessor, 'checkLoginInterval_Filter' ), 10, 3);
