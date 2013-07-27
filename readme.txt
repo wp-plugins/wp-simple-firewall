@@ -143,6 +143,10 @@ that are url, param and password will be ignored by the firewall.
 
 *	MOVE:		wp-login.php login protection to the Login Protect section with its own unique IP address whitelist.
 
+= 1.2.8 =
+
+*	ADDED:		Option to by-pass 2-factor authentication when sending the verification email fails (so you don't get locked out if your hosting doesn't support email!).
+
 = 1.2.7 =
 
 *	FIX:		Bug where the GASP Login protection was only working when you had 2-factor authentication enabled.

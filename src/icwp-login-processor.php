@@ -27,6 +27,14 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	
 	protected $m_sGaspKey;
 	
+	/**
+	 * Flag as to whether Two Factor Authentication will be by-pass when sending the verification
+	 * email fails.
+	 * 
+	 * @var boolean
+	 */
+	protected $m_fAllowTwoFactorByPass;
+	
 	public function __construct( $insTableName, $innRequiredLoginInterval, $insSecretKey ) {
 		parent::__construct( $insTableName );
 		$this->m_nRequiredLoginInterval = ( $innRequiredLoginInterval < 0 )? 0 : $innRequiredLoginInterval;
@@ -129,7 +137,13 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 				// Now send email with authentication link for user.
 				if ( is_array( $aNewAuthData ) ) {
 					$sAuthLink = $this->getTwoFactorVerifyLink( $this->m_sSecretKey, $inoUser->user_login, $aNewAuthData['unique_id'] );
-					$this->sendEmailTwoFactorVerify( $inoUser->user_email, $aNewAuthData['ip'], $sAuthLink );
+					$fEmailSuccess = $this->sendEmailTwoFactorVerify( $inoUser->user_email, $aNewAuthData['ip'], $sAuthLink );
+					
+					// Failure to send email - log them in.
+					if ( !$fEmailSuccess && $this->getTwoFactorByPassOnFail() ) {
+						$this->loginAuthMakeActive( $aNewAuthData );
+						return $inoUser;
+					}
 				}
 			}
 		}
@@ -209,6 +223,17 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 			$this->m_sGaspKey = uniqid();
 		}
 		return "icwp_wpsf_$this->m_sGaspKey";
+	}
+	
+	public function setTwoFactorByPassOnFail( $infAllowByPass ) {
+		$this->m_fAllowTwoFactorByPass = $infAllowByPass;
+	}
+	
+	public function getTwoFactorByPassOnFail() {
+		if ( !isset( $this->m_fAllowTwoFactorByPass ) ) {
+			$this->m_fAllowTwoFactorByPass = false;
+		}
+		return $this->m_fAllowTwoFactorByPass;
 	}
 	
 	/**
@@ -353,7 +378,7 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 			'Authentication Link: '. $insAuthLink
 		);
 		$sEmailSubject = 'Two-Factor Login Verification: ' . home_url();
-		$this->sendEmail( $insEmailAddress, $sEmailSubject, $aMessage );
+		return $this->sendEmail( $insEmailAddress, $sEmailSubject, $aMessage );
 	}
 	
 	public function createTable() {

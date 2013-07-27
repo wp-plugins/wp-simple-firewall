@@ -278,6 +278,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					self::updateOption( 'login_limit_interval', $nRequiredLoginInterval );
 				}
 				$this->m_oLoginProcessor = new ICWP_LoginProcessor( 'login_auth', $nRequiredLoginInterval, $this->genSecretKey() );
+				$this->m_oLoginProcessor->setTwoFactorByPassOnFail( self::getOption( 'enable_two_factor_bypass_on_email_fail' ) == 'Y' );
 			}
 		}
 		else if ( $infReset ) {
@@ -683,6 +684,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					'Two-Factor Authentication',
 					'Two-Factor Login Authentication By IP Address',
 					'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address.'
+				),
+				array(
+					'enable_two_factor_bypass_on_email_fail',
+					'',
+					'N',
+					'checkbox',
+					'By-Pass On Failure',
+					'If Sending Verification Email Sending Fails, Two-Factor Login Authentication Is Ignored',
+					'If you enable two-factor authentication and sending the email with the verification link fails, turning this setting on will by-pass the verification step. Use with caution.'
 				),
 			),
 		);

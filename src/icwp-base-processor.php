@@ -121,7 +121,7 @@ class ICWP_BaseProcessor {
 			'Subject: '.$insEmailSubject,
 			'X-Mailer: PHP/'.phpversion()
 		);
-		wp_mail( $insEmailAddress, $insEmailSubject, implode( "\r\n", $inaMessage ), implode( "\r\n", $aHeaders ) );
+		return wp_mail( $insEmailAddress, $insEmailSubject, implode( "\r\n", $inaMessage ), implode( "\r\n", $aHeaders ) );
 	}
 	
 }
