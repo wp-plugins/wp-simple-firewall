@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.2.7
+Stable tag: 1.3.0
 
 WordPress Simple Firewall and Login Protection.
 
@@ -142,10 +142,20 @@ that are url, param and password will be ignored by the firewall.
 = TODO =
 
 *	MOVE:		wp-login.php login protection to the Login Protect section with its own unique IP address whitelist.
+*	ADD:		Dynamically add various WordPress security features that would otherwise require wp-config.php editing.
+*	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
-= 1.2.8 =
+= 1.3.0 =
 
-*	ADDED:		Option to by-pass 2-factor authentication when sending the verification email fails (so you don't get locked out if your hosting doesn't support email!).
+*	ADDED:		Email Throttle Feature - this will prevent you getting bombarded by 1000s of emails in case you're hit by a bot.
+*	ADDED:		Another Firewall die() option. New option will print a message and uses the wp_die() function instead.
+*	ADDED:		Refactored and improved the logging system (upgrading will delete your current logs!).
+*	ADDED:		Option to separately log Login Protect features.
+*	ADDED:		Option to by-pass 2-factor authentication in the case sending the verification email fails
+				(so you don't get locked out if your hosting doesn't support email!).
+*	CHANGED:	Login Protect checking now better logs out users immediately with a redirect.
+*	CHANGED:	We now escape the log data being printed - just in case there's any HTML/JS etc in there we don't want.
+*	CHANGED:	Optimized and cleaned a lot of the option caching code to improve reliability and performance (more to come).
 
 = 1.2.7 =
 

@@ -13,7 +13,6 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
@@ -22,8 +21,6 @@ if ( !class_exists('ICWP_FirewallProcessor') ):
 
 class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	
-	protected $m_sRequestId;
-	protected $m_nRequestIp;
 	protected $m_nRequestTimestamp;
 	
 	protected $m_aBlockSettings;
@@ -38,6 +35,8 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	protected $m_aRequestUriParts;
 	
 	private $m_nLoopProtect;
+	
+	private $m_sFirewallMessage;
 
 	/**
 	 * @var string
@@ -73,33 +72,34 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 		$this->setPageParams();
 		$this->filterWhitelistedPagesAndParams();
 		
-		$this->m_nRequestIp = self::GetVisitorIpAddress();
-		$this->m_sRequestId = uniqid();
+		$sMessage = "You were blocked by the %sWordPress Simple Firewall%s.";
+		$this->m_sFirewallMessage = sprintf( $sMessage, '<a href="http://wordpress.org/plugins/wp-simple-firewall/" target="_blank">', '</a>');
+		
 		$this->m_nRequestTimestamp = time();
 		$this->m_aPageParamValuesToCheck = array_values( $this->m_aPageParams );
 	}
 	
-	public function getLogData() {
+	/**
+	 * Should return false when logging is disabled.
+	 * 
+	 * @return false|array	- false when logging is disabled, array with log data otherwise
+	 * @see ICWP_BaseProcessor::getLogData()
+	 */
+	public function flushLogData() {
+		
+		if ( !$this->m_fLoggingEnabled ) {
+			return false;
+		}
+		
 		$this->m_aLog = array(
-			'request_id'		=> $this->m_sRequestId,
+			'category'			=> self::LOG_CATEGORY_FIREWALL,
 			'messages'			=> serialize( $this->m_aLogMessages ),
 			'created_at'		=> $this->m_nRequestTimestamp,
 			'ip'				=> long2ip( $this->m_nRequestIp ),
 			'ip_long'			=> $this->m_nRequestIp,
-			'uri'				=> serialize( $this->m_aRequestUriParts ),
-			'params'			=> serialize( $this->m_aOrigPageParams ),
 		);
+		$this->resetLog();
 		return $this->m_aLog;
-		/*
-		`request_id` varchar(255) NOT NULL DEFAULT '',
-		`type` int(1) NOT NULL DEFAULT '0',
-		`created_at` int(15) NOT NULL DEFAULT '0',
-		`deleted_at` int(15) NOT NULL DEFAULT '0',
-		`ip` varchar(20) NOT NULL DEFAULT '',
-		`ip_long` longint(20) NOT NULL DEFAULT '',
-		`uri` varchar(255) NOT NULL DEFAULT '',
-		`referrer` varchar(255) NOT NULL DEFAULT '',
-		*/
 	}
 	
 	/**
@@ -119,6 +119,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 		
 		//Check if the visitor is excluded from the firewall from the outset.
 		if ( $this->isVisitorOnBlacklist() ) {
+			$this->m_sFirewallMessage .= ' Your IP is Blacklisted.';
 			$this->logWarning(
 				sprintf( 'Visitor was blacklisted by IP Address. Label: %s',
 					empty( $this->m_sListItemLabel )? 'No label.' : $this->m_sListItemLabel
@@ -127,26 +128,26 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 			return false;
 		}
 		
-		$this->logInfo( 'Visitor IP address was neither whitelisted nor blacklisted.' );
-		
-		// if we couldn't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
-		if ( empty( $this->m_aRequestUriParts ) ) {
-			return true;
-		}
-		
-		$fIsPermittedVisitor = true;
-		
-		//Checking this comes before all else but after the IP whitelist check.
+		// Checking this comes before all else but after the IP whitelist/blacklist check.
 		if ( $this->m_aBlockSettings[ 'block_wplogin_access' ] ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockWpLogin();
 		}
 		
-		// Set up the page parameters ($_GET and $_POST). If there are none, quit since there's nothing for the firewall to check.
-		$this->setPageParams();
-		if ( $fIsPermittedVisitor && empty( $this->m_aPageParams ) ) {
+		// if we couldn't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
+		if ( empty( $this->m_aRequestUriParts ) ) {
+			$this->logInfo( 'Could not parse the URI so cannot effectively firewall.' );
+			return true;
+		}
+		
+		// Set up the page parameters ($_GET and $_POST and optionally $_COOKIE). If there are none, quit since there's nothing for the firewall to check.
+		if ( empty( $this->m_aPageParams ) ) {
 			$this->logInfo( 'There were no page parameters to check on this visit.' );
 			return true;
 		}
+		
+		$this->logInfo( 'Visitor IP was neither whitelisted nor blacklisted. Firewall checking started.' );
+		
+		$fIsPermittedVisitor = true;
 
 		// Check if the page and its parameters are whitelisted.
 		if ( $fIsPermittedVisitor && $this->isPageWhitelisted() ) {
@@ -310,6 +311,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 			$this->m_nLoopProtect++;
 		}
 		
+		$fFAIL = false;
 		foreach ( $inaParamValues as $sValue ) {
 			if ( is_array( $sValue ) ) {
 				if ( !$this->doPassCheck( $inaParamValues, $inaMatchTerms, $infRegex ) ) {
@@ -322,24 +324,22 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 				foreach ( $inaMatchTerms as $sTerm ) {
 					
 					if ( $infRegex && preg_match( $sTerm, $sValue ) ) { //dodgy term pattern found in a parameter value
-						$this->logWarning( 
+						$fFAIL = true;
+					}
+					else if ( strpos( $sValue, $sTerm ) !== false ) { //dodgy term found in a parameter value
+						$fFAIL = true;
+					}
+					if ( $fFAIL ) {
+						$this->m_sFirewallMessage .= " Something in the URL, Form or Cookie data wasn't appropriate.";
+						$this->logWarning(
 							sprintf( 'Page parameter failed firewall check. The value was %s and the term matched was %s', $sValue, $sTerm )
 						);
 						$this->m_nLoopProtect = 0;
 						return false;
 					}
-					else {
-						if ( strpos( $sValue, $sTerm ) !== false ) { //dodgy term found in a parameter value
-							$this->logWarning(
-								sprintf( 'Page parameter failed firewall check. The value was %s and the term matched was %s', $sValue, $sTerm )
-							);
-							$this->m_nLoopProtect = 0;
-							return false;
-						}
-					}
-				}
+				}//foreach
 			}
-		}
+		}//foreach
 		$this->m_nLoopProtect = 0;
 		return true;
 	}
@@ -347,7 +347,10 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	public function doFirewallBlock() {
 		
 		switch( $this->m_sBlockResponse ) {
-
+			case 'redirect_die':
+				die();
+			case 'redirect_die_message':
+				wp_die( $this->m_sFirewallMessage );
 			case 'redirect_home':
 				header( "Location: ".home_url() );
 				exit();
@@ -356,8 +359,6 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 				header( "Location: ".home_url().'/404' );
 				exit();
 				break;
-			case 'redirect_die':
-				die();
 		}
 	}
 	
@@ -537,9 +538,9 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	}
 
 	/**
-	 * @param string $insEmailAddress
+	 * @return boolean
 	 */
-	public function sendBlockEmail( $insEmailAddress ) {
+	public function sendBlockEmail() {
 
 		$aMessage = array(
 			'WordPress Simple Firewall has blocked a visitor to your site.',
@@ -551,12 +552,11 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 			$aMessage[] = '-  '.$sLogMessage;
 		}
 		
-		$aMessage[] = 'You could look up the offending IP Address here: http://ip-lookup.net/?ip='. $this->m_aLog['ip'];
 		$sEmailSubject = 'Firewall Block Alert: ' . home_url();
-		$this->logInfo(
-			sprintf( 'Block email sent to %s', $insEmailAddress )
-		);
-		$this->sendEmail( $insEmailAddress, $sEmailSubject, $aMessage );
+		$aMessage[] = 'You could look up the offending IP Address here: http://ip-lookup.net/?ip='. $this->m_aLog['ip'];
+		
+		$this->logInfo( 'Firewall block email.' );
+		$this->sendEmail( $sEmailSubject, $aMessage );
 	}
 }
 

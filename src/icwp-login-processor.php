@@ -21,6 +21,8 @@ if ( !class_exists('ICWP_LoginProcessor') ):
 
 class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	
+	const TableName = 'login_auth';
+	
 	protected $m_nRequiredLoginInterval;
 	protected $m_nLastLoginTime;
 	protected $m_sSecretKey;
@@ -35,11 +37,68 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	 */
 	protected $m_fAllowTwoFactorByPass;
 	
-	public function __construct( $insTableName, $innRequiredLoginInterval, $insSecretKey ) {
-		parent::__construct( $insTableName );
+	public function __construct( $innRequiredLoginInterval, $insSecretKey ) {
+		parent::__construct( self::TableName );
+		
 		$this->m_nRequiredLoginInterval = ( $innRequiredLoginInterval < 0 )? 0 : $innRequiredLoginInterval;
 		$this->m_sSecretKey = $insSecretKey;
 		$this->m_sGaspKey = uniqid();
+		
+		$this->createTable();
+		$this->reset();
+	}
+
+	/**
+	 * Should return false when logging is disabled.
+	 *
+	 * @return false|array	- false when logging is disabled, array with log data otherwise
+	 * @see ICWP_BaseProcessor::getLogData()
+	 */
+	public function flushLogData() {
+	
+		if ( !$this->m_fLoggingEnabled || empty( $this->m_aLogMessages ) ) {
+			return false;
+		}
+
+		$this->m_aLog = array(
+			'category'			=> self::LOG_CATEGORY_LOGINPROTECT,
+			'messages'			=> serialize( $this->m_aLogMessages )
+		);
+		$this->resetLog();
+		return $this->m_aLog;
+	}
+	
+	/**
+	 * Checks the link details to ensure all is valid before authorizing the user.
+	 *
+	 * @return boolean
+	 */
+	public function validateUserAuthLink() {
+		// wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid
+	
+		if ( !isset( $_GET['wpsfkey'] ) || $_GET['wpsfkey'] !== $this->m_sSecretKey ) {
+			return false;
+		}
+		if ( empty( $_GET['username'] ) || empty( $_GET['uniqueid'] ) ) {
+			return false;
+		}
+	
+		$aWhere = array(
+			'unique_id'		=> $_GET['uniqueid'],
+			'wp_username'	=> $_GET['username']
+		);
+	
+		if ( $this->loginAuthMakeActive( $aWhere ) ) {
+			$this->redirectToLogin( '?wpsfipverified=1' );
+			header( "Location: ".site_url().'/wp-login.php' );
+		}
+		else {
+			header( "Location: ".home_url() );
+		}
+	}
+	
+	public function redirectToLogin( $sParams = '' ) {
+		header( "Location: ".site_url().'/wp-login.php'.$sParams );
 	}
 	
 	// WordPress Hooks and Filters:
@@ -54,7 +113,7 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	 * @return unknown|WP_Error
 	 */
 	public function checkLoginInterval_Filter( $inoUser, $insUsername, $insPassword ) {
-	
+
 		// No login attempt was made.
 		if ( empty( $insUsername ) ) {
 			return $inoUser;
@@ -118,13 +177,14 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		}
 	
 		$fUserLoginSuccess = is_object( $inoUser ) && ( $inoUser instanceof WP_User );
-	
+
 		if ( is_wp_error( $inoUser ) ) {
 			$aCodes = $inoUser->get_error_codes();
 			if ( in_array( 'wpsf_logininterval', $aCodes ) ) {
 				return $inoUser;
 			}
-		} else if ( $fUserLoginSuccess ) {
+		}
+		else if ( $fUserLoginSuccess ) {
 			
 			$aData = array( 'wp_username' => $insUsername );
 			if ( $this->isUserVerified( $aData ) ) {
@@ -136,8 +196,7 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	
 				// Now send email with authentication link for user.
 				if ( is_array( $aNewAuthData ) ) {
-					$sAuthLink = $this->getTwoFactorVerifyLink( $this->m_sSecretKey, $inoUser->user_login, $aNewAuthData['unique_id'] );
-					$fEmailSuccess = $this->sendEmailTwoFactorVerify( $inoUser->user_email, $aNewAuthData['ip'], $sAuthLink );
+					$fEmailSuccess = $this->sendEmailTwoFactorVerify( $inoUser, $aNewAuthData['ip'], $aNewAuthData['unique_id'] );
 					
 					// Failure to send email - log them in.
 					if ( !$fEmailSuccess && $this->getTwoFactorByPassOnFail() ) {
@@ -152,20 +211,6 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		return new WP_Error( 'wpsf_loginauth', $sErrorString );
 	}
 	
-	public function checkLoginForGasp_Filter( $inoUser, $insUsername, $insPassword ) {
-
-		if ( empty( $insUsername ) ) {
-			return $inoUser;
-		}
-		
-		if ( !isset( $_POST[ $this->getGaspCheckboxName() ] ) ) {
-			wp_die( 'You must check that box.' );
-		}
-		else if ( isset( $_POST['icwp_wpsf_login_email'] ) && $_POST['icwp_wpsf_login_email'] !== '' ){
-			wp_die( 'You smell like a bot.' );
-		}
-	}
-
 	public function getGaspLoginHtml() {
 	
 		$sLabel = "I'm not a Bot.";
@@ -218,11 +263,27 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		return $sHtml;
 	}
 	
-	protected function getGaspCheckboxName() {
+	public function getGaspCheckboxName() {
 		if ( empty( $this->m_sGaspKey ) ) {
 			$this->m_sGaspKey = uniqid();
 		}
 		return "icwp_wpsf_$this->m_sGaspKey";
+	}
+	
+	public function doGaspChecks( $insUsername ) {
+		
+		if ( !isset( $_POST[ $this->getGaspCheckboxName() ] ) ) {
+			$this->logWarning(
+				sprintf( 'User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".', $insUsername, long2ip($this->m_nRequestIp) )
+			);
+			wp_die( "You must check that box to say you're not a bot." );
+		}
+		else if ( isset( $_POST['icwp_wpsf_login_email'] ) && $_POST['icwp_wpsf_login_email'] !== '' ){
+			$this->logWarning(
+				sprintf( 'User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".', $insUsername, long2ip($this->m_nRequestIp) )
+			);
+			wp_die( 'You smell like a bot.' );
+		}
 	}
 	
 	public function setTwoFactorByPassOnFail( $infAllowByPass ) {
@@ -243,7 +304,7 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	public function loginAuthAddPending( $inaData ) {
 		
 		$aChecks = array( 'wp_username' );
-		if ( !$this->validateInputData( $inaData, $aChecks) ) {
+		if ( !$this->validateParameters( $inaData, $aChecks) ) {
 			return false;
 		}
 		
@@ -263,17 +324,19 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 
 		// Now add new pending entry
 		$inaData[ 'unique_id' ]		= uniqid();
-		$inaData[ 'ip' ]			= self::GetVisitorIpAddress( false );
-		$inaData[ 'ip_long' ]		= ip2long( $inaData[ 'ip' ] );
+		$inaData[ 'ip_long' ]		= $this->m_nRequestIp;
+		$inaData[ 'ip' ]			= long2ip( $this->m_nRequestIp );
 		$inaData[ 'pending' ]		= 1;
 		$inaData[ 'created_at' ]	= time();
-		
-		if ( $this->insertIntoTable( $inaData ) === false ) {
-			return false;
+
+		$mResult = $this->insertIntoTable( $inaData );
+		if ( $mResult ) {
+			$this->logInfo(
+				sprintf( 'User "%s" created a pending Two-Factor Authentication for IP Address "%s".', $inaData[ 'wp_username' ], $inaData[ 'ip' ] )
+			);
+			$mResult = $inaData;
 		}
-		else {
-			return $inaData;
-		}
+		return $mResult;
 	}
 	
 	/**
@@ -285,7 +348,7 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	public function loginAuthMakeActive( $inaWhere ) {
 		
 		$aChecks = array( 'unique_id', 'wp_username' );
-		if ( !$this->validateInputData( $inaWhere, $aChecks) ) {
+		if ( !$this->validateParameters( $inaWhere, $aChecks ) ) {
 			return false;
 		}
 		
@@ -313,7 +376,13 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		$inaWhere['deleted_at']	= 0;
 		
 		// Now activate the new one.
-		return $this->updateRowsFromTable( array( 'pending' => 0 ), $inaWhere );
+		$mResult = $this->updateRowsFromTable( array( 'pending' => 0 ), $inaWhere );
+		if ( $mResult ) {
+			$this->logInfo(
+				sprintf( 'User "%s" has verified their IP Address using Two-Factor Authentication.', $inaWhere[ 'wp_username' ] )
+			);
+		}
+		return $mResult;
 	}
 	
 	/**
@@ -325,7 +394,7 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	public function isUserVerified( $inaWhere ) {
 		
 		$aChecks = array( 'wp_username' );
-		if ( !$this->validateInputData( $inaWhere, $aChecks) ) {
+		if ( !$this->validateParameters( $inaWhere, $aChecks ) ) {
 			return false;
 		}
 		
@@ -342,11 +411,34 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		$sQuery = sprintf( $sQuery,
 			$this->m_sTableName,
 			$inaWhere['wp_username'],
-			self::GetVisitorIpAddress()
+			$this->m_nRequestIp
 		);
 
 		$mResult = $this->selectCustomFromTable( $sQuery );
-		return ( is_array( $mResult ) && count( $mResult ) == 1 )? true : false; 
+		if ( is_array( $mResult ) && count( $mResult ) == 1 ) {
+			return true;
+		}
+		else {
+			$this->logWarning(
+				sprintf( 'User "%s" was found to be un-verified at this given IP Address "%s".', $inaWhere[ 'wp_username' ], long2ip( $this->m_nRequestIp ) )
+			);
+			return false;
+		}
+	}
+	
+	public function verifyCurrentUser() {
+		$oUser = wp_get_current_user();
+		if ( is_object( $oUser ) && $oUser instanceof WP_User ) {
+			
+			$aData = array( 'wp_username' => $oUser->user_login );
+			if ( !$this->isUserVerified( $aData ) ) {
+				$this->logWarning(
+					sprintf( 'User "%s" was logged out.', $oUser->user_login )
+				);
+				wp_logout();
+				$this->redirectToLogin();
+			}
+		}
 	}
 	
 	/**
@@ -364,21 +456,36 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	}
 
 	/**
-	 * @param string $insEmailAddress
+	 * @param string $sEmail
 	 * @param string $insIpAddress
 	 * @param string $insAuthLink
 	 */
-	public function sendEmailTwoFactorVerify( $insEmailAddress, $insIpAddress, $insAuthLink ) {
+	public function sendEmailTwoFactorVerify( WP_User $inoUser, $insIpAddress, $insUniqueId ) {
 	
+		$sEmail = $inoUser->user_email;
+		$sAuthLink = $this->getTwoFactorVerifyLink( $this->m_sSecretKey, $inoUser->user_login, $insUniqueId );
+		
 		$aMessage = array(
 			'You, or someone pretending to be you, just attempted to login into your WordPress site.',
 			'The IP Address from which they tried to login is not currently valid.',
 			'To validate this address, click the following link, and then login again.',
 			'IP Address: '. $insIpAddress,
-			'Authentication Link: '. $insAuthLink
+			'Authentication Link: '. $sAuthLink
 		);
 		$sEmailSubject = 'Two-Factor Login Verification: ' . home_url();
-		return $this->sendEmail( $insEmailAddress, $sEmailSubject, $aMessage );
+		
+		$fResult = $this->sendEmailTo( $sEmail, $sEmailSubject, $aMessage );
+		if ( $fResult ) {
+			$this->logInfo(
+				sprintf( 'User "%s" was sent an email to verify their Two-Factor Login for IP Address "%s".', $inoUser->user_login, $insIpAddress )
+			);
+		}
+		else {
+			$this->logCritical(
+				sprintf( 'Tried to send User "%s" email to verify their Two-Factor Login for IP Address "%s", but email sending failed.', $inoUser->user_login, $insIpAddress )
+			);
+		}
+		return $fResult;
 	}
 	
 	public function createTable() {
@@ -400,10 +507,6 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		$mResult = $this->doSql( $sSqlTables );
 	}
 	
-	public function getLogData() {
-		return parent::getLogData();
-	}
-	
 	/**
 	 * Assumes that unique_id AND wp_username have been set correctly in the data array (no checking done).
 	 * 
@@ -416,28 +519,6 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		$sQuery = sprintf( $sQuery, $this->m_sTableName, $inaData['unique_id'], $inaData['wp_username'] );
 		return $this->selectRowFromTable( $sQuery );
 	}
-	
-	/**
-	 * Checks the $inaData contains valid key values as laid out in $inaChecks
-	 * 
-	 * @param array $inaData
-	 * @param array $inaChecks
-	 * @return boolean
-	 */
-	protected function validateInputData( $inaData, $inaChecks ) {
-		
-		if ( !is_array( $inaData ) ) {
-			return false;
-		}
-		
-		foreach( $inaChecks as $sCheck ) {
-			if ( !array_key_exists( $sCheck, $inaData ) || empty( $inaData[ $sCheck ] ) ) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
 }
 
 endif;

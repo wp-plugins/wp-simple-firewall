@@ -94,7 +94,7 @@ $aLogTypes = array(
 					?>
 						<tr class="row-<?php echo $aLogTypes[$sLogType]; ?>">
 							<td class="cell-log-type"><?php echo $aLogTypes[$sLogType] ?></td>
-							<td><?php echo $sLogMessage; ?></td>
+							<td><?php echo esc_attr($sLogMessage); ?></td>
 						</tr>
 					<?php endforeach; ?>
 				<?php endforeach; ?>

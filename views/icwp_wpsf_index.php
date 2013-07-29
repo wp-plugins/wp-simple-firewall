@@ -43,6 +43,9 @@ $sPluginName = 'WordPress Simple Firewall';
 							if( $icwp_sBlockResponse == 'redirect_die' ) {
 								echo 'die.';
 							}
+							else if ( $icwp_sBlockResponse == 'redirect_die_message' ) {
+								echo 'Dies with a message.';
+							}
 							else if ( $icwp_sBlockResponse == 'redirect_home' ) {
 								echo 'Redirect to home.';
 							}
@@ -94,12 +97,19 @@ $sPluginName = 'WordPress Simple Firewall';
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
-				<h3>Change log for the v1.2.x release:</h3>
-				<p>The following summarises the main changes to the plugin in the 1.2.x release</p>
+				<h3>Change log for the v1.3.x release:</h3>
+				<p>The following summarises the main changes to the plugin in the 1.3.x release</p>
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					'New Feature - Ability to import settings from WordPress Firewall 2 Plugin.',
+					"Email Throttle Feature - this will prevent you getting bombarded by 1000s of emails in case you're hit by a bot.",
+					"Another Firewall die() option. New option will print a message and uses the wp_die() function instead.",
+					"Option to separately log Login Protect features.",
+					"Refactored and improved the logging system.",
+					"Option to by-pass 2-factor authentication in the case sending the verification email fails.",
+					"Login Protect checking now better logs out users immediately with a redirect.",
+					"We now escape the log data being printed - just in case there's any HTML/JS etc in there we don't want.",
+					"Optimized and cleaned a lot of the option caching code to improve reliability and performance (more to come).",
 				);
 				?>
 				<ul>
@@ -109,14 +119,6 @@ $sPluginName = 'WordPress Simple Firewall';
 				</ul>
 				<?php
 				$aLog = array(
-					'New Feature - Login Form GASP-based Anti-Bot Protection.',
-					'New Feature - Login Cooldown Interval.',
-					'Performance optimizations.',
-					'UI Cleanup and code improvements.',
-					'Added new Login Protect feature where you can add 2-Factor Authentication to your WordPress user logins.',
-					'Improved method for processing the IP address lists to be more cross-platform reliable.',
-					'Improved .htaccess rules (thanks MickeyRoush).',
-					'Mailing method now uses WP_MAIL.'
 				);
 				?>
 				<ul>
@@ -124,29 +126,47 @@ $sPluginName = 'WordPress Simple Firewall';
 					<li><?php echo $sItem; ?></li>
 				<?php endforeach; ?>
 				</ul>
-				<h3>Change log for the v1.1.x release:</h3>
+				
 				<?php
 				$aLog = array(
-					'Option to check Cookies values in firewall testing.',
-					'Ability to whitelist particular pages and their parameters.',
-					'Quite a few improvements made to the reliability of the firewall processing.',
-					'Option to completely ignore logged-in Administrators from the Firewall processing (they wont even trigger logging etc).',
-					'Ability to (un)blacklist and (un)whitelist IP addresses directly from within the log.',
-					'Helpful link to IP WHOIS from within the log.',
-					'Firewall logging now has its own dedicated database table.',
-					'Fix: Block email not showing the IPv4 friendly address.',
-					'You can now specify IP ranges in whitelists and blacklists.',
-					'You can now specify which email address to send the notification emails.',
-					"You can now add a comment to IP addresses in the whitelist/blacklist. To do this, write your IP address then type a SPACE and write whatever you want (don't take a new line').",
-					'You can now set to delete ALL firewall settings when you deactivate the plugin.',
-					'Improved formatting of the firewall log.'
+
+					'1.2.x'	=> array(
+						'New Feature - Ability to import settings from WordPress Firewall 2 Plugin.',
+						'New Feature - Login Form GASP-based Anti-Bot Protection.',
+						'New Feature - Login Cooldown Interval.',
+						'Performance optimizations.',
+						'UI Cleanup and code improvements.',
+						'Added new Login Protect feature where you can add 2-Factor Authentication to your WordPress user logins.',
+						'Improved method for processing the IP address lists to be more cross-platform reliable.',
+						'Improved .htaccess rules (thanks MickeyRoush).',
+						'Mailing method now uses WP_MAIL.'
+					),
+					
+					'1.1.x'	=> array(
+							'Option to check Cookies values in firewall testing.',
+							'Ability to whitelist particular pages and their parameters.',
+							'Quite a few improvements made to the reliability of the firewall processing.',
+							'Option to completely ignore logged-in Administrators from the Firewall processing (they wont even trigger logging etc).',
+							'Ability to (un)blacklist and (un)whitelist IP addresses directly from within the log.',
+							'Helpful link to IP WHOIS from within the log.',
+							'Firewall logging now has its own dedicated database table.',
+							'Fix: Block email not showing the IPv4 friendly address.',
+							'You can now specify IP ranges in whitelists and blacklists.',
+							'You can now specify which email address to send the notification emails.',
+							"You can now add a comment to IP addresses in the whitelist/blacklist. To do this, write your IP address then type a SPACE and write whatever you want (don't take a new line').",
+							'You can now set to delete ALL firewall settings when you deactivate the plugin.',
+							'Improved formatting of the firewall log.'
+					)
 				);
 				?>
+				<?php foreach( $aLog as $sVersion => $aItems ) : ?>
+				<h3>Change log for the v<?php echo $sVersion; ?> release:</h3>
 				<ul>
-				<?php foreach( $aLog as $sItem ) : ?>
-					<li><?php echo $sItem; ?></li>
-				<?php endforeach; ?>
+					<?php foreach( $aItems as $sItem ) : ?>
+						<li><?php echo $sItem; ?></li>
+					<?php endforeach; ?>
 				</ul>
+				<?php endforeach; ?>
 			  </div>
 		  </div><!-- / span6 -->
 		</div><!-- / row -->

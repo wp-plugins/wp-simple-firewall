@@ -37,27 +37,26 @@ class ICWP_BaseDbProcessor extends ICWP_BaseProcessor {
 	protected $m_sTableName;
 	
 	public function __construct( $insTableName ) {
-		global $wpdb;
-		$this->m_oWpdb = $wpdb;
 		$this->setTableName( $insTableName );
+		$this->reset();
 	}
 
 	/**
 	 * Resets the object values to be re-used anew
 	 */
 	public function reset() {
+		parent::reset();
 		global $wpdb;
 		$this->m_oWpdb = $wpdb;
-		$this->resetLog();
 	}
 	
 	public function insertIntoTable( $inaData ) {
-		$this->m_oWpdb->insert( $this->m_sTableName, $inaData );
+		return $this->m_oWpdb->insert( $this->m_sTableName, $inaData );
 	}
 	
-	public function selectAllFromTable() {
+	public function selectAllFromTable( $innFormat = ARRAY_A ) {
 		$sQuery = sprintf( "SELECT * FROM `%s` WHERE `deleted_at` = '0'", $this->m_sTableName );
-		return $this->m_oWpdb->get_results( $sQuery, ARRAY_A );
+		return $this->m_oWpdb->get_results( $sQuery, $innFormat );
 	}
 	
 	public function selectCustomFromTable( $insQuery ) {
