@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.3.0
+Version: 1.3.1
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -43,7 +43,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.3.0';
+	static public $VERSION			= '1.3.1';
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_FirewallBase;
@@ -196,7 +196,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 */
 	protected function updateLogStore() {
 
-		if ( isset( $this->m_oFirewallProcessor ) && $this->isFirewallEnabled() ) {
+		if ( isset( $this->m_oFirewallProcessor ) && is_object( $this->m_oFirewallProcessor ) && $this->isFirewallEnabled() ) {
 			$aLogData = $this->m_oFirewallProcessor->flushLogData();
 			if ( !is_null( $aLogData ) && $aLogData ) {
 				$this->loadLoggingProcessor();
@@ -204,7 +204,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			}
 		}
 
-		if ( isset( $this->m_oLoginProcessor ) && $this->isLoginProtectEnabled() ) {
+		if ( isset( $this->m_oLoginProcessor ) && is_object( $this->m_oLoginProcessor ) && $this->isLoginProtectEnabled() ) {
 			$aLogData = $this->m_oLoginProcessor->flushLogData();
 			if ( !is_null( $aLogData ) && $aLogData ) {
 				$this->loadLoggingProcessor();

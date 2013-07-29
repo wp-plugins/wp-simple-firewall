@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 
 WordPress Simple Firewall and Login Protection.
 
@@ -46,7 +46,7 @@ As of version 1.2.0+ you now have several ways to add simple protection to your 
 
 1.	[Email-based 2-Factor Login Authentication](http://www.icontrolwp.com/2013/07/add-two-factor-authentication-login-wordpress-sites/) based on IP address! (prevents brute force login attacks)
 1.	Login Cooldown interval - WordPress will only process 1 login per interval in seconds (prevents brute force login attacks)
-1.	Anti-Bot Login Form Protection - Adds 2 protection checks for all WordPress login attempts (prevents brute force login attacks using Bots)
+1.	[GASP Anti-Bot Login Form Protection](http://www.icontrolwp.com/2013/07/how-to-growmap-anti-spam-protection-wordpress-login-form/) - Adds 2 protection checks for all WordPress login attempts (prevents brute force login attacks using Bots)
 
 These options alone will protect your WordPress sites from nearly all forms of Brute Force
 login attacks.
