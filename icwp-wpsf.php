@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.3.1
+Version: 1.3.2
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -43,7 +43,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.3.1';
+	static public $VERSION			= '1.3.2';
 	
 	protected $m_aAllPluginOptions;
 	protected $m_aPluginOptions_FirewallBase;
@@ -103,7 +103,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		// checks for filesystem based firewall overrides
 		$this->override();
 
-		add_filter( 'user_has_cap', array( $this, 'disable_file_editing' ), 0, 3 );
+	//	add_filter( 'user_has_cap', array( $this, 'disable_file_editing' ), 0, 3 );
 		
 		if ( $this->isFirewallEnabled() ) {
 			
@@ -125,7 +125,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	public function disable_file_editing( $allcaps, $cap, $args ) {
 		
 		$aEditCapabilities = array( 'edit_themes', 'edit_plugins', 'edit_files' );
-		$aEditCapabilities = array( 'edit_plugins' );
 		$sRequestedCapability = $args[0];
 		
 		if ( !in_array( $sRequestedCapability, $aEditCapabilities ) ) {
