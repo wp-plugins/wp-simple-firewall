@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.3.2
+Version: 1.4.0
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -31,6 +31,9 @@ Author URI: http://icwp.io/2e
 
 require_once( dirname(__FILE__).'/src/icwp-plugins-base.php' );
 require_once( dirname(__FILE__).'/src/icwp-data-processor.php' );
+require_once( dirname(__FILE__).'/src/icwp-optionshandler-wpsf.php' );
+require_once( dirname(__FILE__).'/src/icwp-optionshandler-firewall.php' );
+require_once( dirname(__FILE__).'/src/icwp-optionshandler-loginprotect.php' );
 
 if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
@@ -43,26 +46,27 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.3.2';
+	static public $VERSION			= '1.4.0';
+
+	/**
+	 * @var ICWP_OptionsHandler_Wpsf
+	 */
+	protected $m_oWpsfOptions;
+
+	/**
+	 * @var ICWP_OptionsHandler_Firewall
+	 */
+	protected $m_oFirewallOptions;
 	
-	protected $m_aAllPluginOptions;
-	protected $m_aPluginOptions_FirewallBase;
-	protected $m_aPluginOptions_BlockTypesSection;
-	protected $m_aPluginOptions_WhitelistSection;
-	protected $m_aPluginOptions_BlacklistSection;
-	protected $m_aPluginOptions_BlockSection;
-	protected $m_aPluginOptions_FirewallMiscSection;
-
-	protected $m_aPluginOptions_LoginProtectBase;
-	protected $m_aPluginOptions_LoginProtectTwoFactorSection;
-	protected $m_aPluginOptions_LoginProtectOptionsSection;
-	protected $m_aPluginOptions_LoginProtectLoggingSection;
-	protected $m_aPluginOptions_LoginProtectMiscSection;
-
 	/**
 	 * @var ICWP_FirewallProcessor
 	 */
 	protected $m_oFirewallProcessor;
+
+	/**
+	 * @var ICWP_OptionsHandler_LoginProtect
+	 */
+	protected $m_oLoginProtectOptions;
 	
 	/**
 	 * @var ICWP_LoginProcessor
@@ -79,11 +83,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 */
 	protected $m_oEmailProcessor;
 	
-	/**
-	 * @var string
-	 */
-	protected $m_sDbTablePrefix;
-	
 	public function __construct() {
 		parent::__construct();
 
@@ -93,27 +92,31 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 		self::$PLUGIN_NAME	= basename(__FILE__);
 		self::$PLUGIN_PATH	= plugin_basename( dirname(__FILE__) );
-		self::$PLUGIN_DIR	= WP_PLUGIN_DIR.WORPIT_DS.self::$PLUGIN_PATH.WORPIT_DS;
+		self::$PLUGIN_DIR	= WP_PLUGIN_DIR.ICWP_DS.self::$PLUGIN_PATH.ICWP_DS;
 		self::$PLUGIN_URL	= plugins_url( '/', __FILE__ ) ;
 		self::$OPTION_PREFIX = self::OptionPrefix;
 		
-		$this->m_sDbTablePrefix = self::OptionPrefix;
 		$this->m_sParentMenuIdSuffix = 'wpsf';
+		
+		// loads the base plugin options from 1 db call
+		$this->loadWpsfOptions();
 
 		// checks for filesystem based firewall overrides
 		$this->override();
 
 	//	add_filter( 'user_has_cap', array( $this, 'disable_file_editing' ), 0, 3 );
 		
-		if ( $this->isFirewallEnabled() ) {
+		if ( $this->getIsMainFeatureEnabled( 'firewall' ) ) {
+			
+			$this->loadFirewallOptions();
 			
 			require_once( ABSPATH . 'wp-includes/pluggable.php' );
-			if ( self::getOption( 'whitelist_admins' ) != 'Y' && is_super_admin()  ) {
+			if ( is_super_admin() && $this->getOption( 'whitelist_admins' ) != 'Y' ) {
 				$this->runFirewallProcess();
 			}
 		}
 		
-		if ( $this->isLoginProtectEnabled() ) {
+		if ( $this->getIsMainFeatureEnabled( 'login_protect' ) ) {
 			$this->runLoginProtect();
 		}
 		
@@ -136,25 +139,25 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	
 	protected function override() {
 		if ( is_file( self::$PLUGIN_DIR . 'forceOff' ) ) {
-			self::updateOption( 'enable_firewall', 'N' );
-			self::updateOption( 'enable_login_protect', 'N' );
+			$this->setSharedOption( 'enable_firewall', 'N' );
+			$this->setSharedOption( 'enable_login_protect', 'N' );
 		}
 		else if ( is_file( self::$PLUGIN_DIR . 'forceOn' ) ) {
-			self::updateOption( 'enable_firewall', 'Y' );
-			self::updateOption( 'enable_login_protect', 'Y' );
+			$this->setSharedOption( 'enable_firewall', 'Y' );
+			$this->setSharedOption( 'enable_login_protect', 'Y' );
 		}
 		else {
 			return true;
 		}
-		$this->clearFirewallProcessorCache();
-		$this->clearLoginProcessorCache();
+		$this->resetFirewallProcessor();
+		$this->resetLoginProcessor();
 	}
 	
 	protected function genSecretKey() {
-		$sKey = self::getOption( 'secret_key' );
-		if ( $sKey === false ) {
+		$sKey = $this->m_oWpsfOptions->getOpt( 'secret_key' );
+		if ( empty( $sKey ) ) {
 			$sKey = md5( mt_rand() );
-			self::updateOption( 'secret_key', $sKey );
+			$this->m_oWpsfOptions->setOpt( 'secret_key', $sKey );
 		}
 		return $sKey;
 	}
@@ -162,7 +165,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	/**
 	 * @return boolean
 	 */
-	public function isFirewallEnabled() {
+	public function getIsMainFeatureEnabled( $insFeature ) {
 		
 		if ( is_file( self::$PLUGIN_DIR . 'forceOff' ) ) {
 			return false;
@@ -170,21 +173,42 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		else if ( is_file( self::$PLUGIN_DIR . 'forceOn' ) ) {
 			return true;
 		}
-		return self::getOption( 'enable_firewall' ) == 'Y';
+		
+		switch ( $insFeature ) {
+			case 'firewall':
+				$fEnabled = $this->m_oWpsfOptions->getOpt( 'enable_firewall' ) == 'Y';
+				break;
+			case 'login_protect':
+				$fEnabled = $this->m_oWpsfOptions->getOpt( 'enable_login_protect' ) == 'Y';
+				break;
+			default:
+				$fEnabled = false;
+		}
+		return $fEnabled;
 	}
 	
 	/**
+	 * This is necessary because we store these values in several places and we need to always keep it in sync.
+	 * 
+	 * @param string $sFeature
+	 * @param boolean $infEnabled
 	 * @return boolean
 	 */
-	public function isLoginProtectEnabled() {
+	public function setSharedOption( $insOption, $inmValue ) {
 		
-		if ( is_file( self::$PLUGIN_DIR . 'forceOff' ) ) {
-			return false;
+		switch ( $insOption ) {
+			case 'enable_firewall':
+				$this->loadFirewallOptions();
+				$this->m_oFirewallOptions->setOpt( $insOption, $inmValue );
+				break;
+			case 'enable_login_protect':
+				$this->loadLoginProtectOptions();
+				$this->m_oLoginProtectOptions->setOpt( $insOption, $inmValue );
+				break;
 		}
-		else if ( is_file( self::$PLUGIN_DIR . 'forceOn' ) ) {
-			return true;
-		}
-		return self::getOption( 'enable_login_protect' ) == 'Y';
+		
+		$this->m_oWpsfOptions->setOpt( $insOption, $inmValue );
+		self::updateOption( $insOption, $inmValue );
 	}
 	
 	/**
@@ -195,7 +219,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 */
 	protected function updateLogStore() {
 
-		if ( isset( $this->m_oFirewallProcessor ) && is_object( $this->m_oFirewallProcessor ) && $this->isFirewallEnabled() ) {
+		if ( isset( $this->m_oFirewallProcessor ) && is_object( $this->m_oFirewallProcessor ) && $this->getIsMainFeatureEnabled( 'firewall' ) ) {
 			$aLogData = $this->m_oFirewallProcessor->flushLogData();
 			if ( !is_null( $aLogData ) && $aLogData ) {
 				$this->loadLoggingProcessor();
@@ -203,12 +227,36 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			}
 		}
 
-		if ( isset( $this->m_oLoginProcessor ) && is_object( $this->m_oLoginProcessor ) && $this->isLoginProtectEnabled() ) {
+		if ( isset( $this->m_oLoginProcessor ) && is_object( $this->m_oLoginProcessor ) && $this->getIsMainFeatureEnabled( 'login_protect' ) ) {
 			$aLogData = $this->m_oLoginProcessor->flushLogData();
 			if ( !is_null( $aLogData ) && $aLogData ) {
 				$this->loadLoggingProcessor();
 				$this->m_oLoggingProcessor->writeLog( $aLogData );
 			}
+		}
+	}
+	
+	protected function loadAllOptions() {
+		$this->loadWpsfOptions();
+		$this->loadFirewallOptions();
+		$this->loadLoginProtectOptions();
+	}
+	
+	protected function loadWpsfOptions() {
+		if ( !isset( $this->m_oWpsfOptions ) ) {
+			$this->m_oWpsfOptions = new ICWP_OptionsHandler_Wpsf( self::OptionPrefix, 'plugin_options', self::$VERSION );
+		}
+	}
+	
+	protected function loadFirewallOptions() {
+		if ( !isset( $this->m_oFirewallOptions ) ) {
+			$this->m_oFirewallOptions = new ICWP_OptionsHandler_Firewall( self::OptionPrefix, 'firewall_options', self::$VERSION );
+		}
+	}
+	
+	protected function loadLoginProtectOptions() {
+		if ( !isset( $this->m_oLoginProtectOptions ) ) {
+			$this->m_oLoginProtectOptions = new ICWP_OptionsHandler_LoginProtect( self::OptionPrefix, 'loginprotect_options', self::$VERSION );
 		}
 	}
 	
@@ -220,19 +268,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 */
 	protected function loadFirewallProcessor( $infReset = false ) {
 		
-		$this->loadEmailProcessor();
-		
 		require_once( dirname(__FILE__).'/src/icwp-firewall-processor.php' );
 
 		if ( empty( $this->m_oFirewallProcessor ) ) {
 			
 			$this->m_oFirewallProcessor = self::getOption( 'firewall_processor' );
-			
+
 			if ( is_object( $this->m_oFirewallProcessor ) && ( $this->m_oFirewallProcessor instanceof ICWP_FirewallProcessor ) ) {
 				$this->m_oFirewallProcessor->reset();
 			}
 			else {
-				//collect up all the settings to pass to the processor
+				$this->loadFirewallOptions();
+				
+				// collect up all the settings to pass to the processor
 				$aSettingSlugs = array(
 					'include_cookie_checks',
 					'block_wplogin_access',
@@ -244,37 +292,47 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					'block_leading_schema'
 				);
 				$aBlockSettings = array();
-				foreach( $aSettingSlugs as $sSetting ) {
-					$aBlockSettings[ $sSetting ] = self::getOption( $sSetting ) == 'Y';
+				foreach( $aSettingSlugs as $sSettingKey ) {
+					$aBlockSettings[ $sSettingKey ] = $this->m_oFirewallOptions->getOpt( $sSettingKey ) == 'Y';
+					
 				}
-				$aIpWhitelist = self::getOption( 'ips_whitelist' );
-				if ( $aIpWhitelist === false || !is_array( $aIpWhitelist ) ) {
-					$aIpWhitelist = array();
-					self::updateOption( 'ips_whitelist', $aIpWhitelist );
+
+				$aIpWhitelist = $this->m_oFirewallOptions->getOpt( 'ips_whitelist' );
+				if ( $aIpWhitelist === false ) {
+					$aIpWhitelist = '';
+					$this->m_oFirewallOptions->setOpt( 'ips_whitelist', $aIpWhitelist );
 				}
-				$aIpBlacklist = self::getOption( 'ips_blacklist' );
-				if ( $aIpBlacklist === false || !is_array( $aIpBlacklist ) ) {
-					$aIpBlacklist = array();
-					self::updateOption( 'ips_blacklist', $aIpBlacklist );
+				
+				$aIpBlacklist = $this->m_oFirewallOptions->getOpt( 'ips_blacklist' );
+				if ( $aIpBlacklist === false ) {
+					$aIpBlacklist = '';
+					$this->m_oFirewallOptions->setOpt( 'ips_blacklist', $aIpBlacklist );
 				}
-				$aPageWhitelist = self::getOption( 'page_params_whitelist' );
-				if ( $aPageWhitelist === false || !is_array( $aPageWhitelist ) ) {
-					$aPageWhitelist = array();
-					self::updateOption( 'page_params_whitelist', $aPageWhitelist );
+				
+				$aPageWhitelist = $this->m_oFirewallOptions->getOpt( 'page_params_whitelist' );
+				if ( $aPageWhitelist === false ) {
+					$aPageWhitelist = '';
+					$this->m_oFirewallOptions->setOpt( 'page_params_whitelist', $aPageWhitelist );
 				}
-				$sBlockResponse = self::getOption( 'block_response' );
+				
+				$sBlockResponse = $this->m_oFirewallOptions->getOpt( 'block_response' );
 				if ( empty( $sBlockResponse ) ) {
 					$sBlockResponse = 'redirect_die_message';
-					self::updateOption( 'block_response', $sBlockResponse );
+					$aIpWhitelist = $this->m_oFirewallOptions->setOpt( 'block_response', $sBlockResponse );
 				}
+				
 				$this->m_oFirewallProcessor = new ICWP_FirewallProcessor( $aBlockSettings, $aIpWhitelist, $aIpBlacklist, $aPageWhitelist, $sBlockResponse );
-				$this->m_oFirewallProcessor->setLogging( self::getOption( 'enable_firewall_log' ) == 'Y' );
+				$this->m_oFirewallProcessor->setLogging( $this->m_oFirewallOptions->getOpt( 'enable_firewall_log' ) == 'Y' );
 			}
 		}
 		else if ( $infReset ) {
 			$this->m_oFirewallProcessor->reset();
 		}
-		$this->m_oFirewallProcessor->setEmailHandler( $this->m_oEmailProcessor );
+		
+		if ( $this->m_oFirewallOptions->getOpt( 'block_send_email' ) === 'Y' ) {
+			$this->loadEmailProcessor();
+			$this->m_oFirewallProcessor->setEmailHandler( $this->m_oEmailProcessor );
+		}
 	}
 	
 	/**
@@ -284,11 +342,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * @param boolean $infReset
 	 */
 	protected function loadLoginProcessor( $infReset = false ) {
-		
-		$this->loadEmailProcessor();
+				
+		$this->loadLoginProtectOptions();
 		
 		require_once( dirname(__FILE__).'/src/icwp-login-processor.php' );
-
+		
 		if ( empty( $this->m_oLoginProcessor ) ) {
 			$this->m_oLoginProcessor = self::getOption( 'login_processor' );
 
@@ -297,20 +355,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			}
 			else {
 				// collect up all the settings to pass to the processor
-				$nRequiredLoginInterval = self::getOption( 'login_limit_interval' );
-				if ( $nRequiredLoginInterval === false || $nRequiredLoginInterval < 0 ) {
-					$nRequiredLoginInterval = 0;
-					self::updateOption( 'login_limit_interval', $nRequiredLoginInterval );
-				}
-				$this->m_oLoginProcessor = new ICWP_LoginProcessor( $nRequiredLoginInterval, $this->genSecretKey() );
-				$this->m_oLoginProcessor->setEmailHandler( $this->m_oEmailProcessor );
-				$this->m_oLoginProcessor->setLogging( self::getOption( 'enable_login_protect_log' ) == 'Y' );
-				$this->m_oLoginProcessor->setTwoFactorByPassOnFail( self::getOption( 'enable_two_factor_bypass_on_email_fail' ) == 'Y' );
+				$this->m_oLoginProcessor = new ICWP_LoginProcessor( $this->genSecretKey() );
+				
+				$this->m_oLoginProcessor->setLogging( $this->m_oLoginProtectOptions->getOpt( 'enable_login_protect_log' ) );
+				$this->m_oLoginProcessor->setLoginCooldownInterval( $this->m_oLoginProtectOptions->getOpt( 'login_limit_interval' ) );
+				$this->m_oLoginProcessor->setTwoFactorByPassOnFail( $this->m_oLoginProtectOptions->getOpt( 'enable_two_factor_bypass_on_email_fail' ) == 'Y' );
 			}
 		}
 		else if ( $infReset ) {
 			$this->m_oLoginProcessor->reset();
 		}
+		
+		$this->loadEmailProcessor();
+		$this->m_oLoginProcessor->setEmailHandler( $this->m_oEmailProcessor );
 	}
 	
 	/**
@@ -320,8 +377,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * @param boolean $infReset
 	 */
 	protected function loadLoggingProcessor( $infReset = false ) {
-		
-		$this->loadEmailProcessor();
 		
 		require_once( dirname(__FILE__).'/src/icwp-logging-processor.php' );
 
@@ -334,12 +389,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			else {
 				// collect up all the settings to pass to the processor
 				$this->m_oLoggingProcessor = new ICWP_LoggingProcessor();
-				$this->m_oLoggingProcessor->setEmailHandler( $this->m_oEmailProcessor );
 			}
 		}
 		else if ( $infReset ) {
 			$this->m_oLoggingProcessor->reset();
 		}
+		$this->loadEmailProcessor();
+		$this->m_oLoggingProcessor->setEmailHandler( $this->m_oEmailProcessor );
 	}
 	
 	/**
@@ -365,7 +421,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				require_once( ABSPATH . 'wp-includes/pluggable.php' );
 				$sSiteName = ( function_exists('get_bloginfo') )? get_bloginfo('name') : '';
 				
-				$sEmail = self::getOption( 'block_send_email_address');
+				$sEmail = $this->m_oWpsfOptions->getOpt( 'block_send_email_address');
 				if ( empty( $sEmail ) || !is_email( $sEmail ) ) {
 					$sEmail = get_option('admin_email');
 				}
@@ -373,7 +429,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					$this->m_oEmailProcessor->setRecipientAddress( $sEmail );
 				}
 
-				$sLimit = self::getOption( 'send_email_throttle_limit');
+				$sLimit = $this->m_oWpsfOptions->getOpt( 'send_email_throttle_limit' );
 				if ( !is_numeric( $sLimit ) ) {
 					$sLimit = 0;
 				}
@@ -395,7 +451,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	public function runFirewallProcess() {
 		
 		$this->loadFirewallProcessor( true );
-		
 		$fFirewallBlockUser = !$this->m_oFirewallProcessor->doFirewallCheck();
 
 		if ( $fFirewallBlockUser ) {
@@ -422,7 +477,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					break;
 			}
 			
-			if ( self::getOption( 'block_send_email' ) === 'Y' ) {
+			if ( $this->m_oFirewallOptions->getOpt( 'block_send_email' ) === 'Y' ) {
 				$this->m_oFirewallProcessor->sendBlockEmail();
 			}
 			
@@ -437,31 +492,30 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Handles the running of all login protection processes.
 	 */
 	public function runLoginProtect() {
+		
+		$this->loadLoginProcessor();
 
-		if ( self::getOption( 'enable_two_factor_auth_by_ip' ) == 'Y' ) {
+		if ( $this->m_oLoginProtectOptions->getOpt( 'enable_two_factor_auth_by_ip' ) == 'Y' ) {
 			
 			// User has clicked a link in their email to validate their IP address for login.
 			if ( isset( $_GET['wpsf-action'] ) && $_GET['wpsf-action'] == 'linkauth' ) {
-				$this->loadLoginProcessor();
 				$this->m_oLoginProcessor->validateUserAuthLink();
 			}
 			
 			// If their click was successful we give them a lovely message
 			if ( isset( $_GET['wpsfipverified']) ) {
-				$this->loadLoginProcessor();
 				add_filter( 'login_message', array( $this, 'displayVerifiedUserMessage_Filter' ) );
 			}
-		
+			
 			// Performs all the custom login authentication checking
 			add_action( 'wp_authenticate', array( $this, 'prepareLoginProcessor_Action' ) );
-				
+			
 			// Check the current logged-in user every page load.
 			add_action( 'init', array( $this, 'checkCurrentUserAuth_Action' ) );
-			
 		}
 
 		// Add GASP checking to the login form.
-		if ( self::getOption( 'enable_login_gasp_check' ) == 'Y' ) {
+		if ( $this->m_oLoginProtectOptions->getOpt( 'enable_login_gasp_check' ) == 'Y' ) {
 			add_action( 'login_form', array( $this, 'printGaspLoginCheck_Action' ) );
 			add_filter( 'login_form_middle', array( $this, 'printGaspLoginCheck_Filter' ) );
 			add_filter( 'authenticate', array( $this, 'checkLoginForGasp_Filter' ), 9, 3);
@@ -469,12 +523,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}
 	
 	public function printGaspLoginCheck_Action() {
-		$this->loadLoginProcessor();
 		echo $this->m_oLoginProcessor->getGaspLoginHtml();
 	}
 	
 	public function printGaspLoginCheck_Filter() {
-		$this->loadLoginProcessor();
 		return $this->m_oLoginProcessor->getGaspLoginHtml();
 	}
 	
@@ -483,8 +535,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( empty( $insUsername ) || is_wp_error( $inoUser ) ) {
 			return $inoUser;
 		}
-		
-		$this->loadLoginProcessor();
 		$this->m_oLoginProcessor->doGaspChecks( $insUsername );
 	}
 	
@@ -498,7 +548,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	public function checkCurrentUserAuth_Action() {
 		
 		if ( is_user_logged_in() ) {
-			$this->loadLoginProcessor();
 			$this->m_oLoginProcessor->verifyCurrentUser();
 		}
 	}
@@ -526,6 +575,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 		$this->updateLogStore();
 		
+		if ( isset( $this->m_oWpsfOptions ) ) {
+			$this->m_oWpsfOptions->savePluginOptions( false );
+		}
+		if ( isset( $this->m_oFirewallOptions ) ) {
+			$this->m_oFirewallOptions->savePluginOptions( false );
+		}
+		if ( isset( $this->m_oLoginProtectOptions ) ) {
+			$this->m_oLoginProtectOptions->savePluginOptions( false );
+		}
 		if ( isset( $this->m_oFirewallProcessor ) ) {
 			self::updateOption( 'firewall_processor', $this->m_oFirewallProcessor );
 		}
@@ -545,306 +603,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$insMessage .= '<h3 style="'.$sStyles.'">You successfully verified your IP address - you may now login.</h3>';
 		return $insMessage;
 	}
-	
-	protected function initPluginOptions() {
-
-		$this->m_aPluginOptions_FirewallBase = 	array(
-			'section_title' => 'Enable WordPress Firewall',
-			'section_options' => array(
-				array(
-					'enable_firewall',
-					'',	'N',
-					'checkbox',
-					'Enable Firewall',
-					'Enable (or Disable) The WordPress Firewall Feature',
-					'Regardless of any other settings, this option will turn Off the Firewall feature, or enable your selected Firewall options.' )
-			)
-		);
-		$this->m_aPluginOptions_BlockTypesSection =  array(
-			'section_title' => 'Firewall Blocking Options',
-			'section_options' => array(
-				array(
-					'include_cookie_checks',
-					'',
-					'N',
-					'checkbox',
-					'Include Cookies',
-					'Also Test Cookie Values In Firewall Tests',
-					'The firewall will test GET and POST, but with this option checked, it will also COOKIE values for the same.'
-				),
-				array(
-					'block_wplogin_access',
-					'',
-					'N',
-					'checkbox',
-					'Login Access',
-					'Block WP Login Access',
-					'This will block access to the WordPress Login (wp-login.php) except to IP Addresses on the whitelist. If the IP whitelist is empty, this setting is ignored (so you do not lock yourself out!)'
-				),
-				array(
-					'block_dir_traversal',
-					'',
-					'N',
-					'checkbox',
-					'Directory Traversals',
-					'Block Directory Traversals',
-					'This will block directory traversal paths in in application parameters (../, ../../etc/passwd, etc.)'
-				),
-				array(
-					'block_sql_queries',
-					'',
-					'N',
-					'checkbox',
-					'SQL Queries',
-					'Block SQL Queries',
-					'This will block in application parameters (union select, concat(, /**/, etc.).'
-				),
-				array(
-					'block_wordpress_terms',
-					'',
-					'N',
-					'checkbox',
-					'WordPress Terms',
-					'Block WordPress Specific Terms',
-					'This will block WordPress specific terms in application parameters (wp_, user_login, etc.).'
-				),
-				array(
-					'block_field_truncation',
-					'',
-					'N',
-					'checkbox',
-					'Field Truncation',
-					'Block Field Truncation Attacks',
-					'This will block field truncation attacks in application parameters.'
-				),
-				array(
-					'block_exe_file_uploads',
-					'',
-					'N',
-					'checkbox',
-					'Exe File Uploads',
-					'Block Executable File Uploads',
-					'This will block executable file uploads (.php, .exe, etc.).'
-				),
-				array(
-					'block_leading_schema',
-					'',
-					'N',
-					'checkbox',
-					'Leading Schemas',
-					'Block Leading Schemas (HTTPS / HTTP)',
-					'This will block leading schemas http:// and https:// in application parameters (off by default; may cause problems with many plugins).'
-				)
-			),
-		);
-		$this->m_aRedirectOptions = array( 'select',
-			array( 'redirect_die_message',	'Die With Message' ),
-			array( 'redirect_die', 			'Die' ),
-			array( 'redirect_home',			'Redirect To Home Page' ),
-			array( 'redirect_404',			'Return 404' ),
-		);
-		$this->m_aPluginOptions_BlockSection = array(
-			'section_title' => 'Choose Firewall Block Response',
-			'section_options' => array(
-				array( 'block_response',			'',	'none',	$this->m_aRedirectOptions,	'Block Response',	'Choose how the firewall responds when it blocks a request', '' ),
-				array( 'block_send_email',			'',	'N',	'checkbox',	'Send Email Report',	'When a visitor is blocked it will send an email to the blog admin', 'Use with caution - if you get hit by automated bots you may send out too many emails and you could get blocked by your host.' ),
-				array( 'block_send_email_address',	'',	'',		'email',	'Report Email',		'Where to send email reports', 'If this is empty, it will default to the blog admin email address.' ),
-				array(
-					'send_email_throttle_limit',
-					'',
-					'0',
-					'integer',
-					'Email Throttle Limit',
-					'Limit Emails Per Second',
-					'You throttle emails sent by this plugin by limiting the number of emails sent every second. This is useful in case you get hit by a bot attack. Zero (0) turns this off.  Suggested: 10'
-				),
-			)
-		);
-		
-		$this->m_aPluginOptions_WhitelistSection = array(
-			'section_title' => 'Whitelist - IPs, Pages, Parameters, and Users that by-pass the Firewall',
-			'section_options' => array(
-				array(
-					'ips_whitelist',
-					'',
-					'none',
-					'ip_addresses',
-					'Whitelist IP Addresses',
-					'Choose IP Addresses that are never subjected to Firewall Rules',
-					sprintf( 'Take a new line per address. Your IP address is: %s', '<span class="code">'.self::GetVisitorIpAddress().'</span>' )
-				),
-				array(
-					'page_params_whitelist',
-					'',
-					'',
-					'comma_separated_lists',
-					'Whitelist Paramaters',
-					'Detail pages and parameters that are whitelisted (ignored)',
-					'This should be used with caution and you should only provide parameter names that you need to have excluded.'
-						.' [<a href="http://icwp.io/2a" target="_blank">Help</a>]'
-				),
-				array(
-					'whitelist_admins',
-					'',
-					'N',
-					'checkbox',
-					'Ignore Administrators',
-					'Ignore users logged in as Administrator',
-					'Authenticated administrator users will not be processed by the firewall.'
-				)
-			)
-		);
-		
-		$this->m_aPluginOptions_BlacklistSection = array(
-			'section_title' => 'Choose IP Addresses To Blacklist',
-			'section_options' => array(
-				array(
-					'ips_blacklist',
-					'',
-					'none',
-					'ip_addresses',
-					'Blacklist IP Addresses',
-					'Choose IP Addresses that are always blocked access to the site',
-					'Take a new line per address. Each IP Address must be valid and will be checked.'
-				)
-			)
-		);
-		$this->m_aPluginOptions_FirewallMiscSection = array(
-			'section_title' => 'Miscellaneous Plugin Options',
-			'section_options' => array(
-				array(
-					'enable_firewall_log',
-					'',	'N',
-					'checkbox',
-					'Firewall Logging',
-					'Turn on a detailed Firewall Log',
-					'Will log every visit to the site and how the firewall processes it. Not recommended to leave on unless you want to debug something and check the firewall is working as you expect.'
-				),
-				array(
-					'delete_on_deactivate',
-					'',
-					'N',
-					'checkbox',
-					'Delete Plugin Settings',
-					'Delete All Plugin Settings Upon Plugin Deactivation',
-					'Careful: Removes all plugin options when you deactivite the plugin.'
-				),
-			),
-		);
-		
-		$this->m_aPluginOptions_LoginProtectBase = array(
-			'section_title' => 'Enable Login Protection',
-			'section_options' => array(
-				array(
-					'enable_login_protect',
-					'',
-					'N',
-					'checkbox',
-					'Enable Login Protect',
-					'Enable (or Disable) The Login Protection Feature',
-					'Regardless of any other settings, this option will turn Off the Login Protect feature, or enable your selected Login Protect options.'
-				),
-			),
-		);
-		$this->m_aPluginOptions_LoginProtectTwoFactorSection = array(
-			'section_title' => 'Two-Factor Authentication Protection Options',
-			'section_options' => array(
-				array(
-					'enable_two_factor_auth_by_ip',
-					'',
-					'N',
-					'checkbox',
-					'Two-Factor Authentication',
-					'Two-Factor Login Authentication By IP Address',
-					'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address.'
-				),
-				array(
-					'enable_two_factor_bypass_on_email_fail',
-					'',
-					'N',
-					'checkbox',
-					'By-Pass On Failure',
-					'If Sending Verification Email Sending Fails, Two-Factor Login Authentication Is Ignored',
-					'If you enable two-factor authentication and sending the email with the verification link fails, turning this setting on will by-pass the verification step. Use with caution.'
-				),
-			),
-		);
-		$this->m_aPluginOptions_LoginProtectOptionsSection = array(
-			'section_title' => 'Login Protection Options',
-			'section_options' => array(
-				array(
-					'login_limit_interval',
-					'',
-					'0',
-					'integer',
-					'Login Cooldown Interval',
-					'Limit login attempts to every X seconds',
-					'WordPress will process only ONE login attempt for every number of seconds specified. Zero (0) turns this off.'
-				),
-				array(
-					'enable_login_gasp_check',
-					'', '0',
-					'checkbox',
-					'G.A.S.P Protection',
-					'Prevent Login By Bots using G.A.S.P. Protection',
-					'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques.'
-				),
-			),
-		);
-		
-		$this->m_aPluginOptions_LoginProtectLoggingSection = array(
-			'section_title' => 'Logging Options',
-			'section_options' => array(
-				array(
-					'enable_login_protect_log',
-					'',	'N',
-					'checkbox',
-					'Login Protect Logging',
-					'Turn on a detailed Login Protect Log',
-					'Will log every event related to login protection and how it is processed. Not recommended to leave on unless you want to debug something and check the login protection is working as you expect.'
-				),
-			),
-		);
-		
-		$this->m_aPluginOptions_LoginProtectMiscSection = array(
-			'section_title' => 'Miscellaneous Plugin Options',
-			'section_options' => array(
-				array(
-					'delete_on_deactivate',
-					'', 'N',
-					'checkbox',
-					'Delete Plugin Settings',
-					'Delete All Plugin Settings Upon Plugin Deactivation',
-					'Careful: Removes all plugin options when you deactivite the plugin.'
-				),
-			),
-		);
-
-		$this->m_aAllPluginOptions = array(
-			&$this->m_aPluginOptions_FirewallBase,
-			&$this->m_aPluginOptions_BlockSection,
-			&$this->m_aPluginOptions_WhitelistSection,
-			&$this->m_aPluginOptions_BlacklistSection,
-			&$this->m_aPluginOptions_BlockTypesSection,
-			&$this->m_aPluginOptions_FirewallMiscSection,
-			&$this->m_aPluginOptions_LoginProtectBase,
-			&$this->m_aPluginOptions_LoginProtectTwoFactorSection,
-			&$this->m_aPluginOptions_LoginProtectOptionsSection,
-			&$this->m_aPluginOptions_LoginProtectLoggingSection,
-			&$this->m_aPluginOptions_LoginProtectMiscSection
-		);
-
-		return true;
-		
-	}//initPluginOptions
-	
-	public function onWpPluginsLoaded() {
-		parent::onWpPluginsLoaded();
-	}//onWpPluginsLoaded
-
-	public function onWpInit() {
-		parent::onWpInit();
-	}//onWpInit
 	
 	public function onWpAdminInit() {
 		parent::onWpAdminInit();
@@ -872,15 +630,50 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 
 	protected function handlePluginUpgrade() {
 		
-		$sCurrentPluginVersion = self::getOption( 'current_plugin_version' );
+		$sCurrentPluginVersion = $this->m_oWpsfOptions->getOpt( 'current_plugin_version' );
 		
 		if ( $sCurrentPluginVersion !== self::$VERSION && current_user_can( 'manage_options' ) ) {
+			
+			$this->loadLoggingProcessor();
+			$this->m_oLoggingProcessor->handleInstallUpgrade( $sCurrentPluginVersion );
+			
+			// handles migration to new dedicated options system
+			$this->loadAllOptions();
 
 			// clears all the processor caches
 			$this->clearCaches();
 			
-			$this->loadLoggingProcessor();
-			$this->m_oLoggingProcessor->handleInstallUpgrade( $sCurrentPluginVersion );
+			// delete all the old stuff
+			$aOldOptionKeys = array (
+				'current_plugin_version',
+				'feedback_admin_notice',
+				'secret_key',
+				'block_send_email',
+				'block_send_email_address',
+				'send_email_throttle_limit',
+				'delete_on_deactivate',
+				'include_cookie_checks',
+				'block_wplogin_access',
+				'block_dir_traversal',
+				'block_sql_queries',
+				'block_wordpress_terms',
+				'block_field_truncation',
+				'block_exe_file_uploads',
+				'block_leading_schema',
+				'ips_whitelist',
+				'ips_blacklist',
+				'page_params_whitelist',
+				'block_response',
+				'enable_firewall_log',
+				'enable_two_factor_auth_by_ip',
+				'enable_two_factor_bypass_on_email_fail',
+				'login_limit_interval',
+				'enable_login_gasp_check',
+				'enable_login_protect_log'
+			);
+			foreach( $aOldOptionKeys as $sOptionKey ) {
+ 				self::deleteOption( $sOptionKey );
+			}
 			
 			// delete the old option.
 			if ( version_compare( $sCurrentPluginVersion, '1.1.1', '<' ) ) {
@@ -888,8 +681,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			}
 			
 			// introduced IP ranges in version 1.1.0 so anyone that is less than this must convert their IPs.
+			// as of v1.3.3+ no longer support this conversion.
 			if ( version_compare( $sCurrentPluginVersion, '1.1.0', '<' ) ) {
-				
+				/*
 				$aIpWhitelist = self::getOption( 'ips_whitelist' );
 				if ( !empty( $aIpWhitelist ) ) {
 					$aNewList = array();
@@ -907,10 +701,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					}
 					self::updateOption( 'ips_blacklist', ICWP_DataProcessor::Add_New_Raw_Ips( array(), $aNewList ) );
 				}
+				*/
 			}
-			
-			//Set the flag so that this update handler isn't run again for this version.
-			self::updateOption( 'current_plugin_version', self::$VERSION );
 			
 		}//if
 		
@@ -928,7 +720,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}
 	
 	public function onWpAdminNotices() {
-		
 		//Do we have admin priviledges?
 		if ( !current_user_can( 'manage_options' ) ) {
 			return;
@@ -939,76 +730,53 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	
 	public function onDisplayMainMenu() {
 
-		//populates plugin options with existing configuration
-		$this->readyAllPluginOptions();
+		$aAvailableOptions = $this->m_oWpsfOptions->getOptions();
+		$sAllFormInputOptions = $this->m_oWpsfOptions->collateAllFormInputsForAllOptions();
 		
 		$aData = array(
 			'plugin_url'		=> self::$PLUGIN_URL,
+			'var_prefix'		=> self::OptionPrefix,
 			'aAllOptions'		=> $aAvailableOptions,
 			'fShowAds'			=> $this->isShowMarketing(),
-
-			'fFirewallOn'		=> $this->isFirewallEnabled(),
-			'fFirewallLogOn'	=> self::getOption( 'enable_firewall_log' )== 'Y',
-			'sBlockResponse'	=> self::getOption( 'block_response' ),
-			'fBlockSendEmail'	=> self::getOption( 'block_send_email' ) == 'Y',
-			'aIpWhitelist'		=> self::getOption( 'ips_whitelist' ),
-			'aIpBlacklist'		=> self::getOption( 'ips_blacklist' ),
-			'fBlockLogin'		=> self::getOption( 'block_wplogin_access' )== 'Y',
-			'fBlockDirTrav'		=> self::getOption( 'block_dir_traversal' )== 'Y',
-			'fBlockSql'			=> self::getOption( 'block_sql_queries' )== 'Y',
-			'fBlockWpTerms'		=> self::getOption( 'block_wordpress_terms' )== 'Y',
-			'fBlockFieldTrun'	=> self::getOption( 'block_field_truncation' )== 'Y',
-			'fBlockExeFile'		=> self::getOption( 'block_exe_file_uploads' )== 'Y',
-			'fBlockSchema'		=> self::getOption( 'block_leading_schema' )== 'Y',
-
-			'fLoginProtectOn'		=> $this->isLoginProtectEnabled(),
-			'fTwoFactorIpOn'		=> self::getOption( 'enable_two_factor_auth_by_ip' ) == 'Y',
-			'sLoginLimitInterval'	=> self::getOption( 'login_limit_interval' ),
+			'all_options_input'	=> $sAllFormInputOptions,
+			'nonce_field'		=> $this->getSubmenuId('wpsf-dashboard'),
+			'form_action'		=> 'admin.php?page='.$this->getSubmenuId()
 		);
+
+		$aData['aMainOptions'] = $this->m_oWpsfOptions->getOptionValues();
+		if ( $this->getIsMainFeatureEnabled('firewall') ) {
+			$aData['aFirewallOptions'] = $this->m_oFirewallOptions->getOptionValues();
+		}
+		if ( $this->getIsMainFeatureEnabled('login_protect') ) {
+			$aData['aLoginProtectOptions'] = $this->m_oLoginProtectOptions->getOptionValues();
+		}
 
 		$this->display( 'icwp_'.$this->m_sParentMenuIdSuffix.'_index', $aData );
 	}
 
 	public function onDisplayFirewallConfig() {
-		
-		//populates plugin options with existing configuration
-		$this->readyAllPluginOptions();
 
-		//Specify what set of options are available for this page
-		if ( $this->isFirewallEnabled() ) {
-			$aAvailableOptions = array(
-				&$this->m_aPluginOptions_FirewallBase,
-				&$this->m_aPluginOptions_BlockSection,
-				&$this->m_aPluginOptions_WhitelistSection,
-				&$this->m_aPluginOptions_BlacklistSection,
-				&$this->m_aPluginOptions_BlockTypesSection,
-				&$this->m_aPluginOptions_FirewallMiscSection
-			);
-		}
-		else {
-			$aAvailableOptions = array(
-				&$this->m_aPluginOptions_FirewallBase,
-			);
-		}
+		$this->loadFirewallOptions();
+		$aAvailableOptions = $this->m_oFirewallOptions->getOptions();
+		$sAllFormInputOptions = $this->m_oFirewallOptions->collateAllFormInputsForAllOptions();
 
-		$sAllFormInputOptions = $this->collateAllFormInputsForAllOptions( $aAvailableOptions );
 		$aData = array(
 			'plugin_url'		=> self::$PLUGIN_URL,
 			'var_prefix'		=> self::OptionPrefix,
 			'fShowAds'			=> $this->isShowMarketing(),
 			'aAllOptions'		=> $aAvailableOptions,
 			'all_options_input'	=> $sAllFormInputOptions,
-			'nonce_field'		=> $this->getSubmenuId('firewall').'_config',
-			'form_action'		=> 'admin.php?page='.$this->getSubmenuId('firewall-config'),
+			'nonce_field'		=> $this->getSubmenuId('firewall-config'),
+			'form_action'		=> 'admin.php?page='.$this->getSubmenuId('firewall-config')
 		);
-
 		$this->display( 'icwp_wpsf_firewall_config_index', $aData );
 	}
 	
 	public function onDisplayFirewallLog() {
 
-		$aIpWhitelist = self::getOption( 'ips_whitelist' );
-		$aIpBlacklist = self::getOption( 'ips_blacklist' );
+		$this->loadFirewallOptions();
+		$aIpWhitelist = $this->m_oFirewallOptions->getOpt( 'ips_whitelist' );
+		$aIpBlacklist = $this->m_oFirewallOptions->getOpt( 'ips_blacklist' );
 		
 		$this->loadLoggingProcessor();
 
@@ -1019,7 +787,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			'ip_whitelist'		=> isset( $aIpWhitelist['ips'] )? $aIpWhitelist['ips'] : array(),
 			'ip_blacklist'		=> isset( $aIpBlacklist['ips'] )? $aIpBlacklist['ips'] : array(),
 			'fShowAds'			=> $this->isShowMarketing(),
-			'nonce_field'		=> $this->getSubmenuId('firewall_log'),
+			'nonce_field'		=> $this->getSubmenuId('firewall-log'),
 			'form_action'		=> 'admin.php?page='.$this->getSubmenuId('firewall-log'),
 		);
 
@@ -1028,26 +796,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	
 	public function onDisplayLoginProtect() {
 		
-		//populates plugin options with existing configuration
-		$this->readyAllPluginOptions();
+		$this->loadLoginProtectOptions();
+		$aAvailableOptions = $this->m_oLoginProtectOptions->getOptions();
+		$sAllFormInputOptions = $this->m_oLoginProtectOptions->collateAllFormInputsForAllOptions();
 
-		//Specify what set of options are available for this page
-		if ( $this->isLoginProtectEnabled() ) {
-			$aAvailableOptions = array(
-				&$this->m_aPluginOptions_LoginProtectBase,
-				&$this->m_aPluginOptions_LoginProtectTwoFactorSection,
-				&$this->m_aPluginOptions_LoginProtectOptionsSection,
- 				&$this->m_aPluginOptions_LoginProtectLoggingSection,
-				&$this->m_aPluginOptions_LoginProtectMiscSection
-			);
-		}
-		else {
-			$aAvailableOptions = array(
-				&$this->m_aPluginOptions_LoginProtectBase
-			);
-		}
-
-		$sAllFormInputOptions = $this->collateAllFormInputsForAllOptions( $aAvailableOptions );
 		$aData = array(
 			'plugin_url'		=> self::$PLUGIN_URL,
 			'var_prefix'		=> self::OptionPrefix,
@@ -1069,8 +821,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 		if ( isset( $_GET['page'] ) ) {
 			switch ( $_GET['page'] ) {
+				case $this->getSubmenuId():
+					$this->handleSubmit_Dashboard();
+					break;
 				case $this->getSubmenuId( 'firewall-config' ):
-					$this->handleSubmit_FirewallConfigOptions();
+					$this->handleSubmit_FirewallConfig();
 					break;
 				case $this->getSubmenuId( 'firewall-log' ):
 					$this->handleSubmit_FirewallLog();
@@ -1078,51 +833,74 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				case $this->getSubmenuId( 'login-protect' ):
 					$this->handleSubmit_LoginProtect();
 					break;
+				default:
+					return;
+					break;
 			}
 		}
 		
 		if ( !self::$m_fUpdateSuccessTracker ) {
-			self::updateOption( 'feedback_admin_notice', 'Updating Settings <strong>Failed</strong>.' );
+			$this->m_oWpsfOptions->setOpt( 'feedback_admin_notice', 'Updating Settings <strong>Failed</strong>.' );
 		}
 		else {
-			self::updateOption( 'feedback_admin_notice', 'Updating Settings <strong>Succeeded</strong>.' );
+			$this->m_oWpsfOptions->setOpt( 'feedback_admin_notice', 'Updating Settings <strong>Succeeded</strong>.' );
 		}
-		
 	}
 	
-	protected function handleSubmit_FirewallConfigOptions() {
+	protected function handleSubmit_Dashboard() {
 		//Ensures we're actually getting this request from WP.
-		check_admin_referer( $this->getSubmenuId('firewall').'_config' );
+		check_admin_referer( $this->getSubmenuId('wpsf-dashboard') );
 
-		$this->clearFirewallProcessorCache();
-		
-		if ( isset($_POST[ 'import-wpf2-submit' ] ) ) {
-			$this->importFromFirewall2Plugin();
-			return;
-		}
-		
 		if ( !isset($_POST[self::OptionPrefix.'all_options_input']) ) {
 			return;
 		}
-		$this->updatePluginOptionsFromSubmit( $_POST[self::OptionPrefix.'all_options_input'] );
+
+		$this->loadWpsfOptions();
+		$this->m_oWpsfOptions->updatePluginOptionsFromSubmit( $_POST[self::OptionPrefix.'all_options_input'] );
+		
+		$this->setSharedOption( 'enable_firewall', $this->m_oWpsfOptions->getOpt( 'enable_firewall' ) );
+		$this->setSharedOption( 'enable_login_protect', $this->m_oWpsfOptions->getOpt( 'enable_login_protect' ) );
+		$this->clearCaches();
+	}
+	
+	protected function handleSubmit_FirewallConfig() {
+		//Ensures we're actually getting this request from WP.
+		check_admin_referer( $this->getSubmenuId('firewall-config' ) );
+
+		if ( isset($_POST[ 'import-wpf2-submit' ] ) ) {
+			$this->importFromFirewall2Plugin();
+		}
+		else if ( !isset($_POST[self::OptionPrefix.'all_options_input']) ) {
+			return;
+		}
+		else {
+			$this->loadFirewallOptions();
+			$this->m_oFirewallOptions->updatePluginOptionsFromSubmit( $_POST[self::OptionPrefix.'all_options_input'] );
+		}
+
+		$this->setSharedOption( 'enable_firewall', $this->m_oFirewallOptions->getOpt( 'enable_firewall' ) );
+		$this->resetFirewallProcessor();
 	}
 	
 	protected function handleSubmit_LoginProtect() {
 		//Ensures we're actually getting this request from WP.
-		wp_verify_nonce ( $this->getSubmenuId('login-protect' ) );
-
-		$this->clearLoginProcessorCache();
+		check_admin_referer( $this->getSubmenuId('login-protect' ) );
 		
 		if ( !isset($_POST[self::OptionPrefix.'all_options_input']) ) {
 			return;
 		}
-		$this->updatePluginOptionsFromSubmit( $_POST[self::OptionPrefix.'all_options_input'] );
+		$this->loadLoginProtectOptions();
+		$this->m_oLoginProtectOptions->updatePluginOptionsFromSubmit( $_POST[self::OptionPrefix.'all_options_input'] );
+		$this->setSharedOption( 'enable_login_protect', $this->m_oLoginProtectOptions->getOpt( 'enable_login_protect' ) );
+		$this->resetLoginProcessor();
 	}
 	
 	protected function handleSubmit_FirewallLog() {
 
 		// Ensures we're actually getting this request from a valid WP submission.
-		wp_verify_nonce ( $this->getSubmenuId('firewall_log') );
+		if ( !isset( $_REQUEST['_wpnonce'] ) || !wp_verify_nonce( $_REQUEST['_wpnonce'], $this->getSubmenuId('firewall-log') ) ) {
+			wp_die();
+		}
 		
 		// At the time of writing the page only has 1 form submission item - clear log
 		if ( isset( $_POST['clear_log_submit'] ) ) {
@@ -1130,53 +908,56 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$this->m_oLoggingProcessor->emptyTable();
 		}
 		else if ( isset( $_GET['blackip'] ) ) {
-			$this->addRawIpsToList( 'ips_blacklist', array( $_GET['blackip'] ) );
+			$this->addRawIpsToFirewallList( 'ips_blacklist', array( $_GET['blackip'] ) );
 		}
 		else if ( isset( $_GET['unblackip'] ) ) {
-			$this->removeRawIpsFromList( 'ips_blacklist', array( $_GET['unblackip'] ) );
+			$this->removeRawIpsFromFirewallList( 'ips_blacklist', array( $_GET['unblackip'] ) );
 		}
 		else if ( isset( $_GET['whiteip'] ) ) {
-			$this->addRawIpsToList( 'ips_whitelist', array( $_GET['whiteip'] ) );
+			$this->addRawIpsToFirewallList( 'ips_whitelist', array( $_GET['whiteip'] ) );
 		}
 		else if ( isset( $_GET['unwhiteip'] ) ) {
-			$this->removeRawIpsFromList( 'ips_whitelist', array( $_GET['unwhiteip'] ) );
+			$this->removeRawIpsFromFirewallList( 'ips_whitelist', array( $_GET['unwhiteip'] ) );
 		}
 		wp_safe_redirect( admin_url( "admin.php?page=".$this->getSubmenuId('firewall-log') ) ); //means no admin message is displayed
 		exit();
 	}
 	
 	public function clearCaches() {
-		$this->clearFirewallProcessorCache();
-		$this->clearLoginProcessorCache();
-		$this->clearLoggingProcessorCache();
-		$this->clearEmailProcessorCache();
+		$this->resetFirewallProcessor();
+		$this->resetLoginProcessor();
+		$this->resetLoggingProcessor();
 	}
 	
-	protected function clearFirewallProcessorCache() {
-		$this->clearEmailProcessorCache();
-		$this->m_oFirewallProcessor = false;
-		self::updateOption( 'firewall_processor', $this->m_oFirewallProcessor );
-	}
-	
-	protected function clearLoginProcessorCache() {
-		$this->m_oLoginProcessor = false;
-		self::updateOption( 'login_processor', $this->m_oLoginProcessor );
-	}
-	
-	protected function clearLoggingProcessorCache() {
-		$this->m_oLoggingProcessor = false;
-		self::updateOption( 'logging_processor', $this->m_oLoggingProcessor );
-	}
-	
-	protected function clearEmailProcessorCache() {
+	protected function resetEmailProcessor() {
 		$this->m_oEmailProcessor = false;
-		self::updateOption( 'email_processor', $this->m_oEmailProcessor );
+		self::deleteOption( 'email_processor' );
+		$this->loadEmailProcessor();
+	}
+	
+	protected function resetFirewallProcessor() {
+		$this->resetEmailProcessor();
+		$this->m_oFirewallProcessor = false;
+		self::deleteOption( 'firewall_processor' );
+		$this->loadFirewallProcessor();
+	}
+	
+	protected function resetLoginProcessor() {
+		$this->m_oLoginProcessor = false;
+		self::deleteOption( 'login_processor' );
+		$this->loadLoginProcessor();
+	}
+	
+	protected function resetLoggingProcessor() {
+		$this->m_oLoggingProcessor = false;
+		self::deleteOption( 'logging_processor' );
+		$this->loadLoggingProcessor();
 	}
 	
 	protected function importFromFirewall2Plugin() {
-
+		$this->loadAllOptions();
 		require_once( dirname(__FILE__).'/src/icwp-import-wpf2-processor.php' );
-		$oImportProcessor = new ICWP_ImportWpf2Processor( self::$OPTION_PREFIX );
+		$oImportProcessor = new ICWP_ImportWpf2Processor( $this->m_oWpsfOptions, $this->m_oFirewallOptions );
 		$oImportProcessor->runImport();
 	}
 	
@@ -1194,35 +975,28 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( !current_user_can( 'manage_options' ) ) {
 			return;
 		}
-
+		
 		$this->loadLoggingProcessor();
 		$this->m_oLoggingProcessor->dropTable();
 
 		$this->loadLoginProcessor();
 		$this->m_oLoginProcessor->dropTable();
 		
-		$aExtras = array(
-			'current_plugin_version',
-			'feedback_admin_notice',
-			'firewall_processor',
-			'login_processor',
-			'logging_processor',
-			'email_processor',
-			'secret_key'
-		);
-		foreach( $aExtras as $sOption ) {
-			$this->deleteOption( $sOption );
-		}
+		$this->loadFirewallOptions();
+		$this->m_oFirewallOptions->deletePluginOptions();
+		$this->loadLoginProtectOptions();
+		$this->m_oLoginProtectOptions->deletePluginOptions();
+		$this->loadWpsfOptions();
+		$this->m_oWpsfOptions->deletePluginOptions();
+		
 		remove_action( 'shutdown', array( $this, 'saveProcessors_Action' ) );
 	}
 	
 	public function onWpDeactivatePlugin() {
-		
-		if ( $this->getOption('delete_on_deactivate') == 'Y' ) {
+		if ( $this->m_oWpsfOptions->getOpt( 'delete_on_deactivate' ) == 'Y' ) {
 			$this->deleteAllPluginDbOptions();
 		}
-		
-	}//onWpDeactivatePlugin
+	}
 	
 	public function onWpActivatePlugin() { }
 	
@@ -1233,9 +1007,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		wp_enqueue_style( 'worpit_bootstrap_wpadmin_css_fixes' );
 	}
 
-	public function addRawIpsToList( $insListName, $inaNewIps ) {
+	public function addRawIpsToFirewallList( $insListName, $inaNewIps ) {
+
+		$this->loadFirewallOptions();
 		
-		$aIplist = self::getOption( $insListName );
+		$aIplist = $this->m_oFirewallOptions->getOpt( $insListName );
 		if ( empty( $aIplist ) ) {
 			$aIplist = array();
 		}
@@ -1243,18 +1019,20 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		foreach( $inaNewIps as $sAddress ) {
 			$aNewList[ $sAddress ] = '';
 		}
-		self::updateOption( $insListName, ICWP_DataProcessor::Add_New_Raw_Ips( $aIplist, $aNewList ) );
-		$this->clearFirewallProcessorCache();
+		$aIplist = $this->m_oFirewallOptions->setOpt( $insListName, ICWP_DataProcessor::Add_New_Raw_Ips( $aIplist, $aNewList ) );
+		$this->resetFirewallProcessor();
 	}
 
-	public function removeRawIpsFromList( $insListName, $inaRemoveIps ) {
+	public function removeRawIpsFromFirewallList( $insListName, $inaRemoveIps ) {
+
+		$this->loadFirewallOptions();
 		
-		$aIplist = self::getOption( $insListName );
+		$aIplist = $this->m_oFirewallOptions->getOpt( $insListName );
 		if ( empty( $aIplist ) || empty( $inaRemoveIps ) ) {
 			return;
 		}
-		self::updateOption( $insListName, ICWP_DataProcessor::Remove_Raw_Ips( $aIplist, $inaRemoveIps ) );
-		$this->clearFirewallProcessorCache();
+		$aIplist = $this->m_oFirewallOptions->setOpt( $insListName, ICWP_DataProcessor::Remove_Raw_Ips( $aIplist, $inaRemoveIps ) );
+		$this->resetFirewallProcessor();
 	}
 	
 	/**
@@ -1264,15 +1042,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$nNewAddedCount = 0;
 		$mResult = $this->processIpFilter( 'ips_whitelist', 'icwp_simple_firewall_whitelist_ips', $nNewAddedCount );
 		if ( $mResult !== false && $nNewAddedCount > 0 ) {
-			$this->clearFirewallProcessorCache();
-			self::updateOption( 'ips_whitelist', $mResult );
+			$this->m_oFirewallOptions->setOpt( 'ips_whitelist', $mResult );
+			$this->resetFirewallProcessor();
 		}
 		
 		$nNewAddedCount = 0;
 		$mResult = $this->processIpFilter( 'ips_blacklist', 'icwp_simple_firewall_blacklist_ips', $nNewAddedCount );
 		if ( $mResult !== false && $nNewAddedCount > 0 ) {
-			$this->clearFirewallProcessorCache();
-			self::updateOption( 'ips_blacklist', $mResult );
+			$this->m_oFirewallOptions->setOpt( 'ips_blacklist', $mResult );
+			$this->resetFirewallProcessor();
 		}
 	}
 
@@ -1304,12 +1082,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			}
 			
 			// Get the existing list
-			$aExistingIpList = self::getOption( $insExistingListKey );
+			$this->loadFirewallOptions();
+			$aExistingIpList = $this->m_oFirewallOptions->getOpt( $insExistingListKey );
 			if ( !is_array( $aExistingIpList ) ) {
 				$aExistingIpList = array();
-				self::updateOption( $insExistingListKey, $aExistingIpList );
 			}
-			
 			return ICWP_DataProcessor::Add_New_Raw_Ips( $aExistingIpList, $aNewIps, $outnNewAdded );
 		}
 		return false;
@@ -1364,11 +1141,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 	private function adminNoticeOptionsUpdated() {
 			
-		$sAdminFeedbackNotice = $this->getOption( 'feedback_admin_notice' );
+		$sAdminFeedbackNotice = $this->m_oWpsfOptions->getOpt( 'feedback_admin_notice' );
 		if ( !empty( $sAdminFeedbackNotice ) ) {
 			$sNotice = '<p>'.$sAdminFeedbackNotice.'</p>';
 			$this->getAdminNotice( $sNotice, 'updated', true );
-			$this->updateOption( 'feedback_admin_notice', '' );
+			$this->m_oWpsfOptions->setOpt( 'feedback_admin_notice', '' );
 		}
 		
 	}//adminNoticeOptionsUpdated

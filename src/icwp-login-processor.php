@@ -37,10 +37,9 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	 */
 	protected $m_fAllowTwoFactorByPass;
 	
-	public function __construct( $innRequiredLoginInterval, $insSecretKey ) {
+	public function __construct( $insSecretKey ) {
 		parent::__construct( self::TableName );
 		
-		$this->m_nRequiredLoginInterval = ( $innRequiredLoginInterval < 0 )? 0 : $innRequiredLoginInterval;
 		$this->m_sSecretKey = $insSecretKey;
 		$this->m_sGaspKey = uniqid();
 		
@@ -288,6 +287,11 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	
 	public function setTwoFactorByPassOnFail( $infAllowByPass ) {
 		$this->m_fAllowTwoFactorByPass = $infAllowByPass;
+	}
+	
+	public function setLoginCooldownInterval( $innRequiredLoginInterval ) {
+		$nInterval = intval( $innRequiredLoginInterval );
+		$this->m_nRequiredLoginInterval = ( $nInterval < 0 )? 0 : $nInterval;
 	}
 	
 	public function getTwoFactorByPassOnFail() {

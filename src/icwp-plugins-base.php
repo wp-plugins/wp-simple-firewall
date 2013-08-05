@@ -1,7 +1,7 @@
 <?php
 
-if ( !defined('WORPIT_DS') ) {
-	define( 'WORPIT_DS', DIRECTORY_SEPARATOR );
+if ( !defined('ICWP_DS') ) {
+	define( 'ICWP_DS', DIRECTORY_SEPARATOR );
 }
 
 if ( !function_exists( '_hlt_e' ) ) {
@@ -74,7 +74,7 @@ class ICWP_WPSF_Base_Plugin {
 	}//getFullParentMenuId
 
 	protected function display( $insView, $inaData = array() ) {
-		$sFile = dirname(__FILE__).WORPIT_DS.'..'.WORPIT_DS.self::ViewDir.WORPIT_DS.$insView.self::ViewExt;
+		$sFile = dirname(__FILE__).ICWP_DS.'..'.ICWP_DS.self::ViewDir.ICWP_DS.$insView.self::ViewExt;
 
 		if ( !is_file( $sFile ) ) {
 			echo "View not found: ".$sFile;
@@ -107,8 +107,9 @@ class ICWP_WPSF_Base_Plugin {
 	protected function getSubmenuPageTitle( $insTitle ) {
 		return self::ParentTitle.' - '.$insTitle;
 	}
-	protected function getSubmenuId( $insId ) {
-		return $this->getFullParentMenuId().'-'.$insId;
+	protected function getSubmenuId( $insId = '' ) {
+		$sExtension = empty($insId)? '' : '-'.$insId;
+		return $this->getFullParentMenuId().$sExtension;
 	}
 
 	public function onWpPluginsLoaded() {
@@ -287,17 +288,7 @@ class ICWP_WPSF_Base_Plugin {
 	 * A little helper function that populates all the plugin options arrays with DB values
 	 */
 	protected function readyAllPluginOptions() {
-		$this->initPluginOptions();
-		$this->populateAllPluginOptions();
-	}
-
-	/**
-	 * Override to create the plugin options array.
-	 * 
-	 * Returns false if nothing happens - i.e. not over-rided.
-	 */
-	protected function initPluginOptions() {
-		return false;
+	//	$this->populateAllPluginOptions();
 	}
 
 	/**
@@ -309,7 +300,7 @@ class ICWP_WPSF_Base_Plugin {
 	 */
 	protected function populateAllPluginOptions() {
 
-		if ( empty($this->m_aAllPluginOptions) && !$this->initPluginOptions() ) {
+		if ( empty($this->m_aAllPluginOptions) ) {
 			return false;
 		}
 		self::PopulatePluginOptions( $this->m_aAllPluginOptions );
@@ -481,7 +472,7 @@ class ICWP_WPSF_Base_Plugin {
 			$iCount++;
 		}
 		return $sCollated;
-	}//collateAllFormInputsForOptionsSection
+	}
 
 	protected function isIcwpPluginAdminPage() {
 
@@ -499,7 +490,7 @@ class ICWP_WPSF_Base_Plugin {
 			return;
 		}
 		
-		if ( empty($this->m_aAllPluginOptions) && !$this->initPluginOptions() ) {
+		if ( empty($this->m_aAllPluginOptions) ) {
 			return;
 		}
 		

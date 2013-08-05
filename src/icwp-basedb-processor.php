@@ -37,8 +37,8 @@ class ICWP_BaseDbProcessor extends ICWP_BaseProcessor {
 	protected $m_sTableName;
 	
 	public function __construct( $insTableName ) {
-		$this->setTableName( $insTableName );
 		$this->reset();
+		$this->setTableName( $insTableName );
 	}
 
 	/**

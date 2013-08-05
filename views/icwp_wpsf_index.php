@@ -1,17 +1,43 @@
 <?php 
-include_once( dirname(__FILE__).'/widgets/icwp_widgets.php' );
+include_once( dirname(__FILE__).ICWP_DS.'icwp_options_helper.php' );
+include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 $sPluginName = 'WordPress Simple Firewall';
+$fFirewallOn = $icwp_aMainOptions['enable_firewall'] == 'Y';
+$fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 ?>
 
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
-
 		<div class="page-header">
 			<a href="http://icwp.io/t" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
 			<h2>Dashboard :: <?php echo $sPluginName; ?> Plugin (from iControlWP)</h2>
 		</div>
 
 		<?php include_once( dirname(__FILE__).'/widgets/icwp_common_widgets.php' ); ?>
+		
+		<div class="row">
+			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
+			
+				<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
+				<?php
+					wp_nonce_field( $icwp_nonce_field );
+					printAllPluginOptionsForm( $icwp_aAllOptions, $icwp_var_prefix, 1 );
+				?>
+					<div class="form-actions">
+						<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
+						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
+						<button type="submit" class="btn btn-primary" name="submit"><?php _hlt_e( 'Save All Settings'); ?></button>
+					</div>
+				</form>
+				
+			</div><!-- / span9 -->
+		
+			<?php if ( $icwp_fShowAds ) : ?>
+			<div class="span3" id="side_widgets">
+		  		<?php echo getWidgetIframeHtml('side-widgets-wtb'); ?>
+			</div>
+			<?php endif; ?>
+		</div><!-- / row -->
 
 		<?php if ( $icwp_fShowAds ) : ?>
 		<div class="row" id="worpit_promo">
@@ -29,27 +55,28 @@ $sPluginName = 'WordPress Simple Firewall';
 		<?php endif; ?>
 		
 		<div class="row" id="tbs_docs">
-		  <div class="span6" id="tbs_docs_shortcodes">
+			<h2>Plugin Configuration Summary</h2>
+			<div class="span6" id="tbs_docs_shortcodes">
 			  <div class="well">
-				<h3>Current Firewall Configuration</h3>
-				<p>The following summarises your current firewall configuration:</p>
+				<h3>Firewall Configuration</h3>
 				
-				<h4 style="margin-top:20px;">Firewall is currently <?php echo $icwp_fFirewallOn? 'ON' : 'OFF'; ?>. [ <a href="admin.php?page=icwp-wpsf-firewall-config">Turn it <?php echo !$icwp_fFirewallOn? 'ON' : 'OFF'; ?></a> ]</h4>
-				<?php if ( $icwp_fFirewallOn ) : ?>
+				<h4 style="margin-top:20px;">Firewall is currently <?php echo $fFirewallOn ? 'ON' : 'OFF'; ?>.
+				[ <a href="admin.php?page=icwp-wpsf-firewall-config">Configure Now</a> ]</h4>
+				<?php if ( $fFirewallOn ) : ?>
 					<ul>
-						<li>Firewall logging is: <?php echo $icwp_fFirewallLogOn? 'ON' : 'OFF'; ?></li>
-						<li>When the firewall blocks a visit, it <?php echo $icwp_fBlockSendEmail? 'will': 'will not'; ?> send an email and then :
+						<li>Firewall logging is: <?php echo $icwp_aFirewallOptions['enable_firewall'] == 'Y'? 'ON' : 'OFF'; ?></li>
+						<li>When the firewall blocks a visit, it will:
 							<?php
-							if( $icwp_sBlockResponse == 'redirect_die' ) {
-								echo 'die.';
+							if( $icwp_aFirewallOptions['block_response'] == 'redirect_die' ) {
+								echo 'Die.';
 							}
-							else if ( $icwp_sBlockResponse == 'redirect_die_message' ) {
-								echo 'Dies with a message.';
+							else if ( $icwp_aFirewallOptions['block_response'] == 'redirect_die_message' ) {
+								echo 'Die with a message.';
 							}
-							else if ( $icwp_sBlockResponse == 'redirect_home' ) {
+							else if ( $icwp_aFirewallOptions['block_response'] == 'redirect_home' ) {
 								echo 'Redirect to home.';
 							}
-							else if ( $icwp_sBlockResponse == 'redirect_404' ) {
+							else if ( $icwp_aFirewallOptions['block_response'] == 'redirect_404' ) {
 								echo 'Redirect to 404 page.';
 							}
 							else {
@@ -57,59 +84,54 @@ $sPluginName = 'WordPress Simple Firewall';
 							}
 						?>
 						</li>
-						<?php if ( isset($icwp_aIpWhitelist['ips']) ) : ?>
-							<li>You have <?php echo count( $icwp_aIpWhitelist['ips'] );?> whitelisted IP addresses:
-								<?php foreach( $icwp_aIpWhitelist['ips'] as $sIp ) : ?>
-								<br /><?php echo long2ip($sIp); ?> labelled as <?php echo $icwp_aIpWhitelist['meta'][md5( $sIp )]?>
+						<?php if ( isset($icwp_aFirewallOptions['ips_whitelist']['ips']) ) : ?>
+							<li>You have <?php echo count( $icwp_aFirewallOptions['ips_whitelist']['ips'] );?> whitelisted IP addresses:
+								<?php foreach( $icwp_aFirewallOptions['ips_whitelist']['ips'] as $sIp ) : ?>
+								<br /><?php echo long2ip($sIp); ?> labelled as <?php echo $icwp_aFirewallOptions['ips_whitelist']['meta'][md5( $sIp )]?>
 								<?php endforeach; ?>
 							</li>
 						<?php endif; ?>
 						
-						<?php if ( isset($icwp_aIpBlacklist['ips']) ) : ?>
-							<li>You have <?php echo count( $icwp_aIpBlacklist['ips'] );?> blacklisted IP addresses:
-								<?php foreach( $icwp_aIpBlacklist['ips'] as $sIp ) : ?>
-								<br /><?php echo long2ip($sIp); ?> labelled as <?php echo $icwp_aIpWhitelist['meta'][md5( $sIp )]?>
+						<?php if ( isset($icwp_aFirewallOptions['ips_blacklist']['ips']) ) : ?>
+							<li>You have <?php echo count( $icwp_aFirewallOptions['ips_blacklist']['ips'] );?> blacklisted IP addresses:
+								<?php foreach( $icwp_aFirewallOptions['ips_blacklist']['ips'] as $sIp ) : ?>
+								<br /><?php echo long2ip($sIp); ?> labelled as <?php echo $icwp_aFirewallOptions['ips_whitelist']['meta'][md5( $sIp )]?>
 								<?php endforeach; ?>
 							</li>
 						<?php endif; ?>
-						<li>Firewall blocks WP Login Access: <?php echo $icwp_fBlockLogin? 'ON' : 'OFF'; ?>
-							<?php if ( $icwp_fBlockLogin && count($icwp_aIpWhitelist) == 0 ) : ?>
-								<strong>But, there are no whitelisted IPs so it is effectively off.</strong>
-							<?php endif; ?>
-						</li>
-						<li>Firewall blocks Directory Traversals: <?php echo $icwp_fBlockDirTrav? 'ON' : 'OFF'; ?></li>
-						<li>Firewall blocks SQL Queries: <?php echo $icwp_fBlockSql? 'ON' : 'OFF'; ?></li>
-						<li>Firewall blocks WordPress Specific Terms: <?php echo $icwp_fBlockWpTerms? 'ON' : 'OFF'; ?></li>
-						<li>Firewall blocks Field Truncation Attacks: <?php echo $icwp_fBlockFieldTrun? 'ON' : 'OFF'; ?></li>
-						<li>Firewall blocks Executable File Uploads:<?php echo $icwp_fBlockExeFile? 'ON' : 'OFF'; ?> </li>
-						<li>Firewall blocks Leading Schemas (HTTPS / HTTP): <?php echo $icwp_fBlockSchema? 'ON' : 'OFF'; ?></li>
+						<li>Firewall blocks WP Login Access: <?php echo $icwp_aFirewallOptions['block_wplogin_access'] == 'Y' ? 'ON' : 'OFF'; ?></li>
+						<li>Firewall blocks Directory Traversals: <?php echo $icwp_aFirewallOptions['block_dir_traversal'] == 'Y'? 'ON' : 'OFF'; ?></li>
+						<li>Firewall blocks SQL Queries: <?php echo $icwp_aFirewallOptions['block_sql_queries'] == 'Y'? 'ON' : 'OFF'; ?></li>
+						<li>Firewall blocks WordPress Specific Terms: <?php echo $icwp_aFirewallOptions['block_wordpress_terms'] == 'Y'? 'ON' : 'OFF'; ?></li>
+						<li>Firewall blocks Field Truncation Attacks: <?php echo $icwp_aFirewallOptions['block_field_truncation'] == 'Y'? 'ON' : 'OFF'; ?></li>
+						<li>Firewall blocks Executable File Uploads:<?php echo $icwp_aFirewallOptions['block_exe_file_uploads'] == 'Y'? 'ON' : 'OFF'; ?> </li>
+						<li>Firewall blocks Leading Schemas (HTTPS / HTTP): <?php echo $icwp_aFirewallOptions['block_leading_schema'] == 'Y'? 'ON' : 'OFF'; ?></li>
+						<li>Firewall Logging: <?php echo ($icwp_aFirewallOptions['enable_firewall_log']  == 'Y')? 'ON' : 'OFF';?></li>
 					</ul>
 				<?php endif; ?>
 				
-				<h4 style="margin-top:20px;">Login Protection is currently <?php echo $icwp_fLoginProtectOn? 'ON' : 'OFF'; ?>. [ <a href="admin.php?page=icwp-wpsf-login-protect">Turn it <?php echo !$icwp_fLoginProtectOn? 'ON' : 'OFF'; ?></a> ]</h4>
-				<?php if ( $icwp_fLoginProtectOn ) : ?>
+				<h4 style="margin-top:20px;">Login Protection is currently <?php echo $fLoginProtectOn? 'ON' : 'OFF'; ?>.
+				[ <a href="admin.php?page=icwp-wpsf-login-protect">Configure Now</a> ]</h4>
+				<?php if ( $fLoginProtectOn ) : ?>
 					<ul>
-						<li>Two Factor Login Authentication is: <?php echo $icwp_fTwoFactorIpOn? 'ON' : 'OFF'; ?></li>
-						<li>Login Cooldown Interval is: <?php echo ($icwp_sLoginLimitInterval == 0)? 'OFF' : $icwp_sLoginLimitInterval.' seconds'; ?></li>
+						<li>Two Factor Login Authentication is: <?php echo $icwp_aLoginProtectOptions['enable_two_factor_auth_by_ip'] == 'Y'? 'ON' : 'OFF'; ?></li>
+						<li>Two Factor Login By Pass is: <?php echo $icwp_aLoginProtectOptions['enable_two_factor_bypass_on_email_fail'] == 'Y'? 'ON' : 'OFF'; ?></li>
+						<li>Login Cooldown Interval is: <?php echo ($icwp_aLoginProtectOptions['login_limit_interval'] == 0)? 'OFF' : $icwp_aLoginProtectOptions['login_limit_interval'].' seconds'; ?></li>
+						<li>Login Form GASP Protection: <?php echo ($icwp_aLoginProtectOptions['enable_login_gasp_check']  == 'Y')? 'ON' : 'OFF';?></li>
+						<li>Login Protect Logging: <?php echo ($icwp_aLoginProtectOptions['enable_login_protect_log']  == 'Y')? 'ON' : 'OFF';?></li>
 					</ul>
 				<?php endif; ?>
 			  </div>
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
-				<h3>Change log for the v1.3.x release:</h3>
-				<p>The following summarises the main changes to the plugin in the 1.3.x release</p>
+				<h3>v1.4.x Release:</h3>
+				<p>The following summarises the main changes to the plugin in the 1.4.x release</p>
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					"Email Throttle Feature - this will prevent you getting bombarded by 1000s of emails in case you're hit by a bot.",
-					"Another Firewall die() option. New option will print a message and uses the wp_die() function instead.",
-					"Option to separately log Login Protect features.",
-					"Refactored and improved the logging system.",
-					"Option to by-pass 2-factor authentication in the case sending the verification email fails.",
-					"Login Protect checking now better logs out users immediately with a redirect.",
-					"We now escape the log data being printed - just in case there's any HTML/JS etc in there we don't want.",
-					"Optimized and cleaned a lot of the option caching code to improve reliability and performance (more to come).",
+					'Brand new plugin options system making them more efficient, easier to manage/update, using fewer WordPress database options',
+					'Huge improvements on database calls and efficiency in loading plugin options'
 				);
 				?>
 				<ul>
@@ -130,6 +152,17 @@ $sPluginName = 'WordPress Simple Firewall';
 				<?php
 				$aLog = array(
 
+					'1.3.x'	=> array(
+						"New Feature - Email Throttle. It will prevent you getting bombarded by 1000s of emails in case you're hit by a bot.",
+						"Another Firewall die() option. New option will print a message and uses the wp_die() function instead.",
+						"Option to separately log Login Protect features.",
+						"Refactored and improved the logging system.",
+						"Option to by-pass 2-factor authentication in the case sending the verification email fails.",
+						"Login Protect checking now better logs out users immediately with a redirect.",
+						"We now escape the log data being printed - just in case there's any HTML/JS etc in there we don't want.",
+						"Optimized and cleaned a lot of the option caching code to improve reliability and performance (more to come).",
+					),
+					
 					'1.2.x'	=> array(
 						'New Feature - Ability to import settings from WordPress Firewall 2 Plugin.',
 						'New Feature - Login Form GASP-based Anti-Bot Protection.',
@@ -143,19 +176,19 @@ $sPluginName = 'WordPress Simple Firewall';
 					),
 					
 					'1.1.x'	=> array(
-							'Option to check Cookies values in firewall testing.',
-							'Ability to whitelist particular pages and their parameters.',
-							'Quite a few improvements made to the reliability of the firewall processing.',
-							'Option to completely ignore logged-in Administrators from the Firewall processing (they wont even trigger logging etc).',
-							'Ability to (un)blacklist and (un)whitelist IP addresses directly from within the log.',
-							'Helpful link to IP WHOIS from within the log.',
-							'Firewall logging now has its own dedicated database table.',
-							'Fix: Block email not showing the IPv4 friendly address.',
-							'You can now specify IP ranges in whitelists and blacklists.',
-							'You can now specify which email address to send the notification emails.',
-							"You can now add a comment to IP addresses in the whitelist/blacklist. To do this, write your IP address then type a SPACE and write whatever you want (don't take a new line').",
-							'You can now set to delete ALL firewall settings when you deactivate the plugin.',
-							'Improved formatting of the firewall log.'
+						'Option to check Cookies values in firewall testing.',
+						'Ability to whitelist particular pages and their parameters.',
+						'Quite a few improvements made to the reliability of the firewall processing.',
+						'Option to completely ignore logged-in Administrators from the Firewall processing (they wont even trigger logging etc).',
+						'Ability to (un)blacklist and (un)whitelist IP addresses directly from within the log.',
+						'Helpful link to IP WHOIS from within the log.',
+						'Firewall logging now has its own dedicated database table.',
+						'Fix: Block email not showing the IPv4 friendly address.',
+						'You can now specify IP ranges in whitelists and blacklists.',
+						'You can now specify which email address to send the notification emails.',
+						"You can now add a comment to IP addresses in the whitelist/blacklist. To do this, write your IP address then type a SPACE and write whatever you want (don't take a new line').",
+						'You can now set to delete ALL firewall settings when you deactivate the plugin.',
+						'Improved formatting of the firewall log.'
 					)
 				);
 				?>
@@ -180,5 +213,5 @@ $sPluginName = 'WordPress Simple Firewall';
 		</div><!-- / row -->
 		
 	</div><!-- / bootstrap-wpadmin -->
-
+	<?php include_once( dirname(__FILE__).'/include_js.php' ); ?>
 </div><!-- / wrap -->
