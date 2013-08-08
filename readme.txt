@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor login, GASP
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 
 WordPress Simple Firewall and Login Protection.
 
@@ -145,6 +145,13 @@ that are url, param and password will be ignored by the firewall.
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	ADD:		Limit login attempts functionality.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+
+= 1.4.1 =
+
+*	ADDED:		The plugin will now displays an admin notice when a plugin upgrade is available with a link to immediately update.
+*	ADDED:		Plugin collision: removes the main hook by 'All In One WordPress Security'. No need to have both plugins running.
+*	ADDED:		Improved Login Cooldown Feature- works more like email throttling as it now uses an extra filesystem-based level of protection.
+*	FIXED:		Login Cooldown Feature didn't take effect in certain circumstances.
 
 = 1.4.0 =
 

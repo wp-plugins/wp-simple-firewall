@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.4.0
+Version: 1.4.1
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -46,7 +46,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.4.0';
+	static public $VERSION			= '1.4.1';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -90,8 +90,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		register_deactivation_hook( __FILE__, array( $this, 'onWpDeactivatePlugin' ) );
 	//	register_uninstall_hook( __FILE__, array( &$this, 'onWpUninstallPlugin' ) );
 		
+		self::$PLUGIN_HUMAN_NAME = "WordPress Simple Firewall";
 		self::$PLUGIN_NAME	= basename(__FILE__);
 		self::$PLUGIN_PATH	= plugin_basename( dirname(__FILE__) );
+		self::$PLUGIN_FILE	= plugin_basename(__FILE__);
 		self::$PLUGIN_DIR	= WP_PLUGIN_DIR.ICWP_DS.self::$PLUGIN_PATH.ICWP_DS;
 		self::$PLUGIN_URL	= plugins_url( '/', __FILE__ ) ;
 		self::$OPTION_PREFIX = self::OptionPrefix;
@@ -103,7 +105,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 
 		// checks for filesystem based firewall overrides
 		$this->override();
-
+		
 	//	add_filter( 'user_has_cap', array( $this, 'disable_file_editing' ), 0, 3 );
 		
 		if ( $this->getIsMainFeatureEnabled( 'firewall' ) ) {
@@ -119,11 +121,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( $this->getIsMainFeatureEnabled( 'login_protect' ) ) {
 			$this->runLoginProtect();
 		}
-		
-		// we can hook this to the end because unlike the firewall, it doesn't kill a page load or redirect.
-		add_action( 'shutdown', array( $this, 'saveProcessors_Action' ) );
-
 	}//__construct
+	
+	public function removePluginConflicts() {
+		if ( class_exists('AIO_WP_Security') && isset( $GLOBALS['aio_wp_security'] ) ) {
+	        remove_action( 'init', array( $GLOBALS['aio_wp_security'], 'wp_security_plugin_init'), 0 );
+		}
+	}
 
 	public function disable_file_editing( $allcaps, $cap, $args ) {
 		
@@ -492,82 +496,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Handles the running of all login protection processes.
 	 */
 	public function runLoginProtect() {
-		
 		$this->loadLoginProcessor();
+		$this->m_oLoginProcessor->run( $this->m_oLoginProtectOptions );
+	}
 
-		if ( $this->m_oLoginProtectOptions->getOpt( 'enable_two_factor_auth_by_ip' ) == 'Y' ) {
-			
-			// User has clicked a link in their email to validate their IP address for login.
-			if ( isset( $_GET['wpsf-action'] ) && $_GET['wpsf-action'] == 'linkauth' ) {
-				$this->m_oLoginProcessor->validateUserAuthLink();
-			}
-			
-			// If their click was successful we give them a lovely message
-			if ( isset( $_GET['wpsfipverified']) ) {
-				add_filter( 'login_message', array( $this, 'displayVerifiedUserMessage_Filter' ) );
-			}
-			
-			// Performs all the custom login authentication checking
-			add_action( 'wp_authenticate', array( $this, 'prepareLoginProcessor_Action' ) );
-			
-			// Check the current logged-in user every page load.
-			add_action( 'init', array( $this, 'checkCurrentUserAuth_Action' ) );
-		}
-
-		// Add GASP checking to the login form.
-		if ( $this->m_oLoginProtectOptions->getOpt( 'enable_login_gasp_check' ) == 'Y' ) {
-			add_action( 'login_form', array( $this, 'printGaspLoginCheck_Action' ) );
-			add_filter( 'login_form_middle', array( $this, 'printGaspLoginCheck_Filter' ) );
-			add_filter( 'authenticate', array( $this, 'checkLoginForGasp_Filter' ), 9, 3);
-		}
-	}
-	
-	public function printGaspLoginCheck_Action() {
-		echo $this->m_oLoginProcessor->getGaspLoginHtml();
-	}
-	
-	public function printGaspLoginCheck_Filter() {
-		return $this->m_oLoginProcessor->getGaspLoginHtml();
-	}
-	
-	public function checkLoginForGasp_Filter( $inoUser, $insUsername, $insPassword ) {
-
-		if ( empty( $insUsername ) || is_wp_error( $inoUser ) ) {
-			return $inoUser;
-		}
-		$this->m_oLoginProcessor->doGaspChecks( $insUsername );
-	}
-	
-	/**
-	 * Checks whether the current user that is logged-in is authenticated by IP address.
-	 * 
-	 * If the user is not found to be valid, they're logged out.
-	 * 
-	 * Should be hooked to 'init' so we have is_user_logged_in()
-	 */
-	public function checkCurrentUserAuth_Action() {
-		
-		if ( is_user_logged_in() ) {
-			$this->m_oLoginProcessor->verifyCurrentUser();
-		}
-	}
-	
-	/**
-	 * By hooking this action to the wp_authenticate action, we ensure we only load the login processor
-	 * when it's necessary to do so - i.e. when there's a login in progress.
-	 */
-	public function prepareLoginProcessor_Action() {
-
-		$this->loadLoginProcessor();
-		
-		// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
-		add_filter( 'authenticate', array( $this->m_oLoginProcessor, 'checkLoginInterval_Filter' ), 10, 3);
-		
-		// At this stage (30,3) WordPress has already authenticated the user. So if the login
-		// is valid, the filter will have a valid WP_User object passed to it.
-		add_filter( 'authenticate', array( $this->m_oLoginProcessor, 'checkUserAuthLogin_Filter' ), 30, 3);
-	}
-	
 	/**
 	 * Make sure and cache the processors after all is said and done.
 	 */
@@ -596,12 +528,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( isset( $this->m_oEmailProcessor ) ) {
 			self::updateOption( 'email_processor', $this->m_oEmailProcessor );
 		}
-	}
-	
-	public function displayVerifiedUserMessage_Filter( $insMessage ) {
-		$sStyles .= 'background-color: #FAFFE8; border: 1px solid #DDDDDD; margin: 8px 0 10px 8px; padding: 16px;';
-		$insMessage .= '<h3 style="'.$sStyles.'">You successfully verified your IP address - you may now login.</h3>';
-		return $insMessage;
 	}
 	
 	public function onWpAdminInit() {
@@ -720,10 +646,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}
 	
 	public function onWpAdminNotices() {
-		//Do we have admin priviledges?
+		// Do we have admin priviledges?
 		if ( !current_user_can( 'manage_options' ) ) {
 			return;
 		}
+		parent::onWpAdminNotices();
+
 		$this->adminNoticeVersionUpgrade();
 		$this->adminNoticeOptionsUpdated();
 	}
@@ -969,6 +897,16 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		return $inaLinks;
 	}
 	
+	public function onWpPluginsLoaded() {
+		parent::onWpPluginsLoaded();
+		$this->removePluginConflicts(); // removes conflicts with other plugins
+	}
+	
+	public function onWpShutdown() {
+		parent::onWpShutdown();
+		$this->saveProcessors_Action();
+	}
+	
 	protected function deleteAllPluginDbOptions() {
 		
 		parent::deleteAllPluginDbOptions();
@@ -1137,7 +1075,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				$this->getAdminNotice( $sNotice, 'updated', true );
 			}
 			
-		}//adminNoticeVersionUpgrade
+		}
 		
 	private function adminNoticeOptionsUpdated() {
 			

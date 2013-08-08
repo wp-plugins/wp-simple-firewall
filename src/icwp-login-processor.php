@@ -23,7 +23,17 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	
 	const TableName = 'login_auth';
 	
+	/**
+	 * @var string
+	 */
+	static protected $sModeFile_LoginThrottled;
+	
+	/**
+	 * The number of seconds between each authenticated login
+	 * @var integer
+	 */
 	protected $m_nRequiredLoginInterval;
+	
 	protected $m_nLastLoginTime;
 	protected $m_sSecretKey;
 	
@@ -46,7 +56,90 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		$this->createTable();
 		$this->reset();
 	}
+	
+	/**
+	 * Resets the object values to be re-used anew
+	 */
+	public function reset() {
+		parent::reset();
+		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
+	}
 
+	/**
+	 * @param ICWP_OptionsHandler_LoginProtect $inoOptions
+	 */
+	public function run( $inoOptions ) {
+		
+		// Add GASP checking to the login form.
+		if ( $inoOptions->getOpt( 'enable_login_gasp_check' ) == 'Y' ) {
+			add_action( 'login_form', array( $this, 'printGaspLoginCheck_Action' ) );
+			add_filter( 'login_form_middle', array( $this, 'printGaspLoginCheck_Filter' ) );
+			add_filter( 'authenticate', array( $this, 'checkLoginForGasp_Filter' ), 9, 3);
+		}
+
+		if ( $inoOptions->getOpt( 'login_limit_interval' ) > 0 ) {
+			// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
+			add_filter( 'authenticate', array( $this, 'checkLoginInterval_Filter' ), 10, 3);
+		}
+		
+		if ( $inoOptions->getOpt( 'enable_two_factor_auth_by_ip' ) == 'Y' ) {
+			// User has clicked a link in their email to validate their IP address for login.
+			if ( isset( $_GET['wpsf-action'] ) && $_GET['wpsf-action'] == 'linkauth' ) {
+				$this->validateUserAuthLink();
+			}
+				
+			// If their click was successful we give them a lovely message
+			if ( isset( $_GET['wpsfipverified']) ) {
+				add_filter( 'login_message', array( $this, 'displayVerifiedUserMessage_Filter' ) );
+			}
+				
+			// Check the current logged-in user every page load.
+			add_action( 'init', array( $this, 'checkCurrentUserAuth_Action' ) );
+		
+			// At this stage (30,3) WordPress has already authenticated the user. So if the login
+			// is valid, the filter will have a valid WP_User object passed to it.
+			add_filter( 'authenticate', array( $this, 'checkUserAuthLogin_Filter' ), 30, 3);
+		}
+	}
+	
+	public function printGaspLoginCheck_Action() {
+		echo $this->getGaspLoginHtml();
+	}
+	
+	public function printGaspLoginCheck_Filter() {
+		return $this->getGaspLoginHtml();
+	}
+
+	public function checkLoginForGasp_Filter( $inoUser, $insUsername, $insPassword ) {
+	
+		if ( empty( $insUsername ) || is_wp_error( $inoUser ) ) {
+			return $inoUser;
+		}
+		if ( $this->doGaspChecks( $insUsername ) ) {
+			return $inoUser;
+		}
+		return null;
+	}
+	
+	/**
+	 * Checks whether the current user that is logged-in is authenticated by IP address.
+	 * 
+	 * If the user is not found to be valid, they're logged out.
+	 * 
+	 * Should be hooked to 'init' so we have is_user_logged_in()
+	 */
+	public function checkCurrentUserAuth_Action() {
+		if ( is_user_logged_in() ) {
+			$this->verifyCurrentUser();
+		}
+	}
+	
+	public function displayVerifiedUserMessage_Filter( $insMessage ) {
+		$sStyles .= 'background-color: #FAFFE8; border: 1px solid #DDDDDD; margin: 8px 0 10px 8px; padding: 16px;';
+		$insMessage .= '<h3 style="'.$sStyles.'">You successfully verified your IP address - you may now login.</h3>';
+		return $insMessage;
+	}
+	
 	/**
 	 * Should return false when logging is disabled.
 	 *
@@ -117,36 +210,59 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 		if ( empty( $insUsername ) ) {
 			return $inoUser;
 		}
-	
+
 		// Is there an interval set?
 		$nRequiredLoginInterval = $this->m_nRequiredLoginInterval;
 		if ( $nRequiredLoginInterval === false || $nRequiredLoginInterval == 0 ) {
 			return $inoUser;
 		}
-	
+		
 		// Get the last login time (and update it also for the next time)
 		$sNow = time();
-		$nLastLoginTime = $this->m_nLastLoginTime;
-	
-		if ( $nLastLoginTime == false || $nLastLoginTime < 0 ) {
-			$nLastLoginTime = 0;
-		}
+		$this->m_nLastLoginTime = $this->getLastLoginTime();
 
-		// If we're outside the interval, let the login process proceed as per normal.
-		$nLoginInterval = $sNow - $nLastLoginTime;
-		if ( $nLoginInterval > $nRequiredLoginInterval ) {
+		if ( empty( $this->m_nLastLoginTime ) || $this->m_nLastLoginTime < 0 ) {
 			$this->m_nLastLoginTime = $sNow;
+		}
+		
+		// If we're outside the interval, let the login process proceed as per normal and
+		// update our last login time.
+		$nLoginInterval = $sNow - $this->m_nLastLoginTime;
+		if ( $nLoginInterval > $nRequiredLoginInterval ) {
+			$this->updateLoginThrottleTime( $sNow );
 			return $inoUser;
 		}
-	
+
 		// At this point someone has attempted to login within the previous login wait interval
-		// So we remove WordPress's authentication filter, and our own user check authentication
+		// So we remove WordPress's authentication filter and our own user check authentication
 		// And finally return a WP_Error which will be reflected back to the user.
 		remove_filter( 'authenticate', 'wp_authenticate_username_password', 20, 3 );  // wp-includes/user.php
+		remove_filter( 'authenticate', array( $this, 'checkUserAuthLogin_Filter' ), 30, 3);
 	
 		$sErrorString = sprintf( "Sorry, you must wait %s seconds before attempting to login again.", ($nRequiredLoginInterval - $nLoginInterval ) );
 		$oError = new WP_Error( 'wpsf_logininterval', $sErrorString );
 		return $oError;
+	}
+	
+	protected function getLastLoginTime() {
+		
+		// Check that there is a login throttle file. If it exists and its modified time is greater than the 
+		// current $this->m_nLastLoginTime it suggests another process has touched the file and updated it
+		// concurrently. So, we update our $this->m_nEmailThrottleTime accordingly.
+		if ( is_file( self::$sModeFile_LoginThrottled ) ) {
+			$nModifiedTime = filemtime( self::$sModeFile_LoginThrottled );
+			if ( $nModifiedTime > $this->m_nLastLoginTime ) {
+				return $nModifiedTime;
+			}
+		}
+		return $this->m_nLastLoginTime;
+	}
+	
+	public function updateLoginThrottleTime( $innLastLoginTime ) {
+		$this->m_nLastLoginTime = $innLastLoginTime;
+		if ( function_exists('touch') ) {
+			@touch( self::$sModeFile_LoginThrottled, $innLastLoginTime );
+		}
 	}
 
 	/**
@@ -212,8 +328,8 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	
 	public function getGaspLoginHtml() {
 	
-		$sLabel = "I'm not a Bot.";
-		$sAlert = "Please check the box to show us you're not a Bot.";
+		$sLabel = "I'm a human.";
+		$sAlert = "Please check the box to show us you're a human.";
 	
 		$sUniqElem = 'icwp_wpsf_login_p'.uniqid();
 		
@@ -270,19 +386,21 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	}
 	
 	public function doGaspChecks( $insUsername ) {
-		
 		if ( !isset( $_POST[ $this->getGaspCheckboxName() ] ) ) {
 			$this->logWarning(
 				sprintf( 'User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".', $insUsername, long2ip($this->m_nRequestIp) )
 			);
 			wp_die( "You must check that box to say you're not a bot." );
+			return false;
 		}
 		else if ( isset( $_POST['icwp_wpsf_login_email'] ) && $_POST['icwp_wpsf_login_email'] !== '' ){
 			$this->logWarning(
 				sprintf( 'User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".', $insUsername, long2ip($this->m_nRequestIp) )
 			);
 			wp_die( 'You smell like a bot.' );
+			return false;
 		}
+		return true;
 	}
 	
 	public function setTwoFactorByPassOnFail( $infAllowByPass ) {

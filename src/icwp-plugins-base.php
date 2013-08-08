@@ -17,12 +17,16 @@ if ( !function_exists( '_hlt__' ) ) {
 
 if ( !class_exists('ICWP_WPSF_Base_Plugin') ):
 
+require_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
+
 class ICWP_WPSF_Base_Plugin {
 
 	static public $VERSION;
 
+	static public $PLUGIN_HUMAN_NAME;
 	static public $PLUGIN_NAME;
 	static public $PLUGIN_PATH;
+	static public $PLUGIN_FILE;
 	static public $PLUGIN_DIR;
 	static public $PLUGIN_URL;
 	static public $PLUGIN_BASENAME;
@@ -46,6 +50,11 @@ class ICWP_WPSF_Base_Plugin {
 	
 	protected $m_fShowMarketing = '';
 	
+	/**
+	 * @var ICWP_WpFunctions;
+	 */
+	protected $m_oWpFunctions;
+	
 	static protected $m_fUpdateSuccessTracker;
 	static protected $m_aFailedUpdateOptions;
 
@@ -54,11 +63,13 @@ class ICWP_WPSF_Base_Plugin {
 		add_action( 'plugins_loaded', array( &$this, 'onWpPluginsLoaded' ) );
 		add_action( 'init', array( &$this, 'onWpInit' ), 0 );
 		if ( is_admin() ) {
-			add_action( 'admin_init', array( &$this, 'onWpAdminInit' ) );
-			add_action( 'admin_notices', array( &$this, 'onWpAdminNotices' ) );
-			add_action( 'admin_menu', array( &$this, 'onWpAdminMenu' ) );
-			add_action( 'plugin_action_links', array( &$this, 'onWpPluginActionLinks' ), 10, 4 );
+			add_action( 'admin_init', array( $this, 'onWpAdminInit' ) );
+			add_action( 'admin_notices', array( $this, 'onWpAdminNotices' ) );
+			add_action( 'admin_menu', array( $this, 'onWpAdminMenu' ) );
+			add_action( 'plugin_action_links', array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 		}
+		add_action( 'shutdown', array( $this, 'onWpShutdown' ) );
+		
 		/**
 		 * We make the assumption that all settings updates are successful until told otherwise
 		 * by an actual failing update_option call.
@@ -67,6 +78,11 @@ class ICWP_WPSF_Base_Plugin {
 		self::$m_aFailedUpdateOptions = array();
 
 		$this->m_sParentMenuIdSuffix = 'base';
+	}
+	
+	public function doPluginUpdateCheck() {
+		$object = new ICWP_WpFunctions();
+		$object->getIsPluginUpdateAvailable( self::$PLUGIN_PATH );
 	}
 
 	protected function getFullParentMenuId() {
@@ -117,13 +133,14 @@ class ICWP_WPSF_Base_Plugin {
 		if ( is_admin() ) {
 			//Handle plugin upgrades
 			$this->handlePluginUpgrade();
+			$this->doPluginUpdateCheck();
 		}
 
 		if ( $this->isIcwpPluginAdminPage() ) {
 			//Handle form submit
 			$this->handlePluginFormSubmit();
 		}
-	}//onWpPluginsLoaded
+	}
 
 	public function onWpInit() { }
 
@@ -131,10 +148,8 @@ class ICWP_WPSF_Base_Plugin {
 
 		//Do Plugin-Specific Admin Work
 		if ( $this->isIcwpPluginAdminPage() ) {
-
 			//Links up CSS styles for the plugin itself (set the admin bootstrap CSS as a dependency also)
 			$this->enqueuePluginAdminCss();
-			
 		}
 		
 		// Determine whether to show ads and marketing messages
@@ -232,7 +247,18 @@ class ICWP_WPSF_Base_Plugin {
 	/**
 	 * Override this method to handle all the admin notices
 	 */
-	public function onWpAdminNotices() { }
+	public function onWpAdminNotices() {
+		// Do we have admin priviledges?
+		if ( !current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		$this->adminNoticePluginUpgradeAvailable();
+	}
+
+	/**
+	 * Hooked to 'shutdown'
+	 */
+	public function onWpShutdown() { }
 
 	/**
 	 * This is called from within onWpAdminInit. Use this solely to manage upgrades of the plugin
@@ -240,6 +266,36 @@ class ICWP_WPSF_Base_Plugin {
 	protected function handlePluginUpgrade() { }
 
 	protected function handlePluginFormSubmit() { }
+	
+	protected function adminNoticePluginUpgradeAvailable() {
+
+		// Don't show on the update page.
+		if ( isset( $GLOBALS['pagenow'] ) && $GLOBALS['pagenow'] == 'update.php' ) {
+			return;
+		}
+		
+		if ( !isset( self::$PLUGIN_FILE ) ) {
+			self::$PLUGIN_FILE	= plugin_basename(__FILE__);
+		}
+
+		$this->loadWpFunctions();
+		$oUpdate = $this->m_oWpFunctions->getIsPluginUpdateAvailable( self::$PLUGIN_FILE );
+		if ( !$oUpdate ) {
+			return;
+		}
+		$sNotice = $this->getAdminNoticePluginUpgradeAvailable();
+		$this->getAdminNotice( $sNotice, 'updated', true );
+	}
+
+	/**
+	 * Override this to change the message for the particular plugin upgrade.
+	 */
+	protected function getAdminNoticePluginUpgradeAvailable() {
+		$sUpgradeLink = $this->m_oWpFunctions->getPluginUpgradeLink( self::$PLUGIN_FILE );
+		$sNotice = '<p>There is an update available for the %s plugin. <a href="%s">Click to update immediately.</a>.</p>';
+		$sNotice = sprintf( $sNotice, self::$PLUGIN_HUMAN_NAME, $sUpgradeLink );
+		return $sNotice;
+	}
 
 	protected function enqueuePluginAdminCss() {
 		$iRand = rand();
@@ -272,7 +328,7 @@ class ICWP_WPSF_Base_Plugin {
 		} else {
 			return $sFullNotice;
 		}
-	}//getAdminNotice
+	}
 
 	protected function redirect( $insUrl, $innTimeout = 1 ) {
 		echo '
@@ -559,6 +615,12 @@ class ICWP_WPSF_Base_Plugin {
 		//Do we have admin priviledges?
 		if ( current_user_can( 'manage_options' ) ) {
 			$this->deleteAllPluginDbOptions();
+		}
+	}
+	
+	protected function loadWpFunctions() {
+		if ( !isset( $this->m_oWpFunctions ) ) {
+			$this->m_oWpFunctions = new ICWP_WpFunctions();
 		}
 	}
 	

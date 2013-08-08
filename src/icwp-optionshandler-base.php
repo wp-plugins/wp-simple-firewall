@@ -91,6 +91,10 @@ class ICWP_OptionsHandler_Base {
 		return true;
 	}
 
+	/**
+	 * @param string $insKey
+	 * @return Ambigous <boolean, multitype:>
+	 */
 	public function getOpt( $insKey ) {
 		if ( !isset( $this->m_aOptionsValues ) ) {
 			$this->initOptions();
