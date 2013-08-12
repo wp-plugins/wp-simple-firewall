@@ -130,8 +130,7 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					'Brand new plugin options system making them more efficient, easier to manage/update, using fewer WordPress database options',
-					'Huge improvements on database calls and efficiency in loading plugin options'
+					'NEW Option: Plugin will automatically upgrade itself when an update is detected - ensures plugin always remains current.',
 				);
 				?>
 				<ul>
@@ -141,6 +140,12 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 				</ul>
 				<?php
 				$aLog = array(
+					'Now displays an admin notice when a plugin upgrade is available with a link to immediately update.',
+					'Plugin collision protection: removes collision with All In One WordPress Security.',
+					'Improved Login Cooldown Feature- works more like email throttling as it now uses an extra filesystem-based level of protection.',
+					"Fix - Login Cooldown Feature didn't take effect in certain circumstances.",
+					'Brand new plugin options system making them more efficient, easier to manage/update, using fewer WordPress database options',
+					'Huge improvements on database calls and efficiency in loading plugin options'
 				);
 				?>
 				<ul>

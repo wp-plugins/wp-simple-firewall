@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.4.1
+Version: 1.4.2
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -46,7 +46,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.4.1';
+	static public $VERSION			= '1.4.2';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -102,7 +102,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 		// loads the base plugin options from 1 db call
 		$this->loadWpsfOptions();
-
+		$this->m_fAutoPluginUpgrade = $this->m_oWpsfOptions->getOpt( 'enable_auto_plugin_upgrade' ) == 'Y';
+		
 		// checks for filesystem based firewall overrides
 		$this->override();
 		
@@ -121,6 +122,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( $this->getIsMainFeatureEnabled( 'login_protect' ) ) {
 			$this->runLoginProtect();
 		}
+		
+		add_action( 'in_plugin_update_message-'.self::$PLUGIN_FILE, array( $this, 'onWpPluginUpdateMessage' ) );
+		
 	}//__construct
 	
 	public function removePluginConflicts() {
@@ -555,6 +559,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}//createPluginSubMenuItems
 
 	protected function handlePluginUpgrade() {
+		parent::handlePluginUpgrade();
 		
 		$sCurrentPluginVersion = $this->m_oWpsfOptions->getOpt( 'current_plugin_version' );
 		
@@ -928,6 +933,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->m_oWpsfOptions->deletePluginOptions();
 		
 		remove_action( 'shutdown', array( $this, 'saveProcessors_Action' ) );
+	}
+	
+	public function onWpPluginUpdateMessage() {
+		echo '<div style="color: #dd3333;">'
+			."Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features."
+			. '</div>';
 	}
 	
 	public function onWpDeactivatePlugin() {

@@ -45,29 +45,36 @@ class ICWP_WpFunctions {
 	}
 
 	public function getPluginUpgradeLink( $insPluginFile ) {
-		$sUrl = self_admin_url( 'update.php?action=upgrade-plugin&plugin=' ) . $insPluginFile;
-		return wp_nonce_url( $sUrl, 'upgrade-plugin_' . $insPluginFile );
+		$sUrl = self_admin_url( 'update.php' ) ;
+		$aQueryArgs = array(
+			'action' 	=> 'upgrade-plugin',
+			'plugin'	=> urlencode( $insPluginFile ),
+			'_wpnonce'	=> wp_create_nonce( 'upgrade-plugin_' . $insPluginFile )
+		);
+		return add_query_arg( $aQueryArgs, $sUrl );
 	}
 	
 	public function getWordpressUpdates() {
-		
 		$oCurrent = $this->getTransient( 'update_plugins' );
 		return $oCurrent->response;
-		foreach ( $aPluginList as $sPluginFile => $aData ) {
-			$aPluginList[$sPluginFile]['active']			= is_plugin_active( $sPluginFile );
-			$aPluginList[$sPluginFile]['network_active']	= is_plugin_active_for_network( $sPluginFile );
-			$aPluginList[$sPluginFile]['file']				= $sPluginFile;
-			$aPluginList[$sPluginFile]['update_info']		= '';
-			$aPluginList[$sPluginFile]['update_available']	= isset( $oCurrent->response[$sPluginFile] )? 1: 0;
-		
-			if ( $aPluginList[$sPluginFile]['update_available'] ) {
-				$aPluginList[$sPluginFile]['update_info'] = json_encode( $oCurrent->response[$sPluginFile] );
-			}
-		}
-		return $aPluginList;
 	}
 	
-	
+	/**
+	 * The full plugin file to be upgraded.
+	 * 
+	 * @param string $insPluginFile
+	 * @return boolean
+	 */
+	public function doPluginUpgrade( $insPluginFile ) {
+
+		if ( !$this->getIsPluginUpdateAvailable($insPluginFile)
+			|| ( isset( $GLOBALS['pagenow'] ) && $GLOBALS['pagenow'] == 'update.php' ) ) {
+			return true;
+		}
+		$sUrl = $this->getPluginUpgradeLink( $insPluginFile );
+		wp_redirect( $sUrl );
+		exit();
+	}
 	/**
 	 * @param string $insKey
 	 * @return object

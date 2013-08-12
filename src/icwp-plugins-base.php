@@ -50,6 +50,8 @@ class ICWP_WPSF_Base_Plugin {
 	
 	protected $m_fShowMarketing = '';
 	
+	protected $m_fAutoPluginUpgrade = false;
+	
 	/**
 	 * @var ICWP_WpFunctions;
 	 */
@@ -67,6 +69,7 @@ class ICWP_WPSF_Base_Plugin {
 			add_action( 'admin_notices', array( $this, 'onWpAdminNotices' ) );
 			add_action( 'admin_menu', array( $this, 'onWpAdminMenu' ) );
 			add_action( 'plugin_action_links', array( $this, 'onWpPluginActionLinks' ), 10, 4 );
+			add_action( 'in_plugin_update_message-' . self::$PLUGIN_FILE, array( $this, 'in_plugin_update_message' ) );
 		}
 		add_action( 'shutdown', array( $this, 'onWpShutdown' ) );
 		
@@ -263,7 +266,17 @@ class ICWP_WPSF_Base_Plugin {
 	/**
 	 * This is called from within onWpAdminInit. Use this solely to manage upgrades of the plugin
 	 */
-	protected function handlePluginUpgrade() { }
+	protected function handlePluginUpgrade() {
+
+		if ( !is_admin() || !current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		
+		if ( $this->m_fAutoPluginUpgrade ) {
+			$oWpFunctions = new ICWP_WpFunctions();
+			$oWpFunctions->doPluginUpgrade( self::$PLUGIN_FILE );
+		}
+	}
 
 	protected function handlePluginFormSubmit() { }
 	

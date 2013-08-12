@@ -68,6 +68,15 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base {
 					'Regardless of any other settings, this option will turn Off the Login Protect feature, or enable your selected Login Protect options.'
 				),
 				array(
+					'enable_auto_plugin_upgrade',
+					'',
+					'Y',
+					'checkbox',
+					'Auto-Upgrade',
+					'When an upgrade is detected, the plugin will automatically initiate the upgrade.',
+					'If you prefer to manage plugin upgrades, deselect this option. Otherwise, this plugin will auto-upgrade once any available update is detected.'
+				),
+				array(
 					'delete_on_deactivate',
 					'',
 					'N',
