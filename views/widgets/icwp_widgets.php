@@ -8,7 +8,7 @@ function getWidgetIframeHtml( $insSnippet ) {
 	$sIframeName = 'iframe-hlt-bootstrapcss-'.$insSnippet;
 	
 	if ( strpos( $insSnippet, 'side-widgets') !== false ) {
-		$sHeight = '1200px';
+		$sHeight = '800px';
 	}
 	elseif ( strpos( $insSnippet, 'dashboard-widget-developerchannel') !== false ) {
 		$sHeight = '312px';

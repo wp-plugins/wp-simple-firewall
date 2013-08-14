@@ -39,6 +39,20 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base {
 				)
 			),
 		);
+		$this->m_aWhitelist = array(
+			'section_title' => 'Whitelist IPs that by-pass Login Protect',
+			'section_options' => array(
+				array(
+					'ips_whitelist',
+					'',
+					'',
+					'ip_addresses',
+					'Whitelist IP Addresses',
+					'Specify IP Addresses that by-pass all Login Protect rules',
+					sprintf( 'Take a new line per address. Your IP address is: %s', '<span class="code">'.self::GetVisitorIpAddress().'</span>' )
+				)
+			)
+		);
 		$this->m_aTwoFactorAuth = array(
 			'section_title' => 'Two-Factor Authentication Protection Options',
 			'section_options' => array(
@@ -102,6 +116,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base {
 
 		$this->m_aOptions = array(
 			$this->m_aOptionsBase,
+			$this->m_aWhitelist,
 			$this->m_aTwoFactorAuth,
 			$this->m_aLoginProtect,
 			$this->m_aLoggingSection

@@ -128,11 +128,13 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 			return false;
 		}
 		
+		/* Removed as of version 1.5.0
 		// Checking this comes before all else but after the IP whitelist/blacklist check.
 		if ( $this->m_aBlockSettings[ 'block_wplogin_access' ] ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockWpLogin();
 		}
-		
+		*/
+				
 		// if we couldn't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
 		if ( empty( $this->m_aRequestUriParts ) ) {
 			$this->logInfo( 'Could not parse the URI so cannot effectively firewall.' );
@@ -510,31 +512,6 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	
 	public function isVisitorOnBlacklist() {
 		return $this->isIpOnlist( $this->m_aBlacklistIps, $this->m_nRequestIp );
-	}
-	
-	public function isIpOnlist( $inaIpList, $innIpAddress = '' ) {
-
-		if ( empty( $innIpAddress ) || !isset( $inaIpList['ips'] ) ) {
-			return false;
-		}
-		
-		foreach( $inaIpList['ips'] as $mWhitelistAddress ) {
-			
-			if ( strpos( $mWhitelistAddress, '-' ) === false ) { //not a range
-				if ( $innIpAddress == $mWhitelistAddress ) {
-					$this->m_sListItemLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
-					return true;
-				}
-			}
-			else {
-				list( $sStart, $sEnd ) = explode( '-', $mWhitelistAddress, 2 );
-				if ( $sStart <= $mWhitelistAddress && $mWhitelistAddress <= $sEnd ) {
-					$this->m_sListItemLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	/**

@@ -9,7 +9,7 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
 		<div class="page-header">
-			<a href="http://icwp.io/t" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
+			<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
 			<h2>Dashboard :: <?php echo $sPluginName; ?> Plugin (from iControlWP)</h2>
 		</div>
 
@@ -99,7 +99,6 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 								<?php endforeach; ?>
 							</li>
 						<?php endif; ?>
-						<li>Firewall blocks WP Login Access: <?php echo $icwp_aFirewallOptions['block_wplogin_access'] == 'Y' ? 'ON' : 'OFF'; ?></li>
 						<li>Firewall blocks Directory Traversals: <?php echo $icwp_aFirewallOptions['block_dir_traversal'] == 'Y'? 'ON' : 'OFF'; ?></li>
 						<li>Firewall blocks SQL Queries: <?php echo $icwp_aFirewallOptions['block_sql_queries'] == 'Y'? 'ON' : 'OFF'; ?></li>
 						<li>Firewall blocks WordPress Specific Terms: <?php echo $icwp_aFirewallOptions['block_wordpress_terms'] == 'Y'? 'ON' : 'OFF'; ?></li>
@@ -114,6 +113,13 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 				[ <a href="admin.php?page=icwp-wpsf-login-protect">Configure Now</a> ]</h4>
 				<?php if ( $fLoginProtectOn ) : ?>
 					<ul>
+						<?php if ( isset($icwp_aLoginProtectOptions['ips_whitelist']['ips']) ) : ?>
+							<li>You have <?php echo count( $icwp_aLoginProtectOptions['ips_whitelist']['ips'] );?> whitelisted IP addresses:
+								<?php foreach( $icwp_aLoginProtectOptions['ips_whitelist']['ips'] as $sIp ) : ?>
+								<br /><?php echo long2ip($sIp); ?> labelled as <?php echo $icwp_aLoginProtectOptions['ips_whitelist']['meta'][md5( $sIp )]?>
+								<?php endforeach; ?>
+							</li>
+						<?php endif; ?>
 						<li>Two Factor Login Authentication is: <?php echo $icwp_aLoginProtectOptions['enable_two_factor_auth_by_ip'] == 'Y'? 'ON' : 'OFF'; ?></li>
 						<li>Two Factor Login By Pass is: <?php echo $icwp_aLoginProtectOptions['enable_two_factor_bypass_on_email_fail'] == 'Y'? 'ON' : 'OFF'; ?></li>
 						<li>Login Cooldown Interval is: <?php echo ($icwp_aLoginProtectOptions['login_limit_interval'] == 0)? 'OFF' : $icwp_aLoginProtectOptions['login_limit_interval'].' seconds'; ?></li>
@@ -125,12 +131,13 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
-				<h3>v1.4.x Release:</h3>
-				<p>The following summarises the main changes to the plugin in the 1.4.x release</p>
+				<h3>v1.5.x Release:</h3>
+				<p>The following summarises the main changes to the plugin in the 1.5.x release</p>
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					'NEW Option: Plugin will automatically upgrade itself when an update is detected - ensures plugin always remains current.',
+					'NEW Option: Login Protect Dedicated IP Whitelist.',
+					'REMOVED Option: Firewall wp-login.php blocking'
 				);
 				?>
 				<ul>
@@ -140,12 +147,6 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 				</ul>
 				<?php
 				$aLog = array(
-					'Now displays an admin notice when a plugin upgrade is available with a link to immediately update.',
-					'Plugin collision protection: removes collision with All In One WordPress Security.',
-					'Improved Login Cooldown Feature- works more like email throttling as it now uses an extra filesystem-based level of protection.',
-					"Fix - Login Cooldown Feature didn't take effect in certain circumstances.",
-					'Brand new plugin options system making them more efficient, easier to manage/update, using fewer WordPress database options',
-					'Huge improvements on database calls and efficiency in loading plugin options'
 				);
 				?>
 				<ul>
@@ -157,15 +158,24 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 				<?php
 				$aLog = array(
 
+					'1.4.x'	=> array(
+						'NEW Option: Plugin will automatically upgrade itself when an update is detected - ensures plugin always remains current.',
+						'Now displays an admin notice when a plugin upgrade is available with a link to immediately update.',
+						'Plugin collision protection: removes collision with All In One WordPress Security.',
+						'Improved Login Cooldown Feature- works more like email throttling as it now uses an extra filesystem-based level of protection.',
+						"Fix - Login Cooldown Feature didn't take effect in certain circumstances.",
+						'Brand new plugin options system making them more efficient, easier to manage/update, using fewer WordPress database options',
+						'Huge improvements on database calls and efficiency in loading plugin options'
+					),
 					'1.3.x'	=> array(
-						"New Feature - Email Throttle. It will prevent you getting bombarded by 1000s of emails in case you're hit by a bot.",
-						"Another Firewall die() option. New option will print a message and uses the wp_die() function instead.",
-						"Option to separately log Login Protect features.",
-						"Refactored and improved the logging system.",
-						"Option to by-pass 2-factor authentication in the case sending the verification email fails.",
-						"Login Protect checking now better logs out users immediately with a redirect.",
-						"We now escape the log data being printed - just in case there's any HTML/JS etc in there we don't want.",
-						"Optimized and cleaned a lot of the option caching code to improve reliability and performance (more to come).",
+							"New Feature - Email Throttle. It will prevent you getting bombarded by 1000s of emails in case you're hit by a bot.",
+							"Another Firewall die() option. New option will print a message and uses the wp_die() function instead.",
+							"Option to separately log Login Protect features.",
+							"Refactored and improved the logging system.",
+							"Option to by-pass 2-factor authentication in the case sending the verification email fails.",
+							"Login Protect checking now better logs out users immediately with a redirect.",
+							"We now escape the log data being printed - just in case there's any HTML/JS etc in there we don't want.",
+							"Optimized and cleaned a lot of the option caching code to improve reliability and performance (more to come).",
 					),
 					
 					'1.2.x'	=> array(

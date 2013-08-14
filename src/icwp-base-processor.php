@@ -143,6 +143,36 @@ class ICWP_BaseProcessor {
 	}
 
 	/**
+	 * @param array $inaIpList
+	 * @param integer $innIpAddress
+	 * @return boolean
+	 */
+	public function isIpOnlist( $inaIpList, $innIpAddress = '' ) {
+	
+		if ( empty( $innIpAddress ) || !isset( $inaIpList['ips'] ) ) {
+			return false;
+		}
+	
+		foreach( $inaIpList['ips'] as $mWhitelistAddress ) {
+				
+			if ( strpos( $mWhitelistAddress, '-' ) === false ) { //not a range
+				if ( $innIpAddress == $mWhitelistAddress ) {
+					$this->m_sListItemLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
+					return true;
+				}
+			}
+			else {
+				list( $sStart, $sEnd ) = explode( '-', $mWhitelistAddress, 2 );
+				if ( $sStart <= $mWhitelistAddress && $mWhitelistAddress <= $sEnd ) {
+					$this->m_sListItemLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * We force PHP to pass by reference in case of older versions of PHP (?)
 	 * 
 	 * @param ICWP_EmailProcessor $inoEmailHandler

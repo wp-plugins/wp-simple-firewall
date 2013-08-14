@@ -51,15 +51,6 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base {
 					'The firewall will test GET and POST, but with this option checked, it will also COOKIE values for the same.'
 				),
 				array(
-					'block_wplogin_access',
-					'',
-					'N',
-					'checkbox',
-					'Login Access',
-					'Block WP Login Access',
-					'This will block access to the WordPress Login (wp-login.php) except to IP Addresses on the whitelist. If the IP whitelist is empty, this setting is ignored (so you do not lock yourself out!)'
-				),
-				array(
 					'block_dir_traversal',
 					'',
 					'N',
@@ -209,7 +200,6 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base {
 				'current_plugin_version',
 				'enable_firewall',
 				'include_cookie_checks',
-				'block_wplogin_access',
 				'block_dir_traversal',
 				'block_sql_queries',
 				'block_wordpress_terms',

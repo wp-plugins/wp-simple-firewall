@@ -39,7 +39,7 @@ $aLogTypes = array(
 	<div class="bootstrap-wpadmin">
 
 		<div class="page-header">
-			<a href="http://icwp.io/t" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
+			<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
 			<h2>Firewall Log :: <?php echo $sPluginName; ?> Plugin (from iControlWP)</h2>
 		</div>
 		
@@ -72,16 +72,16 @@ $aLogTypes = array(
 								[ <a href="http://whois.domaintools.com/<?php echo $aLogData['ip']; ?>" target="_blank">IPWHOIS Lookup</a> ]
 								[
 								<?php if ( in_array( $aLogData['ip_long'], $icwp_ip_blacklist ) ) : ?>
-									<a href="<?php echo $icwp_form_action; ?>&unblackip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Remove From Blacklist</a>
+									<a href="<?php echo $icwp_form_action; ?>&unblackip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Remove From Firewall Blacklist</a>
 								<?php else: ?>
-									<a href="<?php echo $icwp_form_action; ?>&blackip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Add To Blacklist</a>
+									<a href="<?php echo $icwp_form_action; ?>&blackip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Add To Firewall Blacklist</a>
 								<?php endif; ?>
 								]
 								[
 								<?php if ( in_array( $aLogData['ip_long'], $icwp_ip_whitelist ) ) : ?>
-									<a href="<?php echo $icwp_form_action; ?>&unwhiteip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Remove From Whitelist</a>
+									<a href="<?php echo $icwp_form_action; ?>&unwhiteip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Remove From Firewall Whitelist</a>
 								<?php else: ?>
-									<a href="<?php echo $icwp_form_action; ?>&whiteip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Add To Whitelist</a>
+									<a href="<?php echo $icwp_form_action; ?>&whiteip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Add To Firewall Whitelist</a>
 								<?php endif; ?>
 								]
 							</span>

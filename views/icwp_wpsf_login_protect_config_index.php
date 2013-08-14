@@ -6,8 +6,8 @@ include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 	<div class="bootstrap-wpadmin">
 
 		<div class="page-header">
-			<a href="http://wwwicontrolwp.com/"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
-			<h2><?php _hlt_e( 'Login Protect Configuration - WordPress Simple Firewall (from iControlWP)' ); ?></h2>
+			<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
+			<h2><?php _hlt_e( 'Login Protect :: WordPress Simple Firewall Plugin (from iControlWP)' ); ?></h2>
 		</div>
 		
 		<div class="row">

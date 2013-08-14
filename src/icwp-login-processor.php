@@ -70,6 +70,11 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	 */
 	public function run( $inoOptions ) {
 		
+		$aWhitelist = $inoOptions->getOpt( 'ips_whitelist' );
+		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::GetVisitorIpAddress() ) ) {
+			return true;
+		}
+		
 		// Add GASP checking to the login form.
 		if ( $inoOptions->getOpt( 'enable_login_gasp_check' ) == 'Y' ) {
 			add_action( 'login_form', array( $this, 'printGaspLoginCheck_Action' ) );
@@ -196,7 +201,7 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	// WordPress Hooks and Filters:
 
 	/**
-	 * Shouild be a filter added to WordPress's "authenticate" filter, but before WordPress performs
+	 * Should be a filter added to WordPress's "authenticate" filter, but before WordPress performs
 	 * it's own authentication (theirs is priority 30, so we could go in at around 20).
 	 * 
 	 * @param null|WP_User|WP_Error $inoUser
