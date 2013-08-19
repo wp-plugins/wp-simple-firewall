@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.5.0
+Version: 1.5.1
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -46,7 +46,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.5.0';
+	static public $VERSION			= '1.5.1';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -1052,7 +1052,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$sCurrentVersion = get_user_meta( $nUserId, self::OptionPrefix.'current_version', true );
 		// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
 		// If we can never set it, we shouldn't force the Ads on those users who can't get rid of it.
-		if ( $sCurrentVersion === false ) { //the value has never been set, or it's been installed for the first time.
+		if ( empty( $sCurrentVersion ) ) { //the value has never been set, or it's been installed for the first time.
 			$result = update_user_meta( $nUserId, self::OptionPrefix.'current_version', self::$VERSION );
 			return; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
 		}
@@ -1063,28 +1063,26 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$sRedirectPage = 'admin.php?page=icwp-wpsf';
 			ob_start();
 			?>
-					<style>
-						a#fromIcwp { padding: 0 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); color: blue; font-weight: bold; }
-					</style>
-					<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall-config'); ?>">
-						<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
-						<input type="hidden" value="1" name="<?php echo self::OptionPrefix; ?>hide_update_notice" id="<?php echo self::OptionPrefix; ?>hide_update_notice">
-						<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
-						<h4 style="margin:10px 0 3px;">
-							Note: WordPress Simple Firewall plugin <u>does not automatically turn on</u> when you install/update. There may also be
-							<a href="http://icwp.io/27" id="fromIcwp" title="WordPress Simple Firewall Plugin" target="_blank">important updates to read about</a>.
-						</h4>
-						<input type="submit" value="Okay, show me the dashboard." name="submit" class="button" style="float:left; margin-bottom:10px;">
-						<div style="clear:both;"></div>
-					</form>
-				<?php
-				$sNotice = ob_get_contents();
-				ob_end_clean();
-				
-				$this->getAdminNotice( $sNotice, 'updated', true );
-			}
-			
+				<style>
+					a#fromIcwp { padding: 0 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); color: blue; font-weight: bold; }
+				</style>
+				<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall-config'); ?>">
+					<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
+					<input type="hidden" value="1" name="<?php echo self::OptionPrefix; ?>hide_update_notice" id="<?php echo self::OptionPrefix; ?>hide_update_notice">
+					<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
+					<h4 style="margin:10px 0 3px;">
+						Note: WordPress Simple Firewall plugin <u>does not automatically turn on</u> when you install/update. There may also be
+						<a href="http://icwp.io/27" id="fromIcwp" title="WordPress Simple Firewall Plugin" target="_blank">important updates to read about</a>.
+					</h4>
+					<input type="submit" value="Okay, show me the dashboard." name="submit" class="button" style="float:left; margin-bottom:10px;">
+					<div style="clear:both;"></div>
+				</form>
+			<?php
+			$sNotice = ob_get_contents();
+			ob_end_clean();
+			$this->getAdminNotice( $sNotice, 'updated', true );
 		}
+	}
 		
 	private function adminNoticeOptionsUpdated() {
 			

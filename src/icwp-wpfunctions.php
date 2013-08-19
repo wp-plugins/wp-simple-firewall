@@ -2,6 +2,8 @@
 /**
  * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
  * All rights reserved.
+ * 
+ * Version: 2013-08-14_A
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -23,7 +25,6 @@ class ICWP_WpFunctions {
 	 * @var string
 	 */
 	protected $m_sWpVersion;
-	
 	
 	public function __construct() {
 	}
