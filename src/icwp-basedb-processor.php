@@ -99,6 +99,13 @@ class ICWP_BaseDbProcessor extends ICWP_BaseProcessor {
 	private function setTableName( $insTableName ) {
 		return $this->m_sTableName = $this->m_oWpdb->base_prefix . self::DB_TABLE_PREFIX . $insTableName;
 	}
+	
+	/**
+	 * Ensure that when we save the object later, it doesn't save unnecessary data.
+	 */
+	protected function doPreSave() {
+		unset( $this->m_oWpdb );
+	}
 }
 
 endif;

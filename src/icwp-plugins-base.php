@@ -61,17 +61,16 @@ class ICWP_WPSF_Base_Plugin {
 	static protected $m_aFailedUpdateOptions;
 
 	public function __construct() {
-
-		add_action( 'plugins_loaded', array( &$this, 'onWpPluginsLoaded' ) );
-		add_action( 'init', array( &$this, 'onWpInit' ), 0 );
+		
+		add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
+		add_action( 'init',						array( $this, 'onWpInit' ), 0 );
 		if ( is_admin() ) {
-			add_action( 'admin_init', array( $this, 'onWpAdminInit' ) );
-			add_action( 'admin_notices', array( $this, 'onWpAdminNotices' ) );
-			add_action( 'admin_menu', array( $this, 'onWpAdminMenu' ) );
-			add_action( 'plugin_action_links', array( $this, 'onWpPluginActionLinks' ), 10, 4 );
-			add_action( 'in_plugin_update_message-' . self::$PLUGIN_FILE, array( $this, 'in_plugin_update_message' ) );
+			add_action( 'admin_init',			array( $this, 'onWpAdminInit' ) );
+			add_action( 'admin_notices',		array( $this, 'onWpAdminNotices' ) );
+			add_action( 'admin_menu',			array( $this, 'onWpAdminMenu' ) );
+			add_action( 'plugin_action_links',	array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 		}
-		add_action( 'shutdown', array( $this, 'onWpShutdown' ) );
+		add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 		
 		/**
 		 * We make the assumption that all settings updates are successful until told otherwise
@@ -84,8 +83,8 @@ class ICWP_WPSF_Base_Plugin {
 	}
 	
 	public function doPluginUpdateCheck() {
-		$object = new ICWP_WpFunctions();
-		$object->getIsPluginUpdateAvailable( self::$PLUGIN_PATH );
+		$this->loadWpFunctions();
+		$this->m_oWpFunctions->getIsPluginUpdateAvailable( self::$PLUGIN_PATH );
 	}
 
 	protected function getFullParentMenuId() {
@@ -273,8 +272,8 @@ class ICWP_WPSF_Base_Plugin {
 		}
 		
 		if ( $this->m_fAutoPluginUpgrade ) {
-			$oWpFunctions = new ICWP_WpFunctions();
-			$oWpFunctions->doPluginUpgrade( self::$PLUGIN_FILE );
+			$this->loadWpFunctions();
+			$this->m_oWpFunctions->doPluginUpgrade( self::$PLUGIN_FILE );
 		}
 	}
 
@@ -572,23 +571,6 @@ class ICWP_WPSF_Base_Plugin {
 		}
 		
 	}//deleteAllPluginDbOptions
-
-	/**
-	 * Cloudflare compatible.
-	 * @return number
-	 */
-	public static function GetVisitorIpAddress() {
-	
-		$sIpAddress = empty($_SERVER["HTTP_X_FORWARDED_FOR"]) ? $_SERVER["REMOTE_ADDR"] : $_SERVER["HTTP_X_FORWARDED_FOR"];
-	
-		if( strpos($sIpAddress, ',') !== false ) {
-			$sIpAddress = explode(',', $sIpAddress);
-			$sIpAddress = $sIpAddress[0];
-		}
-	
-		return $sIpAddress;
-	
-	}//GetVisitorIpAddress
 
 	protected function getAnswerFromPost( $insKey, $insPrefix = null ) {
 		if ( is_null( $insPrefix ) ) {
