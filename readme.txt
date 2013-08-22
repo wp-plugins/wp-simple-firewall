@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor login, GASP
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 
 WordPress Simple Firewall and Login Protection.
 
@@ -14,44 +14,52 @@ WordPress Simple Firewall and Login Protection.
 
 Protects your WordPress site in 2 main ways:
 
-1.	A simple, easily configured Firewall.
-1.	WordPress Login Protection against Bots and Brute Force Attacks.
+1.	A simple, easily configured WordPress Firewall.
+1.	Ultimate WordPress Login Protection against Bots and Brute Force Attacks (no ban lists and horrible configuration pages!)
 
 = Firewall =
 
-The WordPress Simple Firewall is built to be easy to use by anyone, reliable and overall... very simple to use.
-
-The firewall is based on functionality provided by the [WordPress Firewall 2 plugin](http://wordpress.org/plugins/wordpress-firewall-2/).
+The WordPress Simple Firewall is built to be reliable, and easy to use by **anyone**.  Seriously, the interface is simple! :)
 
 It adds extra features over WordPress Firewall 2, including:
 
-*	Option to completely block access to wp-login.php based on an IP Address whitelist
-*	Added a Blacklist option so you can completely block based on IP address.
-*	Option to easily turn on / off the whole firewall. This means you don't have to disable certain settings or even disable the plugin to temporarily turn it off.
-  To debug the plugin, just turn off the firewall in the Firewall Options screen and all settings are ignored.
-*	Filesystem based plugin override. This means if you accidentally lock yourself out, you can forcefully turn off the firewall using FTP. You can also
+*	7 Simple, clear, Firewall blocking options - pick and choose for ultimate protection and compatibility.
+*	Option: Ignore already logged-in Administrators so you don't firewall yourself as you work on the site.
+*	Option: IP Address Whitelist. So you can vet your own IP addresses and 3rd Party Services.
+*	Option: Developer option for 3rd Party Services to dynamically add IP Addresses to whitelist
+	(our plugin is built to work with others!) E.g. [iControlWP](http://www.icontrolwp.com/).
+*	Option: IP Address Blacklist so you can completely block sites/services based on their IP address.
+*	Option: to easily turn on / off the whole firewall without disabling the whole plugin! (so simple, but important)
+*	Recovery Option: You can use FTP to manually turn ON/OFF the Firewall. This means if you accidentally lock yourself out, you can forcefully turn off the firewall using FTP. You can also
   turn back on the firewall using the same method.
-*	Automatic caching to reduce database calls when determining Firewall settings: 1-3 database calls per page load.
-*	Ability to view the complete log of the firewall and all its messages.
-*	Ability to easily turn on and off firewall logging.
-*	Ability to clear the whole log.
-*	For developers - ability to programmatically add to the IP address whitelist/blacklist - this is
-  useful for 3rd party services that connect to the site using other plugins. E.g. [iControlWP](http://www.icontrolwp.com/).
-  
-= Login Protection =
+*	Performance: When the firewall is running it is processing EVERY page load. So your firewall checking needs to be fast.
+	This plugin is written to cache settings and minimize database access: 1-3 database calls per page load.
+*	Logging: Full logging of Firewall (and other options) to analyse and debug your traffic and settings.
+*	Option: Email when firewall blocks a page access - with option to specify recipient.
+*	Option: Email throttling. If you get hit by a bot you wont get 1000s of email... you can throttle how many emails are sent.
+  useful for 3rd party services that connect to the site using other plugins. 
+ 
+Basic functionality is based on the principles employed by the [WordPress Firewall 2 plugin](http://wordpress.org/plugins/wordpress-firewall-2/).
+
+= Login and Identity Protection - Stops Brute Force Attacks =
 
 Note: Login Protection is a completely independent feature to the Firewall. IP Address whitelists are not shared.
+
+With our Login Protection features this plugin will single-handling prevent brute force login attack on all your WordPress sites.
+
+It doesn't need IP Address Ban Lists (which are actually useless anyway), and instead puts hard limits on your WordPress site,
+and force users to verify themselves when they login.
 
 As of version 1.2.0+ you now have several ways to add simple protection to your WordPress Login system.
 
 1.	[Email-based 2-Factor Login Authentication](http://www.icontrolwp.com/2013/07/add-two-factor-authentication-login-wordpress-sites/) based on IP address! (prevents brute force login attacks)
-1.	Login Cooldown interval - WordPress will only process 1 login per interval in seconds (prevents brute force login attacks)
+1.	[Login Cooldown Interval](http://www.icontrolwp.com/2013/08/wordpress-login-cool-down-stops-brute-force-attacks-wordpress/) - WordPress will only process 1 login per interval in seconds (prevents brute force login attacks)
 1.	[GASP Anti-Bot Login Form Protection](http://www.icontrolwp.com/2013/07/how-to-growmap-anti-spam-protection-wordpress-login-form/) - Adds 2 protection checks for all WordPress login attempts (prevents brute force login attacks using Bots)
 
 These options alone will protect your WordPress sites from nearly all forms of Brute Force
 login attacks.
 
-And you don't have to configure anything!  Simply check the options to turn them on, set the a cooldown interval and you're instantly protected.
+And you hardly need to configure anything! Simply check the options to turn them on, set a cooldown interval and you're instantly protected.
 
 == Installation ==
 
@@ -144,6 +152,11 @@ that are url, param and password will be ignored by the firewall.
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	ADD:		Limit login attempts functionality.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+
+= 1.5.2 =
+
+*	CHANGED:	The method for finding the client IP address is more thorough, in a bid to work with Proxy servers etc.
+*	FIXED:		PHP notice reported here: http://wordpress.org/support/topic/getting-errors-when-logged-in
 
 = 1.5.1 =
 

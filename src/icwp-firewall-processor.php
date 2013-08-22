@@ -107,7 +107,14 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	 */
 	public function doFirewallCheck() {
 		
-		//Check if the visitor is excluded from the firewall from the outset.
+		if ( $this->m_nRequestIp === false ) {
+			$this->logCritical(
+				"Visitor IP address could not be determined so we're by-passing the firewall. Label: %s"
+			);
+			return true;
+		}
+		
+		// Check if the visitor is excluded from the firewall from the outset.
 		if ( $this->isVisitorOnWhitelist() ) {
 			$this->logInfo(
 				sprintf( 'Visitor is whitelisted by IP Address. Label: %s',
@@ -397,7 +404,10 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	 */
 	protected function checkPagesForWhiteListing( $inaWhitelistPagesParams = array(), $infUseRegex = false ) {
 		
-		list( $sRequestPage, $sRequestQuery ) = $this->m_aRequestUriParts;
+		if ( !is_array( $this->m_aRequestUriParts ) || count( $this->m_aRequestUriParts ) < 1 ) {
+			return true;
+		}
+		$sRequestPage = $this->m_aRequestUriParts[0];
 		
 		// Now we compare pages in the whitelist with the parts of the request uri. If we get a match, that page is whitelisted
 		$aWhitelistPages = array_keys( $inaWhitelistPagesParams );

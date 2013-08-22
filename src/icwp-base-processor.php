@@ -132,14 +132,45 @@ class ICWP_BaseProcessor {
 	 */
 	public static function GetVisitorIpAddress( $infAsLong = true ) {
 	
-		$sIpAddress = empty($_SERVER["HTTP_X_FORWARDED_FOR"]) ? $_SERVER["REMOTE_ADDR"] : $_SERVER["HTTP_X_FORWARDED_FOR"];
-	
-		if( strpos($sIpAddress, ',') !== false ) {
-			$sIpAddress = explode(',', $sIpAddress);
-			$sIpAddress = $sIpAddress[0];
+		$aAddressSourceOptions = array(
+			'HTTP_CLIENT_IP',
+			'HTTP_X_FORWARDED_FOR',
+			'HTTP_X_FORWARDED',
+			'HTTP_FORWARDED',
+			'REMOTE_ADDR'
+		);
+		
+		$fCanUseFilter = function_exists( 'filter_var' ) && defined( 'FILTER_FLAG_NO_PRIV_RANGE' ) && defined( 'FILTER_FLAG_IPV4' );
+		
+		$aIpAddresses = array();
+		foreach( $aAddressSourceOptions as $sOption ) {
+			$sIpAddressToTest = $_SERVER[ $sOption ];
+			if ( empty( $sIpAddressToTest ) ) {
+				continue;
+			}
+			
+			$aIpAddresses = explode( ',', $sIpAddressToTest ); //sometimes a comma-separated list is returned
+			foreach( $aIpAddresses as $sIpAddress ) {
+				
+				if ( $fCanUseFilter && !self::IsAddressInPublicIpRange( $sIpAddress ) ) {
+					continue;
+				}
+				else {
+					return $infAsLong? ip2long( $sIpAddress ) : $sIpAddress;
+				}
+			}
 		}
+		return false;
+	}
 	
-		return $infAsLong? ip2long( $sIpAddress ) : $sIpAddress;
+	/**
+	 * Assumes a valid IPv4 address is provided as we're only testing for a whether the IP is public or not.
+	 * 
+	 * @param string $insIpAddress
+	 * @uses filter_var
+	 */
+	public static function IsAddressInPublicIpRange( $insIpAddress ) {
+		return filter_var( $insIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE );
 	}
 
 	/**
