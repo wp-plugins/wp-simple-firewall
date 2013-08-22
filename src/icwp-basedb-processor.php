@@ -103,7 +103,7 @@ class ICWP_BaseDbProcessor extends ICWP_BaseProcessor {
 	/**
 	 * Ensure that when we save the object later, it doesn't save unnecessary data.
 	 */
-	protected function doPreSave() {
+	public function doPreSave() {
 		unset( $this->m_oWpdb );
 	}
 }
