@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.5.4
+Version: 1.5.5
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -46,7 +46,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.5.4';
+	static public $VERSION			= '1.5.5';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -772,6 +772,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			}
 		}
 		
+		$this->clearCaches();
+		
 		if ( !self::$m_fUpdateSuccessTracker ) {
 			$this->m_oWpsfOptions->setOpt( 'feedback_admin_notice', 'Updating Settings <strong>Failed</strong>.' );
 		}
@@ -793,7 +795,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 		$this->setSharedOption( 'enable_firewall', $this->m_oWpsfOptions->getOpt( 'enable_firewall' ) );
 		$this->setSharedOption( 'enable_login_protect', $this->m_oWpsfOptions->getOpt( 'enable_login_protect' ) );
-		$this->clearCaches();
 	}
 	
 	protected function handleSubmit_FirewallConfig() {
@@ -838,7 +839,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		// At the time of writing the page only has 1 form submission item - clear log
 		if ( isset( $_POST['clear_log_submit'] ) ) {
 			$this->loadLoggingProcessor();
-			$this->m_oLoggingProcessor->emptyTable();
+			$this->m_oLoggingProcessor->recreateTable();
 		}
 		else if ( isset( $_GET['blackip'] ) ) {
 			$this->addRawIpsToFirewallList( 'ips_blacklist', array( $_GET['blackip'] ) );
@@ -932,7 +933,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->loadWpsfOptions();
 		$this->m_oWpsfOptions->deletePluginOptions();
 		
-		remove_action( 'shutdown', array( $this, 'saveProcessors_Action' ) );
+		remove_action( 'shutdown', array( $this, 'onWpShutdown' ) );
 	}
 	
 	public function onWpPluginUpdateMessage() {
@@ -947,7 +948,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 	}
 	
-	public function onWpActivatePlugin() { }
+	public function onWpActivatePlugin() {
+		parent::onWpActivatePlugin();
+	}
 	
 	public function enqueueBootstrapAdminCss() {
 		wp_register_style( 'worpit_bootstrap_wpadmin_css', $this->getCssUrl( 'bootstrap-wpadmin.css' ), false, self::$VERSION );

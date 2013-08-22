@@ -49,7 +49,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base {
 					'ip_addresses',
 					'Whitelist IP Addresses',
 					'Specify IP Addresses that by-pass all Login Protect rules',
-					sprintf( 'Take a new line per address. Your IP address is: %s', '<span class="code">'.self::GetVisitorIpAddress().'</span>' )
+					sprintf( 'Take a new line per address. Your IP address is: %s', '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
 				)
 			)
 		);

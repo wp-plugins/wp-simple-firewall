@@ -26,12 +26,13 @@ $aLogTypes = array(
 	}
 	td .cell-section {
 		display: inline-block;
-		width: 48%;
 	}
 	td .section-ip {
+		width: 68%;
 	}
 	td .section-timestamp {
 		text-align: right;
+		width: 28%;
 	}
 </style>
 
@@ -45,19 +46,19 @@ $aLogTypes = array(
 		
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
-			<?php if ( !$icwp_firewall_log ) : ?>
-				<?php echo 'There are currently no logs to display.'; ?>
-			<?php else : ?>
-			
 				<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
 					<?php
 						wp_nonce_field( $icwp_nonce_field );
 					?>
 					<div class="form-actions">
 						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-						<button type="submit" class="btn btn-primary" name="clear_log_submit"><?php _hlt_e( 'Clear Log'); ?></button>
+						<button type="submit" class="btn btn-primary" name="clear_log_submit"><?php _hlt_e( 'Clear/Fix Log'); ?></button>
 					</div>
 				</form>
+				
+				<?php if ( !$icwp_firewall_log ) : ?>
+					<?php echo 'There are currently no logs to display. If you expect there to be some, use the button above to Clean/Fix them.'; ?>
+				<?php else : ?>
 			
 				<table class="table table-bordered table-hover table-condensed">
 					<tr>

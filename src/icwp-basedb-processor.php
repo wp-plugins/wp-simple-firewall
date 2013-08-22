@@ -71,12 +71,24 @@ class ICWP_BaseDbProcessor extends ICWP_BaseProcessor {
 		return $this->m_oWpdb->update( $this->m_sTableName, $inaData, $inaWhere );
 	}
 
+	public function createTable() {
+		//Override this function to create the Table you want.
+	}
+	
 	/**
 	 * Will remove all data from this table (to delete the table see dropTable)
 	 */
 	public function emptyTable() {
 		$sQuery = sprintf( "TRUNCATE TABLE `%s`", $this->m_sTableName );
 		return $this->doSql( $sQuery );
+	}
+
+	/**
+	 * Will recreate the whole table
+	 */
+	public function recreateTable() {
+		$this->dropTable();
+		$this->createTable();
 	}
 	
 	/**

@@ -271,6 +271,8 @@ class ICWP_WPSF_Base_Plugin {
 			return;
 		}
 		
+		$this->flushCaches();
+		
 		if ( $this->m_fAutoPluginUpgrade ) {
 			$this->loadWpFunctions();
 			$this->m_oWpFunctions->doPluginUpgrade( self::$PLUGIN_FILE );
@@ -640,6 +642,13 @@ class ICWP_WPSF_Base_Plugin {
 		$inaArgs[$insAttrKey] = ( empty($sAttrValue) ) ? '' : ' '.$insElement.'="'.$sAttrValue.'"';
 	}
 
+	protected function flushCaches() {
+		// Flush W3 Total Cache (compatible up to version 0.9.2.4)
+		if (function_exists('w3tc_pgcache_flush')) {
+			w3tc_pgcache_flush();
+		}
+	}
+	
 }//CLASS ICWP_WPSF_Base_Plugin
 
 endif;

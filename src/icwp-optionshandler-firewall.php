@@ -130,7 +130,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base {
 					'ip_addresses',
 					'Whitelist IP Addresses',
 					'Choose IP Addresses that are never subjected to Firewall Rules',
-					sprintf( 'Take a new line per address. Your IP address is: %s', '<span class="code">'.self::GetVisitorIpAddress().'</span>' )
+					sprintf( 'Take a new line per address. Your IP address is: %s', '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
 				),
 				array(
 					'page_params_whitelist',

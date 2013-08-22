@@ -427,6 +427,11 @@ class ICWP_OptionsHandler_Base {
 		}
 	}
 	
+	protected function getVisitorIpAddress( $infAsLong = true ) {
+		require_once( dirname(__FILE__).'/icwp-base-processor.php' );
+		return ICWP_BaseProcessor::GetVisitorIpAddress( $infAsLong );
+	}
+	
 	protected function getFromPost( $insKey, $insPrefix = null ) {
 		$sKey = ( is_null( $insPrefix )? $this->m_sOptionPrefix : $insPrefix ) . $insKey;
 		return ( isset( $_POST[ $sKey ] )? $_POST[ $sKey ]: null );
@@ -443,23 +448,6 @@ class ICWP_OptionsHandler_Base {
 	public function deleteOption( $insKey ) {
 		return delete_option( $this->m_sOptionPrefix.$insKey );
 	}
-	
-	/**
-	 * Cloudflare compatible.
-	 * @return number
-	 */
-	public static function GetVisitorIpAddress() {
-	
-		$sIpAddress = empty($_SERVER["HTTP_X_FORWARDED_FOR"]) ? $_SERVER["REMOTE_ADDR"] : $_SERVER["HTTP_X_FORWARDED_FOR"];
-	
-		if( strpos($sIpAddress, ',') !== false ) {
-			$sIpAddress = explode(',', $sIpAddress);
-			$sIpAddress = $sIpAddress[0];
-		}
-	
-		return $sIpAddress;
-	
-	}//GetVisitorIpAddress
 }
 
 endif;

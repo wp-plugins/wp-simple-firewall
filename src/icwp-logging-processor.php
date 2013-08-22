@@ -22,7 +22,6 @@ if ( !class_exists('ICWP_LoggingProcessor') ):
 class ICWP_LoggingProcessor extends ICWP_BaseDbProcessor {
 	
 	const TableName = 'wpsf_log';
-	
 	protected $m_sRequestId;
 	
 	public function __construct() {
@@ -95,7 +94,7 @@ class ICWP_LoggingProcessor extends ICWP_BaseDbProcessor {
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 		$sSqlTables = sprintf( $sSqlTables, $this->m_sTableName );
-		$this->doSql( $sSqlTables );
+		return $this->doSql( $sSqlTables );
 	}
 	
 	public function handleInstallUpgrade( $insCurrentVersion = '' ) {
