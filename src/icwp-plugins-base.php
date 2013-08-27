@@ -15,9 +15,9 @@ if ( !function_exists( '_hlt__' ) ) {
 	}
 }
 
-if ( !class_exists('ICWP_WPSF_Base_Plugin') ):
-
 require_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
+
+if ( !class_exists('ICWP_WPSF_Base_Plugin') ):
 
 class ICWP_WPSF_Base_Plugin {
 

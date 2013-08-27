@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
 if ( !class_exists('ICWP_LoginProcessor') ):
 
-class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
+class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 	
 	const TableName = 'login_auth';
 	
@@ -149,7 +149,7 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor {
 	 * Should return false when logging is disabled.
 	 *
 	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_BaseProcessor::getLogData()
+	 * @see ICWP_BaseProcessor_WPSF::getLogData()
 	 */
 	public function flushLogData() {
 	

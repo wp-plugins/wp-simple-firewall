@@ -2,6 +2,8 @@
 /**
  * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
  * All rights reserved.
+ * 
+ * Version: 2013-08-27-B
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -16,9 +18,9 @@
  *
  */
 
-if ( !class_exists('ICWP_BaseProcessor') ):
+if ( !class_exists('ICWP_BaseProcessor_WPSF') ):
 
-class ICWP_BaseProcessor {
+class ICWP_BaseProcessor_WPSF {
 	
 	const PcreDelimiter = '/';
 	const LOG_MESSAGE_LEVEL_INFO = 0;
@@ -178,29 +180,58 @@ class ICWP_BaseProcessor {
 	 * @param integer $innIpAddress
 	 * @return boolean
 	 */
-	public function isIpOnlist( $inaIpList, $innIpAddress = '' ) {
-	
+	public function isIpOnlist( $inaIpList, $innIpAddress = '', &$outsLabel = '' ) {
+
 		if ( empty( $innIpAddress ) || !isset( $inaIpList['ips'] ) ) {
 			return false;
 		}
 	
+		$outsLabel = '';
 		foreach( $inaIpList['ips'] as $mWhitelistAddress ) {
-				
-			if ( strpos( $mWhitelistAddress, '-' ) === false ) { //not a range
-				if ( $innIpAddress == $mWhitelistAddress ) {
-					$this->m_sListItemLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
+			
+			$aIps = $this->parseIpAddress( $mWhitelistAddress );
+			if ( count( $aIps ) === 1 ) { //not a range
+				if ( $innIpAddress == $aIps[0] ) {
+					$outsLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
 					return true;
 				}
 			}
-			else {
-				list( $sStart, $sEnd ) = explode( '-', $mWhitelistAddress, 2 );
-				if ( $sStart <= $mWhitelistAddress && $mWhitelistAddress <= $sEnd ) {
-					$this->m_sListItemLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
+			else if ( count( $aIps ) == 2 ) {
+				if ( $aIps[0] <= $innIpAddress && $innIpAddress <= $aIps[1] ) {
+					$outsLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
 					return true;
 				}
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * @param string $insIpAddress	- an IP or IP address range in LONG format.
+	 * @return array				- with 1 ip address, or 2 addresses if it is a range.
+	 */
+	protected function parseIpAddress( $insIpAddress ) {
+		
+		$aIps = array();
+		
+		if ( empty($insIpAddress) ) {
+			return $aIps;
+		}
+		
+		// offset=1 in the case that it's a range and the first number is negative on 32-bit systems
+		$mPos = strpos( $insIpAddress, '-', 1 );
+
+		if ( $mPos === false ) { //plain IP address
+			$aIps[] = $insIpAddress;
+		}
+		else {
+			//we remove the first character in case this is '-'
+			$aParts = array( substr( $insIpAddress, 0, 1 ), substr( $insIpAddress, 1 ) );
+			list( $sStart, $sEnd ) = explode( '-', $aParts[1], 2 );
+			$aIps[] = $aParts[0].$sStart;
+			$aIps[] = $sEnd;
+		}
+		return $aIps;
 	}
 	
 	/**

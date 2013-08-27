@@ -3,6 +3,8 @@
 /**
  * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
  * All rights reserved.
+ * 
+ * Version: 2013-08-27-A
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -208,8 +210,23 @@ class ICWP_DataProcessor {
 		
 		list( $sIpRangeStart, $sIpRangeEnd ) = explode( '-', $insIpAddressRange, 2 );
 		
-		if ( self::Verify_Ip_Address( $sIpRangeStart ) && self::Verify_Ip_Address( $sIpRangeEnd ) ) {
-			return ip2long( $sIpRangeStart ).'-'.ip2long( $sIpRangeEnd );
+		if ( $sIpRangeStart == $sIpRangeEnd ) {
+			return self::Verify_Ip_Address( $sIpRangeStart );
+		}
+		else if ( self::Verify_Ip_Address( $sIpRangeStart ) && self::Verify_Ip_Address( $sIpRangeEnd ) ) {
+			$nStart = ip2long( $sIpRangeStart );
+			$nEnd = ip2long( $sIpRangeEnd );
+			
+			// do our best to order it
+			if (
+				( $nStart > 0 && $nEnd > 0 && $nStart > $nEnd )
+				|| ( $nStart < 0 && $nEnd < 0 && $nStart > $nEnd )
+				) {
+				$nTemp = $nStart;
+				$nStart = $nEnd;
+				$nEnd = $nTemp;
+			}
+			return $nStart.'-'.$nEnd;
 		}
 		return false;
 	}

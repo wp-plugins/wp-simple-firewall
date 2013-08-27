@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
 if ( !class_exists('ICWP_FirewallProcessor') ):
 
-class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
+class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	
 	protected $m_nRequestTimestamp;
 	
@@ -83,7 +83,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	 * Should return false when logging is disabled.
 	 * 
 	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_BaseProcessor::getLogData()
+	 * @see ICWP_BaseProcessor_WPSF::getLogData()
 	 */
 	public function flushLogData() {
 		
@@ -517,11 +517,11 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor {
 	}
 	
 	public function isVisitorOnWhitelist() {
-		return $this->isIpOnlist( $this->m_aWhitelistIps, $this->m_nRequestIp );
+		return $this->isIpOnlist( $this->m_aWhitelistIps, $this->m_nRequestIp, $this->m_sListItemLabel );
 	}
 	
 	public function isVisitorOnBlacklist() {
-		return $this->isIpOnlist( $this->m_aBlacklistIps, $this->m_nRequestIp );
+		return $this->isIpOnlist( $this->m_aBlacklistIps, $this->m_nRequestIp, $this->m_sListItemLabel );
 	}
 
 	/**

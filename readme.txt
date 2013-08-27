@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor login, GASP
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.5.5
+Stable tag: 1.5.6
 
 WordPress Simple Firewall and Login Protection.
 
@@ -152,6 +152,12 @@ that are url, param and password will be ignored by the firewall.
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	ADD:		Limit login attempts functionality.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+
+= 1.5.6 =
+
+*	IMPROVED:	Whitelist/Blacklist IP range processing to better cater for ranges when saving, with more thorough checking.
+*	IMPROVED:	Whitelist/Blacklist IP range processing for 32-bit systems.
+*	FIXED:		A bug with Whitelist/Blacklist IP checking.
 
 = 1.5.5 =
 

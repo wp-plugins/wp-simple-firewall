@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
 if ( !class_exists('ICWP_LoggingProcessor') ):
 
-class ICWP_LoggingProcessor extends ICWP_BaseDbProcessor {
+class ICWP_LoggingProcessor extends ICWP_BaseDbProcessor_WPSF {
 	
 	const TableName = 'wpsf_log';
 	protected $m_sRequestId;

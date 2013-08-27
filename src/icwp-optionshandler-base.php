@@ -2,6 +2,8 @@
 /**
  * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
  * All rights reserved.
+ * 
+ * Version: 2013-08-27-A
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -15,9 +17,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_OptionsHandler_Base') ):
+if ( !class_exists('ICWP_OptionsHandler_Base_WPSF') ):
 
-class ICWP_OptionsHandler_Base {
+class ICWP_OptionsHandler_Base_WPSF {
 	
 	const CollateSeparator = '--SEP--';
 	
@@ -83,6 +85,13 @@ class ICWP_OptionsHandler_Base {
 		}
 	}
 
+	/**
+	 * Sets the value for the given option key
+	 * 
+	 * @param string $insKey
+	 * @param mixed $inmValue
+	 * @return boolean
+	 */
 	public function setOpt( $insKey, $inmValue ) {
 		if ( !isset( $this->m_aOptionsValues ) ) {
 			$this->loadPluginOptions();
@@ -329,15 +338,17 @@ class ICWP_OptionsHandler_Base {
 			return $aDisplay;
 		}
 		foreach( $inaIpList['ips'] as $sAddress ) {
+			// offset=1 in the case that it's a range and the first number is negative on 32-bit systems
+			$mPos = strpos( $sAddress, '-', 1 );
 			
-			$mPos = strpos( $sAddress, '-' );
-			
-			if ( $mPos === false || $mPos === 0 ) { //plain IP address
+			if ( $mPos === false ) { //plain IP address
 				$sDisplayText = long2ip( $sAddress );
 			}
 			else {
-				list($nStart, $nEnd) = explode( '-', $sAddress );
-				$sDisplayText = long2ip( $nStart ) .'-'. long2ip( $nEnd );
+				//we remove the first character in case this is '-'
+				$aParts = array( substr( $sAddress, 0, 1 ), substr( $sAddress, 1 ) );
+				list( $nStart, $nEnd ) = explode( '-', $aParts[1], 2 );
+				$sDisplayText = long2ip( $aParts[0].$nStart ) .'-'. long2ip( $nEnd );
 			}
 			$sLabel = $inaIpList['meta'][ md5($sAddress) ];
 			$sLabel = trim( $sLabel, '()' );
@@ -409,6 +420,19 @@ class ICWP_OptionsHandler_Base {
 	protected function updateHandler() { }
 	
 	/**
+	 * @param array $inaNewOptions
+	 */
+	protected function mergeNonUiOptions( $inaNewOptions = array() ) {
+
+		if ( !empty( $this->m_aNonUiOptions ) ) {
+			$this->m_aNonUiOptions = array_merge( $this->m_aNonUiOptions, $inaNewOptions );
+		}
+		else {
+			$this->m_aNonUiOptions = $inaNewOptions;
+		}
+	}
+	
+	/**
 	 * Copies WordPress Options to the options array and optionally deletes the original.
 	 * 
 	 * @param array $inaOptions
@@ -429,9 +453,14 @@ class ICWP_OptionsHandler_Base {
 	
 	protected function getVisitorIpAddress( $infAsLong = true ) {
 		require_once( dirname(__FILE__).'/icwp-base-processor.php' );
-		return ICWP_BaseProcessor::GetVisitorIpAddress( $infAsLong );
+		return ICWP_BaseProcessor_WPSF::GetVisitorIpAddress( $infAsLong );
 	}
 	
+	/**
+	 * @param string $insKey		-	the POST key
+	 * @param string $insPrefix
+	 * @return Ambigous <null, string>
+	 */
 	protected function getFromPost( $insKey, $insPrefix = null ) {
 		$sKey = ( is_null( $insPrefix )? $this->m_sOptionPrefix : $insPrefix ) . $insKey;
 		return ( isset( $_POST[ $sKey ] )? $_POST[ $sKey ]: null );

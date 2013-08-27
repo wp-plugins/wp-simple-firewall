@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_Wpsf') ):
 
-class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base {
+class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 	
 	public function definePluginOptions() {
 
@@ -39,13 +39,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base {
 			'secret_key',
 			'feedback_admin_notice'
 		);
-		
-		if ( !empty( $this->m_aNonUiOptions ) ) {
-			$this->m_aNonUiOptions = array_merge( $this->m_aNonUiOptions, $aNonUiOptions );
-		}
-		else {
-			$this->m_aNonUiOptions = $aNonUiOptions;
-		}
+		$this->mergeNonUiOptions( $aNonUiOptions );
 		
 		$aGeneral = array(
 			'section_title' => 'General Plugin Options',

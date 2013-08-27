@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.5.5
+Version: 1.5.6
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -46,7 +46,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.5.5';
+	static public $VERSION			= '1.5.6';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -1061,7 +1061,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$result = update_user_meta( $nUserId, self::OptionPrefix.'current_version', self::$VERSION );
 			return; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
 		}
-	
+		
 		if ( $sCurrentVersion !== self::$VERSION ) {
 				
 			$sRedirectPage = isset( $GLOBALS['pagenow'] ) ? $GLOBALS['pagenow'] : 'index.php';

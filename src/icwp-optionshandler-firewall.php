@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_Firewall') ):
 
-class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base {
+class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 	
 	public function definePluginOptions() {
 

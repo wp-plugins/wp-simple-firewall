@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
 if ( !class_exists('ICWP_EmailProcessor') ):
 
-class ICWP_EmailProcessor extends ICWP_BaseProcessor {
+class ICWP_EmailProcessor extends ICWP_BaseProcessor_WPSF {
 	
 	protected $m_sRecipientAddress;
 	protected $m_sSiteName;

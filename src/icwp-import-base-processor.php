@@ -21,7 +21,7 @@ require_once( dirname(__FILE__).'/icwp-data-processor.php' );
 
 if ( !class_exists('ICWP_ImportBaseProcessor') ):
 
-class ICWP_ImportBaseProcessor extends ICWP_BaseProcessor {
+class ICWP_ImportBaseProcessor extends ICWP_BaseProcessor_WPSF {
 	
 	/**
 	 * The options prefix used by the target plugin
