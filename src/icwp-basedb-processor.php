@@ -70,6 +70,10 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_BaseProcessor_WPSF {
 	public function updateRowsFromTable( $inaData, $inaWhere ) {
 		return $this->m_oWpdb->update( $this->m_sTableName, $inaData, $inaWhere );
 	}
+	
+	public function deleteRowsFromTable( $inaWhere ) {
+		return $this->m_oWpdb->delete( $this->m_sTableName, $inaWhere );
+	}
 
 	public function createTable() {
 		//Override this function to create the Table you want.

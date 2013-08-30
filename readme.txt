@@ -1,12 +1,12 @@
 === Plugin Name ===
-Contributors: dlgoodchild, paultgoodchild
+Contributors: paultgoodchild, dlgoodchild 
 Donate link: http://icwp.io/q
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor login, GASP
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.5.6
+Stable tag: 1.6.0
 
 WordPress Simple Firewall and Login Protection.
 
@@ -60,6 +60,34 @@ These options alone will protect your WordPress sites from nearly all forms of B
 login attacks.
 
 And you hardly need to configure anything! Simply check the options to turn them on, set a cooldown interval and you're instantly protected.
+
+= SPAM and Comments Filtering =
+
+As of version 1.6, this plugin integrates [GASP Spambot Protection](http://wordpress.org/plugins/growmap-anti-spambot-plugin/).
+
+We have taken this functionality a level further and added the concept of unique, per-page visit, Comment Tokens.
+
+**Comment Tokens** are unique keys that are created every time a page loads and they are uniquely generated based on 3 factors:
+
+1.	The visitors IP address.
+1.	The Page they are viewing
+1.	A unique, random number, generated at the time the page is loaded.
+
+This is all handle automatically and your users will not be affected - they'll still just have a checkbox like the original GASP plugin.
+
+These comment tokens are then embedded in the comment form and must be presented to your WordPress site when a comment is posted.  The plugin
+will then examine the token, the IP address from which the comment is coming, and page upon which the comment is being posted.  They must
+all match before the comment is accepted.
+
+Furthermore, we place a cooldown (i.e. you must wait X seconds before you can post using that token) and an expiration on these comment tokens.
+The reasons for this are:
+
+1.	Cooldown means that a spambot cannot load a page, read the unique comment token and immediately re-post a comment to that page. It must wait
+a while.  This has the effect of slowing down the spambots, and, if the spambots get it wrong, they've wasted that token - as tokens can only
+be used once.
+1.	Expirations mean that a spambot cannot get the token and use it whenever it likes, it must use it within the specfied time.
+
+This all combines to make it much more difficult for spambots (and also human spammers as they have to now wait) to work their dirty magic :)
 
 == Installation ==
 
@@ -152,6 +180,11 @@ that are url, param and password will be ignored by the firewall.
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	ADD:		Limit login attempts functionality.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+
+= 1.6.0 =
+
+*	ADDED:		A new section - 'Comments Filtering' that will form the basis for filtering comments with SPAM etc.
+*	ADDED:		Option to add enhanced GASP based comments filtering to prevent SPAM bots posting comments to your site.
 
 = 1.5.6 =
 

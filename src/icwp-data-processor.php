@@ -230,7 +230,30 @@ class ICWP_DataProcessor {
 		}
 		return false;
 	}
+
+	/**
+	 * @param integer $innLength
+	 * @param boolean $infBeginLetter
+	 * @return string
+	 */
+	static public function GenerateRandomString( $innLength = 10, $infBeginLetter = false ) {
+		$aChars = array( 'abcdefghijkmnopqrstuvwxyz' );
+		$aChars[] = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 	
+		$sCharset = implode( '', $aChars );
+		if ( $infBeginLetter ) {
+			$sPassword = $sCharset[ ( rand() % strlen( $sCharset ) ) ];
+		}
+		else {
+			$sPassword = '';
+		}
+		$sCharset .= '023456789';
+	
+		for ( $i = $infBeginLetter? 1 : 0; $i < $innLength; $i++ ) {
+			$sPassword .= $sCharset[ ( rand() % strlen( $sCharset ) ) ];
+		}
+		return $sPassword;
+	}
 }
 
 endif;

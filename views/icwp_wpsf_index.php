@@ -4,6 +4,7 @@ include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 $sPluginName = 'WordPress Simple Firewall';
 $fFirewallOn = $icwp_aMainOptions['enable_firewall'] == 'Y';
 $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
+$fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 ?>
 
 <div class="wrap">
@@ -59,9 +60,9 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 			<div class="span6" id="tbs_docs_shortcodes">
 			  <div class="well">
 				<h3>Firewall Configuration</h3>
-				
+
 				<h4 style="margin-top:20px;">Firewall is currently <?php echo $fFirewallOn ? 'ON' : 'OFF'; ?>.
-				[ <a href="admin.php?page=icwp-wpsf-firewall-config">Configure Now</a> ]</h4>
+				[ <a href="admin.php?page=icwp-wpsf-firewall">Configure Now</a> ]</h4>
 				<?php if ( $fFirewallOn ) : ?>
 					<ul>
 						<li>Firewall logging is: <?php echo $icwp_aFirewallOptions['enable_firewall'] == 'Y'? 'ON' : 'OFF'; ?></li>
@@ -110,7 +111,7 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 				<?php endif; ?>
 				
 				<h4 style="margin-top:20px;">Login Protection is currently <?php echo $fLoginProtectOn? 'ON' : 'OFF'; ?>.
-				[ <a href="admin.php?page=icwp-wpsf-login-protect">Configure Now</a> ]</h4>
+				[ <a href="admin.php?page=icwp-wpsf-login_protect">Configure Now</a> ]</h4>
 				<?php if ( $fLoginProtectOn ) : ?>
 					<ul>
 						<?php if ( isset($icwp_aLoginProtectOptions['ips_whitelist']['ips']) ) : ?>
@@ -127,17 +128,26 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 						<li>Login Protect Logging: <?php echo ($icwp_aLoginProtectOptions['enable_login_protect_log']  == 'Y')? 'ON' : 'OFF';?></li>
 					</ul>
 				<?php endif; ?>
+				
+				<h4 style="margin-top:20px;">Comments Filter is currently <?php echo $fCommentsFilteringOn? 'ON' : 'OFF'; ?>.
+				[ <a href="admin.php?page=icwp-wpsf-comments_filter">Configure Now</a> ]</h4>
+				<?php if ( $fCommentsFilteringOn ) : ?>
+					<ul>
+						<li>Enchanced GASP Protection is: <?php echo $icwp_aCommentsFilterOptions['enable_comments_gasp_protection'] == 'Y'? 'ON' : 'OFF'; ?></li>
+						<li>Comments Cooldown Interval is: <?php echo ($icwp_aCommentsFilterOptions['comments_cooldown_interval'] == 0)? 'OFF' : $icwp_aCommentsFilterOptions['comments_cooldown_interval'].' seconds'; ?></li>
+						<li>Comments Token Expire is: <?php echo ($icwp_aCommentsFilterOptions['comments_token_expire_interval'] == 0)? 'OFF' : $icwp_aCommentsFilterOptions['comments_token_expire_interval'].' seconds'; ?></li>
+					</ul>
+				<?php endif; ?>
 			  </div>
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
-				<h3>v1.5.x Release:</h3>
-				<p>The following summarises the main changes to the plugin in the 1.5.x release</p>
+				<h3>v1.6.x Release:</h3>
+				<p>The following summarises the main changes to the plugin in the 1.6.x release</p>
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					'NEW Option: Login Protect Dedicated IP Whitelist.',
-					'REMOVED Option: Firewall wp-login.php blocking'
+					'ADDED: GASP-based, and further enhanced, SPAM comments filtering functionality.'
 				);
 				?>
 				<ul>
@@ -158,6 +168,11 @@ $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 				<?php
 				$aLog = array(
 
+					'1.5.x'	=> array(
+						'IMPROVED: Whitelisting/Blacklisting operations and options',
+						'NEW Option: Login Protect Dedicated IP Whitelist.',
+						'REMOVED Option: Firewall wp-login.php blocking'
+					),
 					'1.4.x'	=> array(
 						'NEW Option: Plugin will automatically upgrade itself when an update is detected - ensures plugin always remains current.',
 						'Now displays an admin notice when a plugin upgrade is available with a link to immediately update.',

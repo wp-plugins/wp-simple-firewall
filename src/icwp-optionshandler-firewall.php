@@ -137,7 +137,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 					'',
 					'',
 					'comma_separated_lists',
-					'Whitelist Paramaters',
+					'Whitelist Parameters',
 					'Detail pages and parameters that are whitelisted (ignored)',
 					'This should be used with caution and you should only provide parameter names that you need to have excluded.'
 						.' [<a href="http://icwp.io/2a" target="_blank">Help</a>]'

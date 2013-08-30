@@ -26,13 +26,15 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 		$this->m_aIndependentOptions = array(
 			'firewall_processor',
 			'login_processor',
+			'comments_processor',
 			'logging_processor',
 			'email_processor'
 		);
 		
 		$this->m_aDirectSaveOptions = array(
 			'enable_firewall',
-			'enable_login_protect'
+			'enable_login_protect',
+			'enable_comments_filter'
 		);
 		
 		$aNonUiOptions = array(
@@ -60,6 +62,15 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 					'Enable Login Protect',
 					'Enable (or Disable) The Login Protection Feature',
 					'Regardless of any other settings, this option will turn Off the Login Protect feature, or enable your selected Login Protect options.'
+				),
+				array(
+					'enable_comments_filter',
+					'',
+					'N',
+					'checkbox',
+					'Enable Comments Filter',
+					'Enable (or Disable) The Comments Filter Feature',
+					'Regardless of any other settings, this option will turn Off the Comments Filter feature, or enable your selected Comments Filter options.'
 				),
 				array(
 					'enable_auto_plugin_upgrade',
