@@ -72,15 +72,17 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 					'Enable (or Disable) The Comments Filter Feature',
 					'Regardless of any other settings, this option will turn Off the Comments Filter feature, or enable your selected Comments Filter options.'
 				),
+				/*
 				array(
 					'enable_auto_plugin_upgrade',
 					'',
-					'Y',
+					'N',
 					'checkbox',
 					'Auto-Upgrade',
 					'When an upgrade is detected, the plugin will automatically initiate the upgrade.',
 					'If you prefer to manage plugin upgrades, deselect this option. Otherwise, this plugin will auto-upgrade once any available update is detected.'
 				),
+				*/
 				array(
 					'delete_on_deactivate',
 					'',

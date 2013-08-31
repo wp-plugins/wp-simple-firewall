@@ -306,7 +306,7 @@ class ICWP_WPSF_Base_Plugin {
 	 */
 	protected function getAdminNoticePluginUpgradeAvailable() {
 		$sUpgradeLink = $this->m_oWpFunctions->getPluginUpgradeLink( self::$PLUGIN_FILE );
-		$sNotice = '<p>There is an update available for the %s plugin. <a href="%s">Click to update immediately.</a>.</p>';
+		$sNotice = '<p>There is an update available for the %s plugin. <a href="%s">Click to update immediately</a>.</p>';
 		$sNotice = sprintf( $sNotice, self::$PLUGIN_HUMAN_NAME, $sUpgradeLink );
 		return $sNotice;
 	}
