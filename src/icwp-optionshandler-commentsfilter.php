@@ -52,6 +52,15 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 					'Taking the lead from the original GASP plugin for WordPress, we have extended it to include further protection. '.sprintf( '[%smore info%s]', '<a href="http://icwp.io/2n" target="_blank">', '</a>' )
 				),
 				array(
+					'enable_comments_gasp_protection_for_logged_in',
+					'',
+					'N',
+					'checkbox',
+					'Include Logged-In Users',
+					'You may also enable GASP for logged in users',
+					'Since logged-in users would be expected to be vetted, this is off by default.'
+				),
+				array(
 					'comments_cooldown_interval',
 					'',
 					'30',
@@ -68,6 +77,43 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 					'Comment Token Expire',
 					'A visitor has X seconds within which to post a comment',
 					"Default: 10 minutes (600 seconds). Each visitor is given a unique 'Token' so they can comment. This restricts spambots, but we need to force these tokens to expire and at the same time not bother the visitors."
+				),
+				array(
+					'custom_message_checkbox',
+					'',
+					"I'm not a spammer.",
+					'text',
+					'Custom Checkbox Message',
+					"If you want a custom checkbox message, please specify this here.",
+					"You can customise the message beside the checkbox. Default: I'm not a spammer"
+				),
+				array(
+					'custom_message_alert',
+					'',
+					"Please check the box to confirm you're not a spammer",
+					'text',
+					'Custom Alert Message',
+					"If you want a custom alert message, please specify this here.",
+					"Default: Please check the box to confirm you're not a spammer"
+				),
+				array(
+					'custom_message_comment_wait',
+					'',
+					"Please wait %s seconds before posting your comment",
+					'text',
+					'Custom Alert Message',
+					"If you want a custom submit-button message please specify this here.",
+					"Where you see the '%s' this will be the number of seconds. You must ensure you include 1, and only 1, of these.
+					<br />Default: Please wait %s seconds before posting your comment"
+				),
+				array(
+					'custom_message_comment_reload',
+					'',
+					"Please reload this page to post a comment",
+					'text',
+					'Custom Alert Message',
+					"This message is displayed on the submit-button when the comment token is expired.",
+					"Default: Please reload this page to post a comment"
 				)
 			)
 		);

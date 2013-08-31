@@ -6,18 +6,27 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor login, GASP
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 
 WordPress Simple Firewall and Login Protection.
 
 == Description ==
 
-Protects your WordPress site in 2 main ways:
+Protects your WordPress site in 3 main ways:
 
-1.	A simple, easily configured WordPress Firewall.
-1.	Ultimate WordPress Login Protection against Bots and Brute Force Attacks (no ban lists and horrible configuration pages!)
+= A Simple, Effective Firewall =
 
-= Firewall =
+Builds upon the simplicity and effectiveness of the WordPress Firewall 2 plugin.
+
+= WordPress Login Protection =
+
+Adds several layers of protection to the WordPress login screen through identity verification and Brute Force Login hacking prevention.
+
+= Comments and SPAM Protection =
+
+Uses and builds upon tried and tested SPAM prevention and filtering techniques with some unique approaches found only in this plugin.
+
+= A Simple Firewall =
 
 The WordPress Simple Firewall is built to be reliable, and easy to use by **anyone**.  Seriously, the interface is simple! :)
 
@@ -180,6 +189,11 @@ that are url, param and password will be ignored by the firewall.
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	ADD:		Limit login attempts functionality.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+
+= 1.6.1 =
+
+*	ADDED:		Options to fully customize the text displayed by the GASP comments section.
+*	ADDED:		Option to include logged-in users in the GASP Comments Filter.
 
 = 1.6.0 =
 

@@ -49,6 +49,11 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	protected $m_nCommentCooldown;
 	
 	/**
+	 * @var ICWP_OptionsHandler_CommentsFilter
+	 */
+	protected $m_oOptions;
+	
+	/**
 	 * The maxium length of time that comment token may last and be used.
 	 * @var integer
 	 */
@@ -90,11 +95,12 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function run( $inoOptions ) {
 		$this->reset();
-
+		$this->m_oOptions = $inoOptions;
+		
 		// Add GASP checking to the comment form.
-		if ( $inoOptions->getOpt( 'enable_comments_gasp_protection' ) == 'Y' ) {
-			$this->m_nCommentCooldown = ( $inoOptions->getOpt( 'comments_cooldown_interval' ) < 0 )? $this->m_nCommentCooldown : $inoOptions->getOpt( 'comments_cooldown_interval' );
-			$this->m_nCommentTokenExpire = ( $inoOptions->getOpt( 'comments_token_expire_interval' ) < 0 )? $this->m_nCommentTokenExpire : $inoOptions->getOpt( 'comments_token_expire_interval' );
+		if ( $this->m_oOptions->getOpt( 'enable_comments_gasp_protection' ) == 'Y' ) {
+			$this->m_nCommentCooldown = ( $this->m_oOptions->getOpt( 'comments_cooldown_interval' ) < 0 )? $this->m_nCommentCooldown : $this->m_oOptions->getOpt( 'comments_cooldown_interval' );
+			$this->m_nCommentTokenExpire = ( $this->m_oOptions->getOpt( 'comments_token_expire_interval' ) < 0 )? $this->m_nCommentTokenExpire : $this->m_oOptions->getOpt( 'comments_token_expire_interval' );
 			add_action(	'comment_form',					array( $this, 'printGaspFormHook_Action' ), 1 );
 			add_action(	'comment_form',					array( $this, 'printGaspFormParts_Action' ), 2 );
 			add_filter( 'preprocess_comment',			array( $this, 'doGaspCommentCheck_Filter' ), 1, 1);
@@ -107,7 +113,7 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function printGaspFormHook_Action() {
 		
-		if ( is_user_logged_in() ) {
+		if ( $this->m_oOptions->getOpt( 'enable_comments_gasp_protection_for_logged_in' ) != 'Y' && is_user_logged_in() ) {
 			return;
 		}
 		global $post;
@@ -149,9 +155,19 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	public function getGaspCommentsHtml() {
 
 		$sId = $this->m_sUniqueFormId;
-		$sConfirm = "Confirm I'm not a spammer.";
-		$sAlert = "Please check the box to confirm you're not a spammer.";
-	
+		$sConfirm = $this->m_oOptions->getOpt( 'custom_message_checkbox' );
+		$sAlert = $this->m_oOptions->getOpt( 'custom_message_alert' );
+		$sCommentWait = $this->m_oOptions->getOpt( 'custom_message_comment_wait' );
+		if ( strpos( $sCommentWait, '%s' ) !== false ) {
+			$sCommentWait = sprintf( $sCommentWait, $this->m_nCommentCooldown );
+			$sJsCommentWait = str_replace( '%s', '"+nRemaining+"', $this->m_oOptions->getOpt( 'custom_message_comment_wait' ) );
+			$sJsCommentWait = '"'.$sJsCommentWait.'"';
+		}
+		else {
+			$sJsCommentWait = '"'. $this->m_oOptions->getOpt( 'custom_message_comment_wait' ).'"';
+		}
+		$sCommentReload = $this->m_oOptions->getOpt( 'custom_message_comment_reload' );
+
 		$sReturn = "
 			<script type='text/javascript'>
 				
@@ -167,7 +183,7 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 				function reenableButton$sId() {
 					nTimerCounter{$sId}++;
 					nRemaining = $this->m_nCommentCooldown - nTimerCounter$sId;
-					subbutton$sId.value	= 'Please wait '+nRemaining+'s before posting your comment';
+					subbutton$sId.value	= $sJsCommentWait;
 					if ( nTimerCounter$sId >= $this->m_nCommentCooldown ) {
 						subbutton$sId.value = origButtonValue$sId;
 						subbutton$sId.disabled = false;
@@ -175,7 +191,7 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 					}
 				}
 				function redisableButton$sId() {
-					subbutton$sId.value		= 'Please reload this page to post a comment';
+					subbutton$sId.value		= \"$sCommentReload\";
 					subbutton$sId.disabled	= true;
 				}
 				
@@ -215,7 +231,7 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 								subbutton$sId.disabled		= true;
 								
 								origButtonValue$sId			= subbutton$sId.value;
-								subbutton$sId.value			= 'Comments are disabled for $this->m_nCommentCooldown seconds';
+								subbutton$sId.value			= \"$sCommentWait\";
 								
 								nTimerCounter$sId			= 0;
 								sCountdownTimer$sId			= setInterval( reenableButton$sId, 1000 );
@@ -426,6 +442,14 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 		);
 		$this->resetLog();
 		return $this->m_aLog;
+	}
+	
+	/**
+	 * Ensure that when we save the object later, it doesn't save unnecessary data.
+	 */
+	public function doPreSave() {
+		parent::doPreSave();
+		unset( $this->m_oOptions );
 	}
 }
 
