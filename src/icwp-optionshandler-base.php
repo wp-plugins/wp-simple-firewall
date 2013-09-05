@@ -24,6 +24,11 @@ class ICWP_OptionsHandler_Base_WPSF {
 	const CollateSeparator = '--SEP--';
 	
 	/**
+	 * @var boolean
+	 */
+	protected $m_fNeedSave;
+	
+	/**
 	 * @var string
 	 */
 	protected $m_sOptionPrefix;
@@ -68,6 +73,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 * @var array
 	 */
 	protected $m_aOptionsValues;
+	
 	/**
 	 * @var array
 	 */
@@ -123,7 +129,15 @@ class ICWP_OptionsHandler_Base_WPSF {
 		if ( !isset( $this->m_aOptionsValues ) ) {
 			$this->loadPluginOptions();
 		}
+		if ( $this->getOpt( $insKey ) === $inmValue ) {
+			return true;
+		}
+		
 		$this->m_aOptionsValues[ $insKey ] = $inmValue;
+		
+		if ( !$this->m_fNeedSave ) {
+			$this->m_fNeedSave = true;
+		}
 		return true;
 	}
 
@@ -135,7 +149,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 		if ( !isset( $this->m_aOptionsValues ) ) {
 			$this->initOptions();
 		}
-		return isset( $this->m_aOptionsValues[ $insKey ] )? $this->m_aOptionsValues[ $insKey ] : false;
+		return ( isset( $this->m_aOptionsValues[ $insKey ] )? $this->m_aOptionsValues[ $insKey ] : false );
 	}
 	
 	public function getOptions() {
@@ -202,8 +216,9 @@ class ICWP_OptionsHandler_Base_WPSF {
 	protected function loadPluginOptions() {
 		if ( empty( $this->m_aOptionsValues ) ) {
 			$this->m_aOptionsValues = $this->getOption( $this->m_aOptionsStoreName );
-			if ( is_null( $this->m_aOptionsValues ) || !$this->m_aOptionsValues ) {
+			if ( empty( $this->m_aOptionsValues ) ) {
 				$this->m_aOptionsValues = array();
+				$this->m_fNeedSave = true;
 			}
 		}
 	}
@@ -264,13 +279,10 @@ class ICWP_OptionsHandler_Base_WPSF {
 					}
 				}
 				
-				if ( isset( $this->m_aOptionsValues[ $sOptionKey ] ) ) {
-					$mCurrentOptionVal = $this->m_aOptionsValues[ $sOptionKey ];
+				if ( !$this->getOpt( $sOptionKey ) ) {
+					$this->setOpt( $sOptionKey, $sOptionDefault );
 				}
-				else {
-					$mCurrentOptionVal = $sOptionDefault;
-					$this->m_aOptionsValues[ $sOptionKey ] = $mCurrentOptionVal;
-				}
+				$mCurrentOptionVal = $this->getOpt( $sOptionKey );
 				
 				if ( $sOptionType == 'ip_addresses' ) {
 					
@@ -306,8 +318,8 @@ class ICWP_OptionsHandler_Base_WPSF {
 		// Cater for Non-UI options that don't necessarily go through the UI
 		if ( isset($this->m_aNonUiOptions) && is_array($this->m_aNonUiOptions) ) {
 			foreach( $this->m_aNonUiOptions as $sOption ) {
-				if ( !isset( $this->m_aOptionsValues[ $sOption ] ) ) {
-					$this->m_aOptionsValues[ $sOption ] = '';
+				if ( !$this->getOpt( $sOption ) ) {
+					$this->setOpt( $sOption, '' );
 				}
 			}
 		}
@@ -319,6 +331,11 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 * It will also update the stored plugin options version.
 	 */
 	public function savePluginOptions( $infReinit = true ) {
+		
+		if ( !$this->m_fNeedSave ) {
+			return true;
+		}
+		
 		$this->loadPluginOptions();
 		$this->updatePluginOptionsVersion();
 		if ( $this->updateOption( $this->m_aOptionsStoreName, $this->m_aOptionsValues ) && $infReinit ) {
@@ -328,7 +345,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 		// Direct save options allow us to get fast access to certain values without loading the whole thing
 		if ( is_array( $this->m_aDirectSaveOptions ) ) {
 			foreach( $this->m_aDirectSaveOptions as $sOptionKey ) {
-				$this->updateOption( $sOptionKey, $this->m_aOptionsValues[ $sOptionKey ] );
+				$this->updateOption( $sOptionKey, $this->getOpt( $sOptionKey ) );
 			}
 		}
 	}
@@ -339,14 +356,15 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 * @return string
 	 */
 	public function getPluginOptionsVersion() {
-		return ( empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ] );
+		$sVersion = $this->getOpt( 'current_plugin_version' );
+		return empty( $sVersion )? '0.0' :$sVersion;
 	}
 	
 	/**
 	 * Updates the 'current_plugin_version' to the offical plugin version.
 	 */
 	protected function updatePluginOptionsVersion() {
-		$this->m_aOptionsValues[ 'current_plugin_version' ] = $this->m_sVersion;
+		$this->setOpt( 'current_plugin_version', $this->m_sVersion );
 	}
 	
 	/**
@@ -446,7 +464,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 					$sOptionValue = $oProcessor->ExtractCommaSeparatedList( $sOptionValue );
 				}
 			}
-			$this->m_aOptionsValues[ $sOptionKey ] = $sOptionValue;
+			$this->setOpt( $sOptionKey, $sOptionValue );
 		}
 		return $this->savePluginOptions();
 	}

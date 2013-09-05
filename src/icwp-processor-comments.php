@@ -77,6 +77,14 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 		$this->createTable();
 		$this->reset();
 	}
+
+	/**
+	 * Ensure that when we save the object later, it doesn't save unnecessary data.
+	 */
+	public function doPreStore() {
+		parent::doPreStore();
+		unset( $this->m_oOptions );
+	}
 	
 	/**
 	 * Resets the object values to be re-used anew
@@ -442,14 +450,6 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 		);
 		$this->resetLog();
 		return $this->m_aLog;
-	}
-	
-	/**
-	 * Ensure that when we save the object later, it doesn't save unnecessary data.
-	 */
-	public function doPreSave() {
-		parent::doPreSave();
-		unset( $this->m_oOptions );
 	}
 }
 

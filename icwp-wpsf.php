@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.7.0
+Version: 1.7.1
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -47,7 +47,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.7.0';
+	static public $VERSION			= '1.7.1';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -412,6 +412,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected function loadCommentsProcessor( $infReset = false ) {
 		
 		require_once( dirname(__FILE__).'/src/icwp-processor-comments.php' );
+
+		$this->loadCommentsFilterOptions();
 		
 		if ( empty( $this->m_oCommentsProcessor ) ) {
 			$this->m_oCommentsProcessor = self::getOption( 'comments_processor' );
@@ -420,16 +422,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				$this->m_oCommentsProcessor->reset();
 			}
 			else {
-				$this->loadCommentsFilterOptions();
 				$this->m_oCommentsProcessor = new ICWP_CommentsProcessor();
 			}
 		}
 		else if ( $infReset ) {
 			$this->m_oCommentsProcessor->reset();
 		}
-		
-		$this->loadEmailProcessor();
-		$this->m_oCommentsProcessor->setEmailHandler( $this->m_oEmailProcessor );
 	}
 	
 	/**
@@ -548,8 +546,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			}
 			
 			$this->updateLogStore();
-			self::updateOption( 'firewall_processor', $this->m_oFirewallProcessor );
-			self::updateOption( 'email_processor', $this->m_oEmailProcessor );
+			$this->m_oFirewallProcessor->store( self::getKey( 'firewall_processor' ) );
+			$this->m_oEmailProcessor->store( self::getKey( 'email_processor' ) );
+			
 			$this->m_oFirewallProcessor->doFirewallBlock();
 		}
 	}
@@ -590,22 +589,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$this->m_oCommentsFilterOptions->savePluginOptions( false );
 		}
 		if ( isset( $this->m_oFirewallProcessor ) ) {
-			self::updateOption( 'firewall_processor', $this->m_oFirewallProcessor );
+			$this->m_oFirewallProcessor->store( self::getKey( 'firewall_processor' ) );
 		}
 		if ( isset( $this->m_oLoginProcessor ) ) {
-			$this->m_oLoginProcessor->doPreSave();
-			self::updateOption( 'login_processor', $this->m_oLoginProcessor );
+			$this->m_oLoginProcessor->store( self::getKey( 'login_processor' ) );
 		}
 		if ( isset( $this->m_oCommentsProcessor ) ) {
-			$this->m_oCommentsProcessor->doPreSave();
-			self::updateOption( 'comments_processor', $this->m_oLoginProcessor );
+			$this->m_oCommentsProcessor->store( self::getKey( 'comments_processor' ) );
 		}
 		if ( isset( $this->m_oLoggingProcessor ) ) {
-			$this->m_oLoggingProcessor->doPreSave();
-			self::updateOption( 'logging_processor', $this->m_oLoggingProcessor );
+			$this->m_oLoggingProcessor->store( self::getKey( 'logging_processor' ) );
 		}
 		if ( isset( $this->m_oEmailProcessor ) ) {
-			self::updateOption( 'email_processor', $this->m_oEmailProcessor );
+			$this->m_oEmailProcessor->store( self::getKey( 'email_processor' ) );
 		}
 	}
 	
@@ -1192,8 +1188,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			$this->getAdminNotice( $sNotice, 'updated', true );
 			$this->m_oWpsfOptions->setOpt( 'feedback_admin_notice', '' );
 		}
-		
-	}//adminNoticeOptionsUpdated
+	}
 }
 
 endif;

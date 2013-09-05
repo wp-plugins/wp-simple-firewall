@@ -56,6 +56,8 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	protected $m_aPageParamValues;
 	
 	public function __construct( $inaBlockSettings, $inaIpWhitelist, $inaIpBlacklist, $inaPageParamWhitelist, $insBlockResponse ) {
+		
+		parent::__construct();
 
 		$this->m_aBlockSettings = $inaBlockSettings;
 		$this->m_sBlockResponse = $insBlockResponse;

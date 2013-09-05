@@ -32,6 +32,11 @@ class ICWP_BaseProcessor_WPSF {
 	const LOG_CATEGORY_LOGINPROTECT = 2;
 
 	/**
+	 * @var boolean
+	 */
+	protected $m_fNeedSave;
+
+	/**
 	 * @var array
 	 */
 	protected $m_aLog;
@@ -55,7 +60,40 @@ class ICWP_BaseProcessor_WPSF {
 	 */
 	protected $m_oEmailHandler;
 
-	public function __construct() {	}
+	public function __construct() {
+		$this->m_fNeedSave = true;
+	}
+	
+	/**
+	 * Ensure that when we save the object later, it doesn't save unnecessary data.
+	 */
+	public function doPreStore() {
+		$this->setNeedSave( false );
+	}
+
+	/**
+	 * @param string $infKey
+	 */
+	public function store( $infKey ) {
+		if ( $this->getNeedSave() ) {
+			$this->doPreStore();
+			update_option( $infKey, $this );
+		}
+	}
+	
+	/**
+	 * @return boolean
+	 */
+	public function getNeedSave() {
+		return $this->m_fNeedSave;
+	}
+	
+	/**
+	 * @param boolean $infNeedSave
+	 */
+	public function setNeedSave( $infNeedSave = true ) {
+		$this->m_fNeedSave = $infNeedSave;
+	}
 	
 	/**
 	 * Resets the object values to be re-used anew

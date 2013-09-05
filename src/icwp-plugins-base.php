@@ -610,34 +610,38 @@ class ICWP_WPSF_Base_Plugin {
 
 	protected function getAnswerFromPost( $insKey, $insPrefix = null ) {
 		if ( is_null( $insPrefix ) ) {
-			$insKey = self::$OPTION_PREFIX.$insKey;
+			$insKey = self::getKey($insKey);
 		}
 		return ( isset( $_POST[$insKey] )? $_POST[$insKey]: null );
 	}
 
 	static public function getOption( $insKey, $insAddPrefix = '' ) {
-		return get_option( self::$OPTION_PREFIX.$insKey );
+		return get_option( self::getKey($insKey) );
 	}
 
 	static public function addOption( $insKey, $insValue ) {
-		return add_option( self::$OPTION_PREFIX.$insKey, $insValue );
+		return add_option( self::getKey($insKey), $insValue );
 	}
 
 	static public function updateOption( $insKey, $insValue ) {
 		if ( !is_object( $insValue ) && self::getOption( $insKey ) == $insValue ) {
 			return true;
 		}
-		$fResult = update_option( self::$OPTION_PREFIX.$insKey, $insValue );
+		$fResult = update_option( self::getKey($insKey), $insValue );
 		if ( !$fResult ) {
 			self::$m_fUpdateSuccessTracker = false;
-			self::$m_aFailedUpdateOptions[] = self::$OPTION_PREFIX.$insKey;
+			self::$m_aFailedUpdateOptions[] = self::getKey($insKey);
 		}
 	}
 
 	static public function deleteOption( $insKey ) {
-		return delete_option( self::$OPTION_PREFIX.$insKey );
+		return delete_option( self::getKey($insKey) );
 	}
 
+	static public function getKey( $insKey ) {
+		return self::$OPTION_PREFIX.$insKey;
+	}
+	
 	public function onWpActivatePlugin() { }
 	public function onWpDeactivatePlugin() { }
 	

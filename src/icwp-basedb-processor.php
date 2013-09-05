@@ -37,10 +37,19 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_BaseProcessor_WPSF {
 	protected $m_sTableName;
 	
 	public function __construct( $insTableName ) {
+		parent::__construct();
 		$this->reset();
 		$this->setTableName( $insTableName );
 	}
 
+	/**
+	 * Ensure that when we save the object later, it doesn't save unnecessary data.
+	 */
+	public function doPreStore() {
+		parent::doPreStore();
+		unset( $this->m_oWpdb );
+	}
+	
 	/**
 	 * Resets the object values to be re-used anew
 	 */
@@ -116,12 +125,6 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_BaseProcessor_WPSF {
 		return $this->m_sTableName = $this->m_oWpdb->base_prefix . self::DB_TABLE_PREFIX . $insTableName;
 	}
 	
-	/**
-	 * Ensure that when we save the object later, it doesn't save unnecessary data.
-	 */
-	public function doPreSave() {
-		unset( $this->m_oWpdb );
-	}
 }
 
 endif;

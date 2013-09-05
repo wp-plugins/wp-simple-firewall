@@ -45,7 +45,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 				array(
 					'enable_comments_gasp_protection',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					'GASP Protection',
 					'Add Growmap Anti Spambot Protection to your comments',
