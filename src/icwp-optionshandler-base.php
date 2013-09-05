@@ -44,6 +44,11 @@ class ICWP_OptionsHandler_Base_WPSF {
 	protected $m_aDirectSaveOptions;
 	
 	/**
+	 * @var array
+	 */
+	protected $m_fIsMultisite;
+	
+	/**
 	 * This is used primarily for the options deletion/cleanup.  We store the names
 	 * of options here that are not modified directly by the user/UI so that we can
 	 * cleanup later on.
@@ -73,18 +78,40 @@ class ICWP_OptionsHandler_Base_WPSF {
 		$this->m_aOptionsStoreName = $insStoreName;
 		$this->m_sVersion = $insVersion;
 		
+		$this->m_fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
 		// Build the whole options system.
 		$this->initOptions();
 		
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
-		if ( is_admin() ) {
-			require_once( ABSPATH . 'wp-includes/pluggable.php' );
-			if ( current_user_can( 'manage_options' ) ) {
-				$this->updateHandler();
-			}
+		add_action( 'plugins_loaded', array( $this, 'doUpdates' ) );
+	}
+	
+	public function doUpdates() {
+		if ( $this->hasPluginManageRights() ) {
+			$this->updateHandler();
 		}
 	}
+	
+	public function hasPluginManageRights() {
+		if ( !current_user_can( 'manage_options' ) ) {
+			return false;
+		}
+		if ( $this->m_fIsMultisite && is_network_admin() ) {
+			return true;
+		}
+		else if ( !$this->m_fIsMultisite && is_admin() ) {
+			return true;
+		}
+		return false;
+	}
 
+	/**
+	 * @return string
+	 */
+	public function getVersion() {
+		return $this->m_sVersion;
+	}
+	
 	/**
 	 * Sets the value for the given option key
 	 * 
@@ -305,7 +332,19 @@ class ICWP_OptionsHandler_Base_WPSF {
 			}
 		}
 	}
+
+	/**
+	 * Will return the 'current_plugin_version' if it is set, 0.0 otherwise.
+	 * 
+	 * @return string
+	 */
+	public function getPluginOptionsVersion() {
+		return ( empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ] );
+	}
 	
+	/**
+	 * Updates the 'current_plugin_version' to the offical plugin version.
+	 */
 	protected function updatePluginOptionsVersion() {
 		$this->m_aOptionsValues[ 'current_plugin_version' ] = $this->m_sVersion;
 	}
@@ -466,16 +505,20 @@ class ICWP_OptionsHandler_Base_WPSF {
 		return ( isset( $_POST[ $sKey ] )? $_POST[ $sKey ]: null );
 	}
 	public function getOption( $insKey ) {
-		return get_option( $this->m_sOptionPrefix.$insKey );
+		$sKey = $this->m_sOptionPrefix.$insKey;
+		return $this->m_fIsMultisite? get_site_option($sKey) : get_option($sKey);
 	}
 	public function addOption( $insKey, $insValue ) {
-		return add_option( $this->m_sOptionPrefix.$insKey, $insValue );
+		$sKey = $this->m_sOptionPrefix.$insKey;
+		return $this->m_fIsMultisite? add_site_option($sKey, $insValue) : add_option($sKey, $insValue);
 	}
 	public function updateOption( $insKey, $insValue ) {
-		return update_option( $this->m_sOptionPrefix.$insKey, $insValue );
+		$sKey = $this->m_sOptionPrefix.$insKey;
+		return $this->m_fIsMultisite? update_site_option($sKey, $insValue) : update_option($sKey, $insValue);
 	}
 	public function deleteOption( $insKey ) {
-		return delete_option( $this->m_sOptionPrefix.$insKey );
+		$sKey = $this->m_sOptionPrefix.$insKey;
+		return $this->m_fIsMultisite? delete_site_option($sKey) : delete_option($sKey);
 	}
 }
 

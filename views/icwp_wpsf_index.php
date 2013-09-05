@@ -142,12 +142,12 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
-				<h3>v1.6.x Release:</h3>
-				<p>The following summarises the main changes to the plugin in the 1.6.x release</p>
+				<h3>v1.7.x Release:</h3>
+				<p>The following summarises the main changes to the plugin in the 1.7.x release</p>
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					'ADDED: GASP-based, and further enhanced, SPAM comments filtering functionality.'
+					'ADDED: Support for WPMU sites (only manageable as Super Admin).'
 				);
 				?>
 				<ul>
@@ -168,6 +168,9 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 				<?php
 				$aLog = array(
 
+					'1.6.x'	=> array(
+						'ADDED: GASP-based, and further enhanced, SPAM comments filtering functionality.',
+					),
 					'1.5.x'	=> array(
 						'IMPROVED: Whitelisting/Blacklisting operations and options',
 						'NEW Option: Login Protect Dedicated IP Whitelist.',

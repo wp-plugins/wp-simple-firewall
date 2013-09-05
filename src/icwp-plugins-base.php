@@ -42,6 +42,15 @@ class ICWP_WPSF_Base_Plugin {
 	const ViewExt			= '.php';
 	const ViewDir			= 'views';
 
+	/**
+	 * @var boolean
+	 */
+	protected $m_fNetworkAdminOnly;
+	/**
+	 * @var boolean
+	 */
+	protected $m_fIsMultisite;
+
 	protected $m_aPluginMenu;
 
 	protected $m_aAllPluginOptions;
@@ -61,13 +70,16 @@ class ICWP_WPSF_Base_Plugin {
 	static protected $m_aFailedUpdateOptions;
 
 	public function __construct() {
+
+		$this->m_fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
 		
 		add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 		add_action( 'init',						array( $this, 'onWpInit' ), 0 );
-		if ( is_admin() ) {
+		if ( $this->isValidAdminArea() ) {
 			add_action( 'admin_init',			array( $this, 'onWpAdminInit' ) );
 			add_action( 'admin_notices',		array( $this, 'onWpAdminNotices' ) );
 			add_action( 'admin_menu',			array( $this, 'onWpAdminMenu' ) );
+			add_action(	'network_admin_menu',	array( $this, 'onWpNetworkAdminMenu' ) );
 			add_action( 'plugin_action_links',	array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 		}
 		add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
@@ -80,6 +92,16 @@ class ICWP_WPSF_Base_Plugin {
 		self::$m_aFailedUpdateOptions = array();
 
 		$this->m_sParentMenuIdSuffix = 'base';
+	}
+	
+	protected function isValidAdminArea() {
+		if ( $this->m_fNetworkAdminOnly && $this->m_fIsMultisite && is_network_admin() ) {
+			return true;
+		}
+		else if ( !$this->m_fIsMultisite && is_admin() ) {
+			return true;
+		}
+		return false;
 	}
 	
 	public function doPluginUpdateCheck() {
@@ -159,11 +181,24 @@ class ICWP_WPSF_Base_Plugin {
 		$this->isShowMarketing();
 		
 	}//onWpAdminInit
-	
+
 	public function onWpAdminMenu() {
+		if ( !$this->isValidAdminArea() ) {
+			return true;
+		}
+		$this->createMenu();
+	}
+	
+	public function onWpNetworkAdminMenu() {
+		if ( !$this->isValidAdminArea() ) {
+			return true;
+		}
+		$this->createMenu();
+	}
+	
+	protected function createMenu() {
 
 		$sFullParentMenuId = $this->getFullParentMenuId();
-
 		add_menu_page( self::ParentTitle, self::ParentName, self::ParentPermissions, $sFullParentMenuId, array( $this, 'onDisplayMainMenu' ), $this->getImageUrl( 'icontrolwp_16x16.png' ) );
 
 		//Create and Add the submenu items
@@ -176,8 +211,7 @@ class ICWP_WPSF_Base_Plugin {
 		}
 
 		$this->fixSubmenu();
-
-	}//onWpAdminMenu
+	}
 
 	protected function createPluginSubMenuItems(){
 		/* Override to create array of sub-menu items

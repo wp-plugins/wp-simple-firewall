@@ -215,7 +215,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 				'whitelist_admins'
 			);
 			$this->migrateOptions( $aSettingsKey );
-		}//'1.4.0', '<'
+		}//v1.4.0
 	}
 }
 

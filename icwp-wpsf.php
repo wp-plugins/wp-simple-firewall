@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.6.2
+Version: 1.7.0
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -47,7 +47,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.6.2';
+	static public $VERSION			= '1.7.0';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -95,12 +95,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected $m_oEmailProcessor;
 	
 	public function __construct() {
+
+		$this->m_fNetworkAdminOnly = true;
+		
 		parent::__construct();
 
 		register_activation_hook( __FILE__, array( $this, 'onWpActivatePlugin' ) );
 		register_deactivation_hook( __FILE__, array( $this, 'onWpDeactivatePlugin' ) );
 	//	register_uninstall_hook( __FILE__, array( &$this, 'onWpUninstallPlugin' ) );
-		
+
 		self::$PLUGIN_HUMAN_NAME = "WordPress Simple Firewall";
 		self::$PLUGIN_NAME	= basename(__FILE__);
 		self::$PLUGIN_PATH	= plugin_basename( dirname(__FILE__) );
@@ -114,20 +117,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		// loads the base plugin options from 1 db call
 		$this->loadWpsfOptions();
 		$this->m_fAutoPluginUpgrade = false && $this->m_oWpsfOptions->getOpt( 'enable_auto_plugin_upgrade' ) == 'Y';
-		
+
 		// checks for filesystem based firewall overrides
 		$this->override();
 		
 	//	add_filter( 'user_has_cap', array( $this, 'disable_file_editing' ), 0, 3 );
-		
 		if ( $this->getIsMainFeatureEnabled( 'firewall' ) ) {
-			
 			$this->loadFirewallOptions();
-			
-			require_once( ABSPATH . 'wp-includes/pluggable.php' );
-			if ( is_super_admin() && $this->getOption( 'whitelist_admins' ) != 'Y' ) {
-				$this->runFirewallProcess();
-			}
+			add_action( 'plugins_loaded', array( $this, 'runFirewallProcess' ), 1 );
 		}
 		
 		if ( $this->getIsMainFeatureEnabled( 'login_protect' ) ) {
@@ -139,8 +136,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 		
 		add_action( 'in_plugin_update_message-'.self::$PLUGIN_FILE, array( $this, 'onWpPluginUpdateMessage' ) );
-		
-	}//__construct
+	}
 	
 	public function removePluginConflicts() {
 		if ( class_exists('AIO_WP_Security') && isset( $GLOBALS['aio_wp_security'] ) ) {
@@ -515,6 +511,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * @return boolean
 	 */
 	public function runFirewallProcess() {
+
+		if ( is_super_admin() && $this->getOption( 'whitelist_admins' ) == 'Y' ) {
+			return;
+		}
 		
 		$this->loadFirewallProcessor( true );
 		$fFirewallBlockUser = !$this->m_oFirewallProcessor->doFirewallCheck();
