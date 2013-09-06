@@ -21,9 +21,12 @@ if ( !class_exists('ICWP_OptionsHandler_CommentsFilter') ):
 
 class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 	
+	const DefaultCommentCooldown	= 30; //seconds.
+	const DefaultCommentExpire		= 600; //seconds.
+	
 	public function definePluginOptions() {
 
-		$this->m_aDirectSaveOptions = array( 'enable_comments_filter' );
+		$this->m_aDirectSaveOptions = array();
 		
 		$aBase = array(
 			'section_title' => 'Enable Comments Filter',
@@ -124,6 +127,23 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 		);
 	}
 
+	/**
+	 * This is the point where you would want to do any options verification
+	 */
+	protected function doPrePluginOptionsSave() {
+
+		$nCommentCooldown = $this->getOpt( 'comments_cooldown_interval' );
+		if ( $nCommentCooldown < 0 ) {
+			$this->setOpt( 'comments_cooldown_interval', self::DefaultCommentCooldown );
+		}
+		
+		$nCommentTokenExpire = $this->getOpt( 'comments_token_expire_interval' );
+		if ( $nCommentTokenExpire < 0 ) {
+			$this->setOpt( 'comments_token_expire_interval', self::DefaultCommentExpire );
+		}
+		
+	}
+	
 	public function updateHandler() {
 		$sCurrentVersion = empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ];
 	}

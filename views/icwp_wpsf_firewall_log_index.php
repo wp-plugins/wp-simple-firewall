@@ -91,15 +91,18 @@ $aLogTypes = array(
 					</tr>
 					<?php
 					$aMessages = unserialize( $aLogData['messages'] );
-					foreach( $aMessages as $aLogItem ) :
-						list( $sLogType, $sLogMessage ) = $aLogItem;
-					?>
-						<tr class="row-<?php echo $aLogTypes[$sLogType]; ?>">
-							<td class="cell-log-type"><?php echo $aLogTypes[$sLogType] ?></td>
-							<td><?php echo esc_attr($sLogMessage); ?></td>
-						</tr>
-					<?php endforeach; ?>
-				<?php endforeach; ?>
+					if ( is_array( $aMessages ) ) {
+						foreach( $aMessages as $aLogItem ) :
+							list( $sLogType, $sLogMessage ) = $aLogItem;
+						?>
+							<tr class="row-<?php echo $aLogTypes[$sLogType]; ?>">
+								<td class="cell-log-type"><?php echo $aLogTypes[$sLogType] ?></td>
+								<td><?php echo esc_attr($sLogMessage); ?></td>
+							</tr>
+						<?php
+						endforeach;
+					}
+				endforeach; ?>
 				</table>
 
 			<?php endif; ?>

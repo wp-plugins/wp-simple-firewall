@@ -79,14 +79,17 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 */
 	protected $m_aOptionsStoreName;
 	
-	public function __construct( $insPrefix, $insStoreName, $insVersion ) {
+	public function __construct( $insPrefix, $insStoreName, $insVersion, $infInit = false ) {
 		$this->m_sOptionPrefix = $insPrefix;
 		$this->m_aOptionsStoreName = $insStoreName;
 		$this->m_sVersion = $insVersion;
 		
 		$this->m_fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
+		
 		// Build the whole options system.
-		$this->initOptions();
+		if ( $infInit ) {
+			$this->initOptions();
+		}
 		
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
 		add_action( 'plugins_loaded', array( $this, 'doUpdates' ) );
@@ -94,6 +97,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 	
 	public function doUpdates() {
 		if ( $this->hasPluginManageRights() ) {
+			$this->initOptions();
 			$this->updateHandler();
 		}
 	}
@@ -159,10 +163,15 @@ class ICWP_OptionsHandler_Base_WPSF {
 		$this->buildPluginOptions();
 		return $this->m_aOptions;
 	}
-	
-	public function getOptionValues() {
+
+	/**
+	 * Loads the options and their stored values from the WordPress Options store.
+	 *
+	 * @return array
+	 */
+	public function getPluginOptionsValues() {
 		if ( !isset( $this->m_aOptionsValues ) ) {
-			$this->initOptions();
+			$this->loadPluginOptions();
 		}
 		return $this->m_aOptionsValues;
 	}
@@ -189,7 +198,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 * Handles the building of all options, processing their meta data and their values.
 	 * @return array
 	 */
-	protected function initOptions() {
+	public function initOptions() {
 		
 		// We have non-UI options that all plugin option objects should maintain.
 		// Objects that extend this should merge their other non-ui options with this.
@@ -213,7 +222,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 	/**
 	 * Loads the options and their stored values from the WordPress Options store.
 	 */
-	protected function loadPluginOptions() {
+	public function loadPluginOptions() {
 		if ( empty( $this->m_aOptionsValues ) ) {
 			$this->m_aOptionsValues = $this->getOption( $this->m_aOptionsStoreName );
 			if ( empty( $this->m_aOptionsValues ) ) {
@@ -222,7 +231,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 			}
 		}
 	}
-
+	
 	protected function definePluginOptions() {
 		$aMisc = array(
 			'section_title' => 'Miscellaneous Plugin Options',
@@ -330,7 +339,9 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 * 
 	 * It will also update the stored plugin options version.
 	 */
-	public function savePluginOptions( $infReinit = true ) {
+	public function savePluginOptions( $infReinit = false ) {
+		
+		$this->doPrePluginOptionsSave();
 		
 		if ( !$this->m_fNeedSave ) {
 			return true;
@@ -348,7 +359,14 @@ class ICWP_OptionsHandler_Base_WPSF {
 				$this->updateOption( $sOptionKey, $this->getOpt( $sOptionKey ) );
 			}
 		}
+		
+		$this->m_fNeedSave = false;
 	}
+	
+	/**
+	 * This is the point where you would want to do any options verification
+	 */
+	protected function doPrePluginOptionsSave() { }
 
 	/**
 	 * Will return the 'current_plugin_version' if it is set, 0.0 otherwise.
@@ -466,7 +484,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 			}
 			$this->setOpt( $sOptionKey, $sOptionValue );
 		}
-		return $this->savePluginOptions();
+		return $this->savePluginOptions( true );
 	}
 	
 	/**

@@ -100,8 +100,7 @@ class ICWP_LoggingProcessor extends ICWP_BaseDbProcessor_WPSF {
 	public function handleInstallUpgrade( $insCurrentVersion = '' ) {
 		if ( version_compare( $insCurrentVersion, '1.3.0', '<' ) ) {
 			// full delete of the log and recreate
-			$this->dropTable();
-			$this->createTable();
+			$this->recreateTable();
 		}
 	}
 }

@@ -59,16 +59,30 @@ class ICWP_BaseProcessor_WPSF {
 	 * @var ICWP_EmailProcessor
 	 */
 	protected $m_oEmailHandler;
+	
+	/**
+	 * @var array
+	 */
+	protected $m_aOptions;
 
 	public function __construct() {
 		$this->m_fNeedSave = true;
+		$this->reset();
+	}
+
+	/**
+	 * Resets the object values to be re-used anew
+	 */
+	public function reset() {
+		$this->m_nRequestIp = self::GetVisitorIpAddress();
+		$this->resetLog();
 	}
 	
 	/**
 	 * Ensure that when we save the object later, it doesn't save unnecessary data.
 	 */
 	public function doPreStore() {
-		$this->setNeedSave( false );
+		unset( $this->m_oEmailHandler );
 	}
 
 	/**
@@ -78,6 +92,7 @@ class ICWP_BaseProcessor_WPSF {
 		if ( $this->getNeedSave() ) {
 			$this->doPreStore();
 			update_option( $infKey, $this );
+			$this->setNeedSave( false );
 		}
 	}
 	
@@ -94,13 +109,13 @@ class ICWP_BaseProcessor_WPSF {
 	public function setNeedSave( $infNeedSave = true ) {
 		$this->m_fNeedSave = $infNeedSave;
 	}
-	
+
 	/**
-	 * Resets the object values to be re-used anew
+	 *
+	 * @param array $inoOptions
 	 */
-	public function reset() {
-		$this->m_nRequestIp = self::GetVisitorIpAddress();
-		$this->resetLog();
+	public function setOptions( &$inaOptions ) {
+		$this->m_aOptions = $inaOptions;
 	}
 	
 	/**

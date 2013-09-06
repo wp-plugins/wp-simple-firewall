@@ -52,9 +52,34 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 		
 		$this->m_sSecretKey = $insSecretKey;
 		$this->m_sGaspKey = uniqid();
+		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
 		
 		$this->createTable();
 		$this->reset();
+	}
+
+	/**
+	 *
+	 * @param array $inoOptions
+	 */
+	public function setOptions( &$inaOptions ) {
+		parent::setOptions( $inaOptions );
+		$this->setLogging();
+		$this->setLoginCooldownInterval();
+		$this->setTwoFactorByPassOnFail();
+	}
+	
+	/**
+	 * @return boolean
+	 */
+	public function getNeedsEmailHandler() {
+		if ( empty( $this->m_aOptions['enable_two_factor_auth_by_ip'] ) ) {
+			return false;
+		}
+		else if ( $this->m_aOptions['enable_two_factor_auth_by_ip'] == 'Y' ) {
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -62,32 +87,35 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function reset() {
 		parent::reset();
-		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
+	}
+	
+	public function setLogging() {
+		parent::setLogging( $this->m_aOptions[ 'enable_login_protect_log' ] == 'Y' );
 	}
 
 	/**
 	 * @param ICWP_OptionsHandler_LoginProtect $inoOptions
 	 */
-	public function run( $inoOptions ) {
+	public function run() {
 		
-		$aWhitelist = $inoOptions->getOpt( 'ips_whitelist' );
+		$aWhitelist = $this->m_aOptions['ips_whitelist'];
 		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::GetVisitorIpAddress() ) ) {
 			return true;
 		}
 		
 		// Add GASP checking to the login form.
-		if ( $inoOptions->getOpt( 'enable_login_gasp_check' ) == 'Y' ) {
-			add_action( 'login_form', array( $this, 'printGaspLoginCheck_Action' ) );
-			add_filter( 'login_form_middle', array( $this, 'printGaspLoginCheck_Filter' ) );
-			add_filter( 'authenticate', array( $this, 'checkLoginForGasp_Filter' ), 9, 3);
+		if ( $this->m_aOptions['enable_login_gasp_check'] == 'Y' ) {
+			add_action( 'login_form',			array( $this, 'printGaspLoginCheck_Action' ) );
+			add_filter( 'login_form_middle',	array( $this, 'printGaspLoginCheck_Filter' ) );
+			add_filter( 'authenticate',			array( $this, 'checkLoginForGasp_Filter' ), 9, 3);
 		}
 
-		if ( $inoOptions->getOpt( 'login_limit_interval' ) > 0 ) {
+		if ( $this->m_aOptions['login_limit_interval'] > 0 ) {
 			// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
 			add_filter( 'authenticate', array( $this, 'checkLoginInterval_Filter' ), 10, 3);
 		}
 		
-		if ( $inoOptions->getOpt( 'enable_two_factor_auth_by_ip' ) == 'Y' ) {
+		if ( $this->m_aOptions['enable_two_factor_auth_by_ip'] == 'Y' ) {
 			// User has clicked a link in their email to validate their IP address for login.
 			if ( isset( $_GET['wpsf-action'] ) && $_GET['wpsf-action'] == 'linkauth' ) {
 				$this->validateUserAuthLink();
@@ -187,7 +215,6 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 	
 		if ( $this->loginAuthMakeActive( $aWhere ) ) {
 			$this->redirectToLogin( '?wpsfipverified=1' );
-			header( "Location: ".site_url().'/wp-login.php' );
 		}
 		else {
 			header( "Location: ".home_url() );
@@ -408,13 +435,8 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 		return true;
 	}
 	
-	public function setTwoFactorByPassOnFail( $infAllowByPass ) {
-		$this->m_fAllowTwoFactorByPass = $infAllowByPass;
-	}
-	
-	public function setLoginCooldownInterval( $innRequiredLoginInterval ) {
-		$nInterval = intval( $innRequiredLoginInterval );
-		$this->m_nRequiredLoginInterval = ( $nInterval < 0 )? 0 : $nInterval;
+	public function setTwoFactorByPassOnFail() {
+		$this->m_fAllowTwoFactorByPass = $this->m_aOptions[ 'enable_two_factor_bypass_on_email_fail' ] == 'Y';
 	}
 	
 	public function getTwoFactorByPassOnFail() {
@@ -422,6 +444,11 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 			$this->m_fAllowTwoFactorByPass = false;
 		}
 		return $this->m_fAllowTwoFactorByPass;
+	}
+	
+	public function setLoginCooldownInterval() {
+		$nInterval = intval( $this->m_aOptions[ 'login_limit_interval' ] );
+		$this->m_nRequiredLoginInterval = ( $nInterval < 0 )? 0 : $nInterval;
 	}
 	
 	/**

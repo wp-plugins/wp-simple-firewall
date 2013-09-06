@@ -54,17 +54,35 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	 * @var array
 	 */
 	protected $m_aPageParamValues;
-	
-	public function __construct( $inaBlockSettings, $inaIpWhitelist, $inaIpBlacklist, $inaPageParamWhitelist, $insBlockResponse ) {
-		
-		parent::__construct();
 
-		$this->m_aBlockSettings = $inaBlockSettings;
-		$this->m_sBlockResponse = $insBlockResponse;
-		$this->m_aWhitelistIps = $inaIpWhitelist;
-		$this->m_aBlacklistIps = $inaIpBlacklist;
-		$this->m_aCustomWhitelistPageParams = empty( $inaPageParamWhitelist )? array() : $inaPageParamWhitelist;
-		$this->reset();
+	/**
+	 * @see ICWP_BaseProcessor_WPSF::setOptions()
+	 */
+	public function setOptions( &$inaOptions ) {
+		parent::setOptions( $inaOptions );
+				
+		// collect up all the settings to pass to the processor
+		$aSettingSlugs = array(
+			'include_cookie_checks',
+			'block_dir_traversal',
+			'block_sql_queries',
+			'block_wordpress_terms',
+			'block_field_truncation',
+			'block_exe_file_uploads',
+			'block_leading_schema'
+		);
+		$aBlockSettings = array();
+		foreach( $aSettingSlugs as $sSettingKey ) {
+			$aBlockSettings[ $sSettingKey ] = $this->m_aOptions[$sSettingKey] == 'Y';
+		}
+
+		$this->m_aBlockSettings = $aBlockSettings;
+		$this->m_sBlockResponse = $this->m_aOptions[ 'block_response' ];
+		$this->m_aWhitelistIps = $this->m_aOptions[ 'ips_whitelist' ];
+		$this->m_aBlacklistIps = $this->m_aOptions[ 'ips_blacklist' ];
+		$this->m_aCustomWhitelistPageParams = is_array( $this->m_aOptions[ 'page_params_whitelist' ] )? $this->m_aOptions[ 'page_params_whitelist' ] : array();
+
+		$this->setLogging( $this->m_aOptions[ 'enable_firewall_log' ] == 'Y' );
 	}
 	
 	public function reset() {
@@ -362,6 +380,8 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 				die();
 			case 'redirect_die_message':
 				wp_die( $this->m_sFirewallMessage );
+				exit();
+				break;
 			case 'redirect_home':
 				header( "Location: ".home_url() );
 				exit();

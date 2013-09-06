@@ -21,9 +21,42 @@ if ( !class_exists('ICWP_OptionsHandler_Firewall') ):
 
 class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 	
+	const StoreName = 'firewall_options';
+	
+	public function __construct( $insPrefix, $insVersion, $infInit = false ) {
+		parent::__construct( $insPrefix, self::StoreName, $insVersion, $infInit );
+	}
+	
+	public function doPrePluginOptionsSave() {
+
+		$aIpWhitelist = $this->getOpt( 'ips_blacklist' );
+		if ( $aIpWhitelist === false ) {
+			$aIpWhitelist = '';
+			$this->setOpt( 'ips_whitelist', $aIpWhitelist );
+		}
+		
+		$aIpBlacklist = $this->getOpt( 'ips_blacklist' );
+		if ( $aIpBlacklist === false ) {
+			$aIpBlacklist = '';
+			$this->setOpt( 'ips_blacklist', $aIpBlacklist );
+		}
+		
+		$aPageWhitelist = $this->getOpt( 'page_params_whitelist' );
+		if ( $aPageWhitelist === false ) {
+			$aPageWhitelist = '';
+			$this->setOpt( 'page_params_whitelist', $aPageWhitelist );
+		}
+		
+		$sBlockResponse = $this->getOpt( 'block_response' );
+		if ( empty( $sBlockResponse ) ) {
+			$sBlockResponse = 'redirect_die_message';
+			$aIpWhitelist = $this->setOpt( 'block_response', $sBlockResponse );
+		}
+	}
+	
 	public function definePluginOptions() {
 
-		$this->m_aDirectSaveOptions = array( 'enable_firewall', 'whitelist_admins' );
+		$this->m_aDirectSaveOptions = array( 'whitelist_admins' );
 		
 		$this->m_aFirewallBase = 	array(
 			'section_title' => 'Enable WordPress Firewall',

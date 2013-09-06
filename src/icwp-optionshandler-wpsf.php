@@ -21,6 +21,12 @@ if ( !class_exists('ICWP_OptionsHandler_Wpsf') ):
 
 class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 	
+	const StoreName = 'plugin_options';
+	
+	public function __construct( $insPrefix, $insVersion, $infInit = false ) {
+		parent::__construct( $insPrefix, self::StoreName, $insVersion, $infInit );
+	}
+	
 	public function definePluginOptions() {
 
 		$this->m_aIndependentOptions = array(
@@ -29,12 +35,6 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 			'comments_processor',
 			'logging_processor',
 			'email_processor'
-		);
-		
-		$this->m_aDirectSaveOptions = array(
-			'enable_firewall',
-			'enable_login_protect',
-			'enable_comments_filter'
 		);
 		
 		$aNonUiOptions = array(
