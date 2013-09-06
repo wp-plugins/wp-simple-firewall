@@ -12,6 +12,10 @@ WordPress Simple Firewall and Login Protection.
 
 == Description ==
 
+A basic intro to all the features:
+
+[youtube http://www.youtube.com/watch?v=r307fu3Eqbo]
+
 Protects your WordPress site in 3 main ways:
 
 = A Simple, Effective Firewall =
