@@ -382,29 +382,29 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 		
 		switch( $this->m_aOptions['block_response'] ) {
 			case 'redirect_die':
-				$this->m_oFirewallProcessor->logWarning(
+				$this->logWarning(
 					sprintf( 'Firewall Block: Visitor connection was killed with %s', 'die()' )
 				);
 				break;
 			case 'redirect_die_message':
-				$this->m_oFirewallProcessor->logWarning(
+				$this->logWarning(
 					sprintf( 'Firewall Block: Visitor connection was killed with %s and message', 'wp_die()' )
 				);
 				break;
 			case 'redirect_home':
-				$this->m_oFirewallProcessor->logWarning(
+				$this->logWarning(
 					sprintf( 'Firewall Block: Visitor was sent HOME: %s', home_url() )
 				);
 				break;
 			case 'redirect_404':
-				$this->m_oFirewallProcessor->logWarning(
+				$this->logWarning(
 					sprintf( 'Firewall Block: Visitor was sent 404: %s', home_url().'/404' )
 				);
 				break;
 		}
 			
 		if ( $this->m_aOptions['block_send_email'] == 'Y' ) {
-			$this->m_oFirewallProcessor->sendBlockEmail();
+			$this->sendBlockEmail();
 		}
 	}
 
