@@ -91,8 +91,8 @@ class ICWP_BaseProcessor_WPSF {
 	public function store( $infKey ) {
 		if ( $this->getNeedSave() ) {
 			$this->doPreStore();
-			update_option( $infKey, $this );
 			$this->setNeedSave( false );
+			update_option( $infKey, $this );
 		}
 	}
 	

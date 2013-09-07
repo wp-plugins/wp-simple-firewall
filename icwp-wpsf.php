@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.7.2beta1
+Version: 1.7.2beta2
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -43,7 +43,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.7.2beta1';
+	static public $VERSION			= '1.7.2beta2';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -469,41 +469,24 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$fFirewallBlockUser = !$this->m_oFirewallProcessor->doFirewallCheck();
 
 		if ( $fFirewallBlockUser ) {
-			switch( $sBlockResponse ) {
-				case 'redirect_die':
-					$this->m_oFirewallProcessor->logWarning(
-						sprintf( 'Firewall Block: Visitor connection was killed with %s', 'die()' )
-					);
-					break;
-				case 'redirect_die_message':
-					$this->m_oFirewallProcessor->logWarning(
-						sprintf( 'Firewall Block: Visitor connection was killed with %s and message', 'wp_die()' )
-					);
-					break;
-				case 'redirect_home':
-					$this->m_oFirewallProcessor->logWarning(
-						sprintf( 'Firewall Block: Visitor was sent HOME: %s', home_url() )
-					);
-					break;
-				case 'redirect_404':
-					$this->m_oFirewallProcessor->logWarning(
-						sprintf( 'Firewall Block: Visitor was sent 404: %s', home_url().'/404?testfirewall' )
-					);
-					break;
-			}
-			
-			if ( $this->m_oFirewallOptions->getOpt( 'block_send_email' ) === 'Y' ) {
+
+			if ( $this->m_oFirewallProcessor->getNeedsEmailHandler() ) {
 				$this->loadEmailProcessor();
 				$this->m_oFirewallProcessor->setEmailHandler( $this->m_oEmailProcessor );
-				$this->m_oFirewallProcessor->sendBlockEmail();
+				$this->m_oFirewallProcessor->doPreFirewallBlock();
 				$this->m_oEmailProcessor->store( self::getKey( 'email_processor' ) );
+			}
+			else {
+				$this->m_oFirewallProcessor->doPreFirewallBlock();
 			}
 		}
 		$this->updateLogStore();
 		$this->m_oFirewallProcessor->store( self::getKey( 'firewall_processor' ) );
+		
 		if ( $fFirewallBlockUser ) {
 			$this->m_oFirewallProcessor->doFirewallBlock();
 		}
+		
 		unset( $this->m_oFirewallProcessor );
 	}
 	

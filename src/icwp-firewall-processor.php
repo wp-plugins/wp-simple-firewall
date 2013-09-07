@@ -71,18 +71,23 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 			'block_exe_file_uploads',
 			'block_leading_schema'
 		);
-		$aBlockSettings = array();
+		$this->m_aBlockSettings = array();
 		foreach( $aSettingSlugs as $sSettingKey ) {
-			$aBlockSettings[ $sSettingKey ] = $this->m_aOptions[$sSettingKey] == 'Y';
+			$this->m_aBlockSettings[ $sSettingKey ] = $this->m_aOptions[$sSettingKey] == 'Y';
 		}
 
-		$this->m_aBlockSettings = $aBlockSettings;
-		$this->m_sBlockResponse = $this->m_aOptions[ 'block_response' ];
-		$this->m_aWhitelistIps = $this->m_aOptions[ 'ips_whitelist' ];
-		$this->m_aBlacklistIps = $this->m_aOptions[ 'ips_blacklist' ];
 		$this->m_aCustomWhitelistPageParams = is_array( $this->m_aOptions[ 'page_params_whitelist' ] )? $this->m_aOptions[ 'page_params_whitelist' ] : array();
-
 		$this->setLogging( $this->m_aOptions[ 'enable_firewall_log' ] == 'Y' );
+	}
+
+	/**
+	 * @return boolean
+	 */
+	public function getNeedsEmailHandler() {
+		if ( $this->m_aOptions['block_send_email'] == 'Y' ) {
+			return true;
+		}
+		return false;
 	}
 	
 	public function reset() {
@@ -97,6 +102,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 		
 		$this->m_nRequestTimestamp = time();
 		$this->m_aPageParamValuesToCheck = array_values( $this->m_aPageParams );
+		$this->m_nLoopProtect = 0;
 	}
 	
 	/**
@@ -221,7 +227,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 		if ( substr_count( $sRequestPage, '/wp-login.php' ) > 0 ) {
 			
 			// We don't block wp-login.php if there are no whitelisted IPs.
-			if ( count( $this->m_aWhitelistIps ) < 1 ) {
+			if ( count( $this->m_aOptions[ 'ips_whitelist' ] ) < 1 ) {
 				$this->logInfo( 'Requested: Block access to wp-login.php, but this was skipped because whitelisted IPs list was empty.' );
 				return true;
 			}
@@ -328,54 +334,83 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	 */
 	private function doPassCheck( $inaParamValues, $inaMatchTerms, $infRegex = false ) {
 		
-		// Protection against an infinite loop and we limit depth to 3.
-		if ( !isset ($this->m_nLoopProtect) ) {
-			$this->m_nLoopProtect = 0;
-		}
-		else if ( $this->m_nLoopProtect > 3 ) {
-			$this->m_nLoopProtect = 0;
-			return true;
-		}
-		else {
-			$this->m_nLoopProtect++;
-		}
-		
 		$fFAIL = false;
-		foreach ( $inaParamValues as $sValue ) {
-			if ( is_array( $sValue ) ) {
-				if ( !$this->doPassCheck( $inaParamValues, $inaMatchTerms, $infRegex ) ) {
-					$this->m_nLoopProtect = 0;
+		foreach ( $inaParamValues as $mValue ) {
+			if ( is_array( $mValue ) ) {
+		
+				// Protection against an infinite loop and we limit depth to 3.
+				if ( $this->m_nLoopProtect > 2 ) {
+					return true;
+				}
+				else {
+					$this->m_nLoopProtect++;
+				}
+				
+				if ( !$this->doPassCheck( $mValue, $inaMatchTerms, $infRegex ) ) {
 					return false;
 				}
+				
+				$this->m_nLoopProtect--;
 			}
 			else {
-				$sValue = (string) $sValue;
+				$mValue = (string) $mValue;
 				foreach ( $inaMatchTerms as $sTerm ) {
 					
-					if ( $infRegex && preg_match( $sTerm, $sValue ) ) { //dodgy term pattern found in a parameter value
+					if ( $infRegex && preg_match( $sTerm, $mValue ) ) { //dodgy term pattern found in a parameter value
 						$fFAIL = true;
 					}
-					else if ( strpos( $sValue, $sTerm ) !== false ) { //dodgy term found in a parameter value
+					else if ( strpos( $mValue, $sTerm ) !== false ) { //dodgy term found in a parameter value
 						$fFAIL = true;
 					}
+					
 					if ( $fFAIL ) {
 						$this->m_sFirewallMessage .= " Something in the URL, Form or Cookie data wasn't appropriate.";
 						$this->logWarning(
-							sprintf( 'Page parameter failed firewall check. The value was %s and the term matched was %s', $sValue, $sTerm )
+							sprintf( 'Page parameter failed firewall check. The value was %s and the term matched was %s', $mValue, $sTerm )
 						);
-						$this->m_nLoopProtect = 0;
 						return false;
 					}
+					
 				}//foreach
 			}
 		}//foreach
-		$this->m_nLoopProtect = 0;
+
 		return true;
+	}
+
+	public function doPreFirewallBlock() {
+		
+		switch( $this->m_aOptions['block_response'] ) {
+			case 'redirect_die':
+				$this->m_oFirewallProcessor->logWarning(
+					sprintf( 'Firewall Block: Visitor connection was killed with %s', 'die()' )
+				);
+				break;
+			case 'redirect_die_message':
+				$this->m_oFirewallProcessor->logWarning(
+					sprintf( 'Firewall Block: Visitor connection was killed with %s and message', 'wp_die()' )
+				);
+				break;
+			case 'redirect_home':
+				$this->m_oFirewallProcessor->logWarning(
+					sprintf( 'Firewall Block: Visitor was sent HOME: %s', home_url() )
+				);
+				break;
+			case 'redirect_404':
+				$this->m_oFirewallProcessor->logWarning(
+					sprintf( 'Firewall Block: Visitor was sent 404: %s', home_url().'/404' )
+				);
+				break;
+		}
+			
+		if ( $this->m_aOptions['block_send_email'] == 'Y' ) {
+			$this->m_oFirewallProcessor->sendBlockEmail();
+		}
 	}
 
 	public function doFirewallBlock() {
 		
-		switch( $this->m_sBlockResponse ) {
+		switch( $this->m_aOptions['block_response'] ) {
 			case 'redirect_die':
 				die();
 			case 'redirect_die_message':
@@ -539,11 +574,11 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	}
 	
 	public function isVisitorOnWhitelist() {
-		return $this->isIpOnlist( $this->m_aWhitelistIps, $this->m_nRequestIp, $this->m_sListItemLabel );
+		return $this->isIpOnlist( $this->m_aOptions[ 'ips_whitelist' ], $this->m_nRequestIp, $this->m_sListItemLabel );
 	}
 	
 	public function isVisitorOnBlacklist() {
-		return $this->isIpOnlist( $this->m_aBlacklistIps, $this->m_nRequestIp, $this->m_sListItemLabel );
+		return $this->isIpOnlist( $this->m_aOptions[ 'ips_blacklist' ], $this->m_nRequestIp, $this->m_sListItemLabel );
 	}
 
 	/**
