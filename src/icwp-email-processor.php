@@ -152,7 +152,7 @@ class ICWP_EmailProcessor extends ICWP_BaseProcessor_WPSF {
 		}
 	}
 	
-	public function setRecipientAddress( $insEmailAddress ) {
+	public function setDefaultRecipientAddress( $insEmailAddress ) {
 		$this->m_sRecipientAddress = $insEmailAddress;
 	}
 	

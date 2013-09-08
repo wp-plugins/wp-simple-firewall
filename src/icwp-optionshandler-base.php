@@ -288,7 +288,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 					}
 				}
 				
-				if ( !$this->getOpt( $sOptionKey ) ) {
+				if ( $this->getOpt( $sOptionKey ) === false ) {
 					$this->setOpt( $sOptionKey, $sOptionDefault );
 				}
 				$mCurrentOptionVal = $this->getOpt( $sOptionKey );
@@ -441,8 +441,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 		if ( empty( $sAllOptionsInput ) ) {
 			return;
 		}
-		
-		$aAllInputOptions = explode( self::CollateSeparator, $sAllOptionsInput);
+		$aAllInputOptions = explode( self::CollateSeparator, $sAllOptionsInput );
 		foreach ( $aAllInputOptions as $sInputKey ) {
 			$aInput = explode( ':', $sInputKey );
 			list( $sOptionType, $sOptionKey ) = $aInput;
@@ -452,9 +451,11 @@ class ICWP_OptionsHandler_Base_WPSF {
 	
 				if ( $sOptionType == 'text' || $sOptionType == 'email' ) { //if it was a text box, and it's null, don't update anything
 					continue;
-				} else if ( $sOptionType == 'checkbox' ) { //if it was a checkbox, and it's null, it means 'N'
+				}
+				else if ( $sOptionType == 'checkbox' ) { //if it was a checkbox, and it's null, it means 'N'
 					$sOptionValue = 'N';
-				} else if ( $sOptionType == 'integer' ) { //if it was a integer, and it's null, it means '0'
+				}
+				else if ( $sOptionType == 'integer' ) { //if it was a integer, and it's null, it means '0'
 					$sOptionValue = 0;
 				}
 			}

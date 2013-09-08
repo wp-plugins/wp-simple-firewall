@@ -24,9 +24,6 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	protected $m_nRequestTimestamp;
 	
 	protected $m_aBlockSettings;
-	protected $m_sBlockResponse;
-	protected $m_aWhitelistIps;
-	protected $m_aBlacklistIps;
 
 	protected $m_aWhitelistPages;
 	protected $m_aWhitelistPagesPatterns;
@@ -35,7 +32,6 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	protected $m_aRequestUriParts;
 	
 	private $m_nLoopProtect;
-	
 	private $m_sFirewallMessage;
 
 	/**
@@ -44,10 +40,22 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	protected $m_sListItemLabel;
 
 	/**
-	 * A combination of the current request $_GET and $_POST
+	 * A combination of all current request $_GET and $_POST (and optionally $_COOKIE)
+	 * @var array
+	 */
+	protected $m_aOrigPageParams;
+
+	/**
+	 * This is $m_aOrigPageParams after any parameter whitelisting has taken place
 	 * @var array
 	 */
 	protected $m_aPageParams;
+
+	/**
+	 * All the array values of $m_aPageParams
+	 * @var array
+	 */
+	protected $m_aPageParamValuesToCheck;
 	
 	/**
 	 * All the remaining values of the page parameters after they've been filtered
@@ -55,6 +63,13 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	 */
 	protected $m_aPageParamValues;
 
+	public function __construct() {
+		parent::__construct();
+		
+		$sMessage = "You were blocked by the %sWordPress Simple Firewall%s.";
+		$this->m_sFirewallMessage = sprintf( $sMessage, '<a href="http://wordpress.org/plugins/wp-simple-firewall/" target="_blank">', '</a>');
+	}
+	
 	/**
 	 * @see ICWP_BaseProcessor_WPSF::setOptions()
 	 */
@@ -92,16 +107,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	
 	public function reset() {
 		parent::reset();
-		
-		$this->setRequestUriPageParts();
-		$this->setPageParams();
-		$this->filterWhitelistedPagesAndParams();
-		
-		$sMessage = "You were blocked by the %sWordPress Simple Firewall%s.";
-		$this->m_sFirewallMessage = sprintf( $sMessage, '<a href="http://wordpress.org/plugins/wp-simple-firewall/" target="_blank">', '</a>');
-		
 		$this->m_nRequestTimestamp = time();
-		$this->m_aPageParamValuesToCheck = array_values( $this->m_aPageParams );
 		$this->m_nLoopProtect = 0;
 	}
 	
@@ -132,6 +138,21 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	 * @return boolean - true if visitor is permitted, false if it should be blocked.
 	 */
 	public function doFirewallCheck() {
+
+		// if we couldn't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
+		$this->setRequestUriPageParts();
+		if ( empty( $this->m_aRequestUriParts ) ) {
+			$this->logInfo( 'Could not parse the URI so cannot effectively firewall.' );
+			return true;
+		}
+		
+		// Set up the page parameters ($_GET and $_POST and optionally $_COOKIE). If there are none, quit since there's nothing for the firewall to check.
+		$this->setPageParams();
+		if ( empty( $this->m_aPageParams ) ) {
+			$this->logInfo( 'After any whitelist options were applied, there were no page parameters to check on this visit.' );
+			return true;
+		}
+		$this->m_aPageParamValuesToCheck = array_values( $this->m_aPageParams );
 		
 		if ( $this->m_nRequestIp === false ) {
 			$this->logCritical(
@@ -167,18 +188,6 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 			$fIsPermittedVisitor = $this->doPassCheckBlockWpLogin();
 		}
 		*/
-				
-		// if we couldn't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
-		if ( empty( $this->m_aRequestUriParts ) ) {
-			$this->logInfo( 'Could not parse the URI so cannot effectively firewall.' );
-			return true;
-		}
-		
-		// Set up the page parameters ($_GET and $_POST and optionally $_COOKIE). If there are none, quit since there's nothing for the firewall to check.
-		if ( empty( $this->m_aPageParams ) ) {
-			$this->logInfo( 'There were no page parameters to check on this visit.' );
-			return true;
-		}
 		
 		$this->logInfo( 'Visitor IP was neither whitelisted nor blacklisted. Firewall checking started.' );
 		
@@ -440,9 +449,9 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 
 		if ( empty( $this->m_aWhitelistPages ) ) {
 			$this->setWhitelistPages();
-		}
-		if ( empty( $this->m_aWhitelistPages ) ) {
-			return false;
+			if ( empty( $this->m_aWhitelistPages ) ) {
+				return false;
+			}
 		}
 		// Check normal whitelisting pages without patterns.
 		if ( $this->checkPagesForWhiteListing( $this->m_aWhitelistPages ) ) {
@@ -534,7 +543,10 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 		if ( $this->m_aBlockSettings[ 'include_cookie_checks' ] ) {
 			$this->m_aPageParams = array_merge( $this->m_aPageParams, $_COOKIE );
 		}
-		$this->m_aOrigPageParams = $this->m_aPageParams;
+		
+		if ( !empty( $this->m_aPageParams ) ) {
+			$this->filterWhitelistedPagesAndParams();
+		}
 		return true;
 	}
 	

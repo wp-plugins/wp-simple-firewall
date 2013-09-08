@@ -125,6 +125,26 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 		);
 	}
 
+	/**
+	 * This is the point where you would want to do any options verification
+	 */
+	protected function doPrePluginOptionsSave() {
+		
+		$sEmail = $this->getOpt( 'block_send_email_address');
+		if ( empty( $sEmail ) || !is_email( $sEmail ) ) {
+			$sEmail = get_option('admin_email');
+		}
+		if ( is_email( $sEmail ) ) {
+			$this->setOpt( 'block_send_email_address', $sEmail );
+		}
+
+		$sLimit = $this->getOpt( 'send_email_throttle_limit' );
+		if ( !is_numeric( $sLimit ) || $sLimit < 0 ) {
+			$sLimit = 0;
+		}
+		$this->setOpt( 'send_email_throttle_limit', $sLimit );
+	}
+	
 	protected function updateHandler() {
 
 		// the 'current_plugin_version' value moved from a direct save option to be

@@ -53,11 +53,19 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 		$this->m_sSecretKey = $insSecretKey;
 		$this->m_sGaspKey = uniqid();
 		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
-		
+		$this->updateLastLoginThrottleTime( time() );
+
 		$this->createTable();
 		$this->reset();
 	}
 
+	/**
+	 * Resets the object values to be re-used anew
+	 */
+	public function reset() {
+		parent::reset();
+	}
+	
 	/**
 	 *
 	 * @param array $inoOptions
@@ -73,20 +81,10 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 * @return boolean
 	 */
 	public function getNeedsEmailHandler() {
-		if ( empty( $this->m_aOptions['enable_two_factor_auth_by_ip'] ) ) {
-			return false;
-		}
-		else if ( $this->m_aOptions['enable_two_factor_auth_by_ip'] == 'Y' ) {
+		if ( isset( $this->m_aOptions['enable_two_factor_auth_by_ip'] ) && $this->m_aOptions['enable_two_factor_auth_by_ip'] == 'Y' ) {
 			return true;
 		}
 		return false;
-	}
-	
-	/**
-	 * Resets the object values to be re-used anew
-	 */
-	public function reset() {
-		parent::reset();
 	}
 	
 	public function setLogging() {
@@ -254,14 +252,14 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 		$this->m_nLastLoginTime = $this->getLastLoginTime();
 
 		if ( empty( $this->m_nLastLoginTime ) || $this->m_nLastLoginTime < 0 ) {
-			$this->m_nLastLoginTime = $sNow;
+			$this->updateLastLoginThrottleTime( $sNow );
 		}
 		
 		// If we're outside the interval, let the login process proceed as per normal and
 		// update our last login time.
 		$nLoginInterval = $sNow - $this->m_nLastLoginTime;
 		if ( $nLoginInterval > $nRequiredLoginInterval ) {
-			$this->updateLoginThrottleTime( $sNow );
+			$this->updateLastLoginThrottleTime( $sNow );
 			return $inoUser;
 		}
 
@@ -284,17 +282,18 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 		if ( is_file( self::$sModeFile_LoginThrottled ) ) {
 			$nModifiedTime = filemtime( self::$sModeFile_LoginThrottled );
 			if ( $nModifiedTime > $this->m_nLastLoginTime ) {
-				return $nModifiedTime;
+				$this->m_nLastLoginTime = $nModifiedTime;
 			}
 		}
 		return $this->m_nLastLoginTime;
 	}
 	
-	public function updateLoginThrottleTime( $innLastLoginTime ) {
+	public function updateLastLoginThrottleTime( $innLastLoginTime ) {
 		$this->m_nLastLoginTime = $innLastLoginTime;
 		if ( function_exists('touch') ) {
 			@touch( self::$sModeFile_LoginThrottled, $innLastLoginTime );
 		}
+		$this->setNeedSave();
 	}
 
 	/**

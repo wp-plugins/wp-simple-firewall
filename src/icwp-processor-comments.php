@@ -81,16 +81,14 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	}
 	
 	/**
-	 * 
-	 * @param ICWP_OptionsHandler_CommentsFilter $inoOptions
 	 */
 	public function run() {
 		// Add GASP checking to the comment form.
 		if ( $this->m_aOptions[ 'enable_comments_gasp_protection' ] == 'Y' ) {
 			add_action(	'comment_form',					array( $this, 'printGaspFormHook_Action' ), 1 );
 			add_action(	'comment_form',					array( $this, 'printGaspFormParts_Action' ), 2 );
-			add_filter( 'preprocess_comment',			array( $this, 'doGaspCommentCheck_Filter' ), 1, 1);
-			add_filter( 'pre_comment_approved',			array( $this, 'doGaspStatusSet_Filter' ), 1, 1);
+			add_filter( 'preprocess_comment',			array( $this, 'doGaspCommentCheck_Filter' ), 1, 1 );
+			add_filter( 'pre_comment_approved',			array( $this, 'doGaspStatusSet_Filter' ), 1, 1 );
 		}
 	}
 	
@@ -99,14 +97,11 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function printGaspFormHook_Action() {
 		
-		if ( $this->m_aOptions[ 'enable_comments_gasp_protection_for_logged_in' ] != 'Y' && is_user_logged_in() ) {
+		if ( !$this->getDoCommentsCheck() ) {
 			return;
 		}
 		global $post;
-		if ( !isset( $post ) ) {
-			return;
-		}
-		if ( $post->comment_status != 'open' ) {
+		if ( !isset( $post ) || $post->comment_status != 'open' ) {
 			return;
 		}
 		$this->deleteOldPostCommentTokens( $post->ID );
@@ -117,12 +112,24 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 		
 		echo $this->getGaspCommentsHookHtml();
 	}
+	
+	/**
+	 * Tells us whether, for this particular comment post, if we should do comments checking.
+	 * 
+	 * @return boolean
+	 */
+	protected function getDoCommentsCheck() {
+		if (  $this->m_aOptions[ 'enable_comments_gasp_protection_for_logged_in' ] != 'Y' && is_user_logged_in() ) {
+			return false;
+		}
+		return true;
+	}
 
 	/**
 	 * @return void
 	 */
 	public function printGaspFormParts_Action() {
-		if ( !empty($this->m_sUniqueToken) ) {
+		if ( $this->getDoCommentsCheck() ) {
 			echo $this->getGaspCommentsHtml();
 		}
 	}
@@ -132,7 +139,7 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function getGaspCommentsHookHtml() {
 		$sId = $this->m_sUniqueFormId;
-		$sReturn = '<p id="'.$sId.'"></p>';
+		$sReturn = '<p id="'.$sId.'"></p>'; // we use this unique <p> to hook onto using javascript
 		$sReturn .= '<input type="hidden" id="_sugar_sweet_email" name="sugar_sweet_email" value="" />';
 		$sReturn .= '<input type="hidden" id="_comment_token" name="comment_token" value="'.$this->m_sUniqueToken.'" />';
 		return $sReturn;
@@ -140,12 +147,13 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	
 	public function getGaspCommentsHtml() {
 
-		$sId = $this->m_sUniqueFormId;
-		$sConfirm = $this->m_aOptions[ 'custom_message_checkbox' ];
-		$sAlert = $this->m_aOptions[ 'custom_message_alert' ];
-		$sCommentWait = $this->m_aOptions[ 'custom_message_comment_wait' ];
-		$nCooldown = $this->m_aOptions[ 'comments_cooldown_interval' ];
-		$nExpire = $this->m_aOptions[ 'comments_token_expire_interval' ];
+		$sId			= $this->m_sUniqueFormId;
+		$sConfirm		= $this->m_aOptions[ 'custom_message_checkbox' ];
+		$sAlert			= $this->m_aOptions[ 'custom_message_alert' ];
+		$sCommentWait	= $this->m_aOptions[ 'custom_message_comment_wait' ];
+		$nCooldown		= $this->m_aOptions[ 'comments_cooldown_interval' ];
+		$nExpire		= $this->m_aOptions[ 'comments_token_expire_interval' ];
+		
 		if ( strpos( $sCommentWait, '%s' ) !== false ) {
 			$sCommentWait = sprintf( $sCommentWait, $nCooldown );
 			$sJsCommentWait = str_replace( '%s', '"+nRemaining+"', $this->m_aOptions[ 'custom_message_comment_wait' ] );
@@ -207,30 +215,32 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 				var frm$sId					= cb$sId.form;
 				frm$sId.onsubmit			= check$sId;
 
-				if ( $nCooldown > 0 || $nExpire > 0  ) {
-
+				".(
+					( $nCooldown > 0 || $nExpire > 0 ) ?
+					"
 					var subbuttonList$sId = frm$sId.querySelectorAll( 'input[type=\"submit\"]' );
 					
-					if ( typeof( subbuttonList$sId ) != \"undefined\") {
+					if ( typeof( subbuttonList$sId ) != \"undefined\" ) {
 						subbutton$sId = subbuttonList{$sId}[0];
-						if ( typeof( subbutton$sId ) != \"undefined\") {
+						if ( typeof( subbutton$sId ) != \"undefined\" ) {
 						
-							if ( $nCooldown > 0 ) {
-								subbutton$sId.disabled		= true;
-								
-								origButtonValue$sId			= subbutton$sId.value;
-								subbutton$sId.value			= \"$sCommentWait\";
-								
-								nTimerCounter$sId			= 0;
-								sCountdownTimer$sId			= setInterval( reenableButton$sId, 1000 );
-							}
-							
-							if ( $nExpire > 0 ) {
-								sTimeoutTimer$sId			= setTimeout( redisableButton$sId, 1000 * $nExpire - 2 );
-							}
+						".(
+							( $nCooldown > 0 )?
+							"
+							subbutton$sId.disabled		= true;
+							origButtonValue$sId			= subbutton$sId.value;
+							subbutton$sId.value			= \"$sCommentWait\";
+							nTimerCounter$sId			= 0;
+							sCountdownTimer$sId			= setInterval( reenableButton$sId, 1000 );
+							"
+							:''
+						).(
+							( $nExpire > 0 )? "sTimeoutTimer$sId			= setTimeout( redisableButton$sId, ".(1000 * $nExpire - 1000)." );" : ''
+						)."
 						}
 					}
-				}
+					":''
+				)."
 			</script>
 		";
 		return $sReturn;
@@ -241,7 +251,8 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 * @return unknown|string
 	 */
 	public function doGaspCommentCheck_Filter( $inaCommentData ) {
-		if ( is_user_logged_in() ) {
+		
+		if ( !$this->getDoCommentsCheck() ) {
 			return $inaCommentData;
 		}
 		if( !isset( $_POST['cb_nombre'] ) ) {
@@ -252,7 +263,7 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 			$this->m_sCommentStatus = 'spam';
 		}
 		// honeypot check
-		else if ( isset( $_POST['sugar_sweet'] ) && $_POST['sugar_sweet'] !== '' ) {
+		else if ( isset( $_POST['sugar_sweet_email'] ) && $_POST['sugar_sweet_email'] !== '' ) {
 			$this->m_sCommentStatus = 'spam';
 		}
 		// check the unique comment token is present
@@ -260,7 +271,7 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 			$this->m_sCommentStatus = 'spam';
 		}
 		if ( false && $this->m_sCommentStatus = 'spam' ) { //add option to die later
-			wp_die( "Ding Dong the which is dead." );
+			wp_die( "Ding! Dong! The witch is dead." );
 		}
 		return $inaCommentData;
 	}
@@ -412,25 +423,6 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 		return md5( $sToken );
 	}
 	
-	/**
-	 * Should return false when logging is disabled.
-	 *
-	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_BaseProcessor_WPSF::getLogData()
-	 */
-	public function flushLogData() {
-	
-		if ( !$this->m_fLoggingEnabled || empty( $this->m_aLogMessages ) ) {
-			return false;
-		}
-
-		$this->m_aLog = array(
-			'category'			=> self::LOG_CATEGORY_LOGINPROTECT,
-			'messages'			=> serialize( $this->m_aLogMessages )
-		);
-		$this->resetLog();
-		return $this->m_aLog;
-	}
 }
 
 endif;

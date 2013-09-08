@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.7.2beta2
+Version: 1.7.3
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -43,7 +43,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.7.2beta2';
+	static public $VERSION			= '1.7.3';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -241,7 +241,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 
 		if ( isset( $this->m_oFirewallProcessor ) && is_object( $this->m_oFirewallProcessor ) && $this->getIsMainFeatureEnabled( 'firewall' ) ) {
 			$aLogData = $this->m_oFirewallProcessor->flushLogData();
-			if ( !is_null( $aLogData ) && $aLogData ) {
+			if ( !is_null( $aLogData ) && !empty( $aLogData ) ) {
 				$this->loadLoggingProcessor();
 				$this->m_oLoggingProcessor->writeLog( $aLogData );
 			}
@@ -249,7 +249,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 
 		if ( isset( $this->m_oLoginProcessor ) && is_object( $this->m_oLoginProcessor ) && $this->getIsMainFeatureEnabled( 'login_protect' ) ) {
 			$aLogData = $this->m_oLoginProcessor->flushLogData();
-			if ( !is_null( $aLogData ) && $aLogData ) {
+			if ( !is_null( $aLogData ) && !empty( $aLogData ) ) {
 				$this->loadLoggingProcessor();
 				$this->m_oLoggingProcessor->writeLog( $aLogData );
 			}
@@ -321,7 +321,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				$this->m_oFirewallProcessor->reset();
 			}
 			else {
-				$this->m_oFirewallProcessor = new ICWP_FirewallProcessor( $aBlockSettings, $aIpWhitelist, $aIpBlacklist, $aPageWhitelist, $sBlockResponse );
+				$this->m_oFirewallProcessor = new ICWP_FirewallProcessor();
 				$this->loadFirewallOptions();
 				$this->m_oFirewallProcessor->setOptions( $this->m_oFirewallOptions->getPluginOptionsValues() );
 			}
@@ -430,22 +430,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			else {
 				// collect up all the settings to pass to the processor
 				$this->m_oEmailProcessor = new ICWP_EmailProcessor();
+				$this->m_oEmailProcessor->setDefaultRecipientAddress( $this->m_oWpsfOptions->getOpt( 'block_send_email_address' ) );
+				$this->m_oEmailProcessor->setThrottleLimit( $this->m_oWpsfOptions->getOpt( 'send_email_throttle_limit' ) );
 				$sSiteName = ( function_exists('get_bloginfo') )? get_bloginfo('name') : '';
-				
-				$sEmail = $this->m_oWpsfOptions->getOpt( 'block_send_email_address');
-				if ( empty( $sEmail ) || !is_email( $sEmail ) ) {
-					$sEmail = get_option('admin_email');
-				}
-				if ( is_email( $sEmail ) ) {
-					$this->m_oEmailProcessor->setRecipientAddress( $sEmail );
-				}
-
-				$sLimit = $this->m_oWpsfOptions->getOpt( 'send_email_throttle_limit' );
-				if ( !is_numeric( $sLimit ) ) {
-					$sLimit = 0;
-				}
-				$this->m_oEmailProcessor->setThrottleLimit( $sLimit );
-				$this->m_oEmailProcessor->setSiteName( get_bloginfo('name') );
+				$this->m_oEmailProcessor->setSiteName( $sSiteName );
 			}
 		}
 		else if ( $infReset ) {
@@ -500,14 +488,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		// We don't want to load the email handler unless we really need it.
 		// 29 is just before we'll need it if we do
 		if ( $this->m_oLoginProcessor->getNeedsEmailHandler() ) {
-			add_filter( 'authenticate', array( $this, 'provideEmailHandlerToLoginProtect' ), 29, 3 );
+			$this->loadEmailProcessor();
+			$this->m_oLoginProcessor->setEmailHandler( $this->m_oEmailProcessor );
 		}
-	}
-	
-	public function provideEmailHandlerToLoginProtect( $inoUser, $insUsername, $insPassword ) {
-		$this->loadEmailProcessor();
-		$this->m_oLoginProcessor->setEmailHandler( $this->m_oEmailProcessor );
-		return $inoUser;
 	}
 	
 	/**
@@ -704,7 +687,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	
 	public function onDisplayFirewallLog() {
 
-		$this->loadFirewallOptions( true );
+		$this->loadFirewallOptions();
 		$aIpWhitelist = $this->m_oFirewallOptions->getOpt( 'ips_whitelist' );
 		$aIpBlacklist = $this->m_oFirewallOptions->getOpt( 'ips_blacklist' );
 		

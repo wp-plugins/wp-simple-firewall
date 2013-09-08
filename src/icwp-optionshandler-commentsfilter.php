@@ -134,14 +134,20 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 
 		$nCommentCooldown = $this->getOpt( 'comments_cooldown_interval' );
 		if ( $nCommentCooldown < 0 ) {
-			$this->setOpt( 'comments_cooldown_interval', self::DefaultCommentCooldown );
+			$nCommentCooldown = 0;
 		}
 		
 		$nCommentTokenExpire = $this->getOpt( 'comments_token_expire_interval' );
 		if ( $nCommentTokenExpire < 0 ) {
-			$this->setOpt( 'comments_token_expire_interval', self::DefaultCommentExpire );
+			$nCommentTokenExpire = 0;
 		}
 		
+		if ( $nCommentTokenExpire != 0 && $nCommentCooldown > $nCommentTokenExpire ) {
+			$nCommentCooldown = self::DefaultCommentCooldown;
+			$nCommentTokenExpire = self::DefaultCommentExpire;
+		}
+		$this->setOpt( 'comments_cooldown_interval', $nCommentCooldown );
+		$this->setOpt( 'comments_token_expire_interval', $nCommentTokenExpire );
 	}
 	
 	public function updateHandler() {
