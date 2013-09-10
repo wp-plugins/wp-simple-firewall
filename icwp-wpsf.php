@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.7.3
+Version: 1.8.0
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -36,14 +36,15 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
 class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	
-	const InputPrefix				= 'icwp_wpsf_';
-	const OptionPrefix				= 'icwp_wpsf_';	//ALL database options use this as the prefix.
+	const InputPrefix					= 'icwp_wpsf_';
+	const OptionPrefix					= 'icwp_wpsf_';	//ALL database options use this as the prefix.
+	const AdminAccessKeyCookieName		= "icwp_wpsf_aakcook";
 	
 	/**
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.7.3';
+	static public $VERSION			= '1.8.0';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -64,6 +65,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * @var ICWP_OptionsHandler_CommentsFilter
 	 */
 	protected $m_oCommentsFilterOptions;
+
+	/**
+	 * @var ICWP_OptionsHandler_Lockdown
+	 */
+	protected $m_oLockdownOptions;
 	
 	/**
 	 * @var ICWP_FirewallProcessor
@@ -71,14 +77,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected $m_oFirewallProcessor;
 	
 	/**
+	 * @var ICWP_LoginProcessor
+	 */
+	protected $m_oLoginProcessor;
+	
+	/**
 	 * @var ICWP_CommentsProcessor
 	 */
 	protected $m_oCommentsProcessor;
 	
 	/**
-	 * @var ICWP_LoginProcessor
+	 * @var ICWP_LockdownProcessor
 	 */
-	protected $m_oLoginProcessor;
+	protected $m_oLockdownProcessor;
 	
 	/**
 	 * @var ICWP_LoggingProcessor
@@ -117,7 +128,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		// checks for filesystem based firewall overrides
 		$this->override();
 		
-	//	add_filter( 'user_has_cap', array( $this, 'disable_file_editing' ), 0, 3 );
 		if ( $this->getIsMainFeatureEnabled( 'firewall' ) ) {
 			add_action( 'plugins_loaded', array( $this, 'runFirewallProcess' ), 1 );
 		}
@@ -130,7 +140,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			add_action( 'plugins_loaded', array( $this, 'runCommentsFilter' ), 1 );
 		}
 		
+		if ( $this->getIsMainFeatureEnabled( 'lockdown' ) ) {
+			add_action( 'plugins_loaded', array( $this, 'runLockdown' ), 1 );
+		}
+		
 		add_action( 'in_plugin_update_message-'.self::$PLUGIN_FILE, array( $this, 'onWpPluginUpdateMessage' ) );
+		
+		if ( $this->hasPermissionToSubmit() ) {
+			$this->m_fDoAutoUpdateCheck = true;
+		}
+		
+		if ( isset( $_GET['turnoffperm'] ) ) {
+			$this->setPermissionToSubmit( false );
+		}
 	}
 	
 	public function removePluginConflicts() {
@@ -138,27 +160,17 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	        remove_action( 'init', array( $GLOBALS['aio_wp_security'], 'wp_security_plugin_init'), 0 );
 		}
 	}
-
-	public function disable_file_editing( $allcaps, $cap, $args ) {
-		
-		$aEditCapabilities = array( 'edit_themes', 'edit_plugins', 'edit_files' );
-		$sRequestedCapability = $args[0];
-		
-		if ( !in_array( $sRequestedCapability, $aEditCapabilities ) ) {
-			return $allcaps;
-		}
-		$allcaps[ $sRequestedCapability ] = false;
-		return $allcaps;
-	}
 	
 	protected function override() {
 		if ( is_file( self::$PLUGIN_DIR . 'forceOff' ) ) {
 			$this->setSharedOption( 'enable_firewall', 'N' );
 			$this->setSharedOption( 'enable_login_protect', 'N' );
+			$this->setSharedOption( 'enable_admin_access_restriction', 'N' );
 		}
 		else if ( is_file( self::$PLUGIN_DIR . 'forceOn' ) ) {
 			$this->setSharedOption( 'enable_firewall', 'Y' );
 			$this->setSharedOption( 'enable_login_protect', 'Y' );
+			$this->setSharedOption( 'enable_admin_access_restriction', 'Y' );
 		}
 		else {
 			return true;
@@ -177,7 +189,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}
 	
 	/**
-	 * @param string $insFeature	- firewall, login_protect, comments_filter
+	 * @param string $insFeature	- firewall, login_protect, comments_filter, lockdown
 	 * @return boolean
 	 */
 	public function getIsMainFeatureEnabled( $insFeature ) {
@@ -190,6 +202,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 		
 		switch ( $insFeature ) {
+			case 'admin_access':
+				$fEnabled = $this->m_oWpsfOptions->getOpt( 'enable_admin_access_restriction' ) == 'Y';
+				break;
 			case 'firewall':
 				$fEnabled = $this->m_oWpsfOptions->getOpt( 'enable_firewall' ) == 'Y';
 				break;
@@ -198,6 +213,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				break;
 			case 'comments_filter':
 				$fEnabled = $this->m_oWpsfOptions->getOpt( 'enable_comments_filter' ) == 'Y';
+				break;
+			case 'lockdown':
+				$fEnabled = $this->m_oWpsfOptions->getOpt( 'enable_lockdown' ) == 'Y';
 				break;
 			default:
 				$fEnabled = false;
@@ -226,6 +244,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			case 'enable_comments_filter':
 				$this->loadCommentsFilterOptions();
  				$this->m_oCommentsFilterOptions->setOpt( $insOption, $inmValue );
+				break;
+			case 'enable_lockdown':
+				$this->loadLockdownOptions();
+ 				$this->m_oLockdownOptions->setOpt( $insOption, $inmValue );
 				break;
 		}
 		$this->m_oWpsfOptions->setOpt( $insOption, $inmValue );
@@ -261,6 +283,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->loadFirewallOptions( true );
 		$this->loadLoginProtectOptions( true );
 		$this->loadCommentsFilterOptions( true );
+		$this->loadLockdownOptions( true );
 	}
 	
 	protected function loadWpsfOptions( $infFullInit = false ) {
@@ -296,10 +319,20 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected function loadCommentsFilterOptions( $infFullInit = false ) {
 		if ( !isset( $this->m_oCommentsFilterOptions ) ) {
 			require_once( dirname(__FILE__).'/src/icwp-optionshandler-commentsfilter.php' );
-			$this->m_oCommentsFilterOptions = new ICWP_OptionsHandler_CommentsFilter( self::OptionPrefix, 'commentsfilter_options', self::$VERSION, $infFullInit );
+			$this->m_oCommentsFilterOptions = new ICWP_OptionsHandler_CommentsFilter( self::OptionPrefix, self::$VERSION, $infFullInit );
 		}
 		else if ( $infFullInit ) {
 			$this->m_oCommentsFilterOptions->initOptions();
+		}
+	}
+	
+	protected function loadLockdownOptions( $infFullInit = false ) {
+		if ( !isset( $this->m_oLockdownOptions ) ) {
+			require_once( dirname(__FILE__).'/src/icwp-optionshandler-lockdown.php' );
+			$this->m_oLockdownOptions = new ICWP_OptionsHandler_Lockdown( self::OptionPrefix, self::$VERSION, $infFullInit );
+		}
+		else if ( $infFullInit ) {
+			$this->m_oLockdownOptions->initOptions();
 		}
 	}
 	
@@ -383,6 +416,33 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 		else if ( $infReset ) {
 			$this->m_oCommentsProcessor->reset();
+		}
+	}
+	
+	/**
+	 * Loads the Lockdown Processor for use throughout.  Will draw upon the db-cached object where
+	 * appropriate.
+	 * 
+	 * @param boolean $infReset
+	 */
+	protected function loadLockdownProcessor( $infReset = false ) {
+		
+		require_once( dirname(__FILE__).'/src/icwp-processor-lockdown.php' );
+		
+		if ( empty( $this->m_oLockdownProcessor ) ) {
+			$this->m_oLockdownProcessor = self::getOption( 'comments_processor' );
+
+			if ( is_object( $this->m_oLockdownProcessor ) && ( $this->m_oLockdownProcessor instanceof ICWP_LockdownProcessor ) ) {
+				$this->m_oLockdownProcessor->reset();
+			}
+			else {
+				$this->m_oLockdownProcessor = new ICWP_LockdownProcessor();
+				$this->loadLockdownOptions();
+				$this->m_oLockdownProcessor->setOptions( $this->m_oLockdownOptions->getPluginOptionsValues() );
+			}
+		}
+		else if ( $infReset ) {
+			$this->m_oLockdownProcessor->reset();
 		}
 	}
 	
@@ -479,7 +539,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}
 	
 	/**
-	 * Handles the running of all login protection processes.
+	 * Handles the running of all Login Protection processes.
 	 */
 	public function runLoginProtect() {
 		$this->loadLoginProcessor();
@@ -494,13 +554,61 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}
 	
 	/**
-	 * Handles the running of all login protection processes.
+	 * Handles the running of all Comments Filter processes.
 	 */
 	public function runCommentsFilter() {
 		$this->loadCommentsProcessor();
 		$this->m_oCommentsProcessor->run();
 	}
+	
+	/**
+	 * Handles the running of all Lockdown processes.
+	 */
+	public function runLockdown() {
+		$this->loadLockdownProcessor();
+		$this->m_oLockdownProcessor->run();
+	}
 
+	protected function getAllOptions( $infForceLoad = false ) {
+		$aOptionNames = array(
+			'm_oWpsfOptions',
+			'm_oFirewallOptions',
+			'm_oLoginProtectOptions',
+			'm_oCommentsFilterOptions',
+			'm_oLockdownOptions'
+		);
+		
+		if ( $infForceLoad ) {
+			$this->loadAllOptions();
+		}
+		
+		$aOptions = array();
+		foreach( $aOptionNames as $sName ) {
+			if ( isset( $this->{$sName} ) ) {
+				$aOptions[] = &$this->{$sName};
+			}
+		}
+		return $aOptions;
+	}
+	
+	protected function getAllProcessors() {
+		$aProcessorNames = array(
+			'firewall_processor'	=> 'm_oFirewallProcessor',
+			'login_processor'		=> 'm_oLoginProcessor',
+			'comments_processor'	=> 'm_oCommentsProcessor',
+			'lockdown_processor'	=> 'm_oLockdownProcessor',
+			'logging_processor'		=> 'm_oLoggingProcessor',
+			'email_processor'		=> 'm_oEmailProcessor'
+		);
+		$aProcessors = array();
+		foreach( $aProcessorNames as $sKey => $sName ) {
+			if ( isset( $this->{$sName} ) ) {
+				$aProcessors[$sKey] = &$this->{$sName};
+			}
+		}
+		return $aProcessors;
+	}
+	
 	/**
 	 * Make sure and cache the processors after all is said and done.
 	 */
@@ -508,35 +616,18 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 		$this->updateLogStore();
 		
-		if ( isset( $this->m_oWpsfOptions ) ) {
-			$this->m_oWpsfOptions->savePluginOptions();
+		$aOptions = $this->getAllOptions();
+		foreach( $aOptions as &$oOption ) {
+			if ( isset( $oOption ) ) {
+				$oOption->savePluginOptions();
+			}
 		}
-		if ( isset( $this->m_oFirewallOptions ) ) {
-			$this->m_oFirewallOptions->savePluginOptions();
-		}
-		if ( isset( $this->m_oLoginProtectOptions ) ) {
-			$this->m_oLoginProtectOptions->savePluginOptions();
-		}
-		if ( isset( $this->m_oCommentsFilterOptions ) ) {
-			$this->m_oCommentsFilterOptions->savePluginOptions();
-		}
-		if ( isset( $this->m_oFirewallProcessor ) ) {
-			$this->m_oFirewallProcessor->store( self::getKey( 'firewall_processor' ) );
-		}
-		if ( isset( $this->m_oLoginProcessor ) ) {
-			$this->m_oLoginProcessor->store( self::getKey( 'login_processor' ) );
-		}
-		if ( isset( $this->m_oCommentsProcessor ) ) {
-			$this->m_oCommentsProcessor->store( self::getKey( 'comments_processor' ) );
-		}
-		if ( isset( $this->m_oLoggingProcessor ) ) {
-			$this->m_oLoggingProcessor->store( self::getKey( 'logging_processor' ) );
-		}
-		if ( isset( $this->m_oEmailProcessor ) ) {
-			$this->m_oEmailProcessor->store( self::getKey( 'email_processor' ) );
+		$aProcessors = $this->getAllProcessors();
+		foreach( $aProcessors as $sKey => &$oProcessor ) {
+			$oProcessor->store( self::getKey( $sKey ) );
 		}
 	}
-	
+
 	public function onWpAdminInit() {
 		parent::onWpAdminInit();
 		
@@ -551,16 +642,22 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 		
 		//Multilingual support.
-		load_plugin_textdomain( 'hlt-wordpress-bootstrap-css', false, basename( dirname( __FILE__ ) ) . '/languages' );
+		// load_plugin_textdomain( 'icwp-wpsf', false, basename( dirname( __FILE__ ) ) . '/languages' );
 	}
 	
-	protected function createPluginSubMenuItems(){
+	protected function createPluginSubMenuItems() {
+
+		if ( !$this->hasPermissionToView() ) {
+			return;
+		}
+		
 		$this->m_aPluginMenu = array(
 			//Menu Page Title => Menu Item name, page ID (slug), callback function for this page - i.e. what to do/load.
-			$this->getSubmenuPageTitle( 'Firewall' ) => array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayFirewallConfig' ),
-			$this->getSubmenuPageTitle( 'Login Protect' ) => array( 'Login Protect', $this->getSubmenuId('login_protect'), 'onDisplayLoginProtect' ),
-			$this->getSubmenuPageTitle( 'Comments Filter' ) => array( 'Comments Filter', $this->getSubmenuId('comments_filter'), 'onDisplayCommentsFilter' ),
-			$this->getSubmenuPageTitle( 'Log' ) => array( 'Log', $this->getSubmenuId('firewall_log'), 'onDisplayFirewallLog' )
+			$this->getSubmenuPageTitle( 'Firewall' ) => array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( 'Login Protect' ) => array( 'Login Protect', $this->getSubmenuId('login_protect'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( 'Comments Filter' ) => array( 'Comments Filter', $this->getSubmenuId('comments_filter'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( 'Lockdown' ) => array( 'Lockdown', $this->getSubmenuId('lockdown'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( 'Log' ) => array( 'Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' )
 		);
 	}
 
@@ -640,8 +737,56 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->adminNoticeOptionsUpdated();
 	}
 	
-	public function onDisplayMainMenu() {
+	/**
+	 * Displaying all views now goes through this central function and we work out
+	 * what to display based on the name of current hook/filter being processed.
+	 */
+	public function onDisplayAll() {
+		
+		if ( !$this->hasPermissionToView() ) {
+			$this->onDisplayAccessKeyRequest();
+			return;
+		}
+		
+		$sPrefix = 'simple-firewall_page_icwp-wpsf-';
+		$sCurrent = str_replace( $sPrefix, '', current_filter() );
 
+		switch( $sCurrent ) {
+			case 'toplevel_page_'.self::ParentMenuId.'-wpsf' : //special case
+				$this->onDisplayMainMenu();
+				break;
+			case 'firewall' :
+				$this->onDisplayFirewallConfig();
+				break;
+			case 'login_protect' :
+				$this->onDisplayLoginProtect();
+				break;
+			case 'comments_filter' :
+				$this->onDisplayCommentsFilter();
+				break;
+			case 'lockdown' :
+				$this->onDisplayLockdown();
+				break;
+			case 'firewall_log' :
+				$this->onDisplayFirewallLog();
+				break;
+		}
+	}
+	
+	public function onDisplayAccessKeyRequest() {
+
+		// Since this is always called until we have Permission, we have to handle the plugin
+		// form submission here too.
+		$aData = array(
+				'plugin_url'		=> self::$PLUGIN_URL,
+				'var_prefix'		=> self::OptionPrefix,
+				'nonce_field'		=> $this->getSubmenuId( 'wpsf-access-key' ),
+				'form_action'		=> 'admin.php?page='.$this->getSubmenuId()
+		);
+		$this->display( 'icwp_wpsf_access_key_request_index', $aData );
+	}
+	
+	public function onDisplayMainMenu() {
 		$this->loadAllOptions();
 		$aAvailableOptions = $this->m_oWpsfOptions->getOptions();
 		$sAllFormInputOptions = $this->m_oWpsfOptions->collateAllFormInputsForAllOptions();
@@ -666,6 +811,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( $this->getIsMainFeatureEnabled('comments_filter') ) {
 			$aData['aCommentsFilterOptions'] = $this->m_oCommentsFilterOptions->getPluginOptionsValues();
 		}
+		if ( $this->getIsMainFeatureEnabled('lockdown') ) {
+			$aData['aLockdownOptions'] = $this->m_oLockdownOptions->getPluginOptionsValues();
+		}
 
 		$this->display( 'icwp_'.$this->m_sParentMenuIdSuffix.'_index', $aData );
 	}
@@ -683,6 +831,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	public function onDisplayCommentsFilter() {
 		$this->loadCommentsFilterOptions( true );
 		$this->onDisplayConfig( $this->m_oCommentsFilterOptions, 'comments_filter' );
+	}
+	
+	public function onDisplayLockdown() {
+		$this->loadLockdownOptions( true );
+		$this->onDisplayConfig( $this->m_oLockdownOptions, 'lockdown' );
 	}
 	
 	public function onDisplayFirewallLog() {
@@ -713,6 +866,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * @param string $insSlug
 	 */
 	protected function onDisplayConfig( $inoOptions, $insSlug ) {
+		
 		$aAvailableOptions = $inoOptions->getOptions();
 		$sAllFormInputOptions = $inoOptions->collateAllFormInputsForAllOptions();
 
@@ -728,10 +882,35 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->display( 'icwp_wpsf_config_'.$insSlug.'_index', $aData );
 	}
 	
+	protected function isPluginFormSubmit() {
+		
+		$aPostSubmitOptions = array(
+			'icwp_plugin_form_submit',
+			'icwp_link_action',
+			'icwp_wpsf_admin_access_key_request'
+		);
+		
+		foreach( $aPostSubmitOptions as $sOption ) {
+			if ( isset( $_POST[$sOption] ) || isset( $_GET[$sOption] ) ) {
+				return true;
+			}
+		}
+		return false;		
+	}
+	
 	protected function handlePluginFormSubmit() {
 		
-		if ( !isset( $_POST['icwp_plugin_form_submit'] ) && !isset( $_GET['icwp_link_action'] ) ) {
-			return;
+		//should have already been checked, but just to make sure.
+		if ( !$this->isPluginFormSubmit() ) {
+			return false;
+		}
+		
+		if ( isset( $_POST['icwp_wpsf_admin_access_key_request'] ) ) {
+			return $this->handleSubmit_AccessKeyRequest();
+		}
+		
+		if ( !$this->hasPermissionToSubmit() ) {
+			return false;
 		}
 		
 		if ( isset( $_GET['page'] ) ) {
@@ -748,23 +927,83 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				case $this->getSubmenuId( 'comments_filter' ):
 					$this->handleSubmit_CommentsFilter();
 					break;
+				case $this->getSubmenuId( 'lockdown' ):
+					$this->handleSubmit_Lockdown();
+					break;
 				case $this->getSubmenuId( 'firewall_log' ):
 					$this->handleSubmit_FirewallLog();
 					break;
 				default:
-					return;
+					return false;
 					break;
 			}
 		}
-		
 		$this->resetLoggingProcessor();
+		return true;
+	}
+	
+	protected function setPermissionToSubmit( $infPermission = false ) {
 		
-		if ( !self::$m_fUpdateSuccessTracker ) {
-			$this->m_oWpsfOptions->setOpt( 'feedback_admin_notice', 'Updating Settings <strong>Failed</strong>.' );
+		if ( $infPermission ) {
+			$sValue = $this->m_oWpsfOptions->getOpt( 'admin_access_key' );
+			$sTimeout = $this->m_oWpsfOptions->getOpt( 'admin_access_timeout' ) * 60;
+			$_COOKIE[ self::AdminAccessKeyCookieName ] = 1;
+			setcookie( self::AdminAccessKeyCookieName, $sValue, time()+$sTimeout, COOKIEPATH, COOKIE_DOMAIN, false );
 		}
 		else {
-			$this->m_oWpsfOptions->setOpt( 'feedback_admin_notice', 'Updating Settings <strong>Succeeded</strong>.' );
+			unset( $_COOKIE[ self::AdminAccessKeyCookieName ] );
+			setcookie( self::AdminAccessKeyCookieName, "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
 		}
+	}
+	
+	/**
+	 * @return boolean
+	 */
+	protected function hasPermissionToView() {
+		// For now we just use the submit permissions and we can adapt it later
+		return $this->hasPermissionToSubmit();
+	}
+	
+	/**
+	 * @return boolean
+	 */
+	protected function hasPermissionToSubmit() {
+		
+		// first a basic admin check
+		if ( !is_super_admin() ) {
+			return false;
+		}
+		
+		if ( $this->m_oWpsfOptions->getOpt( 'enable_admin_access_restriction' ) == 'Y' ) {
+			$sAccessKey = $this->m_oWpsfOptions->getOpt( 'admin_access_key' );
+			if ( !empty( $sAccessKey ) ) {
+				if ( isset( $_COOKIE[ self::AdminAccessKeyCookieName ] )
+// 					&& $_COOKIE[ self::AdminAccessKeyCookieName ] == $sAccessKey
+				 ) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	protected function handleSubmit_AccessKeyRequest() {
+		//Ensures we're actually getting this request from WP.
+		check_admin_referer( $this->getSubmenuId('wpsf-access-key') );
+		
+		$this->loadWpsfOptions();
+		$sAccessKey = md5( trim( $_POST['icwp_wpsf_admin_access_key_request'] ) );
+		$sStoredAccessKey = $this->m_oWpsfOptions->getOpt( 'admin_access_key' );
+
+		if ( $sAccessKey === $sStoredAccessKey ) {
+			$this->setPermissionToSubmit( true );
+			header( 'Location: '.admin_url('admin.php?page=icwp-wpsf') );
+			exit();
+		}
+		return false;
 	}
 	
 	protected function handleSubmit_Dashboard() {
@@ -772,7 +1011,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		check_admin_referer( $this->getSubmenuId('wpsf-dashboard') );
 
 		if ( !isset($_POST[self::OptionPrefix.'all_options_input']) ) {
-			return;
+			return false;
 		}
 
 		$this->loadWpsfOptions();
@@ -781,6 +1020,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->setSharedOption( 'enable_firewall', $this->m_oWpsfOptions->getOpt( 'enable_firewall' ) );
 		$this->setSharedOption( 'enable_login_protect', $this->m_oWpsfOptions->getOpt( 'enable_login_protect' ) );
 		$this->setSharedOption( 'enable_comments_filter', $this->m_oWpsfOptions->getOpt( 'enable_comments_filter' ) );
+		$this->setSharedOption( 'enable_lockdown', $this->m_oWpsfOptions->getOpt( 'enable_lockdown' ) );
 		
 		$this->clearCaches();
 	}
@@ -827,6 +1067,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->m_oCommentsFilterOptions->updatePluginOptionsFromSubmit( $_POST[self::OptionPrefix.'all_options_input'] );
 		$this->setSharedOption( 'enable_comments_filter', $this->m_oCommentsFilterOptions->getOpt( 'enable_comments_filter' ) );
 		$this->resetCommentsProcessor();
+	}
+	
+	protected function handleSubmit_Lockdown() {
+		//Ensures we're actually getting this request from WP.
+		check_admin_referer( $this->getSubmenuId('lockdown' ) );
+		
+		if ( !isset($_POST[self::OptionPrefix.'all_options_input']) ) {
+			return;
+		}
+		$this->loadLockdownOptions( true );
+		$this->m_oLockdownOptions->updatePluginOptionsFromSubmit( $_POST[self::OptionPrefix.'all_options_input'] );
+		$this->setSharedOption( 'enable_lockdown', $this->m_oLockdownOptions->getOpt( 'enable_lockdown' ) );
+		$this->resetLockdownProcessor();
 	}
 	
 	protected function handleSubmit_FirewallLog() {
@@ -889,6 +1142,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->loadCommentsProcessor();
 	}
 	
+	protected function resetLockdownProcessor() {
+		$this->m_oLockdownProcessor = false;
+		self::deleteOption( 'lockdown_processor' );
+		$this->loadLockdownProcessor();
+	}
+	
 	protected function resetLoggingProcessor() {
 		$this->m_oLoggingProcessor = false;
 		self::deleteOption( 'logging_processor' );
@@ -936,12 +1195,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$this->loadCommentsProcessor();
 		$this->m_oCommentsProcessor->dropTable();
 
-		$this->loadAllOptions();
-		$this->m_oWpsfOptions->deletePluginOptions();
-		$this->m_oFirewallOptions->deletePluginOptions();
-		$this->m_oLoginProtectOptions->deletePluginOptions();
-		$this->m_oCommentsFilterOptions->deletePluginOptions();
-		
+		$aOptions = $this->getAllOptions( true );
+		foreach( $aOptions as &$oOption ) {
+			$oOption->deletePluginOptions();
+		}
 		remove_action( 'shutdown', array( $this, 'onWpShutdown' ) );
 	}
 	

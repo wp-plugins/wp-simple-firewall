@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor login, GASP
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.7.3
+Stable tag: 1.8.0
 
 WordPress Simple Firewall and Login Protection.
 
@@ -16,7 +16,11 @@ A basic intro to all the features:
 
 [youtube http://www.youtube.com/watch?v=r307fu3Eqbo]
 
-Protects your WordPress site in 3 main ways:
+Protects your WordPress site in 5 main ways:
+
+= Plugin Self-Protection =
+
+This plugins locks itself down - you can add access restriction to the plugin itself!
 
 = A Simple, Effective Firewall =
 
@@ -29,6 +33,10 @@ Adds several layers of protection to the WordPress login screen through identity
 = Comments and SPAM Protection =
 
 Uses and builds upon tried and tested SPAM prevention and filtering techniques with some unique approaches found only in this plugin.
+
+= WordPress Lockdown =
+
+Provides options for locking down your WordPress site from both legitimate users and people who may have gained unauthorized access.
 
 Read more on each section below...
 
@@ -67,9 +75,9 @@ and force users to verify themselves when they login.
 
 As of version 1.2.0+ you now have several ways to add simple protection to your WordPress Login system.
 
-1.	[Email-based 2-Factor Login Authentication](http://www.icontrolwp.com/2013/07/add-two-factor-authentication-login-wordpress-sites/) based on IP address! (prevents brute force login attacks)
-1.	[Login Cooldown Interval](http://www.icontrolwp.com/2013/08/wordpress-login-cool-down-stops-brute-force-attacks-wordpress/) - WordPress will only process 1 login per interval in seconds (prevents brute force login attacks)
-1.	[GASP Anti-Bot Login Form Protection](http://www.icontrolwp.com/2013/07/how-to-growmap-anti-spam-protection-wordpress-login-form/) - Adds 2 protection checks for all WordPress login attempts (prevents brute force login attacks using Bots)
+1.	[Email-based 2-Factor Login Authentication](http://icwp.io/2v) based on IP address! (prevents brute force login attacks)
+1.	[Login Cooldown Interval](http://icwp.io/2t) - WordPress will only process 1 login per interval in seconds (prevents brute force login attacks)
+1.	[GASP Anti-Bot Login Form Protection](http://icwp.io/2u) - Adds 2 protection checks for all WordPress login attempts (prevents brute force login attacks using Bots)
 
 These options alone will protect your WordPress sites from nearly all forms of Brute Force
 login attacks.
@@ -108,9 +116,13 @@ This all combines to make it much more difficult for spambots (and also human sp
 
 See FAQs.
 
-== Frequently Asked Questions ==
+== Installation ==
 
-= How can I install the plugin? =
+Note: When you enable the plugin, the firewall is not automatically turned on. This plugin contains various different sections of
+protection for your site and you should choose which you need based on your own requirements.
+
+Why do we do this?  Simple, performance and optimization - there is no reason to automatically turn on features for people that don't
+need it as each site and set of requirements is different.
 
 This plugin should install as any other WordPress.org respository plugin.
 
@@ -128,26 +140,32 @@ Alternatively using FTP:
 
 A new menu item will appear on the left-hand side called 'Simple Firewall'.
 
+== Frequently Asked Questions ==
+
+= My server has a firewall, why do I need this plugin? =
+
+This plugin is more of an application firewall, rather than a server/network firewall.  It is designed to interpret web calls to your site to
+look for and find attempts to circumvent it and gain unauthorized access or cause damage.
+
+Your network firewall is designed to restrict access to your server based on certain types of network traffic.  The WordPress Simple Firewall
+is designed to restrict access to your site, based on certain type of web calls.
+
 = How does the IP Whitelist work? =
 
 Any IP address that is on the whitelist will not be subject to any of the firewall scanning/processing.  This setting takes priority over all other settings.
 
-= How does the wp-login.php block work? =
+= Does the IP Whitelist/Blacklist support IP ranges? =
 
-If the IP whitelist is empty, this setting is ignored. This stops you from easily locking yourself out.
+Yes. To specify a range you do something like:  192.168.1.10-192.168.1.20
 
-When enabled, and there are valid IP addresses in the whitelist, any access to wp-login.php will be blocked from a visitor
-who's IP address is not on the whitelist.
+= I've locked myself out from my own site! =
 
-= I've locked myself out from the WordPress login screen! =
+This happens when any the following 3 conditions are met:
 
-This happens when ALL the following 3 conditions are all met:
+*	you have added your IP address to the firewall blacklist,
+*	you have enabled 2 factor authentication and email doesn't work on your site (and you haven't chosen the override option)
 
-*	you turn on the option to restrict access to wp-login.php,
-*	you have at least 1 IP address in the IP Whitelist, and
-*	your current IP address is not on the IP Whitelist.
-
-This plugin offers the ability to completely turn off (and on) the WordPress Simple Firewall by creating a specific file in the plugin folder.
+You can completely turn OFF (and ON) the WordPress Simple Firewall by creating a special file in the plugin folder.
 
 Here's how:
 
@@ -158,7 +176,7 @@ Here's how:
 
 If you want to turn the firewall on in the same way, create a file called "forceOn".
 
-Remember: If you leave one of these files on the server, it will override your on/off settings, so you should delete it when you're done.
+Remember: If you leave one of these files on the server, it will override your on/off settings, so you should delete it when you no longer need it.
 
 = Which takes precedence... whitelist or blacklist? =
 
@@ -186,6 +204,22 @@ be excluded from the firewall processing.
 Putting a star first means that these exclusions apply to all pages.  So for every page that is accessed, all the parameters
 that are url, param and password will be ignored by the firewall.
 
+= How does the login cooldown work? =
+
+When enabled the plugin will prevent more than 1 login attempt to your site every "so-many" seconds.  So if you enable a login cooldown
+of 60 seconds, only 1 login attempt will be processed every 60 seconds.  If you login incorrectly, you wont be able to attempt another
+login for a further 60 seconds.
+
+More Info: http://icwp.io/2t
+
+= How does the GASP login protection work? =
+
+This is best described on the blog: http://icwp.io/2u
+
+= How does the 2-factor authentication work? =
+
+Best described here: http://icwp.io/2v
+
 == Screenshots ==
 
 == Changelog ==
@@ -194,6 +228,11 @@ that are url, param and password will be ignored by the firewall.
 
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+
+= 1.8.0 =
+
+*	ADDED:		Feature- Access Key Restriction [more info](http://icwp.io/2s).
+*	ADDED:		Feature- WordPress Lockdown. Currently only provides 1 option, but more to come.
 
 = 1.7.3 =
 

@@ -20,8 +20,9 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 if ( !class_exists('ICWP_OptionsHandler_Wpsf') ):
 
 class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
-	
+
 	const StoreName = 'plugin_options';
+	const Default_AccessKeyTimeout = 30;
 	
 	public function __construct( $insPrefix, $insVersion, $infInit = false ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion, $infInit );
@@ -33,15 +34,57 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 			'firewall_processor',
 			'login_processor',
 			'comments_processor',
+			'lockdown_processor',
 			'logging_processor',
 			'email_processor'
 		);
 		
 		$aNonUiOptions = array(
 			'secret_key',
-			'feedback_admin_notice'
+			'feedback_admin_notice',
+			'update_success_tracker',
 		);
 		$this->mergeNonUiOptions( $aNonUiOptions );
+		
+		if ( $this->hasEncryptOption() ) {
+			
+			$aAccessKey = array(
+				'section_title' => 'Admin Access Restriction',
+				'section_options' => array(
+					array(
+						'enable_admin_access_restriction',
+						'',
+						'N',
+						'checkbox',
+						'Enable Access Key',
+						'Enforce Admin Access Restriction',
+						sprintf( 
+							'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin. [%smore info%s]',
+							'<a href="http://icwp.io/2r" target="_blank">',
+							'</a>'
+						)
+					),
+					array(
+						'admin_access_timeout',
+						'',
+						self::Default_AccessKeyTimeout,
+						'integer',
+						'Access Key Timeout',
+						'Specify A Timeout For Plugin Admin Access',
+						'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again. Default: 30 minutes.'
+					),
+					array(
+						'admin_access_key',
+						'',
+						'',
+						'password',
+						'Admin Access Key',
+						'Specify Your Plugin Access Key',
+						'If you forget this, you could potentially lock yourself out from using this plugin. <strong>Leave it blank to <u>not</u> update it</strong>.'
+					)
+				)
+			);
+		}
 		
 		$aGeneral = array(
 			'section_title' => 'General Plugin Options',
@@ -71,6 +114,15 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 					'Enable Comments Filter',
 					'Enable (or Disable) The Comments Filter Feature',
 					'Regardless of any other settings, this option will turn Off the Comments Filter feature, or enable your selected Comments Filter options.'
+				),
+				array(
+					'enable_lockdown',
+					'',
+					'N',
+					'checkbox',
+					'Enable Lockdown',
+					'Enable (or Disable) The Lockdown Feature',
+					'Regardless of any other settings, this option will turn Off the Lockdown feature, or enable your selected Lockdown options.'
 				),
 				/*
 				array(
@@ -123,12 +175,26 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 			$aGeneral,
 			$aEmail
 		);
+		if ( isset( $aAccessKey ) ) {
+			array_unshift( $this->m_aOptions, $aAccessKey );
+		}
 	}
-
+	
 	/**
 	 * This is the point where you would want to do any options verification
 	 */
 	protected function doPrePluginOptionsSave() {
+		
+		$nTimeout = $this->getOpt( 'admin_access_key_timeout');
+		if ( $nTimeout <= 0 ) {
+			$nTimeout = self::Default_AccessKeyTimeout;
+		}
+		$this->setOpt( 'admin_access_key_timeout', $nTimeout );
+		
+		$sAccessKey = $this->getOpt( 'admin_access_key');
+		if ( empty( $sAccessKey ) ) {
+			$this->setOpt( 'enable_admin_access_restriction', 'N' );
+		}
 		
 		$sEmail = $this->getOpt( 'block_send_email_address');
 		if ( empty( $sEmail ) || !is_email( $sEmail ) ) {

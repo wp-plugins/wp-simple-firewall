@@ -59,14 +59,15 @@ class ICWP_WPSF_Base_Plugin {
 	
 	protected $m_fShowMarketing = '';
 	
+	protected $m_fDoAutoUpdateCheck = false;
+	
 	protected $m_fAutoPluginUpgrade = false;
 	
 	/**
-	 * @var ICWP_WpFunctions;
+	 * @var ICWP_WpFunctions
 	 */
 	protected $m_oWpFunctions;
 	
-	static protected $m_fUpdateSuccessTracker;
 	static protected $m_aFailedUpdateOptions;
 
 	public function __construct() {
@@ -88,9 +89,7 @@ class ICWP_WPSF_Base_Plugin {
 		 * We make the assumption that all settings updates are successful until told otherwise
 		 * by an actual failing update_option call.
 		 */
-		self::$m_fUpdateSuccessTracker = true;
 		self::$m_aFailedUpdateOptions = array();
-
 		$this->m_sParentMenuIdSuffix = 'base';
 	}
 	
@@ -104,9 +103,12 @@ class ICWP_WPSF_Base_Plugin {
 		return false;
 	}
 	
+	/**
+	 * @return boolean - true if plugin update is available
+	 */
 	public function doPluginUpdateCheck() {
 		$this->loadWpFunctions();
-		$this->m_oWpFunctions->getIsPluginUpdateAvailable( self::$PLUGIN_PATH );
+		return $this->m_oWpFunctions->getIsPluginUpdateAvailable( self::$PLUGIN_FILE );
 	}
 
 	protected function getFullParentMenuId() {
@@ -157,12 +159,13 @@ class ICWP_WPSF_Base_Plugin {
 		if ( is_admin() ) {
 			//Handle plugin upgrades
 			$this->handlePluginUpgrade();
-			$this->doPluginUpdateCheck();
 		}
 
 		if ( $this->isIcwpPluginAdminPage() ) {
 			//Handle form submit
-			$this->handlePluginFormSubmit();
+			if ( $this->isPluginFormSubmit() && $this->handlePluginFormSubmit() ) {
+				$this->m_oWpsfOptions->setOpt( 'feedback_admin_notice', 'Updating Settings <strong>Succeeded</strong>.' );
+			}
 		}
 	}
 
@@ -199,18 +202,25 @@ class ICWP_WPSF_Base_Plugin {
 	protected function createMenu() {
 
 		$sFullParentMenuId = $this->getFullParentMenuId();
-		add_menu_page( self::ParentTitle, self::ParentName, self::ParentPermissions, $sFullParentMenuId, array( $this, 'onDisplayMainMenu' ), $this->getImageUrl( 'icontrolwp_16x16.png' ) );
+		add_menu_page( self::ParentTitle, self::ParentName, self::ParentPermissions, $sFullParentMenuId, array( $this, 'onDisplayAll' ), $this->getImageUrl( 'icontrolwp_16x16.png' ) );
 
 		//Create and Add the submenu items
 		$this->createPluginSubMenuItems();
 		if ( !empty($this->m_aPluginMenu) ) {
 			foreach ( $this->m_aPluginMenu as $sMenuTitle => $aMenu ) {
 				list( $sMenuItemText, $sMenuItemId, $sMenuCallBack ) = $aMenu;
-				add_submenu_page( $sFullParentMenuId, $sMenuTitle, $sMenuItemText, self::ParentPermissions, $sMenuItemId, array( &$this, $sMenuCallBack ) );
+				add_submenu_page( $sFullParentMenuId, $sMenuTitle, $sMenuItemText, self::ParentPermissions, $sMenuItemId, array( $this, $sMenuCallBack ) );
 			}
 		}
 
 		$this->fixSubmenu();
+	}
+	/**
+	 * Displaying all views now goes through this central function and we work out
+	 * what to display based on the name of current hook/filter being processed.
+	 */
+	public function onDisplayAll() {
+		$this->onDisplayMainMenu();
 	}
 
 	protected function createPluginSubMenuItems(){
@@ -288,7 +298,10 @@ class ICWP_WPSF_Base_Plugin {
 		if ( !current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		$this->adminNoticePluginUpgradeAvailable();
+		
+		if ( $this->m_fDoAutoUpdateCheck ) {
+			$this->adminNoticePluginUpgradeAvailable();
+		}
 	}
 
 	/**
@@ -313,6 +326,8 @@ class ICWP_WPSF_Base_Plugin {
 		}
 	}
 
+	protected function isPluginFormSubmit() { }
+
 	protected function handlePluginFormSubmit() { }
 	
 	protected function adminNoticePluginUpgradeAvailable() {
@@ -325,10 +340,7 @@ class ICWP_WPSF_Base_Plugin {
 		if ( !isset( self::$PLUGIN_FILE ) ) {
 			self::$PLUGIN_FILE	= plugin_basename(__FILE__);
 		}
-
-		$this->loadWpFunctions();
-		$oUpdate = $this->m_oWpFunctions->getIsPluginUpdateAvailable( self::$PLUGIN_FILE );
-		if ( !$oUpdate ) {
+		if ( !$this->doPluginUpdateCheck() ) {
 			return;
 		}
 		$sNotice = $this->getAdminNoticePluginUpgradeAvailable();
@@ -629,7 +641,6 @@ class ICWP_WPSF_Base_Plugin {
 		}
 		$fResult = update_option( self::getKey($insKey), $insValue );
 		if ( !$fResult ) {
-			self::$m_fUpdateSuccessTracker = false;
 			self::$m_aFailedUpdateOptions[] = self::getKey($insKey);
 		}
 	}
@@ -681,13 +692,12 @@ class ICWP_WPSF_Base_Plugin {
 	}
 
 	protected function flushCaches() {
-		// Flush W3 Total Cache (compatible up to version 0.9.2.4)
 		if (function_exists('w3tc_pgcache_flush')) {
 			w3tc_pgcache_flush();
 		}
 	}
 	
-}//CLASS ICWP_WPSF_Base_Plugin
+}
 
 endif;
 

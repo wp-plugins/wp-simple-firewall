@@ -6,8 +6,8 @@ include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 	<div class="bootstrap-wpadmin">
 
 		<div class="page-header">
-			<a href="http://wwwicontrolwp.com/"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
-			<h2><?php _hlt_e( 'Simple WordPress Firewall (from iControlWP)' ); ?></h2>
+			<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
+			<h2><?php _hlt_e( 'Login Protect :: WordPress Simple Firewall Plugin (from iControlWP)' ); ?></h2>
 		</div>
 		
 		<div class="row">
@@ -18,13 +18,10 @@ include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 					wp_nonce_field( $icwp_nonce_field );
 					printAllPluginOptionsForm( $icwp_aAllOptions, $icwp_var_prefix, 1 );
 				?>
-					<div class="form-actions">
-						<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
-						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-						<button type="submit" class="btn btn-primary" name="submit"><?php _hlt_e( 'Save All Settings'); ?></button>
-						<?php if ( get_option ('WP_firewall_redirect_page') ) :?>
-							<button type="submit" class="btn btn-warning" name="import-wpf2-submit"><?php _hlt_e( 'Import From WordPress Firewall 2'); ?></button>
-						<?php endif; ?>
+				<div class="form-actions">
+					<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
+					<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
+					<button type="submit" class="btn btn-primary" name="submit"><?php _hlt_e( 'Save All Settings'); ?></button>
 					</div>
 				</form>
 				

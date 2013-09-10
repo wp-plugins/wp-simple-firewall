@@ -111,6 +111,19 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 			
 		}
+		else if ( $mOptionType === 'password' ) {
+			$sTextInput = esc_attr( $sOptionSaved );
+			$sHtml .= '
+				<p>'.$sOptionTitle.'</p>
+				<input type="password"
+						name="'.$insVarPrefix.$sOptionKey.'"
+						value="'.$sTextInput.'"
+						placeholder="'.$sTextInput.'"
+						id="'.$insVarPrefix.$sOptionKey.'"
+						class="span5" />';
+			
+			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
+		}
 		else if ( $mOptionType === 'email' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$sHtml .= '

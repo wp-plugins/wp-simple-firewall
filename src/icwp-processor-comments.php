@@ -119,10 +119,13 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 * @return boolean
 	 */
 	protected function getDoCommentsCheck() {
-		if (  $this->m_aOptions[ 'enable_comments_gasp_protection_for_logged_in' ] != 'Y' && is_user_logged_in() ) {
-			return false;
+		if ( !is_user_logged_in() ) {
+			return true;
 		}
-		return true;
+		else if ( $this->m_aOptions[ 'enable_comments_gasp_protection_for_logged_in' ] == 'Y' ) {
+			return true;
+		}
+		return false;
 	}
 
 	/**

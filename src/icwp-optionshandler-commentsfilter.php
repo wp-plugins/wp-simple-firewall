@@ -20,9 +20,15 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 if ( !class_exists('ICWP_OptionsHandler_CommentsFilter') ):
 
 class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
+
+	const StoreName = 'commentsfilter_options';
 	
 	const DefaultCommentCooldown	= 30; //seconds.
 	const DefaultCommentExpire		= 600; //seconds.
+	
+	public function __construct( $insPrefix, $insVersion, $infInit = false ) {
+		parent::__construct( $insPrefix, self::StoreName, $insVersion, $infInit );
+	}
 	
 	public function definePluginOptions() {
 

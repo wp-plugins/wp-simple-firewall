@@ -293,7 +293,10 @@ class ICWP_OptionsHandler_Base_WPSF {
 				}
 				$mCurrentOptionVal = $this->getOpt( $sOptionKey );
 				
-				if ( $sOptionType == 'ip_addresses' ) {
+				if ( $sOptionType == 'password' && !empty( $mCurrentOptionVal ) ) {
+					$mCurrentOptionVal = '';
+				}
+				else if ( $sOptionType == 'ip_addresses' ) {
 					
 					if ( empty( $mCurrentOptionVal ) ) {
 						$mCurrentOptionVal = '';
@@ -464,6 +467,13 @@ class ICWP_OptionsHandler_Base_WPSF {
 				if ( $sOptionType == 'integer' ) {
 					$sOptionValue = intval( $sOptionValue );
 				}
+				else if ( $sOptionType == 'password' && $this->hasEncryptOption() ) { //md5 any password fields
+					$sTempValue = trim( $sOptionValue );
+					if ( empty( $sTempValue ) ) {
+						continue;
+					}
+					$sOptionValue = md5( $sTempValue );
+				}
 				else if ( $sOptionType == 'ip_addresses' ) { //ip addresses are textareas, where each is separated by newline
 						
 					if ( !class_exists('ICWP_DataProcessor') ) {
@@ -525,6 +535,14 @@ class ICWP_OptionsHandler_Base_WPSF {
 				$this->deleteOption( $sOptionKey );
 			}
 		}
+	}
+
+	/**
+	 * @return boolean
+	 */
+	public function hasEncryptOption() {
+		return function_exists( 'md5' );
+	//	return extension_loaded( 'mcrypt' );
 	}
 	
 	protected function getVisitorIpAddress( $infAsLong = true ) {

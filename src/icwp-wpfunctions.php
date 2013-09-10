@@ -34,7 +34,6 @@ class ICWP_WpFunctions {
 	 * @return boolean|stdClass
 	 */
 	public function getIsPluginUpdateAvailable( $insPluginFile ) {
-		
 		$aUpdates = $this->getWordpressUpdates();
 		if ( empty( $aUpdates ) ) {
 			return false;

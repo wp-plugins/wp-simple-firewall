@@ -5,6 +5,7 @@ $sPluginName = 'WordPress Simple Firewall';
 $fFirewallOn = $icwp_aMainOptions['enable_firewall'] == 'Y';
 $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
+$fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 ?>
 
 <div class="wrap">
@@ -138,16 +139,25 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 						<li>Comments Token Expire is: <?php echo ($icwp_aCommentsFilterOptions['comments_token_expire_interval'] == 0)? 'OFF' : $icwp_aCommentsFilterOptions['comments_token_expire_interval'].' seconds'; ?></li>
 					</ul>
 				<?php endif; ?>
+				
+				<h4 style="margin-top:20px;">WordPress Lockdown is currently <?php echo $fLockdownOn? 'ON' : 'OFF'; ?>.
+				[ <a href="admin.php?page=icwp-wpsf-comments_filter">Configure Now</a> ]</h4>
+				<?php if ( $fLockdownOn ) : ?>
+					<ul>
+						<li>Disable File Editing is: <?php echo $icwp_aLockdownOptions['disable_file_editing'] == 'Y'? 'ON' : 'OFF'; ?></li>
+					</ul>
+				<?php endif; ?>
 			  </div>
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
-				<h3>v1.7.x Release:</h3>
-				<p>The following summarises the main changes to the plugin in the 1.7.x release</p>
+				<h3>v1.8.x Release:</h3>
+				<p>The following summarises the main changes to the plugin in the 1.8.x release</p>
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					'ADDED: Support for WPMU sites (only manageable as Super Admin).'
+					'ADDED: Admin Access Key Restriction feature.',
+					'ADDED: WordPress Lockdown feature.',
 				);
 				?>
 				<ul>
@@ -168,6 +178,10 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 				<?php
 				$aLog = array(
 
+					'1.7.x'	=> array(
+						'ADDED: Support for WPMU sites (only manageable as Super Admin).',
+						'CHANGE: Serious performance optimizations and a few bug fixes.',
+					),
 					'1.6.x'	=> array(
 						'ADDED: GASP-based, and further enhanced, SPAM comments filtering functionality.',
 					),
