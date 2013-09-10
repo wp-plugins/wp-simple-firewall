@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor login, GASP
 Requires at least: 3.2.0
 Tested up to: 3.6
-Stable tag: 1.7.3
+Stable tag: 1.8.1
 
 WordPress Simple Firewall and Login Protection.
 
@@ -229,7 +229,7 @@ Best described here: http://icwp.io/2v
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
-= 1.8.0 =
+= 1.8.1 =
 
 *	ADDED:		Feature- Access Key Restriction [more info](http://icwp.io/2s).
 *	ADDED:		Feature- WordPress Lockdown. Currently only provides 1 option, but more to come.

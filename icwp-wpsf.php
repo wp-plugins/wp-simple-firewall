@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.8.0
+Version: 1.8.1
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -44,7 +44,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.8.0';
+	static public $VERSION			= '1.8.1';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -102,9 +102,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	protected $m_oEmailProcessor;
 	
 	public function __construct() {
-
-		$this->m_fNetworkAdminOnly = true;
 		
+		$this->m_fNetworkAdminOnly = true;
 		parent::__construct();
 
 		register_activation_hook( __FILE__, array( $this, 'onWpActivatePlugin' ) );
@@ -145,10 +144,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 		
 		add_action( 'in_plugin_update_message-'.self::$PLUGIN_FILE, array( $this, 'onWpPluginUpdateMessage' ) );
-		
-		if ( $this->hasPermissionToSubmit() ) {
-			$this->m_fDoAutoUpdateCheck = true;
-		}
 		
 		if ( isset( $_GET['turnoffperm'] ) ) {
 			$this->setPermissionToSubmit( false );
@@ -1171,6 +1166,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	
 	public function onWpPluginsLoaded() {
 		parent::onWpPluginsLoaded();
+		
+		if ( $this->hasPermissionToSubmit() ) {
+			$this->m_fDoAutoUpdateCheck = true;
+		}
+		
 		$this->removePluginConflicts(); // removes conflicts with other plugins
 	}
 	
