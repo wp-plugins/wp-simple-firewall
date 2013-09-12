@@ -199,10 +199,10 @@ class ICWP_BaseProcessor_WPSF {
 		
 		$aIpAddresses = array();
 		foreach( $aAddressSourceOptions as $sOption ) {
-			$sIpAddressToTest = $_SERVER[ $sOption ];
-			if ( empty( $sIpAddressToTest ) ) {
+			if ( empty( $_SERVER[ $sOption ] ) ) {
 				continue;
 			}
+			$sIpAddressToTest = $_SERVER[ $sOption ];
 			
 			$aIpAddresses = explode( ',', $sIpAddressToTest ); //sometimes a comma-separated list is returned
 			foreach( $aIpAddresses as $sIpAddress ) {

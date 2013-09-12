@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.8.1
+Version: 1.8.2
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -44,7 +44,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.8.1';
+	static public $VERSION			= '1.8.2';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -710,8 +710,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 		//Someone clicked the button to acknowledge the update
 		if ( isset( $_POST[self::OptionPrefix.'hide_update_notice'] ) && isset( $_POST['user_id'] ) ) {
-			$result = update_user_meta( $_POST['user_id'], self::OptionPrefix.'current_version', self::$VERSION );
-			
+			$this->updateVersionUserMeta( $_POST['user_id'] );			
 			if ( $this->isShowMarketing() ) {
 				wp_redirect( admin_url( "admin.php?page=".$this->getFullParentMenuId() ) );
 			}
@@ -721,15 +720,36 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 	}
 	
+	/**
+	 * Updates the current (or supplied user ID) user meta data with the version of the plugin
+	 *  
+	 * @param unknown_type $innId
+	 */
+	protected function updateVersionUserMeta( $innId = null ) {
+		if ( is_null( $innId ) ) {
+			$oCurrentUser = wp_get_current_user();
+			if ( !($oCurrentUser instanceof WP_User) ) {
+				return;
+			}
+			$nUserId = $oCurrentUser->ID;
+		}
+		else {
+			$nUserId = $innId;
+		}
+		update_user_meta( $nUserId, self::OptionPrefix.'current_version', self::$VERSION );
+	}
+	
 	public function onWpAdminNotices() {
 		// Do we have admin priviledges?
 		if ( !current_user_can( 'manage_options' ) ) {
 			return;
 		}
 		parent::onWpAdminNotices();
-
-		$this->adminNoticeVersionUpgrade();
 		$this->adminNoticeOptionsUpdated();
+
+		if ( $this->hasPermissionToView() ) {
+			$this->adminNoticeVersionUpgrade();
+		}
 	}
 	
 	/**
@@ -782,6 +802,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	}
 	
 	public function onDisplayMainMenu() {
+		
+		// Just to ensure the nag bar disappears if/when they visit the dashboard
+		// regardless of clicking the button.
+		$this->updateVersionUserMeta();
+		
 		$this->loadAllOptions();
 		$aAvailableOptions = $this->m_oWpsfOptions->getOptions();
 		$sAllFormInputOptions = $this->m_oWpsfOptions->collateAllFormInputsForAllOptions();
@@ -1167,7 +1192,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	public function onWpPluginsLoaded() {
 		parent::onWpPluginsLoaded();
 		
-		if ( $this->hasPermissionToSubmit() ) {
+		if ( $this->isValidAdminArea()
+				&& $this->m_oWpsfOptions->getOpt('enable_upgrade_admin_notice') == 'Y'
+				&& $this->hasPermissionToSubmit()
+			) {
 			$this->m_fDoAutoUpdateCheck = true;
 		}
 		

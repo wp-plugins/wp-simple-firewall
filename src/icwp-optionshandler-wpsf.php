@@ -136,6 +136,15 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 				),
 				*/
 				array(
+					'enable_upgrade_admin_notice',
+					'',
+					'Y',
+					'checkbox',
+					'Upgrade Notice',
+					'Display A Notice When An Upgrade Is Available',
+					'Will display a notice at the top of your WordPress admin section when a plugin upgrade is available.'
+				),
+				array(
 					'delete_on_deactivate',
 					'',
 					'N',

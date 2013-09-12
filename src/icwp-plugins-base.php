@@ -45,7 +45,7 @@ class ICWP_WPSF_Base_Plugin {
 	/**
 	 * @var boolean
 	 */
-	protected $m_fNetworkAdminOnly;
+	protected $m_fNetworkAdminOnly = false;
 	/**
 	 * @var boolean
 	 */
@@ -94,10 +94,10 @@ class ICWP_WPSF_Base_Plugin {
 	}
 	
 	protected function isValidAdminArea() {
-		if ( $this->m_fNetworkAdminOnly && $this->m_fIsMultisite && is_network_admin() ) {
+		if ( !$this->m_fIsMultisite && is_admin() ) {
 			return true;
 		}
-		else if ( !$this->m_fIsMultisite && is_admin() ) {
+		else if ( $this->m_fNetworkAdminOnly && $this->m_fIsMultisite && is_network_admin() ) {
 			return true;
 		}
 		return false;
