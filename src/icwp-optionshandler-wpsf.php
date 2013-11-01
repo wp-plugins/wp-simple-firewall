@@ -24,17 +24,18 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 	const StoreName = 'plugin_options';
 	const Default_AccessKeyTimeout = 30;
 	
-	public function __construct( $insPrefix, $insVersion, $infInit = false ) {
-		parent::__construct( $insPrefix, self::StoreName, $insVersion, $infInit );
+	public function __construct( $insPrefix, $insVersion ) {
+		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
 	
-	public function definePluginOptions() {
+	public function defineOptions() {
 
 		$this->m_aIndependentOptions = array(
 			'firewall_processor',
 			'login_processor',
 			'comments_processor',
 			'lockdown_processor',
+			'autoupdates_processor',
 			'logging_processor',
 			'email_processor'
 		);
@@ -43,6 +44,8 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 			'secret_key',
 			'feedback_admin_notice',
 			'update_success_tracker',
+			'capability_can_disk_write',
+			'capability_can_remote_get'
 		);
 		$this->mergeNonUiOptions( $aNonUiOptions );
 		
@@ -100,7 +103,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 				array(
 					'enable_login_protect',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					'Enable Login Protect',
 					'Enable (or Disable) The Login Protection Feature',
@@ -109,7 +112,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 				array(
 					'enable_comments_filter',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					'Enable Comments Filter',
 					'Enable (or Disable) The Comments Filter Feature',
@@ -123,6 +126,15 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 					'Enable Lockdown',
 					'Enable (or Disable) The Lockdown Feature',
 					'Regardless of any other settings, this option will turn Off the Lockdown feature, or enable your selected Lockdown options.'
+				),
+				array(
+					'enable_autoupdates',
+					'',
+					'N',
+					'checkbox',
+					'Enable Auto Updates',
+					'Enable (or Disable) The WordPress Automatic Updates Feature',
+					'Regardless of any other settings, this option will turn Off the Auto Updates feature, or enable your selected Auto Updates options.'
 				),
 				/*
 				array(
@@ -239,6 +251,23 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 			);
 			$this->migrateOptions( $aSettingsKey );
 		}// '1.4.0', '<'
+		
+		if ( version_compare( $sCurrentVersion, '1.8.2', '<=' ) ) {
+			
+			$fCanRemoteGet = $this->getOpt( 'capability_can_remote_get' );
+			$fCanDiskWrite = $this->getOpt( 'capability_can_disk_write' );
+			
+			if ( $fCanDiskWrite === false || $fCanRemoteGet === false ) {
+				require_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
+				$oWpFilesystem = new ICWP_WpFilesystem_WPSF();
+				
+				$fCanRemoteGet = $oWpFilesystem->getCanWpRemoteGet();
+				$this->setOpt( 'capability_can_remote_get', $fCanRemoteGet? 'Y' : 'N' );
+				
+				$fCanDiskWrite = $oWpFilesystem->getCanDiskWrite();
+				$this->setOpt( 'capability_can_disk_write', $fCanDiskWrite? 'Y' : 'N' );
+			}
+		}// '1.8.2', '<='
 	}
 
 }

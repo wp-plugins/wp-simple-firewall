@@ -29,6 +29,11 @@ class ICWP_OptionsHandler_Base_WPSF {
 	protected $m_fNeedSave;
 	
 	/**
+	 * @var boolean
+	 */
+	protected $m_fFullInit;
+	
+	/**
 	 * @var string
 	 */
 	protected $m_sOptionPrefix;
@@ -49,7 +54,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 	protected $m_aDirectSaveOptions;
 	
 	/**
-	 * @var array
+	 * @var boolean
 	 */
 	protected $m_fIsMultisite;
 	
@@ -79,17 +84,12 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 */
 	protected $m_aOptionsStoreName;
 	
-	public function __construct( $insPrefix, $insStoreName, $insVersion, $infInit = false ) {
+	public function __construct( $insPrefix, $insStoreName, $insVersion ) {
 		$this->m_sOptionPrefix = $insPrefix;
 		$this->m_aOptionsStoreName = $insStoreName;
 		$this->m_sVersion = $insVersion;
 		
 		$this->m_fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
-		
-		// Build the whole options system.
-		if ( $infInit ) {
-			$this->initOptions();
-		}
 		
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
 		add_action( 'plugins_loaded', array( $this, 'doUpdates' ) );
@@ -97,7 +97,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 	
 	public function doUpdates() {
 		if ( $this->hasPluginManageRights() ) {
-			$this->initOptions();
+			$this->buildOptions();
 			$this->updateHandler();
 		}
 	}
@@ -121,6 +121,13 @@ class ICWP_OptionsHandler_Base_WPSF {
 	public function getVersion() {
 		return $this->m_sVersion;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function setVersion( $insVersion ) {
+		return $this->m_sVersion = $insVersion;
+	}
 	
 	/**
 	 * Sets the value for the given option key
@@ -130,9 +137,11 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 * @return boolean
 	 */
 	public function setOpt( $insKey, $inmValue ) {
+		
 		if ( !isset( $this->m_aOptionsValues ) ) {
-			$this->loadPluginOptions();
+			$this->loadStoredOptionsValues();
 		}
+		
 		if ( $this->getOpt( $insKey ) === $inmValue ) {
 			return true;
 		}
@@ -151,16 +160,20 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 */
 	public function getOpt( $insKey ) {
 		if ( !isset( $this->m_aOptionsValues ) ) {
-			$this->initOptions();
+			$this->loadStoredOptionsValues();
 		}
 		return ( isset( $this->m_aOptionsValues[ $insKey ] )? $this->m_aOptionsValues[ $insKey ] : false );
 	}
 	
+	/**
+	 * Retrieves the full array of options->values
+	 * 
+	 * @return array
+	 */
 	public function getOptions() {
 		if ( !isset( $this->m_aOptions ) ) {
-			$this->initOptions();
+			$this->buildOptions();
 		}
-		$this->buildPluginOptions();
 		return $this->m_aOptions;
 	}
 
@@ -170,16 +183,42 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 * @return array
 	 */
 	public function getPluginOptionsValues() {
-		if ( !isset( $this->m_aOptionsValues ) ) {
-			$this->loadPluginOptions();
-		}
+		$this->generateOptionsValues();
 		return $this->m_aOptionsValues;
 	}
 	
-	public function collateAllFormInputsForAllOptions() {
+	/**
+	 * Saves the options to the WordPress Options store.
+	 * 
+	 * It will also update the stored plugin options version.
+	 */
+	public function savePluginOptions() {
+		
+		$this->doPrePluginOptionsSave();
+		$this->updateOptionsVersion();
+		
+		if ( !$this->m_fNeedSave ) {
+			return true;
+		}
+		
+		$this->updateOption( $this->m_aOptionsStoreName, $this->m_aOptionsValues );
+		
+		// Direct save options allow us to get fast access to certain values without loading the whole thing
+		if ( isset( $this->m_aDirectSaveOptions ) && is_array( $this->m_aDirectSaveOptions ) ) {
+			foreach( $this->m_aDirectSaveOptions as $sOptionKey ) {
+				$this->updateOption( $sOptionKey, $this->getOpt( $sOptionKey ) );
+			}
+		}
+		
+		$this->m_fNeedSave = false;
+	}
 	
-		$this->initOptions();
+	public function collateAllFormInputsForAllOptions() {
 
+		if ( !isset( $this->m_aOptions ) ) {
+			$this->buildOptions();
+		}
+		
 		$aToJoin = array();
 		foreach ( $this->m_aOptions as $aOptionsSection ) {
 			
@@ -195,34 +234,21 @@ class ICWP_OptionsHandler_Base_WPSF {
 	}
 	
 	/**
-	 * Handles the building of all options, processing their meta data and their values.
 	 * @return array
 	 */
-	public function initOptions() {
-		
-		// We have non-UI options that all plugin option objects should maintain.
-		// Objects that extend this should merge their other non-ui options with this.
-		$aNonUiOptions = array(
-			'current_plugin_version'
-		);
-		
-		$this->loadPluginOptions();
-		$this->buildPluginOptions();
-		
-		// Now handle some outside cases.
-		/*
-		// We only set the version here. When there is a plugin upgrade, we may externally update this.
-		// This is so that upgrades are properly handled.
-		if ( empty ( $this->m_aOptionsValues[ 'current_plugin_version' ] ) ) {
-			$this->m_aOptionsValues[ 'current_plugin_version' ] = $this->m_sVersion;
+	protected function generateOptionsValues() {
+		if ( !isset( $this->m_aOptionsValues ) ) {
+			$this->loadStoredOptionsValues();
 		}
-		*/
+		if ( empty( $this->m_aOptionsValues ) ) {
+			$this->buildOptions();	// set the defaults
+		}
 	}
 	
 	/**
 	 * Loads the options and their stored values from the WordPress Options store.
 	 */
-	public function loadPluginOptions() {
+	protected function loadStoredOptionsValues() {
 		if ( empty( $this->m_aOptionsValues ) ) {
 			$this->m_aOptionsValues = $this->getOption( $this->m_aOptionsStoreName );
 			if ( empty( $this->m_aOptionsValues ) ) {
@@ -232,7 +258,12 @@ class ICWP_OptionsHandler_Base_WPSF {
 		}
 	}
 	
-	protected function definePluginOptions() {
+	protected function defineOptions() {
+		
+		if ( !empty( $this->m_aOptions ) ) {
+			return true;
+		}
+		
 		$aMisc = array(
 			'section_title' => 'Miscellaneous Plugin Options',
 			'section_options' => array(
@@ -255,20 +286,18 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 * 
 	 * It will also fill in $this->m_aOptionsValues with defaults where appropriate.
 	 * 
-	 * It doesn't set any values, just populates the array created in buildPluginOptions()
+	 * It doesn't set any values, just populates the array created in buildOptions()
 	 * with values stored.
 	 * 
 	 * It has to handle the conversion of stored values to data to be displayed to the user.
 	 * 
 	 * @param string $insUpdateKey - if only want to update a single key, supply it here.
 	 */
-	protected function buildPluginOptions( $insUpdateKey = '' ) {
-		
-		if ( !isset( $this->m_aOptions ) ) {
-			$this->definePluginOptions();
-		}
+	protected function buildOptions() {
 
-		$fQuit = false;
+		$this->defineOptions();
+		$this->loadStoredOptionsValues();
+
 		foreach ( $this->m_aOptions as &$aOptionsSection ) {
 			
 			if ( empty( $aOptionsSection ) || !isset( $aOptionsSection['section_options'] ) ) {
@@ -278,15 +307,6 @@ class ICWP_OptionsHandler_Base_WPSF {
 			foreach ( $aOptionsSection['section_options'] as &$aOptionParams ) {
 				
 				list( $sOptionKey, $sOptionValue, $sOptionDefault, $sOptionType ) = $aOptionParams;
-				
-				if ( !empty( $insUpdateKey ) ) {
-					if ( $insUpdateKey != $insUpdateKey ) {
-						continue;
-					}
-					else {
-						$fQuit = true;
-					}
-				}
 				
 				if ( $this->getOpt( $sOptionKey ) === false ) {
 					$this->setOpt( $sOptionKey, $sOptionDefault );
@@ -319,11 +339,6 @@ class ICWP_OptionsHandler_Base_WPSF {
 					}
 				}
 				$aOptionParams[1] = $mCurrentOptionVal;
-				
-				//small optimization when updating a single key.
-				if ( $fQuit ) {
-					return;
-				}
 			}
 		}
 		
@@ -335,35 +350,6 @@ class ICWP_OptionsHandler_Base_WPSF {
 				}
 			}
 		}
-	}
-	
-	/**
-	 * Saves the options to the WordPress Options store.
-	 * 
-	 * It will also update the stored plugin options version.
-	 */
-	public function savePluginOptions( $infReinit = false ) {
-		
-		$this->doPrePluginOptionsSave();
-		
-		if ( !$this->m_fNeedSave ) {
-			return true;
-		}
-		
-		$this->loadPluginOptions();
-		$this->updatePluginOptionsVersion();
-		if ( $this->updateOption( $this->m_aOptionsStoreName, $this->m_aOptionsValues ) && $infReinit ) {
-			$this->initOptions();
-		}
-		
-		// Direct save options allow us to get fast access to certain values without loading the whole thing
-		if ( is_array( $this->m_aDirectSaveOptions ) ) {
-			foreach( $this->m_aDirectSaveOptions as $sOptionKey ) {
-				$this->updateOption( $sOptionKey, $this->getOpt( $sOptionKey ) );
-			}
-		}
-		
-		$this->m_fNeedSave = false;
 	}
 	
 	/**
@@ -384,7 +370,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 	/**
 	 * Updates the 'current_plugin_version' to the offical plugin version.
 	 */
-	protected function updatePluginOptionsVersion() {
+	protected function updateOptionsVersion() {
 		$this->setOpt( 'current_plugin_version', $this->m_sVersion );
 	}
 	
@@ -392,7 +378,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 * Deletes all the options including direct save.
 	 */
 	public function deletePluginOptions() {
-		$this->loadPluginOptions();
+
 		$this->deleteOption( $this->m_aOptionsStoreName );
 		
 		// Direct save options allow us to get fast access to certain values without loading the whole thing
@@ -444,6 +430,9 @@ class ICWP_OptionsHandler_Base_WPSF {
 		if ( empty( $sAllOptionsInput ) ) {
 			return;
 		}
+		
+		$this->loadStoredOptionsValues();
+		
 		$aAllInputOptions = explode( self::CollateSeparator, $sAllOptionsInput );
 		foreach ( $aAllInputOptions as $sInputKey ) {
 			$aInput = explode( ':', $sInputKey );

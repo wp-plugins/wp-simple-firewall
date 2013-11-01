@@ -1,5 +1,19 @@
 <?php
 
+function printOptionsPageHeader( $insSection = '' ) {
+	$sLinkedIcwp = '<a href="http://icwp.io/3a" target="_blank">iControlWP</a>';
+	echo '<div class="page-header">';
+	echo '<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>';
+	echo '<h2>';
+	if ( empty($insSection) ) {
+		echo sprintf( _hlt__( '%s :: WordPress Simple Firewall (from %s)'), $insSection, $sLinkedIcwp );
+	}
+	else {
+		echo sprintf( _hlt__( 'WordPress Simple Firewall (from %s)'), $sLinkedIcwp );
+	}
+	echo '</h2></div>';
+}
+
 function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $iOptionsPerRow = 1 ) {
 	
 	if ( empty($inaAllPluginOptions) ) {

@@ -15,21 +15,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
+require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
 if ( !class_exists('ICWP_LockdownProcessor') ):
 
 class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
-	
-	const TableName					= 'lockdown';
-	
-	/**
-	 * Flag as to whether Two Factor Authentication will be by-pass when sending the verification
-	 * email fails.
-	 * 
-	 * @var boolean
-	 */
-	protected $m_fAllowTwoFactorByPass;
 	
 	/**
 	 * Resets the object values to be re-used anew
@@ -44,6 +34,10 @@ class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
 		
 		if ( $this->m_aOptions['disable_file_editing'] == 'Y' ) {
 			add_filter( 'user_has_cap', array( $this, 'disableFileEditing' ), 0, 3 );
+		}
+
+		if ( false && $this->m_aOptions['action_reset_auth_salts'] == 'Y' ) {
+			add_action( 'init', array( $this, 'resetAuthKeysSalts' ), 1 );
 		}
 	}
 	
@@ -62,6 +56,54 @@ class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
 		return $inaAllCaps;
 	}
 	
+	/**
+	 * 
+	 */
+	public function resetAuthKeysSalts() {
+		
+		require_once( dirname(__FILE__).'/icwp-wpfilesystem.php' );
+		$oWpFilesystem = new ICWP_WpFilesystem_WPSF();
+		
+		// Get the new Salts
+		$sSaltsUrl = 'https://api.wordpress.org/secret-key/1.1/salt/';
+		$sSalts = $oWpFilesystem->getUrlContent( $sSaltsUrl );
+		
+		$sWpConfigContent = $oWpFilesystem->getContent_WpConfig();
+		if ( is_null( $sWpConfigContent ) ) {
+			return;
+		}
+		
+		$aKeys = array(
+			'AUTH_KEY',
+			'SECURE_AUTH_KEY',
+			'LOGGED_IN_KEY',
+			'NONCE_KEY',
+			'AUTH_SALT',
+			'SECURE_AUTH_SALT',
+			'LOGGED_IN_SALT',
+			'NONCE_SALT'
+		);
+
+		$aContent = explode( PHP_EOL, $sWpConfigContent );
+		$fKeyFound = false;
+		$nStartLine = 0;
+		foreach( $aContent as $nLineNumber => $sLine ) {
+			foreach( $aKeys as $nPosition => $sKey ) {
+				if ( strpos( $sLine, $sKey ) === false ) {
+					continue;
+				}
+				if ( $nStartLine == 0 ) {
+					$nStartLine = $nLineNumber;
+				}
+				else {
+					unset( $aContent[ $nLineNumber ] );
+				}
+				$fKeyFound = true;
+			}
+		}
+		$aContent[$nStartLine] = $sSalts;
+		$oWpFilesystem->putContent_WpConfig( implode( PHP_EOL, $aContent ) );
+	}
 }
 
 endif;

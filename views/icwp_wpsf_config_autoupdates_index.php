@@ -4,8 +4,8 @@ include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 ?>
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
-		<?php echo printOptionsPageHeader( 'Comments (SPAM) Filter' ); ?>
-
+		<?php echo printOptionsPageHeader( 'Auto WordPress Updates' ); ?>
+		
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
 			

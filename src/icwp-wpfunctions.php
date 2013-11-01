@@ -17,17 +17,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_WpFunctions') ):
+if ( !class_exists('ICWP_WpFunctions_WPSF') ):
 
-class ICWP_WpFunctions {
+class ICWP_WpFunctions_WPSF {
 
 	/**
 	 * @var string
 	 */
 	protected $m_sWpVersion;
 	
-	public function __construct() {
-	}
+	public function __construct() {}
 
 	/**
 	 * @param string $insPluginFile

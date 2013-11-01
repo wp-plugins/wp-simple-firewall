@@ -26,11 +26,11 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 	const DefaultCommentCooldown	= 30; //seconds.
 	const DefaultCommentExpire		= 600; //seconds.
 	
-	public function __construct( $insPrefix, $insVersion, $infInit = false ) {
-		parent::__construct( $insPrefix, self::StoreName, $insVersion, $infInit );
+	public function __construct( $insPrefix, $insVersion ) {
+		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
 	
-	public function definePluginOptions() {
+	public function defineOptions() {
 
 		$this->m_aDirectSaveOptions = array();
 		
@@ -40,7 +40,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 				array(
 					'enable_comments_filter',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					'Enable Comments Filter',
 					'Enable (or Disable) The Comments Filter Feature',

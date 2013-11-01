@@ -1,5 +1,6 @@
-<?php 
-include_once( dirname(__FILE__).'/widgets/icwp_widgets.php' );
+<?php
+include_once( dirname(__FILE__).ICWP_DS.'icwp_options_helper.php' );
+include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 $sPluginName = 'WordPress Simple Firewall';
 
 $aLogTypes = array(
@@ -7,7 +8,6 @@ $aLogTypes = array(
 	1	=>	'Warning',
 	2	=>	'Critical'
 );
-
 ?>
 <style>
 	tr.row-Info td {
@@ -38,12 +38,8 @@ $aLogTypes = array(
 
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
+		<?php echo printOptionsPageHeader( 'Firewall Log' ); ?>
 
-		<div class="page-header">
-			<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
-			<h2>Firewall Log :: <?php echo $sPluginName; ?> Plugin (from iControlWP)</h2>
-		</div>
-		
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
 				<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">

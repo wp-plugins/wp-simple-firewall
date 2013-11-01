@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_LoginProcessor') ):
+if ( !class_exists('ICWP_LoginProtectProcessor') ):
 
-class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	
 	const TableName = 'login_auth';
 	
@@ -47,10 +47,9 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	protected $m_fAllowTwoFactorByPass;
 	
-	public function __construct( $insSecretKey ) {
+	public function __construct() {
 		parent::__construct( self::TableName );
-		
-		$this->m_sSecretKey = $insSecretKey;
+
 		$this->m_sGaspKey = uniqid();
 		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
 		$this->updateLastLoginThrottleTime( time() );
@@ -64,6 +63,17 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function reset() {
 		parent::reset();
+	}
+	
+	/**
+	 * Set the secret key by which authentication is validated.
+	 * 
+	 * @param string $insSecretKey
+	 */
+	public function setSecretKey( $insSecretKey = '' ) {
+		if ( !empty( $insSecretKey ) ) {
+			$this->m_sSecretKey = $insSecretKey;
+		}
 	}
 	
 	/**
@@ -95,7 +105,6 @@ class ICWP_LoginProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 * @param ICWP_OptionsHandler_LoginProtect $inoOptions
 	 */
 	public function run() {
-		
 		$aWhitelist = $this->m_aOptions['ips_whitelist'];
 		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::GetVisitorIpAddress() ) ) {
 			return true;

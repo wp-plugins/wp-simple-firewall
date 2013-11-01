@@ -4,11 +4,7 @@ include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 ?>
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
-
-		<div class="page-header">
-			<a href="http://wwwicontrolwp.com/"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
-			<h2><?php _hlt_e( 'Simple WordPress Firewall (from iControlWP)' ); ?></h2>
-		</div>
+		<?php echo printOptionsPageHeader( 'Main Dashboard' ); ?>
 		
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">

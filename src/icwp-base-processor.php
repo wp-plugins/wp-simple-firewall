@@ -64,6 +64,11 @@ class ICWP_BaseProcessor_WPSF {
 	 * @var array
 	 */
 	protected $m_aOptions;
+	
+	/**
+	 * @var ICWP_OptionsHandler_Base_WPSF
+	 */
+	protected $m_oOptionsHandler;
 
 	public function __construct() {
 		$this->m_fNeedSave = true;
@@ -116,6 +121,14 @@ class ICWP_BaseProcessor_WPSF {
 	 */
 	public function setOptions( &$inaOptions ) {
 		$this->m_aOptions = $inaOptions;
+	}
+	/**
+	 *
+	 * @param array $inoOptionsHandler
+	 */
+	public function setOptionsHandler( ICWP_OptionsHandler_Base_WPSF &$inoOptionsHandler ) {
+		$this->m_oOptionsHandler = $inoOptionsHandler;
+		$this->m_aOptions = $this->m_oOptionsHandler->getPluginOptionsValues();
 	}
 	
 	/**

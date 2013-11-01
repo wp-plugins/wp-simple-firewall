@@ -3,10 +3,10 @@ Contributors: paultgoodchild, dlgoodchild
 Donate link: http://icwp.io/q
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
-Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor login, GASP
+Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
 Requires at least: 3.2.0
-Tested up to: 3.6
-Stable tag: 1.8.2
+Tested up to: 3.7
+Stable tag: 1.9.0
 
 WordPress Simple Firewall and Login Protection.
 
@@ -229,7 +229,11 @@ Best described here: http://icwp.io/2v
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
-= 1.8.2=
+= 1.9.0 =
+
+*	ADDED:		New WordPress Automatic Updates Configuration settings
+
+= 1.8.2 =
 
 *	ADDED:		Notification of available plugin upgrade is now an option under the 'Dashboard'
 *	CHANGED:	Certain admin and upgrade notices now only appear when you're authenticated with the plugin (if this is enabled)

@@ -64,7 +64,7 @@ class ICWP_WPSF_Base_Plugin {
 	protected $m_fAutoPluginUpgrade = false;
 	
 	/**
-	 * @var ICWP_WpFunctions
+	 * @var ICWP_WpFunctions_WPSF
 	 */
 	protected $m_oWpFunctions;
 	
@@ -666,7 +666,7 @@ class ICWP_WPSF_Base_Plugin {
 	
 	protected function loadWpFunctions() {
 		if ( !isset( $this->m_oWpFunctions ) ) {
-			$this->m_oWpFunctions = new ICWP_WpFunctions();
+			$this->m_oWpFunctions = new ICWP_WpFunctions_WPSF();
 		}
 	}
 	

@@ -23,11 +23,11 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_WPSF {
 	
 	const StoreName = 'loginprotect_options';
 	
-	public function __construct( $insPrefix, $insVersion, $infInit = false ) {
-		parent::__construct( $insPrefix, self::StoreName, $insVersion, $infInit );
+	public function __construct( $insPrefix, $insVersion ) {
+		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
 	
-	public function definePluginOptions() {
+	public function defineOptions() {
 
 		$this->m_aDirectSaveOptions = array();
 		
@@ -37,7 +37,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_WPSF {
 				array(
 					'enable_login_protect',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					'Enable Login Protect',
 					'Enable (or Disable) The Login Protection Feature',

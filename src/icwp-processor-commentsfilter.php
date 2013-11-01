@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_CommentsProcessor') ):
+if ( !class_exists('ICWP_CommentsFilterProcessor') ):
 
-class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_CommentsFilterProcessor extends ICWP_BaseDbProcessor_WPSF {
 	
 	const TableName					= 'comments_filter';
 	
@@ -151,9 +151,9 @@ class ICWP_CommentsProcessor extends ICWP_BaseDbProcessor_WPSF {
 	public function getGaspCommentsHtml() {
 
 		$sId			= $this->m_sUniqueFormId;
-		$sConfirm		= $this->m_aOptions[ 'custom_message_checkbox' ];
-		$sAlert			= $this->m_aOptions[ 'custom_message_alert' ];
-		$sCommentWait	= $this->m_aOptions[ 'custom_message_comment_wait' ];
+		$sConfirm		= stripslashes( $this->m_aOptions[ 'custom_message_checkbox' ] );
+		$sAlert			= stripslashes( $this->m_aOptions[ 'custom_message_alert' ] );
+		$sCommentWait	= stripslashes( $this->m_aOptions[ 'custom_message_comment_wait' ] );
 		$nCooldown		= $this->m_aOptions[ 'comments_cooldown_interval' ];
 		$nExpire		= $this->m_aOptions[ 'comments_token_expire_interval' ];
 		

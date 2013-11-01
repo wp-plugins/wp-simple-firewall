@@ -156,8 +156,8 @@ $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
-					'ADDED: Admin Access Key Restriction feature.',
-					'ADDED: WordPress Lockdown feature.',
+					'ADDED: New feature to manage WordPress Automatic Updates.',
+					'FIXED: Several small bugs and streamlined codebase.',
 				);
 				?>
 				<ul>
@@ -178,6 +178,10 @@ $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 				<?php
 				$aLog = array(
 
+					'1.8.x'	=> array(
+						'ADDED: Admin Access Key Restriction feature.',
+						'ADDED: WordPress Lockdown feature.'
+					),
 					'1.7.x'	=> array(
 						'ADDED: Support for WPMU sites (only manageable as Super Admin).',
 						'CHANGE: Serious performance optimizations and a few bug fixes.',

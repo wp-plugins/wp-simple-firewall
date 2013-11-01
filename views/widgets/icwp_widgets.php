@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 function getWidgetIframeHtml( $insSnippet ) {
 	
 	$sSubPageNow = isset( $_GET['page'] )? 'page='.$_GET['page'].'&': '';

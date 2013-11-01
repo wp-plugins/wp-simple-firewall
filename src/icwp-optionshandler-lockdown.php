@@ -16,6 +16,7 @@
  */
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
+require_once( dirname(__FILE__).'/icwp-optionshandler-lockdown.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_Lockdown') ):
 
@@ -23,14 +24,21 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_WPSF {
 	
 	const StoreName = 'lockdown_options';
 	
-	public function __construct( $insPrefix, $insVersion, $infInit = false ) {
-		parent::__construct( $insPrefix, self::StoreName, $insVersion, $infInit );
+	public function __construct( $insPrefix, $insVersion ) {
+		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
 	
 	public function doPrePluginOptionsSave() {
+		
+		if ( $this->getOpt( 'action_reset_auth_salts' ) == 'Y' ) {
+			$this->setOpt( 'action_reset_auth_salts', 'P' );
+		}
+		else if ( $this->getOpt( 'action_reset_auth_salts' ) == 'P' ) {
+			$this->setOpt( 'action_reset_auth_salts', 'N' );
+		}
 	}
 	
-	public function definePluginOptions() {
+	public function defineOptions() {
 
 		$aBase = array(
 			'section_title' => 'Enable Lockdown Feature',
@@ -61,50 +69,54 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_WPSF {
 				)
 			)
 		);
-		$aRedirectOptions = array( 'select',
-			array( 'redirect_die_message',	'Die With Message' ),
-			array( 'redirect_die', 			'Die' ),
-			array( 'redirect_home',			'Redirect To Home Page' ),
-			array( 'redirect_404',			'Return 404' ),
-		);
-		$this->m_aBlockSection = array(
-			'section_title' => 'Choose Firewall Block Response',
-			'section_options' => array(
-				array( 'block_response',	'',	'none',	$aRedirectOptions,	'Block Response',	'Choose how the firewall responds when it blocks a request', '' ),
-				array( 'block_send_email',	'',	'N',	'checkbox',	'Send Email Report',	'When a visitor is blocked it will send an email to the blog admin', 'Use with caution - if you get hit by automated bots you may send out too many emails and you could get blocked by your host.' )
-			)
-		);
 
 		$this->m_aOptions = array(
 			$aBase,
 			$aAccess
 		);
+		
+		if ( false && $this->getCanDoAuthSalts() ) {
+			$this->m_aOptions[] = array(
+				'section_title' => 'Security Actions',
+				'section_options' => array(
+					array(
+						'action_reset_auth_salts',
+						'',
+						'N',
+						'checkbox',
+						'Reset Auth Keys/Salts',
+						'Reset WordPress Authentication Keys and Salts',
+						'Selecting this and saving will reset the WordPress Authentication Keys and Salts in your wp-config.php file.
+						<br /><strong>Note: This will log you and all other users out of their current session.</strong>'
+					)
+				)
+			);
+		}
+	}
+	
+	protected function getCanDoAuthSalts() {
+		require_once( dirname(__FILE__).'/icwp-wpfilesystem.php' );
+		$oWpFilesystem = new ICWP_WpFilesystem_WPSF();
+		
+		if ( !$oWpFilesystem->getCanWpRemoteGet() ) {
+			return false;
+		}
+		
+		if ( !$oWpFilesystem->getCanDiskWrite() ) {
+			return false;
+		}
+		
+ 		$sWpConfigPath = is_file( ABSPATH.'wp-config.php' )? ABSPATH.'wp-config.php' : ABSPATH.'..'.ICWP_DS.'wp-config.php';
+ 		
+ 		if ( !is_file( $sWpConfigPath ) ) {
+ 			var_dump('no wpconfig');
+ 			return false;
+ 		}
+ 		$mResult = $oWpFilesystem->getCanReadWriteFile( $sWpConfigPath );
+ 		return !empty( $mResult );
 	}
 
 	public function updateHandler() {
-
-		$sCurrentVersion = empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ];
-		if ( version_compare( $sCurrentVersion, '1.4.0', '<' ) ) {
-			$aSettingsKey = array(
-				'current_plugin_version',
-				'enable_firewall',
-				'include_cookie_checks',
-				'block_dir_traversal',
-				'block_sql_queries',
-				'block_wordpress_terms',
-				'block_field_truncation',
-				'block_exe_file_uploads',
-				'block_leading_schema',
-				'block_send_email',
-				'ips_whitelist',
-				'ips_blacklist',
-				'page_params_whitelist',
-				'block_response',
-				'enable_firewall_log',
-				'whitelist_admins'
-			);
-			$this->migrateOptions( $aSettingsKey );
-		}//v1.4.0
 	}
 }
 

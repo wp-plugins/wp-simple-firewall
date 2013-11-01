@@ -23,8 +23,8 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 	
 	const StoreName = 'firewall_options';
 	
-	public function __construct( $insPrefix, $insVersion, $infInit = false ) {
-		parent::__construct( $insPrefix, self::StoreName, $insVersion, $infInit );
+	public function __construct( $insPrefix, $insVersion ) {
+		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
 	
 	public function doPrePluginOptionsSave() {
@@ -54,7 +54,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 		}
 	}
 	
-	public function definePluginOptions() {
+	public function defineOptions() {
 
 		$this->m_aDirectSaveOptions = array( 'whitelist_admins' );
 		
