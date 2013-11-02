@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.9.0
+Version: 1.9.1
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -44,7 +44,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.9.0';
+	static public $VERSION			= '1.9.1';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -169,16 +169,38 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 	}
 	
+	/**
+	 */
+	public function onWpInit() {
+		parent::onWpInit();
+		add_action( 'plugin_action_links', array( $this, 'onWpPluginActionLinks' ), 10, 4 );
+	}
+	
+	/**
+	 * @param array $aPlugins
+	 * @return unknown
+	 */
+	public function hide_plugin( $inaPlugins ) {
+		foreach ( $inaPlugins as $sSlug => $aData ) {
+			if ( strpos( $sSlug, 'icwp-wpsf.php' ) !== false ) {
+				unset( $inaPlugins[$sSlug] );
+			}
+		}
+		return $inaPlugins;
+	}
+	
 	protected function override() {
 		if ( is_file( self::$PLUGIN_DIR . 'forceOff' ) ) {
 			$this->setSharedOption( 'enable_firewall', 'N' );
 			$this->setSharedOption( 'enable_login_protect', 'N' );
+			$this->setSharedOption( 'enable_comments_filter', 'N' );
 			$this->setSharedOption( 'enable_autoupdates', 'N' );
 			$this->setSharedOption( 'enable_admin_access_restriction', 'N' );
 		}
 		else if ( is_file( self::$PLUGIN_DIR . 'forceOn' ) ) {
 			$this->setSharedOption( 'enable_firewall', 'Y' );
 			$this->setSharedOption( 'enable_login_protect', 'Y' );
+			$this->setSharedOption( 'enable_comments_filter', 'Y' );
 			$this->setSharedOption( 'enable_autoupdates', 'Y' );
 			$this->setSharedOption( 'enable_admin_access_restriction', 'Y' );
 		}
@@ -1069,12 +1091,21 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		$oImportProcessor->runImport();
 	}
 	
-	public function onWpPluginActionLinks( $inaLinks, $insFile ) {
+	public function onWpPluginActionLinks( $inaActionLinks, $insFile ) {
+		
 		if ( $insFile == plugin_basename( __FILE__ ) ) {
-			$sSettingsLink = '<a href="'.admin_url( "admin.php" ).'?page='.$this->getSubmenuId('firewall').'">' . 'Firewall' . '</a>';
-			array_unshift( $inaLinks, $sSettingsLink );
+			if ( !$this->hasPermissionToSubmit() ) {
+				if ( array_key_exists( 'edit', $inaActionLinks ) ) {
+					unset( $inaActionLinks['edit'] );
+				}
+				if ( array_key_exists( 'deactivate', $inaActionLinks ) ) {
+					unset( $inaActionLinks['deactivate'] );
+				}
+			}
+			$sSettingsLink = '<a href="'.admin_url( "admin.php" ).'?page='.$this->getSubmenuId().'">' . 'Dashboard' . '</a>';
+			array_unshift( $inaActionLinks, $sSettingsLink );
 		}
-		return $inaLinks;
+		return $inaActionLinks;
 	}
 	
 	public function onWpPluginsLoaded() {
@@ -1086,8 +1117,18 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			) {
 			$this->m_fDoAutoUpdateCheck = true;
 		}
-		
+
+		add_action( 'deactivate_plugin', array( $this, 'preventDeactivation' ), 1, 1 );
 		$this->removePluginConflicts(); // removes conflicts with other plugins
+	}
+	
+	/**
+	 * @param string $insPlugin - the path to the plugin file
+	 */
+	public function preventDeactivation( $insPlugin ) {
+		if ( strpos( $insPlugin, basename(__FILE__) ) !== false && !$this->hasPermissionToSubmit() ) {
+			wp_die( 'Sorry, you do not have permission to disable this plugin. You need to authenticate first.' );
+		}
 	}
 	
 	public function onWpShutdown() {

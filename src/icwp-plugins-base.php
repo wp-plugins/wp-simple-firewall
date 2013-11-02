@@ -81,7 +81,7 @@ class ICWP_WPSF_Base_Plugin {
 			add_action( 'admin_notices',		array( $this, 'onWpAdminNotices' ) );
 			add_action( 'admin_menu',			array( $this, 'onWpAdminMenu' ) );
 			add_action(	'network_admin_menu',	array( $this, 'onWpNetworkAdminMenu' ) );
-			add_action( 'plugin_action_links',	array( $this, 'onWpPluginActionLinks' ), 10, 4 );
+// 			add_action( 'plugin_action_links',	array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 		}
 		add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 		

@@ -10,10 +10,7 @@ $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
-		<div class="page-header">
-			<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
-			<h2>Dashboard :: <?php echo $sPluginName; ?> Plugin (from iControlWP)</h2>
-		</div>
+		<?php echo printOptionsPageHeader( 'Dashboard' ); ?>
 
 		<?php include_once( dirname(__FILE__).'/widgets/icwp_common_widgets.php' ); ?>
 		
@@ -151,11 +148,12 @@ $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
-				<h3>v1.8.x Release:</h3>
+				<h3>v1.9.x Release:</h3>
 				<p>The following summarises the main changes to the plugin in the 1.8.x release</p>
 				<p><span class="label ">new</span> means for the absolute latest release.</p>
 				<?php
 				$aNewLog = array(
+					'ADDED: Block deactivation of plugin if admin access restriction is on.',
 					'ADDED: New feature to manage WordPress Automatic Updates.',
 					'FIXED: Several small bugs and streamlined codebase.',
 				);

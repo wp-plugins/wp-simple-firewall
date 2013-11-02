@@ -9,10 +9,7 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
-		<div class="page-header">
-			<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>
-			<h2>Dashboard :: <?php echo $sPluginName; ?> Plugin (from iControlWP)</h2>
-		</div>
+		<?php echo printOptionsPageHeader( 'Admin Access Restriction' ); ?>
 		<div class="row">
 			<div class="span9">
 			<?php 
