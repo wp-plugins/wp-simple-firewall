@@ -32,10 +32,6 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	 */
 	public function run() {
 		
-		if ( $this->m_aOptions['autoupdate_plugin_wpsf'] == 'Y' ) {
-			add_filter( 'auto_update_plugin', array( $this, 'autoupdate_plugin_wpsf' ), 10, 2 );
-		}
-		
 		if ( $this->m_aOptions['autoupdate_core'] == 'core_never' ) {
 			add_filter( 'allow_minor_auto_core_updates', '__return_false' );
 			add_filter( 'allow_major_auto_core_updates', '__return_false' );
@@ -52,8 +48,7 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 		$sFunction = ( $this->m_aOptions['enable_autoupdate_translations'] == 'Y' )? '__return_true' : '__return_false';
 		add_filter( 'auto_update_translation', $sFunction );
 		
-		$sFunction = ( $this->m_aOptions['enable_autoupdate_plugins'] == 'Y' )? '__return_true' : '__return_false';
-		add_filter( 'auto_update_plugin', $sFunction );
+		add_filter( 'auto_update_plugin', array( $this, 'autoupdate_plugins' ), 1, 2 );
 		
 		$sFunction = ( $this->m_aOptions['enable_autoupdate_themes'] == 'Y' )? '__return_true' : '__return_false';
 		add_filter( 'auto_update_themes', $sFunction );
@@ -67,11 +62,15 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 		}
 	}
 	
-	public function autoupdate_plugin_wpsf( $infUpdate, $insPluginSlug ) {
-		if ( strpos( $insPluginSlug, 'icwp-wpsf.php') === false ) {
-			return $infUpdate;
+	public function autoupdate_plugins( $infUpdate, $insPluginSlug ) {
+		
+		if ( strpos( $insPluginSlug, 'icwp-wpsf.php') !== false ) {
+			return $this->m_aOptions['autoupdate_plugin_wpsf'] == 'Y';
 		}
-		return true;
+		if ( $this->m_aOptions['enable_autoupdate_plugins'] == 'Y' ) {
+			return true;
+		}
+		return $infUpdate;
 	}
 	
 	public function disable_for_vcs( $checkout, $context ) {

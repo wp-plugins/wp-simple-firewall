@@ -3,7 +3,7 @@
 Plugin Name: WordPress Simple Firewall
 Plugin URI: http://icwp.io/2f
 Description: A Simple WordPress Firewall
-Version: 1.9.1
+Version: 1.9.2
 Author: iControlWP
 Author URI: http://icwp.io/2e
 */
@@ -44,7 +44,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.9.1';
+	static public $VERSION			= '1.9.2';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -528,7 +528,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 
 	public function onWpAdminInit() {
 		parent::onWpAdminInit();
-		
+
 		// If it's a plugin admin page, we do certain things we don't do anywhere else.
 		if ( $this->isIcwpPluginAdminPage()) {
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueueBootstrapAdminCss' ), 99 );
