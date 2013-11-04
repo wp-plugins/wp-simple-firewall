@@ -42,9 +42,9 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 					'',
 					'Y',
 					'checkbox',
-					'Enable Comments Filter',
-					'Enable (or Disable) The Comments Filter Feature',
-					'Regardless of any other settings, this option will turn Off the Comments Filter feature, or enable your chosen Comments Filter options.'
+					__( 'Enable Comments Filter', 'wp-simple-firewall' ),
+					__( 'Enable (or Disable) The SPAM Comments Filter Feature.', 'wp-simple-firewall' ),
+					__( 'Regardless of any other settings, this option will turn off the Comments Filter feature, or enable your chosen Comments Filter options.', 'wp-simple-firewall' )
 				)
 			),
 		);
@@ -56,73 +56,78 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 					'',
 					'Y',
 					'checkbox',
-					'GASP Protection',
-					'Add Growmap Anti Spambot Protection to your comments',
-					'Taking the lead from the original GASP plugin for WordPress, we have extended it to include further protection. '.sprintf( '[%smore info%s]', '<a href="http://icwp.io/2n" target="_blank">', '</a>' )
+					__( 'GASP Protection', 'wp-simple-firewall' ),
+					__( 'Add Growmap Anti Spambot Protection to your comments', 'wp-simple-firewall' ),
+					__( 'Taking the lead from the original GASP plugin for WordPress, we have extended it to include further protection.', 'wp-simple-firewall' )
+						.' '.sprintf( __( '%smore info%s', 'wp-simple-firewall' ), '[<a href="http://icwp.io/2n" target="_blank">', '</a>]' )
 				),
 				array(
 					'enable_comments_gasp_protection_for_logged_in',
 					'',
 					'N',
 					'checkbox',
-					'Include Logged-In Users',
-					'You may also enable GASP for logged in users',
-					'Since logged-in users would be expected to be vetted, this is off by default.'
+					__( 'Include Logged-In Users', 'wp-simple-firewall' ),
+					__( 'You may also enable GASP for logged in users', 'wp-simple-firewall' ),
+					__( 'Since logged-in users would be expected to be vetted already, this is off by default.', 'wp-simple-firewall' )
 				),
 				array(
 					'comments_cooldown_interval',
 					'',
 					'30',
 					'integer',
-					'Comments Cooldown',
-					'Limit posting a comment to X seconds after the page has loaded',
-					"By forcing a comments cooldown period, you restrict a Spambot's ability to post mutliple times to your posts."
+					__( 'Comments Cooldown', 'wp-simple-firewall' ),
+					__( 'Limit posting comments to X seconds after the page has loaded', 'wp-simple-firewall' ),
+					__( "By forcing a comments cooldown period, you restrict a Spambot's ability to post mutliple times to your posts.", 'wp-simple-firewall' )
 				),
 				array(
 					'comments_token_expire_interval',
 					'',
 					'600',
 					'integer',
-					'Comment Token Expire',
-					'A visitor has X seconds within which to post a comment',
-					"Default: 10 minutes (600 seconds). Each visitor is given a unique 'Token' so they can comment. This restricts spambots, but we need to force these tokens to expire and at the same time not bother the visitors."
+					__( 'Comment Token Expire', 'wp-simple-firewall' ),
+					__( 'A visitor has X seconds within which to post a comment', 'wp-simple-firewall' ),
+					__( "Default: 600 seconds (10 minutes). Each visitor is given a unique 'Token' so they can comment. This restricts spambots, but we need to force these tokens to expire and at the same time not bother the visitors.", 'wp-simple-firewall' )
+					
 				),
 				array(
 					'custom_message_checkbox',
 					'',
-					"I'm not a spammer.",
+					__( "I'm not a spammer", 'wp-simple-firewall' ),
 					'text',
-					'Custom Checkbox Message',
-					"If you want a custom checkbox message, please specify this here.",
-					"You can customise the message beside the checkbox. Default: I'm not a spammer"
+					__( 'Custom Checkbox Message', 'wp-simple-firewall' ),
+					__( 'If you want a custom checkbox message, please provide this here', 'wp-simple-firewall' ),
+					__( "You can customise the message beside the checkbox.", 'wp-simple-firewall' )
+						.'<br />'.sprintf( __( 'Default Message: %s', 'wp-simple-firewall' ), __("Please check the box to confirm you're not a spammer", 'wp-simple-firewall') )
 				),
 				array(
 					'custom_message_alert',
 					'',
-					"Please check the box to confirm you're not a spammer",
+					__( "Please check the box to confirm you're not a spammer", 'wp-simple-firewall' ),
 					'text',
-					'Custom Alert Message',
-					"If you want a custom alert message, please specify this here.",
-					"Default: Please check the box to confirm you're not a spammer"
+					__( 'Custom Alert Message', 'wp-simple-firewall' ),
+					__( 'If you want a custom alert message, please provide this here', 'wp-simple-firewall' ),
+					__( "This alert message is displayed when a visitor attempts to submit a comment without checking the box.", 'wp-simple-firewall' )
+						.'<br />'.sprintf( __( 'Default Message: %s', 'wp-simple-firewall' ), __("Please check the box to confirm you're not a spammer", 'wp-simple-firewall') )
 				),
 				array(
 					'custom_message_comment_wait',
 					'',
-					"Please wait %s seconds before posting your comment",
+					__( "Please wait %s seconds before posting your comment", 'wp-simple-firewall' ),
 					'text',
-					'Custom Alert Message',
-					"If you want a custom submit-button message please specify this here.",
-					"Where you see the '%s' this will be the number of seconds. You must ensure you include 1, and only 1, of these.
-					<br />Default: Please wait %s seconds before posting your comment"
+					__( 'Custom Wait Message', 'wp-simple-firewall' ),
+					__( 'If you want a custom submit-button wait message, please provide this here.', 'wp-simple-firewall' ),
+					__( "Where you see the '%s' this will be the number of seconds. You must ensure you include 1, and only 1, of these.", 'wp-simple-firewall' )
+						.'<br />'.sprintf( __( 'Default Message: %s', 'wp-simple-firewall' ), __('Please wait %s seconds before posting your comment', 'wp-simple-firewall') )
 				),
 				array(
 					'custom_message_comment_reload',
 					'',
-					"Please reload this page to post a comment",
+					__( "Please reload this page to post a comment", 'wp-simple-firewall' ),
 					'text',
-					'Custom Alert Message',
-					"This message is displayed on the submit-button when the comment token is expired.",
-					"Default: Please reload this page to post a comment"
+					__( 'Custom Reload Message', 'wp-simple-firewall' ),
+					__( 'If you want a custom message when the comment token has expired, please provide this here.', 'wp-simple-firewall' ),
+					__( 'This message is displayed on the submit-button when the comment token is expired', 'wp-simple-firewall' )
+						.'<br />'.sprintf( __( 'Default Message: %s', 'wp-simple-firewall' ), __("Please reload this page to post a comment", 'wp-simple-firewall') )
 				)
 			)
 		);

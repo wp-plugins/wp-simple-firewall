@@ -59,83 +59,83 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 		$this->m_aDirectSaveOptions = array( 'whitelist_admins' );
 		
 		$this->m_aFirewallBase = 	array(
-			'section_title' => 'Enable WordPress Firewall',
+			'section_title' => __( 'Enable WordPress Firewall', 'wp-simple-firewall' ),
 			'section_options' => array(
 				array(
 					'enable_firewall',
 					'',	'N',
 					'checkbox',
-					'Enable Firewall',
-					'Enable (or Disable) The WordPress Firewall Feature',
-					'Regardless of any other settings, this option will turn Off the Firewall feature, or enable your selected Firewall options.'
+					__( 'Enable Firewall', 'wp-simple-firewall' ),
+					__( 'Enable (or Disable) The WordPress Firewall Feature', 'wp-simple-firewall' ),
+					__( 'Regardless of any other settings, this option will turn off the Firewall feature, or enable your selected Firewall options', 'wp-simple-firewall' )
 				)
 			)
 		);
 		$this->m_aBlockTypesSection =  array(
-			'section_title' => 'Firewall Blocking Options',
+			'section_title' => __( 'Firewall Blocking Options', 'wp-simple-firewall' ),
 			'section_options' => array(
 				array(
 					'include_cookie_checks',
 					'',
 					'N',
 					'checkbox',
-					'Include Cookies',
-					'Also Test Cookie Values In Firewall Tests',
-					'The firewall will test GET and POST, but with this option checked, it will also COOKIE values for the same.'
+					__( 'Include Cookies', 'wp-simple-firewall' ),
+					__( 'Also Test Cookie Values In Firewall Tests', 'wp-simple-firewall' ),
+					__( 'The firewall tests GET and POST, but with this option checked it will also COOKIE values.', 'wp-simple-firewall' )
 				),
 				array(
 					'block_dir_traversal',
 					'',
 					'N',
 					'checkbox',
-					'Directory Traversals',
-					'Block Directory Traversals',
-					'This will block directory traversal paths in in application parameters (../, ../../etc/passwd, etc.)'
+					__( 'Directory Traversals', 'wp-simple-firewall' ),
+					__( 'Block Directory Traversals', 'wp-simple-firewall' ),
+					__( 'This will block directory traversal paths in in application parameters (e.g. ../, ../../etc/passwd, etc.).', 'wp-simple-firewall' )
 				),
 				array(
 					'block_sql_queries',
 					'',
 					'N',
 					'checkbox',
-					'SQL Queries',
-					'Block SQL Queries',
-					'This will block in application parameters (union select, concat(, /**/, etc.).'
+					__( 'SQL Queries', 'wp-simple-firewall' ),
+					__( 'Block SQL Queries', 'wp-simple-firewall' ),
+					__( 'This will block sql in application parameters (e.g. union select, concat(, /**/, etc.).', 'wp-simple-firewall' )
 				),
 				array(
 					'block_wordpress_terms',
 					'',
 					'N',
 					'checkbox',
-					'WordPress Terms',
-					'Block WordPress Specific Terms',
-					'This will block WordPress specific terms in application parameters (wp_, user_login, etc.).'
+					__( 'WordPress Terms', 'wp-simple-firewall' ),
+					__( 'Block WordPress Specific Terms', 'wp-simple-firewall' ),
+					__( 'This will block WordPress specific terms in application parameters (wp_, user_login, etc.).', 'wp-simple-firewall' )
 				),
 				array(
 					'block_field_truncation',
 					'',
 					'N',
 					'checkbox',
-					'Field Truncation',
-					'Block Field Truncation Attacks',
-					'This will block field truncation attacks in application parameters.'
+					__( 'Field Truncation', 'wp-simple-firewall' ),
+					__( 'Block Field Truncation Attacks', 'wp-simple-firewall' ),
+					__( 'This will block field truncation attacks in application parameters.', 'wp-simple-firewall' )
 				),
 				array(
 					'block_exe_file_uploads',
 					'',
 					'N',
 					'checkbox',
-					'Exe File Uploads',
-					'Block Executable File Uploads',
-					'This will block executable file uploads (.php, .exe, etc.).'
+					__( 'Exe File Uploads', 'wp-simple-firewall' ),
+					__( 'Block Executable File Uploads', 'wp-simple-firewall' ),
+					__( 'This will block executable file uploads (.php, .exe, etc.).', 'wp-simple-firewall' )
 				),
 				array(
 					'block_leading_schema',
 					'',
 					'N',
 					'checkbox',
-					'Leading Schemas',
-					'Block Leading Schemas (HTTPS / HTTP)',
-					'This will block leading schemas http:// and https:// in application parameters (off by default; may cause problems with many plugins).'
+					__( 'Leading Schemas', 'wp-simple-firewall' ),
+					__( 'Block Leading Schemas (HTTPS / HTTP)', 'wp-simple-firewall' ),
+					__( 'This will block leading schemas http:// and https:// in application parameters (off by default; may cause problems with other plugins).', 'wp-simple-firewall' )
 				)
 			),
 		);
@@ -146,71 +146,88 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 			array( 'redirect_404',			'Return 404' ),
 		);
 		$this->m_aBlockSection = array(
-			'section_title' => 'Choose Firewall Block Response',
+			'section_title' => __( 'Choose Firewall Block Response', 'wp-simple-firewall' ),
 			'section_options' => array(
-				array( 'block_response',	'',	'none',	$aRedirectOptions,	'Block Response',	'Choose how the firewall responds when it blocks a request', '' ),
-				array( 'block_send_email',	'',	'N',	'checkbox',	'Send Email Report',	'When a visitor is blocked it will send an email to the blog admin', 'Use with caution - if you get hit by automated bots you may send out too many emails and you could get blocked by your host.' )
+				array(
+					'block_response',
+					'',
+					'none',
+					$aRedirectOptions,
+					__( 'Block Response', 'wp-simple-firewall' ),
+					__( 'Choose how the firewall responds when it blocks a request', 'wp-simple-firewall' ),
+					__( 'We recommend dying with a message so you know what might have occurred when the firewall blocks you', 'wp-simple-firewall' )
+				),
+				array(
+					'block_send_email',
+					'',
+					'N',
+					'checkbox',
+					__( 'Send Email Report', 'wp-simple-firewall' ),
+					__( 'When a visitor is blocked the firewall will send an email to the configured email address', 'wp-simple-firewall' ),
+					__( 'Use with caution - if you get hit by automated bots you may send out too many emails and you could get blocked by your host', 'wp-simple-firewall' )
+				)
 			)
 		);
 		
 		$this->m_aWhitelistSection = array(
-			'section_title' => 'Whitelist - IPs, Pages, Parameters, and Users that by-pass the Firewall',
+			'section_title' => __( 'Whitelists - IPs, Pages, Parameters, and Users that by-pass the Firewall', 'wp-simple-firewall' ),
 			'section_options' => array(
 				array(
 					'ips_whitelist',
 					'',
 					'',
 					'ip_addresses',
-					'Whitelist IP Addresses',
-					'Choose IP Addresses that are never subjected to Firewall Rules',
-					sprintf( 'Take a new line per address. Your IP address is: %s', '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
+					__( 'Whitelist IP Addresses', 'wp-simple-firewall' ),
+					__( 'Choose IP Addresses that are never subjected to Firewall Rules', 'wp-simple-firewall' ),
+					sprintf( __( 'Take a new line per address. Your IP address is: %s', 'wp-simple-firewall' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
 				),
 				array(
 					'page_params_whitelist',
 					'',
 					'',
 					'comma_separated_lists',
-					'Whitelist Parameters',
-					'Detail pages and parameters that are whitelisted (ignored)',
-					'This should be used with caution and you should only provide parameter names that you need to have excluded.'
-						.' [<a href="http://icwp.io/2a" target="_blank">Help</a>]'
+					__( 'Whitelist Parameters', 'wp-simple-firewall' ),
+					__( 'Detail pages and parameters that are whitelisted (ignored by the firewall)', 'wp-simple-firewall' ),
+					__( 'This should be used with caution and you should only provide parameter names that you must have excluded', 'wp-simple-firewall' )
+						.' '.sprintf( __( '%sHelp%s', 'wp-simple-firewall' ), '[<a href="http://icwp.io/2a" target="_blank">', '</a>]' )
 				),
 				array(
 					'whitelist_admins',
 					'',
 					'N',
 					'checkbox',
-					'Ignore Administrators',
-					'Ignore users logged in as Administrator',
-					'Authenticated administrator users will not be processed by the firewall.'
+					__( 'Ignore Administrators', 'wp-simple-firewall' ),
+					__( 'Ignore users logged in as Administrator', 'wp-simple-firewall' ),
+					__( 'Authenticated administrator users will not be processed by the firewall', 'wp-simple-firewall' )
 				)
 			)
 		);
 		
 		$this->m_aBlacklistSection = array(
-			'section_title' => 'Choose IP Addresses To Blacklist',
+			'section_title' => __( 'Choose IP Addresses To Blacklist', 'wp-simple-firewall' ),
 			'section_options' => array(
 				array(
 					'ips_blacklist',
 					'',
 					'',
 					'ip_addresses',
-					'Blacklist IP Addresses',
-					'Choose IP Addresses that are always blocked access to the site',
-					'Take a new line per address. Each IP Address must be valid and will be checked.'
+					__( 'Blacklist IP Addresses', 'wp-simple-firewall' ),
+					__( 'Choose IP Addresses that are always blocked from accessing the site', 'wp-simple-firewall' ),
+					__( 'Take a new line per address. Each IP Address must be valid and will be checked', 'wp-simple-firewall' )
 				)
 			)
 		);
 		$this->m_aFirewallMiscSection = array(
-			'section_title' => 'Miscellaneous Plugin Options',
+			'section_title' => __( 'Miscellaneous Plugin Options', 'wp-simple-firewall' ),
 			'section_options' => array(
 				array(
 					'enable_firewall_log',
-					'',	'N',
+					'',
+					'N',
 					'checkbox',
-					'Firewall Logging',
-					'Turn on a detailed Firewall Log',
-					'Will log every visit to the site and how the firewall processes it. Not recommended to leave on unless you want to debug something and check the firewall is working as you expect.'
+					__( 'Firewall Logging', 'wp-simple-firewall' ),
+					__( 'Turn on a detailed Firewall Log', 'wp-simple-firewall' ),
+					__( 'Will log every visit to the site and how the firewall processes it. Not recommended to leave on unless you want to debug something and check the firewall is working as you expect', 'wp-simple-firewall' )
 				)
 			)
 		);

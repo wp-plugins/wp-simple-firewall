@@ -9,7 +9,7 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
-		<?php echo printOptionsPageHeader( 'Admin Access Restriction' ); ?>
+		<?php echo printOptionsPageHeader( __('Admin Access Restriction', 'wp-simple-firewall') ); ?>
 		<div class="row">
 			<div class="span9">
 			<?php 
@@ -29,8 +29,8 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 				else {
 			?>
 				<div class="well">
-					<h3>What should you enter here?</h3>
-					<p>At some point you supplied an <strong>Admin Access Key</strong> - to manage this plugin, you must supply it here first.</p>
+					<h3><?php _e( 'What should you enter here?', 'wp-simple-firewall');?></h3>
+					<p><?php _e( 'At some point you supplied an Admin Access Key - to manage this plugin, you must supply it here first.', 'wp-simple-firewall');?>.</p>
 				</div>
 				<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
 					<div class="control-group">
@@ -40,14 +40,14 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 							<label>
 								<input type="text" name="icwp_wpsf_admin_access_key_request" value="" />
 							</label>
-							<p class="help-block">To manage this plugin you must enter the access key.</p>
+							<p class="help-block"><?php _e( 'To manage this plugin you must enter the access key.', 'wp-simple-firewall');?></p>
 						  </div>
 						</div><!-- controls -->
 					</div>
 					<div class="form-actions">
 						<?php wp_nonce_field( $icwp_nonce_field ); ?>
 						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-						<button type="submit" class="btn btn-primary" name="submit"><?php _hlt_e( 'Submit Key'); ?></button>
+						<button type="submit" class="btn btn-primary" name="submit"><?php _e( 'Submit Key', 'wp-simple-firewall' ); ?></button>
 					</div>
 				</form>
 				<?php 

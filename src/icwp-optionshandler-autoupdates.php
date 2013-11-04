@@ -39,9 +39,9 @@ class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_WPSF {
 					'',
 					'N',
 					'checkbox',
-					'Enable Auto Updates',
-					'Enable (or Disable) The WordPress Automatic Updates Feature',
-					'Regardless of any other settings, this option will turn Off the Auto Updates feature, or enable your selected Auto Updates options.'
+					__( 'Enable Auto Updates', 'wp-simple-firewall' ),
+					__( 'Enable (or Disable) The Simple Firewall Automatic Updates Feature', 'wp-simple-firewall' ),
+					__( 'Regardless of any other settings, this option will turn off the Auto Updates feature, or enable your selected Auto Updates options.', 'wp-simple-firewall' )
 				)
 			)
 		);
@@ -58,9 +58,9 @@ class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_WPSF {
 					'',
 					'Y',
 					'checkbox',
-					'Auto Update Plugin',
-					'Always Automatically Update This Plugin',
-					'Regardless of any component settings below, automatically update the WordPress Simple Firewall plugin.'
+					__( 'Auto Update Plugin', 'wp-simple-firewall' ),
+					__( 'Always Automatically Update This Plugin', 'wp-simple-firewall' ),
+					__( 'Regardless of any component settings below, automatically update the WordPress Simple Firewall plugin.', 'wp-simple-firewall' )
 				)
 			)
 		);
@@ -72,45 +72,45 @@ class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_WPSF {
 					'',
 					'core_minor',
 					$aAutoUpdateOptions,
-					'WordPress Core Updates',
-					'Decide how the WordPress Core will automatically update, if at all.',
-					'At least automatically upgrading minor versions is recommended (and is the WordPress default).'
+					__( 'WordPress Core Updates', 'wp-simple-firewall' ),
+					__( 'Decide how the WordPress Core will automatically update, if at all', 'wp-simple-firewall' ),
+					__( 'At least automatically upgrading minor versions is recommended (and is the WordPress default).', 'wp-simple-firewall' )
 				),
 				array(
 					'enable_autoupdate_translations',
 					'',
 					'Y',
 					'checkbox',
-					'Translations',
-					'Automatically Update Translations',
-					'Note: Automatic updates for translations are enabled on WordPress by default.'
+					__( 'Translations', 'wp-simple-firewall' ),
+					__( 'Automatically Update Translations', 'wp-simple-firewall' ),
+					__( 'Note: Automatic updates for translations are enabled on WordPress by default.', 'wp-simple-firewall' )
 				),
 				array(
 					'enable_autoupdate_plugins',
 					'',
 					'N',
 					'checkbox',
-					'Plugins',
-					'Automatically Update Plugins',
-					'Note: Automatic updates for plugins are disabled on WordPress by default.'
+					__( 'Plugins', 'wp-simple-firewall' ),
+					__( 'Automatically Update Plugins', 'wp-simple-firewall' ),
+					__( 'Note: Automatic updates for plugins are disabled on WordPress by default.', 'wp-simple-firewall' )
 				),
 				array(
 					'enable_autoupdate_themes',
 					'',
 					'N',
 					'checkbox',
-					'Themes',
-					'Automatically Update Themes',
-					'Note: Automatic updates for themes are disabled on WordPress by default.'
+					__( 'Themes', 'wp-simple-firewall' ),
+					__( 'Automatically Update Themes', 'wp-simple-firewall' ),
+					__( 'Note: Automatic updates for themes are disabled on WordPress by default.', 'wp-simple-firewall' )
 				),
 				array(
 					'enable_autoupdate_ignore_vcs',
 					'',
 					'N',
 					'checkbox',
-					'Ignore Version Control',
-					'Ignore Version Control Systems Such As GIT and SVN',
-					'If you use SVN or GIT and WordPress detects it, automatic updates are disabled by default. Check this box to ignore version control systems and allow automatic updates'
+					__( 'Ignore Version Control', 'wp-simple-firewall' ),
+					__( 'Ignore Version Control Systems Such As GIT and SVN', 'wp-simple-firewall' ),
+					__( 'If you use SVN or GIT and WordPress detects it, automatic updates are disabled by default. Check this box to ignore version control systems and allow automatic updates.', 'wp-simple-firewall' )
 				)
 			)
 		);
@@ -122,9 +122,9 @@ class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_WPSF {
 					'',
 					'N',
 					'checkbox',
-					'Disable All',
-					'Completely Disable Automatic Updates',
-					'When selected, regardless of any setting above, all automatic updates on this site will be completely disabled'
+					__( 'Disable All', 'wp-simple-firewall' ),
+					__( 'Completely Disable WordPress Automatic Updates', 'wp-simple-firewall' ),
+					__( 'When selected, regardless of any setting above, all automatic updates on this site will be completely disabled!', 'wp-simple-firewall' )
 				)
 			)
 		);

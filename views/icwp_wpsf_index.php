@@ -25,7 +25,7 @@ $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 					<div class="form-actions">
 						<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
 						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-						<button type="submit" class="btn btn-primary" name="submit"><?php _hlt_e( 'Save All Settings'); ?></button>
+						<button type="submit" class="btn btn-primary" name="submit"><?php _e( 'Save All Settings', 'wp-simple-firewall' ); ?></button>
 					</div>
 				</form>
 				

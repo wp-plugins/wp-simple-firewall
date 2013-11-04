@@ -41,31 +41,31 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_WPSF {
 	public function defineOptions() {
 
 		$aBase = array(
-			'section_title' => 'Enable Lockdown Feature',
+			'section_title' => __( 'Enable Lockdown Feature', 'wp-simple-firewall' ),
 			'section_options' => array(
 				array(
 					'enable_lockdown',
 					'',
 					'N',
 					'checkbox',
-					'Enable Lockdown',
-					'Enable (or Disable) The Lockdown Feature',
-					'Regardless of any other settings, this option will turn Off the Lockdown feature, or enable your selected Lockdown options.'
+					__( 'Enable Lockdown', 'wp-simple-firewall' ),
+					__( 'Enable (or Disable) The Lockdown Feature', 'wp-simple-firewall' ),
+					__( 'Regardless of any other settings, this option will turn Off the Lockdown feature, or enable your selected Lockdown options', 'wp-simple-firewall' )
 				)
 			)
 		);
 		$aAccess = array(
-			'section_title' => 'Access Options',
+			'section_title' => __( 'Access Options', 'wp-simple-firewall' ),
 			'section_options' => array(
 				array(
 					'disable_file_editing',
 					'',
 					'N',
 					'checkbox',
-					'Disable File Editing',
-					'Disable Ability To Edit Files',
-					'Removes the option to directly edit any files from within the WordPress admin area.
-					<br />Equivalent to setting DISALLOW_FILE_EDIT to TRUE.'
+					__( 'Disable File Editing', 'wp-simple-firewall' ),
+					__( 'Disable Ability To Edit Files', 'wp-simple-firewall' ),
+					__( 'Removes the option to directly edit any files from within the WordPress admin area.', 'wp-simple-firewall' )
+					.'<br />'.__( 'Equivalent to setting DISALLOW_FILE_EDIT to TRUE.', 'wp-simple-firewall' )
 				)
 			)
 		);
@@ -77,17 +77,17 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_WPSF {
 		
 		if ( false && $this->getCanDoAuthSalts() ) {
 			$this->m_aOptions[] = array(
-				'section_title' => 'Security Actions',
+				'section_title' => __( 'Security Actions', 'wp-simple-firewall' ),
 				'section_options' => array(
 					array(
 						'action_reset_auth_salts',
 						'',
 						'N',
 						'checkbox',
-						'Reset Auth Keys/Salts',
-						'Reset WordPress Authentication Keys and Salts',
-						'Selecting this and saving will reset the WordPress Authentication Keys and Salts in your wp-config.php file.
-						<br /><strong>Note: This will log you and all other users out of their current session.</strong>'
+						__( 'Reset Auth Keys/Salts', 'wp-simple-firewall' ),
+						__( 'Reset WordPress Authentication Keys and Salts', 'wp-simple-firewall' ),
+						__( 'Selecting this will reset the WordPress Authentication Keys and Salts in your wp-config.php file.', 'wp-simple-firewall' )
+						.'<br /><strong>'.__( 'Note: This will log you and all other users out of their current session.', 'wp-simple-firewall' ).'</strong>'
 					)
 				)
 			);

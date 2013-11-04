@@ -5,11 +5,12 @@ function printOptionsPageHeader( $insSection = '' ) {
 	echo '<div class="page-header">';
 	echo '<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>';
 	echo '<h2>';
+	$sBaseTitle = sprintf( __( 'WordPress Simple Firewall (from %s)' ), $sLinkedIcwp );
 	if ( !empty($insSection) ) {
-		echo sprintf( _hlt__( '%s :: WordPress Simple Firewall (from %s)'), $insSection, $sLinkedIcwp );
+		echo sprintf( '%s :: %s', $insSection, $sBaseTitle );
 	}
 	else {
-		echo sprintf( _hlt__( 'WordPress Simple Firewall (from %s)'), $sLinkedIcwp );
+		echo $sBaseTitle;
 	}
 	echo '</h2></div>';
 }

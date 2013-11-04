@@ -4,9 +4,9 @@ include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 $sPluginName = 'WordPress Simple Firewall';
 
 $aLogTypes = array(
-	0	=>	'Info',
-	1	=>	'Warning',
-	2	=>	'Critical'
+	0	=>	__('Info', 'wp-simple-firewall'),
+	1	=>	__('Warning', 'wp-simple-firewall'),
+	2	=>	__('Critical', 'wp-simple-firewall')
 );
 ?>
 <style>
@@ -38,7 +38,7 @@ $aLogTypes = array(
 
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
-		<?php echo printOptionsPageHeader( 'Firewall Log' ); ?>
+		<?php echo printOptionsPageHeader( __('Firewall Log', 'wp-simple-firewall') ); ?>
 
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
@@ -48,37 +48,37 @@ $aLogTypes = array(
 					?>
 					<div class="form-actions">
 						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-						<button type="submit" class="btn btn-primary" name="clear_log_submit"><?php _hlt_e( 'Clear/Fix Log'); ?></button>
+						<button type="submit" class="btn btn-primary" name="clear_log_submit"><?php _e( 'Clear/Fix Log', 'wp-simple-firewall' ); ?></button>
 					</div>
 				</form>
-				
+
 				<?php if ( !$icwp_firewall_log ) : ?>
 					<?php echo 'There are currently no logs to display. If you expect there to be some, use the button above to Clean/Fix them.'; ?>
 				<?php else : ?>
-			
+
 				<table class="table table-bordered table-hover table-condensed">
 					<tr>
-						<th>Message Type</th>
-						<th>Message</th>
+						<th><?php _e('Message Type', 'wp-simple-firewall'); ?></th>
+						<th><?php _e('Message', 'wp-simple-firewall'); ?></th>
 					</tr>
 				<?php foreach( $icwp_firewall_log as $sId => $aLogData ) : ?>
 					<tr class="row-log-header">
 						<td>IP: <strong><?php echo $aLogData['ip']; ?></strong></td>
 						<td colspan="2">
 							<span class="cell-section section-ip">
-								[ <a href="http://whois.domaintools.com/<?php echo $aLogData['ip']; ?>" target="_blank">IPWHOIS Lookup</a> ]
+								[ <a href="http://whois.domaintools.com/<?php echo $aLogData['ip']; ?>" target="_blank"><?php _e('IPWHOIS Lookup', 'wp-simple-firewall');?></a> ]
 								[
 								<?php if ( in_array( $aLogData['ip_long'], $icwp_ip_blacklist ) ) : ?>
-									<a href="<?php echo $icwp_form_action; ?>&unblackip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Remove From Firewall Blacklist</a>
+									<a href="<?php echo $icwp_form_action; ?>&unblackip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1"><?php _e('Remove From Firewall Blacklist', 'wp-simple-firewall');?></a>
 								<?php else: ?>
-									<a href="<?php echo $icwp_form_action; ?>&blackip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Add To Firewall Blacklist</a>
+									<a href="<?php echo $icwp_form_action; ?>&blackip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1"><?php _e('Add To Firewall Blacklist', 'wp-simple-firewall');?></a>
 								<?php endif; ?>
 								]
 								[
 								<?php if ( in_array( $aLogData['ip_long'], $icwp_ip_whitelist ) ) : ?>
-									<a href="<?php echo $icwp_form_action; ?>&unwhiteip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Remove From Firewall Whitelist</a>
+									<a href="<?php echo $icwp_form_action; ?>&unwhiteip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1"><?php _e('Remove From Firewall Whitelist', 'wp-simple-firewall');?></a>
 								<?php else: ?>
-									<a href="<?php echo $icwp_form_action; ?>&whiteip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1">Add To Firewall Whitelist</a>
+									<a href="<?php echo $icwp_form_action; ?>&whiteip=<?php echo $aLogData['ip']; ?>&_wpnonce=<?php echo wp_create_nonce($icwp_nonce_field); ?>&icwp_link_action=1"><?php _e('Add To Firewall Whitelist', 'wp-simple-firewall');?></a>
 								<?php endif; ?>
 								]
 							</span>

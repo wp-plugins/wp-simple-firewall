@@ -4,17 +4,6 @@ if ( !defined('ICWP_DS') ) {
 	define( 'ICWP_DS', DIRECTORY_SEPARATOR );
 }
 
-if ( !function_exists( '_hlt_e' ) ) {
-	function _hlt_e( $insStr ) {
-		_e( $insStr, 'hlt-wordpress-bootstrap-css' );
-	}
-}
-if ( !function_exists( '_hlt__' ) ) {
-	function _hlt__( $insStr ) {
-		return __( $insStr, 'hlt-wordpress-bootstrap-css' );
-	}
-}
-
 require_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
 
 if ( !class_exists('ICWP_WPSF_Base_Plugin') ):

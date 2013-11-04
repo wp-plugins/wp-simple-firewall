@@ -1,12 +1,13 @@
 <?php
 /*
-Plugin Name: WordPress Simple Firewall
-Plugin URI: http://icwp.io/2f
-Description: A Simple WordPress Firewall
-Version: 1.9.2
-Author: iControlWP
-Author URI: http://icwp.io/2e
-*/
+ * Plugin Name: WordPress Simple Firewall
+ * Plugin URI: http://icwp.io/2f
+ * Description: A Simple WordPress Firewall
+ * Version: 1.9.2
+ * Text Domain: wp-simple-firewall
+ * Author: iControlWP
+ * Author URI: http://icwp.io/2e
+ */
 
 /**
  * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
@@ -551,12 +552,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		
 		$this->m_aPluginMenu = array(
 			//Menu Page Title => Menu Item name, page ID (slug), callback function for this page - i.e. what to do/load.
-			$this->getSubmenuPageTitle( 'Firewall' ) => array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Login Protect' ) => array( 'Login Protect', $this->getSubmenuId('login_protect'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Comments Filter' ) => array( 'Comments Filter', $this->getSubmenuId('comments_filter'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Lockdown' ) => array( 'Lockdown', $this->getSubmenuId('lockdown'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Auto Updates' ) => array( 'Auto Updates', $this->getSubmenuId('autoupdates'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Log' ) => array( 'Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' )
+			$this->getSubmenuPageTitle( 'Firewall' )		=> array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( 'Login Protect' )	=> array( 'Login Protect', $this->getSubmenuId('login_protect'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( 'Comments Filter' )	=> array( 'Comments Filter', $this->getSubmenuId('comments_filter'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( 'Lockdown' )		=> array( 'Lockdown', $this->getSubmenuId('lockdown'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( 'Auto Updates' )	=> array( 'Auto Updates', $this->getSubmenuId('autoupdates'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( 'Log' )				=> array( 'Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' )
 		);
 	}
 
@@ -1127,7 +1128,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 */
 	public function preventDeactivation( $insPlugin ) {
 		if ( strpos( $insPlugin, basename(__FILE__) ) !== false && !$this->hasPermissionToSubmit() ) {
-			wp_die( 'Sorry, you do not have permission to disable this plugin. You need to authenticate first.' );
+			wp_die(
+				__( 'Sorry, you do not have permission to disable this plugin. You need to authenticate first.', 'wp-simple-firewall' )
+			);
 		}
 	}
 	
@@ -1161,7 +1164,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	
 	public function onWpPluginUpdateMessage() {
 		echo '<div style="color: #dd3333;">'
-			."Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features."
+			.__( 'Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features.', 'wp-simple-firewall' )
 			. '</div>';
 	}
 	
@@ -1295,8 +1298,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					<input type="hidden" value="1" name="<?php echo self::OptionPrefix; ?>hide_update_notice" id="<?php echo self::OptionPrefix; ?>hide_update_notice">
 					<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
 					<h4 style="margin:10px 0 3px;">
-						Note: WordPress Simple Firewall plugin <u>does not automatically turn on</u> when you install/update. There may also be
-						<a href="http://icwp.io/27" id="fromIcwp" title="WordPress Simple Firewall Plugin" target="_blank">important updates to read about</a>.
+						<?php _e( 'Note: WordPress Simple Firewall plugin does not automatically turn on when you install/update.', 'wp-simple-firewall' ); ?>
+						<?php printf( __( 'There may also be %simportant updates to read about%s.', 'wp-simple-firewall' ), '<a href="http://icwp.io/27" id="fromIcwp" title="WordPress Simple Firewall" target="_blank">', '</a>' ); ?>
 					</h4>
 					<input type="submit" value="Okay, show me the dashboard." name="submit" class="button" style="float:left; margin-bottom:10px;">
 					<div style="clear:both;"></div>
