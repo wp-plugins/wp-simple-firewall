@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
 Requires at least: 3.2.0
 Tested up to: 3.7
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 
 Complete and Simple WordPress Security. Unrestricted, with no premium features.
 
@@ -232,7 +232,7 @@ Best described here: http://icwp.io/2v
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
-= 2.0.0 =
+= 2.0.1 =
 
 *	ADDED:		Localization capabilities. All we need now are translators! [Go here to get started](http://translate.icontrolwp.com/).
 *	ADDED:		Option to mask the WordPress version so the real version is never publicly visible.
