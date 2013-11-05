@@ -35,6 +35,13 @@ class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
 		if ( $this->m_aOptions['disable_file_editing'] == 'Y' ) {
 			add_filter( 'user_has_cap', array( $this, 'disableFileEditing' ), 0, 3 );
 		}
+		
+		if ( !empty( $this->m_aOptions['mask_wordpress_version'] ) ) {
+			global $wp_version;
+			$wp_version = $this->m_aOptions['mask_wordpress_version'];
+// 			add_filter( 'bloginfo', array( $this, 'maskWordpressVersion' ), 1, 2 );
+// 			add_filter( 'bloginfo_url', array( $this, 'maskWordpressVersion' ), 1, 2 );
+		} 
 
 		if ( false && $this->m_aOptions['action_reset_auth_salts'] == 'Y' ) {
 			add_action( 'init', array( $this, 'resetAuthKeysSalts' ), 1 );
@@ -54,6 +61,16 @@ class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
 		}
 		$inaAllCaps[ $sRequestedCapability ] = false;
 		return $inaAllCaps;
+	}
+	
+	/**
+	 * @return array
+	 */
+	public function maskWordpressVersion( $insOutput, $insShow ) {
+// 		if ( $insShow === 'version' ) {
+// 			$insOutput = $this->m_aOptions['mask_wordpress_version'];
+// 		}
+// 		return $insOutput;
 	}
 	
 	/**

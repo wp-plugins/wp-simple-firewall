@@ -32,58 +32,58 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_WPSF {
 		$this->m_aDirectSaveOptions = array();
 		
 		$this->m_aOptionsBase = array(
-			'section_title' => __( 'Enable Login Protection', 'wp-simple-firewall' ),
+			'section_title' => _wpsf__( 'Enable Login Protection' ),
 			'section_options' => array(
 				array(
 					'enable_login_protect',
 					'',
 					'Y',
 					'checkbox',
-					__( 'Enable Login Protect', 'wp-simple-firewall' ),
-					__( 'Enable (or Disable) The Login Protection Feature', 'wp-simple-firewall' ),
-					__( 'Regardless of any other settings, this option will turn Off the Login Protect feature, or enable your selected Login Protect options', 'wp-simple-firewall' )
+					_wpsf__( 'Enable Login Protect' ),
+					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Login Protect feature, or enable your selected Login Protect options' )
 				)
 			),
 		);
 		$this->m_aWhitelist = array(
-			'section_title' => __( 'Whitelist IPs that by-pass Login Protect', 'wp-simple-firewall' ),
+			'section_title' => _wpsf__( 'Whitelist IPs that by-pass Login Protect' ),
 			'section_options' => array(
 				array(
 					'ips_whitelist',
 					'',
 					'',
 					'ip_addresses',
-					__( 'Whitelist IP Addresses', 'wp-simple-firewall' ),
-					__( 'Specify IP Addresses that by-pass all Login Protect rules', 'wp-simple-firewall' ),
-					sprintf( __( 'Take a new line per address. Your IP address is: %s', 'wp-simple-firewall' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
+					_wpsf__( 'Whitelist IP Addresses' ),
+					_wpsf__( 'Specify IP Addresses that by-pass all Login Protect rules' ),
+					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
 				)
 			)
 		);
 		$this->m_aTwoFactorAuth = array(
-			'section_title' => __( 'Two-Factor Authentication Protection Options', 'wp-simple-firewall' ),
+			'section_title' => _wpsf__( 'Two-Factor Authentication Protection Options' ),
 			'section_options' => array(
 				array(
 					'enable_two_factor_auth_by_ip',
 					'',
 					'N',
 					'checkbox',
-					__( 'Two-Factor Authentication', 'wp-simple-firewall' ),
-					__( 'Two-Factor Login Authentication By IP Address', 'wp-simple-firewall' ),
-					__( 'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address', 'wp-simple-firewall' )
+					_wpsf__( 'Two-Factor Authentication' ),
+					_wpsf__( 'Two-Factor Login Authentication By IP Address' ),
+					_wpsf__( 'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address' )
 				),
 				array(
 					'enable_two_factor_bypass_on_email_fail',
 					'',
 					'N',
 					'checkbox',
-					__( 'By-Pass On Failure', 'wp-simple-firewall' ),
-					__( 'If Sending Verification Email Sending Fails, Two-Factor Login Authentication Is Ignored', 'wp-simple-firewall' ),
-					__( 'If you enable two-factor authentication and sending the email with the verification link fails, turning this setting on will by-pass the verification step. Use with caution', 'wp-simple-firewall' )
+					_wpsf__( 'By-Pass On Failure' ),
+					_wpsf__( 'If Sending Verification Email Sending Fails, Two-Factor Login Authentication Is Ignored' ),
+					_wpsf__( 'If you enable two-factor authentication and sending the email with the verification link fails, turning this setting on will by-pass the verification step. Use with caution' )
 				)
 			)
 		);
 		$this->m_aLoginProtect = array(
-			'section_title' => __( 'Login Protection Options', 'wp-simple-firewall' ),
+			'section_title' => _wpsf__( 'Login Protection Options' ),
 			'section_options' => array(
 				array(
 					'login_limit_interval',
@@ -99,24 +99,24 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_WPSF {
 					'',
 					'Y',
 					'checkbox',
-					__( 'G.A.S.P Protection', 'wp-simple-firewall' ),
-					__( 'Use G.A.S.P. Protection To Prevent Login Attempts By Bots', 'wp-simple-firewall' ),
-					__( 'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques. Recommended: ON', 'wp-simple-firewall' )
+					_wpsf__( 'G.A.S.P Protection' ),
+					_wpsf__( 'Use G.A.S.P. Protection To Prevent Login Attempts By Bots' ),
+					_wpsf__( 'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques. Recommended: ON' )
 				)
 			)
 		);
 		
 		$this->m_aLoggingSection = array(
-			'section_title' => __( 'Logging Options', 'wp-simple-firewall' ),
+			'section_title' => _wpsf__( 'Logging Options' ),
 			'section_options' => array(
 				array(
 					'enable_login_protect_log',
 					'',
 					'N',
 					'checkbox',
-					__( 'Login Protect Logging', 'wp-simple-firewall' ),
-					__( 'Turn on a detailed Login Protect Log', 'wp-simple-firewall' ),
-					__( 'Will log every event related to login protection and how it is processed. Not recommended to leave on unless you want to debug something and check the login protection is working as you expect.', 'wp-simple-firewall' )
+					_wpsf__( 'Login Protect Logging' ),
+					_wpsf__( 'Turn on a detailed Login Protect Log' ),
+					_wpsf__( 'Will log every event related to login protection and how it is processed. Not recommended to leave on unless you want to debug something and check the login protection is working as you expect.' )
 				)
 			)
 		);

@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 1.9.2
+ * Version: 2.0.0
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -33,6 +33,17 @@
 require_once( dirname(__FILE__).'/src/icwp-plugins-base.php' );
 require_once( dirname(__FILE__).'/src/icwp-data-processor.php' );
 
+if ( !function_exists( '_wpsf_e' ) ) {
+	function _wpsf_e( $insStr ) {
+		_e( $insStr, 'wp-simple-firewall' );
+	}
+}
+if ( !function_exists( '_wpsf__' ) ) {
+	function _wpsf__( $insStr ) {
+		return __( $insStr, 'wp-simple-firewall' );
+	}
+}
+
 if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
 class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
@@ -45,7 +56,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '1.9.2';
+	static public $VERSION			= '2.0.0';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -162,6 +173,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		if ( isset( $_GET['turnoffperm'] ) ) {
 			$this->setPermissionToSubmit( false );
 		}
+	}
+	
+	/**
+	 * Load the multilingual aspect of the plugin
+	 */
+	public function load_textdomain() {
+		load_plugin_textdomain( 'wp-simple-firewall', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 	}
 	
 	public function removePluginConflicts() {
@@ -623,6 +641,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				wp_redirect( admin_url( $_POST['redirect_page'] ) );
 			}
 		}
+		if ( isset( $_POST[self::OptionPrefix.'hide_translation_notice'] ) && isset( $_POST['user_id'] ) ) {
+			$this->updateTranslationNoticeShownUserMeta( $_POST['user_id'] );
+			wp_redirect( admin_url( $_POST['redirect_page'] ) );
+		}
 	}
 	
 	/**
@@ -630,8 +652,26 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 *  
 	 * @param unknown_type $innId
 	 */
-	protected function updateVersionUserMeta( $innId = null ) {
-		if ( is_null( $innId ) ) {
+	protected function updateVersionUserMeta( $innId = '' ) {
+		$this->updateUserMeta( 'current_version', self::$VERSION, $innId );
+	}
+	
+	/**
+	 * Updates the current (or supplied user ID) user meta data with the version of the plugin
+	 *  
+	 * @param unknown_type $innId
+	 */
+	protected function updateTranslationNoticeShownUserMeta( $innId = '', $insValue = 'Y' ) {
+		$this->updateUserMeta( 'plugin_translation_notice', $insValue, $innId );
+	}
+	
+	/**
+	 * Updates the current (or supplied user ID) user meta data with the version of the plugin
+	 *  
+	 * @param unknown_type $innId
+	 */
+	protected function updateUserMeta( $insKey, $inmValue, $innId = null ) {
+		if ( empty( $innId ) ) {
 			$oCurrentUser = wp_get_current_user();
 			if ( !($oCurrentUser instanceof WP_User) ) {
 				return;
@@ -641,7 +681,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		else {
 			$nUserId = $innId;
 		}
-		update_user_meta( $nUserId, self::OptionPrefix.'current_version', self::$VERSION );
+		update_user_meta( $nUserId, self::OptionPrefix.$insKey, $inmValue );
 	}
 	
 	public function onWpAdminNotices() {
@@ -654,6 +694,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 
 		if ( $this->hasPermissionToView() ) {
 			$this->adminNoticeVersionUpgrade();
+		}
+
+		if ( $this->hasPermissionToView() ) {
+			$this->adminNoticeTranslations();
 		}
 	}
 	
@@ -1118,6 +1162,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 			) {
 			$this->m_fDoAutoUpdateCheck = true;
 		}
+		
+		$this->load_textdomain();
 
 		add_action( 'deactivate_plugin', array( $this, 'preventDeactivation' ), 1, 1 );
 		$this->removePluginConflicts(); // removes conflicts with other plugins
@@ -1129,7 +1175,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	public function preventDeactivation( $insPlugin ) {
 		if ( strpos( $insPlugin, basename(__FILE__) ) !== false && !$this->hasPermissionToSubmit() ) {
 			wp_die(
-				__( 'Sorry, you do not have permission to disable this plugin. You need to authenticate first.', 'wp-simple-firewall' )
+				_wpsf__( 'Sorry, you do not have permission to disable this plugin. You need to authenticate first.' )
 			);
 		}
 	}
@@ -1164,7 +1210,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	
 	public function onWpPluginUpdateMessage() {
 		echo '<div style="color: #dd3333;">'
-			.__( 'Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features.', 'wp-simple-firewall' )
+			._wpsf__( 'Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features.' )
 			. '</div>';
 	}
 	
@@ -1266,6 +1312,48 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		return false;
 	}
 	
+	private function adminNoticeTranslations() {
+	
+		$oCurrentUser = wp_get_current_user();
+		if ( !($oCurrentUser instanceof WP_User) ) {
+			return;
+		}
+		$nUserId = $oCurrentUser->ID;
+		
+		$sAlreadyShowTranslationNotice = get_user_meta( $nUserId, self::OptionPrefix.'plugin_translation_notice', true );
+		// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
+		if ( empty( $sAlreadyShowTranslationNotice ) ) {
+			//the value has never been set, or it's been installed for the first time.
+			$this->updateTranslationNoticeShownUserMeta( $nUserId, 'M' );
+			return; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
+		}
+		
+		if ( $sAlreadyShowTranslationNotice !== 'Y' ) {
+				
+			$sRedirectPage = isset( $GLOBALS['pagenow'] ) ? $GLOBALS['pagenow'] : 'index.php';
+			ob_start();
+			?>
+				<style>
+					a#fromIcwp { padding: 0 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); color: blue; font-weight: bold; }
+				</style>
+				<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall'); ?>">
+					<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
+					<input type="hidden" value="1" name="<?php echo self::OptionPrefix; ?>hide_translation_notice" id="<?php echo self::OptionPrefix; ?>hide_translation_notice">
+					<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
+					<h4 style="margin:10px 0 3px;">
+						<?php _wpsf_e( 'Would you like to help translate the WordPress Simple Firewall into your language?' ); ?>
+						<?php printf( _wpsf__( 'Head over to: %s' ), '<a href="http://translate.icontrolwp.com" target="_blank">translate.icontrolwp.com</a>' ); ?>
+					</h4>
+					<input type="submit" value="<?php _wpsf_e( 'Dismiss this notice' ); ?>" name="submit" class="button" style="float:left; margin-bottom:10px;">
+					<div style="clear:both;"></div>
+				</form>
+			<?php
+			$sNotice = ob_get_contents();
+			ob_end_clean();
+			$this->getAdminNotice( $sNotice, 'updated', true );
+		}
+	}
+	
 	/**
 	 * Shows the update notification - will bail out if the current user is not an admin
 	 */
@@ -1280,7 +1368,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
 		// If we can never set it, we shouldn't force the Ads on those users who can't get rid of it.
 		if ( empty( $sCurrentVersion ) ) { //the value has never been set, or it's been installed for the first time.
-			$result = update_user_meta( $nUserId, self::OptionPrefix.'current_version', self::$VERSION );
+			$this->updateVersionUserMeta( $nUserId );
 			return; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
 		}
 		
@@ -1298,8 +1386,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 					<input type="hidden" value="1" name="<?php echo self::OptionPrefix; ?>hide_update_notice" id="<?php echo self::OptionPrefix; ?>hide_update_notice">
 					<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
 					<h4 style="margin:10px 0 3px;">
-						<?php _e( 'Note: WordPress Simple Firewall plugin does not automatically turn on when you install/update.', 'wp-simple-firewall' ); ?>
-						<?php printf( __( 'There may also be %simportant updates to read about%s.', 'wp-simple-firewall' ), '<a href="http://icwp.io/27" id="fromIcwp" title="WordPress Simple Firewall" target="_blank">', '</a>' ); ?>
+						<?php _wpsf_e( 'Note: WordPress Simple Firewall plugin does not automatically turn on when you install/update.' ); ?>
+						<?php printf( _wpsf__( 'There may also be %simportant updates to read about%s.' ), '<a href="http://icwp.io/27" id="fromIcwp" title="WordPress Simple Firewall" target="_blank">', '</a>' ); ?>
 					</h4>
 					<input type="submit" value="Okay, show me the dashboard." name="submit" class="button" style="float:left; margin-bottom:10px;">
 					<div style="clear:both;"></div>

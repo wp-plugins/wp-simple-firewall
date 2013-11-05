@@ -6,6 +6,11 @@ $fFirewallOn = $icwp_aMainOptions['enable_firewall'] == 'Y';
 $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
+$fAutoUpdatesOn = $icwp_aMainOptions['enable_autoupdates'] == 'Y';
+
+$sLatestVersionBranch = '2.0.x';
+$sOn = _wpsf__( 'On' );
+$sOff = _wpsf__( 'Off' );
 ?>
 
 <div class="wrap">
@@ -25,7 +30,7 @@ $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 					<div class="form-actions">
 						<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
 						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-						<button type="submit" class="btn btn-primary" name="submit"><?php _e( 'Save All Settings', 'wp-simple-firewall' ); ?></button>
+						<button type="submit" class="btn btn-primary" name="submit"><?php _wpsf_e( 'Save All Settings' ); ?></button>
 					</div>
 				</form>
 				
@@ -54,113 +59,148 @@ $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 		<?php endif; ?>
 		
 		<div class="row" id="tbs_docs">
-			<h2>Plugin Configuration Summary</h2>
+			<h2><?php _wpsf_e( 'Plugin Configuration Summary'); ?></h2>
 			<div class="span6" id="tbs_docs_shortcodes">
 			  <div class="well">
-				<h3>Firewall Configuration</h3>
-
-				<h4 style="margin-top:20px;">Firewall is currently <?php echo $fFirewallOn ? 'ON' : 'OFF'; ?>.
-				[ <a href="admin.php?page=icwp-wpsf-firewall">Configure Now</a> ]</h4>
+				<h4 style="margin-top:20px;">
+				<?php printf( _wpsf__('Firewall is %s'), $fFirewallOn ? $sOn : $sOff ); ?>
+				[ <a href="admin.php?page=icwp-wpsf-firewall"><?php _wpsf_e('Configure Now'); ?></a> ]</h4>
 				<?php if ( $fFirewallOn ) : ?>
 					<ul>
-						<li>Firewall logging is: <?php echo $icwp_aFirewallOptions['enable_firewall'] == 'Y'? 'ON' : 'OFF'; ?></li>
-						<li>When the firewall blocks a visit, it will:
+						<li><?php printf( _wpsf__('Firewall logging is %s'), ($icwp_aFirewallOptions['enable_firewall_log'] == 'Y') ? $sOn : $sOff ); ?></li>
+						<li><?php _wpsf_e( 'When the firewall blocks a visit, it will:'); ?>
 							<?php
 							if( $icwp_aFirewallOptions['block_response'] == 'redirect_die' ) {
-								echo 'Die.';
+								_wpsf_e( 'Die' );
 							}
 							else if ( $icwp_aFirewallOptions['block_response'] == 'redirect_die_message' ) {
-								echo 'Die with a message.';
+								_wpsf_e( 'Die with a message' );
 							}
 							else if ( $icwp_aFirewallOptions['block_response'] == 'redirect_home' ) {
-								echo 'Redirect to home.';
+								_wpsf_e( 'Redirect to home page' );
 							}
 							else if ( $icwp_aFirewallOptions['block_response'] == 'redirect_404' ) {
-								echo 'Redirect to 404 page.';
+								_wpsf_e( 'Redirect to 404 page' );
 							}
 							else {
-								echo 'Unknown.';	
+								_wpsf_e( 'Unknown' );
 							}
 						?>
 						</li>
 						<?php if ( isset($icwp_aFirewallOptions['ips_whitelist']['ips']) ) : ?>
-							<li>You have <?php echo count( $icwp_aFirewallOptions['ips_whitelist']['ips'] );?> whitelisted IP addresses:
+							<li>
+								<?php printf( _wpsf__('You have %s whitelisted IP addresses'), count( $icwp_aFirewallOptions['ips_whitelist']['ips'] ) ); ?>
 								<?php foreach( $icwp_aFirewallOptions['ips_whitelist']['ips'] as $sIp ) : ?>
-								<br /><?php echo long2ip($sIp); ?> labelled as <?php echo $icwp_aFirewallOptions['ips_whitelist']['meta'][md5( $sIp )]?>
+									<br />
+									<?php printf( _wpsf__('%s labelled as %s'), long2ip($sIp), $icwp_aFirewallOptions['ips_whitelist']['meta'][md5( $sIp )] ); ?>
+								<?php endforeach; ?>
+							</li>
+						<?php endif; ?>
+
+						<?php if ( isset($icwp_aFirewallOptions['ips_blacklist']['ips']) ) : ?>
+							<li>
+								<?php printf( _wpsf__('You have %s blacklisted IP addresses'), count( $icwp_aFirewallOptions['ips_blacklist']['ips'] ) ); ?>
+								<?php foreach( $icwp_aFirewallOptions['ips_blacklist']['ips'] as $sIp ) : ?>
+									<br />
+									<?php printf( _wpsf__('%s labelled as %s'), long2ip($sIp), $icwp_aFirewallOptions['ips_blacklist']['meta'][md5( $sIp )] ); ?>
 								<?php endforeach; ?>
 							</li>
 						<?php endif; ?>
 						
-						<?php if ( isset($icwp_aFirewallOptions['ips_blacklist']['ips']) ) : ?>
-							<li>You have <?php echo count( $icwp_aFirewallOptions['ips_blacklist']['ips'] );?> blacklisted IP addresses:
-								<?php foreach( $icwp_aFirewallOptions['ips_blacklist']['ips'] as $sIp ) : ?>
-								<br /><?php echo long2ip($sIp); ?> labelled as <?php echo $icwp_aFirewallOptions['ips_whitelist']['meta'][md5( $sIp )]?>
-								<?php endforeach; ?>
-							</li>
-						<?php endif; ?>
-						<li>Firewall blocks Directory Traversals: <?php echo $icwp_aFirewallOptions['block_dir_traversal'] == 'Y'? 'ON' : 'OFF'; ?></li>
-						<li>Firewall blocks SQL Queries: <?php echo $icwp_aFirewallOptions['block_sql_queries'] == 'Y'? 'ON' : 'OFF'; ?></li>
-						<li>Firewall blocks WordPress Specific Terms: <?php echo $icwp_aFirewallOptions['block_wordpress_terms'] == 'Y'? 'ON' : 'OFF'; ?></li>
-						<li>Firewall blocks Field Truncation Attacks: <?php echo $icwp_aFirewallOptions['block_field_truncation'] == 'Y'? 'ON' : 'OFF'; ?></li>
-						<li>Firewall blocks Executable File Uploads:<?php echo $icwp_aFirewallOptions['block_exe_file_uploads'] == 'Y'? 'ON' : 'OFF'; ?> </li>
-						<li>Firewall blocks Leading Schemas (HTTPS / HTTP): <?php echo $icwp_aFirewallOptions['block_leading_schema'] == 'Y'? 'ON' : 'OFF'; ?></li>
-						<li>Firewall Logging: <?php echo ($icwp_aFirewallOptions['enable_firewall_log']  == 'Y')? 'ON' : 'OFF';?></li>
+						<li><?php printf( _wpsf__('Firewall blocks Directory Traversals: %s'), ($icwp_aFirewallOptions['block_dir_traversal'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Firewall blocks SQL Queries: %s'), ($icwp_aFirewallOptions['block_sql_queries'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Firewall blocks WordPress Specific Terms: %s'), ($icwp_aFirewallOptions['block_wordpress_terms'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Firewall blocks Field Truncation Attacks: %s'), ($icwp_aFirewallOptions['block_field_truncation'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Firewall blocks Directory Traversals: %s'), ($icwp_aFirewallOptions['block_dir_traversal'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Firewall blocks Executable File Uploads: %s'), ($icwp_aFirewallOptions['block_exe_file_uploads'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Firewall blocks Leading Schemas (HTTPS / HTTP): %s'), ($icwp_aFirewallOptions['block_leading_schema'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Firewall Logging is %s'), ($icwp_aFirewallOptions['enable_firewall_log'] == 'Y')? $sOn : $sOff ); ?></li>
 					</ul>
 				<?php endif; ?>
-				
-				<h4 style="margin-top:20px;">Login Protection is currently <?php echo $fLoginProtectOn? 'ON' : 'OFF'; ?>.
-				[ <a href="admin.php?page=icwp-wpsf-login_protect">Configure Now</a> ]</h4>
+				<hr/>
+				<h4 style="margin-top:20px;">
+					<?php printf( _wpsf__('Login Protection is %s'), $fLoginProtectOn ? $sOn : $sOff ); ?>
+					[ <a href="admin.php?page=icwp-wpsf-login_protect"><?php _wpsf_e('Configure Now'); ?></a> ]</h4>
 				<?php if ( $fLoginProtectOn ) : ?>
 					<ul>
 						<?php if ( isset($icwp_aLoginProtectOptions['ips_whitelist']['ips']) ) : ?>
-							<li>You have <?php echo count( $icwp_aLoginProtectOptions['ips_whitelist']['ips'] );?> whitelisted IP addresses:
+							<li>
+								<?php printf( _wpsf__('You have %s whitelisted IP addresses'), count( $icwp_aLoginProtectOptions['ips_whitelist']['ips'] ) ); ?>
 								<?php foreach( $icwp_aLoginProtectOptions['ips_whitelist']['ips'] as $sIp ) : ?>
-								<br /><?php echo long2ip($sIp); ?> labelled as <?php echo $icwp_aLoginProtectOptions['ips_whitelist']['meta'][md5( $sIp )]?>
+									<br />
+									<?php printf( _wpsf__('%s labelled as %s'), long2ip($sIp), $icwp_aLoginProtectOptions['ips_whitelist']['meta'][md5( $sIp )] ); ?>
 								<?php endforeach; ?>
 							</li>
 						<?php endif; ?>
-						<li>Two Factor Login Authentication is: <?php echo $icwp_aLoginProtectOptions['enable_two_factor_auth_by_ip'] == 'Y'? 'ON' : 'OFF'; ?></li>
-						<li>Two Factor Login By Pass is: <?php echo $icwp_aLoginProtectOptions['enable_two_factor_bypass_on_email_fail'] == 'Y'? 'ON' : 'OFF'; ?></li>
-						<li>Login Cooldown Interval is: <?php echo ($icwp_aLoginProtectOptions['login_limit_interval'] == 0)? 'OFF' : $icwp_aLoginProtectOptions['login_limit_interval'].' seconds'; ?></li>
-						<li>Login Form GASP Protection: <?php echo ($icwp_aLoginProtectOptions['enable_login_gasp_check']  == 'Y')? 'ON' : 'OFF';?></li>
-						<li>Login Protect Logging: <?php echo ($icwp_aLoginProtectOptions['enable_login_protect_log']  == 'Y')? 'ON' : 'OFF';?></li>
+						<li><?php printf( _wpsf__('Two Factor Login Authentication: %s'), ($icwp_aLoginProtectOptions['enable_two_factor_auth_by_ip'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Two Factor Login By Pass: %s'), ($icwp_aLoginProtectOptions['enable_two_factor_bypass_on_email_fail'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Login Cooldown Interval: %s'), ($icwp_aLoginProtectOptions['login_limit_interval'] == '0')? $sOff : sprintf( _wpsf__('%s seconds'), $icwp_aLoginProtectOptions['login_limit_interval'] ) ); ?></li>
+						<li><?php printf( _wpsf__('Login Form GASP Protection: %s'), ($icwp_aLoginProtectOptions['enable_login_gasp_check'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Login Protect Logging: %s'), ($icwp_aLoginProtectOptions['enable_login_protect_log'] == 'Y')? $sOn : $sOff ); ?></li>
 					</ul>
 				<?php endif; ?>
-				
-				<h4 style="margin-top:20px;">Comments Filter is currently <?php echo $fCommentsFilteringOn? 'ON' : 'OFF'; ?>.
-				[ <a href="admin.php?page=icwp-wpsf-comments_filter">Configure Now</a> ]</h4>
+				<hr/>
+				<h4 style="margin-top:20px;">
+					<?php printf( _wpsf__('Login Protection is %s'), $fCommentsFilteringOn ? $sOn : $sOff ); ?>
+					[ <a href="admin.php?page=icwp-wpsf-comments_filter"><?php _wpsf_e('Configure Now'); ?></a> ]</h4>
 				<?php if ( $fCommentsFilteringOn ) : ?>
 					<ul>
-						<li>Enchanced GASP Protection is: <?php echo $icwp_aCommentsFilterOptions['enable_comments_gasp_protection'] == 'Y'? 'ON' : 'OFF'; ?></li>
-						<li>Comments Cooldown Interval is: <?php echo ($icwp_aCommentsFilterOptions['comments_cooldown_interval'] == 0)? 'OFF' : $icwp_aCommentsFilterOptions['comments_cooldown_interval'].' seconds'; ?></li>
-						<li>Comments Token Expire is: <?php echo ($icwp_aCommentsFilterOptions['comments_token_expire_interval'] == 0)? 'OFF' : $icwp_aCommentsFilterOptions['comments_token_expire_interval'].' seconds'; ?></li>
+						<li><?php printf( _wpsf__('Enchanced GASP Protection: %s'), ($icwp_aCommentsFilterOptions['enable_comments_gasp_protection'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Comments Cooldown Interval: %s'), ($icwp_aCommentsFilterOptions['comments_cooldown_interval'] == '0')? $sOff : sprintf( _wpsf__('%s seconds'), $icwp_aCommentsFilterOptions['comments_cooldown_interval'] ) ); ?></li>
+						<li><?php printf( _wpsf__('Comments Token Expire: %s'), ($icwp_aCommentsFilterOptions['comments_token_expire_interval'] == '0')? $sOff : sprintf( _wpsf__('%s seconds'), $icwp_aCommentsFilterOptions['comments_token_expire_interval'] ) ); ?></li>
 					</ul>
 				<?php endif; ?>
-				
-				<h4 style="margin-top:20px;">WordPress Lockdown is currently <?php echo $fLockdownOn? 'ON' : 'OFF'; ?>.
-				[ <a href="admin.php?page=icwp-wpsf-comments_filter">Configure Now</a> ]</h4>
+				<hr/>
+				<h4 style="margin-top:20px;">
+					<?php printf( _wpsf__('WordPress Lockdown is %s'), $fLockdownOn ? $sOn : $sOff ); ?>
+					[ <a href="admin.php?page=icwp-wpsf-lockdown"><?php _wpsf_e('Configure Now'); ?></a> ]</h4>
 				<?php if ( $fLockdownOn ) : ?>
 					<ul>
-						<li>Disable File Editing is: <?php echo $icwp_aLockdownOptions['disable_file_editing'] == 'Y'? 'ON' : 'OFF'; ?></li>
+						<li><?php printf( _wpsf__('Disable File Editing: %s'), ($icwp_aLockdownOptions['disable_file_editing'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Mask WordPress Version: %s'), empty($icwp_aLockdownOptions['mask_wordpress_version'])? $sOff : $icwp_aLockdownOptions['mask_wordpress_version'] ); ?></li>
+					</ul>
+				<?php endif; ?>
+				<hr/>
+				<h4 style="margin-top:20px;">
+					<?php printf( _wpsf__('Auto Updates is %s'), $fAutoUpdatesOn ? $sOn : $sOff ); ?>
+					[ <a href="admin.php?page=icwp-wpsf-autoupdates"><?php _wpsf_e('Configure Now'); ?></a> ]</h4>
+				<?php if ( $fAutoUpdatesOn ) :
+					
+					if ( $icwp_aAutoUpdatesOptions['autoupdate_core'] == 'core_never' ) {
+						$sAutoCoreUpdateOption = $sOff;
+					}
+					else if ( $icwp_aAutoUpdatesOptions['autoupdate_core'] == 'core_minor' )  {
+						$sAutoCoreUpdateOption = _wpsf__('Minor Versions Only');
+					}
+					else {
+						$sAutoCoreUpdateOption = _wpsf__('Major and Minor Versions');
+					}
+				?>
+					<ul>
+						<li><?php printf( _wpsf__('Automatically Update WordPress Simple Firewall Plugin: %s'), ($icwp_aAutoUpdatesOptions['autoupdate_plugin_wpsf'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Automatically Update WordPress Core: %s'), $sAutoCoreUpdateOption ); ?></li>
+						<li><?php printf( _wpsf__('Automatically Update Plugins: %s'), ($icwp_aAutoUpdatesOptions['enable_autoupdate_plugins'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Automatically Update Themes: %s'), ($icwp_aAutoUpdatesOptions['enable_autoupdate_themes'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Automatically Update Translations: %s'), ($icwp_aAutoUpdatesOptions['enable_autoupdate_translations'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Ignore Version Control Systems: %s'), ($icwp_aAutoUpdatesOptions['enable_autoupdate_ignore_vcs'] == 'Y')? $sOn : $sOff ); ?></li>
 					</ul>
 				<?php endif; ?>
 			  </div>
 		  </div><!-- / span6 -->
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
-				<h3>v1.9.x Release:</h3>
-				<p>The following summarises the main changes to the plugin in the 1.8.x release</p>
-				<p><span class="label ">new</span> means for the absolute latest release.</p>
+				<h3><?php printf( _wpsf__('Release v%s'), $sLatestVersionBranch ) ; ?></h3>
+				<p><?php printf( _wpsf__('The following summarises the main changes to the plugin in the v%s release'), $sLatestVersionBranch ) ; ?></p>
+				<p><?php printf( _wpsf__('%snew%s refers to the absolute latest release.'), '<span class="label">', '</span>' ) ; ?></p>
 				<?php
 				$aNewLog = array(
-					'ADDED: Block deactivation of plugin if admin access restriction is on.',
-					'ADDED: New feature to manage WordPress Automatic Updates.',
-					'FIXED: Several small bugs and streamlined codebase.',
+					'ADDED: Localization capabilities. All we need now are translators.',
+					'ADDED: Option to mask the WordPress version so the real version is never publicly visible.'
 				);
 				?>
 				<ul>
 				<?php foreach( $aNewLog as $sItem ) : ?>
-					<li><span class="label">new</span> <?php echo $sItem; ?></li>
+					<li><span class="label"><?php _wpsf_e('new'); ?></span> <?php echo $sItem; ?></li>
 				<?php endforeach; ?>
 				</ul>
 				<?php
@@ -172,10 +212,16 @@ $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 					<li><?php echo $sItem; ?></li>
 				<?php endforeach; ?>
 				</ul>
-				
+			</div>
+			<div class="well">
 				<?php
 				$aLog = array(
 
+					'1.9.x' => array(
+						'ADDED: Block deactivation of plugin if admin access restriction is on.',
+						'ADDED: New feature to manage WordPress Automatic Updates.',
+						'FIXED: Several small bugs and streamlined codebase.',
+					),
 					'1.8.x'	=> array(
 						'ADDED: Admin Access Key Restriction feature.',
 						'ADDED: WordPress Lockdown feature.'
@@ -202,14 +248,14 @@ $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 						'Huge improvements on database calls and efficiency in loading plugin options'
 					),
 					'1.3.x'	=> array(
-							"New Feature - Email Throttle. It will prevent you getting bombarded by 1000s of emails in case you're hit by a bot.",
-							"Another Firewall die() option. New option will print a message and uses the wp_die() function instead.",
-							"Option to separately log Login Protect features.",
-							"Refactored and improved the logging system.",
-							"Option to by-pass 2-factor authentication in the case sending the verification email fails.",
-							"Login Protect checking now better logs out users immediately with a redirect.",
-							"We now escape the log data being printed - just in case there's any HTML/JS etc in there we don't want.",
-							"Optimized and cleaned a lot of the option caching code to improve reliability and performance (more to come).",
+						"New Feature - Email Throttle. It will prevent you getting bombarded by 1000s of emails in case you're hit by a bot.",
+						"Another Firewall die() option. New option will print a message and uses the wp_die() function instead.",
+						"Option to separately log Login Protect features.",
+						"Refactored and improved the logging system.",
+						"Option to by-pass 2-factor authentication in the case sending the verification email fails.",
+						"Login Protect checking now better logs out users immediately with a redirect.",
+						"We now escape the log data being printed - just in case there's any HTML/JS etc in there we don't want.",
+						"Optimized and cleaned a lot of the option caching code to improve reliability and performance (more to come).",
 					),
 					
 					'1.2.x'	=> array(
@@ -242,7 +288,7 @@ $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 				);
 				?>
 				<?php foreach( $aLog as $sVersion => $aItems ) : ?>
-				<h3>Change log for the v<?php echo $sVersion; ?> release:</h3>
+				<h3><?php printf( _wpsf__('Change log for the v%s release'), $sVersion ); ?></h3>
 				<ul>
 					<?php foreach( $aItems as $sItem ) : ?>
 						<li><?php echo $sItem; ?></li>

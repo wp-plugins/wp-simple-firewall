@@ -9,11 +9,11 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
-		<?php echo printOptionsPageHeader( __('Admin Access Restriction', 'wp-simple-firewall') ); ?>
+		<?php echo printOptionsPageHeader( _wpsf__('Admin Access Restriction') ); ?>
 		<div class="row">
 			<div class="span9">
 			<?php 
-				if ( isset( $_COOKIE[ 'TODOcookie-name' ] ) ) { //the user hasn't created an encryption salt
+				if ( false && isset( $_COOKIE[ 'TODOcookie-name' ] ) ) { //the user hasn't created an encryption salt
 			?>
 					<div class="alert alert-info">
 						<p>You are currently authorized to access your cPanel Manager functions with this plugin.</p>
@@ -29,25 +29,25 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 				else {
 			?>
 				<div class="well">
-					<h3><?php _e( 'What should you enter here?', 'wp-simple-firewall');?></h3>
-					<p><?php _e( 'At some point you supplied an Admin Access Key - to manage this plugin, you must supply it here first.', 'wp-simple-firewall');?>.</p>
+					<h3><?php _wpsf_e( 'What should you enter here?');?></h3>
+					<p><?php _wpsf_e( 'At some point you supplied an Admin Access Key - to manage this plugin, you must supply it here first.');?>.</p>
 				</div>
 				<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
 					<div class="control-group">
-						<label class="control-label" for="icwp_wpsf_admin_access_key_request">Enter Access Key<br></label>
+						<label class="control-label" for="icwp_wpsf_admin_access_key_request"><?php _wpsf_e( 'Enter Access Key');?><br></label>
 						<div class="controls">
 						  <div class="option_section selected_item active" id="option_section_icwp_wpsf_admin_access_key">
 							<label>
 								<input type="text" name="icwp_wpsf_admin_access_key_request" value="" />
 							</label>
-							<p class="help-block"><?php _e( 'To manage this plugin you must enter the access key.', 'wp-simple-firewall');?></p>
+							<p class="help-block"><?php _wpsf_e( 'To manage this plugin you must enter the access key.');?></p>
 						  </div>
 						</div><!-- controls -->
 					</div>
 					<div class="form-actions">
 						<?php wp_nonce_field( $icwp_nonce_field ); ?>
 						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-						<button type="submit" class="btn btn-primary" name="submit"><?php _e( 'Submit Key', 'wp-simple-firewall' ); ?></button>
+						<button type="submit" class="btn btn-primary" name="submit"><?php _wpsf_e( 'Submit Key' ); ?></button>
 					</div>
 				</form>
 				<?php 

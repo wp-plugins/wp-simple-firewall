@@ -4,7 +4,7 @@ include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 ?>
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
-		<?php echo printOptionsPageHeader( __('Login Protection', 'wp-simple-firewall') ); ?>
+		<?php echo printOptionsPageHeader( _wpsf__('Login Protection') ); ?>
 		
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
@@ -17,7 +17,7 @@ include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 				<div class="form-actions">
 					<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
 					<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-					<button type="submit" class="btn btn-primary" name="submit"><?php _e( 'Save All Settings', 'wp-simple-firewall' ); ?></button>
+					<button type="submit" class="btn btn-primary" name="submit"><?php _wpsf_e( 'Save All Settings' ); ?></button>
 					</div>
 				</form>
 				

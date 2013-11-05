@@ -31,109 +31,109 @@ class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_WPSF {
 	
 	public function defineOptions() {
 
-		$aAutoUpdatesBase = 	array(
-			'section_title' => 'Enable Automatic Updates Section',
+		$aAutoUpdatesBase = array(
+			'section_title' => _wpsf__('Enable Automatic Updates Section'),
 			'section_options' => array(
 				array(
 					'enable_autoupdates',
 					'',
 					'N',
 					'checkbox',
-					__( 'Enable Auto Updates', 'wp-simple-firewall' ),
-					__( 'Enable (or Disable) The Simple Firewall Automatic Updates Feature', 'wp-simple-firewall' ),
-					__( 'Regardless of any other settings, this option will turn off the Auto Updates feature, or enable your selected Auto Updates options.', 'wp-simple-firewall' )
+					_wpsf__( 'Enable Auto Updates' ),
+					_wpsf__( 'Enable (or Disable) The Simple Firewall Automatic Updates Feature' ),
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Auto Updates feature, or enable your selected Auto Updates options.' )
 				)
 			)
 		);
-		$aAutoUpdateOptions = array( 'select',
-			array( 'core_never',		'Never' ),
-			array( 'core_minor',		'Minor Versions Only' ),
-			array( 'core_major', 		'Major and Minor Versions' ),
-		);
-		$aAutoUpdateCore = array(
-			'section_title' => 'Automatic Plugin Self-Update',
+		$aAutoUpdatePlugin = array(
+			'section_title' => _wpsf__('Automatic Plugin Self-Update'),
 			'section_options' => array(
 				array(
 					'autoupdate_plugin_wpsf',
 					'',
 					'Y',
 					'checkbox',
-					__( 'Auto Update Plugin', 'wp-simple-firewall' ),
-					__( 'Always Automatically Update This Plugin', 'wp-simple-firewall' ),
-					__( 'Regardless of any component settings below, automatically update the WordPress Simple Firewall plugin.', 'wp-simple-firewall' )
+					_wpsf__( 'Auto Update Plugin' ),
+					_wpsf__( 'Always Automatically Update This Plugin' ),
+					_wpsf__( 'Regardless of any component settings below, automatically update the WordPress Simple Firewall plugin.' )
 				)
 			)
 		);
+		$aAutoUpdateOptions = array( 'select',
+			array( 'core_never',		_wpsf__('Never') ),
+			array( 'core_minor',		_wpsf__('Minor Versions Only') ),
+			array( 'core_major', 		_wpsf__('Major and Minor Versions') ),
+		);
 		$aAutoUpdateComponents = array(
-			'section_title' => 'Choose Which WordPress Components To Allow Automatic Updates',
+			'section_title' => _wpsf__('Choose Which WordPress Components To Allow Automatic Updates'),
 			'section_options' => array(
 				array(
 					'autoupdate_core',
 					'',
 					'core_minor',
 					$aAutoUpdateOptions,
-					__( 'WordPress Core Updates', 'wp-simple-firewall' ),
-					__( 'Decide how the WordPress Core will automatically update, if at all', 'wp-simple-firewall' ),
-					__( 'At least automatically upgrading minor versions is recommended (and is the WordPress default).', 'wp-simple-firewall' )
+					_wpsf__( 'WordPress Core Updates' ),
+					_wpsf__( 'Decide how the WordPress Core will automatically update, if at all' ),
+					_wpsf__( 'At least automatically upgrading minor versions is recommended (and is the WordPress default).' )
 				),
 				array(
 					'enable_autoupdate_translations',
 					'',
 					'Y',
 					'checkbox',
-					__( 'Translations', 'wp-simple-firewall' ),
-					__( 'Automatically Update Translations', 'wp-simple-firewall' ),
-					__( 'Note: Automatic updates for translations are enabled on WordPress by default.', 'wp-simple-firewall' )
+					_wpsf__( 'Translations' ),
+					_wpsf__( 'Automatically Update Translations' ),
+					_wpsf__( 'Note: Automatic updates for translations are enabled on WordPress by default.' )
 				),
 				array(
 					'enable_autoupdate_plugins',
 					'',
 					'N',
 					'checkbox',
-					__( 'Plugins', 'wp-simple-firewall' ),
-					__( 'Automatically Update Plugins', 'wp-simple-firewall' ),
-					__( 'Note: Automatic updates for plugins are disabled on WordPress by default.', 'wp-simple-firewall' )
+					_wpsf__( 'Plugins' ),
+					_wpsf__( 'Automatically Update Plugins' ),
+					_wpsf__( 'Note: Automatic updates for plugins are disabled on WordPress by default.' )
 				),
 				array(
 					'enable_autoupdate_themes',
 					'',
 					'N',
 					'checkbox',
-					__( 'Themes', 'wp-simple-firewall' ),
-					__( 'Automatically Update Themes', 'wp-simple-firewall' ),
-					__( 'Note: Automatic updates for themes are disabled on WordPress by default.', 'wp-simple-firewall' )
+					_wpsf__( 'Themes' ),
+					_wpsf__( 'Automatically Update Themes' ),
+					_wpsf__( 'Note: Automatic updates for themes are disabled on WordPress by default.' )
 				),
 				array(
 					'enable_autoupdate_ignore_vcs',
 					'',
 					'N',
 					'checkbox',
-					__( 'Ignore Version Control', 'wp-simple-firewall' ),
-					__( 'Ignore Version Control Systems Such As GIT and SVN', 'wp-simple-firewall' ),
-					__( 'If you use SVN or GIT and WordPress detects it, automatic updates are disabled by default. Check this box to ignore version control systems and allow automatic updates.', 'wp-simple-firewall' )
+					_wpsf__( 'Ignore Version Control' ),
+					_wpsf__( 'Ignore Version Control Systems Such As GIT and SVN' ),
+					_wpsf__( 'If you use SVN or GIT and WordPress detects it, automatic updates are disabled by default. Check this box to ignore version control systems and allow automatic updates.' )
 				)
 			)
 		);
 		$aAutoUpdateAll = array(
-			'section_title' => 'Disable ALL Automatic Updates',
+			'section_title' => _wpsf__('Disable ALL WordPress Automatic Updates'),
 			'section_options' => array(
 				array(
 					'enable_autoupdate_disable_all',
 					'',
 					'N',
 					'checkbox',
-					__( 'Disable All', 'wp-simple-firewall' ),
-					__( 'Completely Disable WordPress Automatic Updates', 'wp-simple-firewall' ),
-					__( 'When selected, regardless of any setting above, all automatic updates on this site will be completely disabled!', 'wp-simple-firewall' )
+					_wpsf__( 'Disable All' ),
+					_wpsf__( 'Completely Disable WordPress Automatic Updates' ),
+					_wpsf__( 'When selected, regardless of any other settings, all WordPress automatic updates on this site will be completely disabled!' )
 				)
 			)
 		);
 
 		$this->m_aOptions = array(
 			$aAutoUpdatesBase,
-			$aAutoUpdateCore,
+			$aAutoUpdateAll,
+			$aAutoUpdatePlugin,
 			$aAutoUpdateComponents,
-			$aAutoUpdateAll
 		);
 	}
 

@@ -36,36 +36,56 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_WPSF {
 		else if ( $this->getOpt( 'action_reset_auth_salts' ) == 'P' ) {
 			$this->setOpt( 'action_reset_auth_salts', 'N' );
 		}
+
+		$sCurrent = $this->getOpt( 'mask_wordpress_version' );
+		if ( !empty( $sCurrent ) ) {
+			$this->setOpt( 'mask_wordpress_version', preg_replace( '/[^a-z0-9_.-]/i', '', $sCurrent ) );
+		}
 	}
 	
 	public function defineOptions() {
 
 		$aBase = array(
-			'section_title' => __( 'Enable Lockdown Feature', 'wp-simple-firewall' ),
+			'section_title' => _wpsf__( 'Enable Lockdown Feature' ),
 			'section_options' => array(
 				array(
 					'enable_lockdown',
 					'',
 					'N',
 					'checkbox',
-					__( 'Enable Lockdown', 'wp-simple-firewall' ),
-					__( 'Enable (or Disable) The Lockdown Feature', 'wp-simple-firewall' ),
-					__( 'Regardless of any other settings, this option will turn Off the Lockdown feature, or enable your selected Lockdown options', 'wp-simple-firewall' )
+					_wpsf__( 'Enable Lockdown' ),
+					_wpsf__( 'Enable (or Disable) The Lockdown Feature' ),
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Lockdown feature, or enable your selected Lockdown options' )
 				)
 			)
 		);
 		$aAccess = array(
-			'section_title' => __( 'Access Options', 'wp-simple-firewall' ),
+			'section_title' => _wpsf__( 'Access Options' ),
 			'section_options' => array(
 				array(
 					'disable_file_editing',
 					'',
 					'N',
 					'checkbox',
-					__( 'Disable File Editing', 'wp-simple-firewall' ),
-					__( 'Disable Ability To Edit Files', 'wp-simple-firewall' ),
-					__( 'Removes the option to directly edit any files from within the WordPress admin area.', 'wp-simple-firewall' )
-					.'<br />'.__( 'Equivalent to setting DISALLOW_FILE_EDIT to TRUE.', 'wp-simple-firewall' )
+					_wpsf__( 'Disable File Editing' ),
+					_wpsf__( 'Disable Ability To Edit Files' ),
+					_wpsf__( 'Removes the option to directly edit any files from within the WordPress admin area.' )
+					.'<br />'._wpsf__( 'Equivalent to setting DISALLOW_FILE_EDIT to TRUE.' )
+				)
+			)
+		);
+		$aAccess = array(
+			'section_title' => _wpsf__( 'WordPress Obscurity Options' ),
+			'section_options' => array(
+				array(
+					'mask_wordpress_version',
+					'',
+					'',
+					'text',
+					_wpsf__( 'Mask WordPress Version' ),
+					_wpsf__( 'Prevents Public Display Of Your WordPress Version' ),
+					_wpsf__( 'Enter how you would like your WordPress version displayed publicly. Leave blank to disable this feature.' )
+						.'<br />'._wpsf__( 'Warning: This may interfere with WordPress plugins that rely on the $wp_version variable.' )
 				)
 			)
 		);
@@ -77,17 +97,17 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_WPSF {
 		
 		if ( false && $this->getCanDoAuthSalts() ) {
 			$this->m_aOptions[] = array(
-				'section_title' => __( 'Security Actions', 'wp-simple-firewall' ),
+				'section_title' => _wpsf__( 'Security Actions' ),
 				'section_options' => array(
 					array(
 						'action_reset_auth_salts',
 						'',
 						'N',
 						'checkbox',
-						__( 'Reset Auth Keys/Salts', 'wp-simple-firewall' ),
-						__( 'Reset WordPress Authentication Keys and Salts', 'wp-simple-firewall' ),
-						__( 'Selecting this will reset the WordPress Authentication Keys and Salts in your wp-config.php file.', 'wp-simple-firewall' )
-						.'<br /><strong>'.__( 'Note: This will log you and all other users out of their current session.', 'wp-simple-firewall' ).'</strong>'
+						_wpsf__( 'Reset Auth Keys/Salts' ),
+						_wpsf__( 'Reset WordPress Authentication Keys and Salts' ),
+						_wpsf__( 'Selecting this will reset the WordPress Authentication Keys and Salts in your wp-config.php file.' )
+						.'<br /><strong>'._wpsf__( 'Note: This will log you and all other users out of their current session.' ).'</strong>'
 					)
 				)
 			);

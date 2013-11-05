@@ -5,7 +5,7 @@ function printOptionsPageHeader( $insSection = '' ) {
 	echo '<div class="page-header">';
 	echo '<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="icontrolwp-icon"><br /></div></a>';
 	echo '<h2>';
-	$sBaseTitle = sprintf( __( 'WordPress Simple Firewall (from %s)' ), $sLinkedIcwp );
+	$sBaseTitle = sprintf( _wpsf__( 'WordPress Simple Firewall (from %s)' ), $sLinkedIcwp );
 	if ( !empty($insSection) ) {
 		echo sprintf( '%s :: %s', $insSection, $sBaseTitle );
 	}

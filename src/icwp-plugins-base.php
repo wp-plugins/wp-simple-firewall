@@ -273,7 +273,7 @@ class ICWP_WPSF_Base_Plugin {
 	 */
 	public function onWpPluginActionLinks( $inaLinks, $insFile ) {
 		if ( $insFile == self::$PLUGIN_BASENAME ) {
-			$sSettingsLink = '<a href="'.admin_url( "admin.php" ).'?page='.$this->getFullParentMenuId().'">' . __( 'Settings', 'worpit' ) . '</a>';
+			$sSettingsLink = '<a href="'.admin_url( "admin.php" ).'?page='.$this->getFullParentMenuId().'">' . _wpsf__( 'Settings', 'worpit' ) . '</a>';
 			array_unshift( $inaLinks, $sSettingsLink );
 		}
 		return $inaLinks;

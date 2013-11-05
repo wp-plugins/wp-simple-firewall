@@ -35,99 +35,99 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
 		$this->m_aDirectSaveOptions = array();
 		
 		$aBase = array(
-			'section_title' => 'Enable Comments Filter',
+			'section_title' => _wpsf__( 'Enable Comments Filter' ),
 			'section_options' => array(
 				array(
 					'enable_comments_filter',
 					'',
 					'Y',
 					'checkbox',
-					__( 'Enable Comments Filter', 'wp-simple-firewall' ),
-					__( 'Enable (or Disable) The SPAM Comments Filter Feature.', 'wp-simple-firewall' ),
-					__( 'Regardless of any other settings, this option will turn off the Comments Filter feature, or enable your chosen Comments Filter options.', 'wp-simple-firewall' )
+					_wpsf__( 'Enable Comments Filter' ),
+					_wpsf__( 'Enable (or Disable) The SPAM Comments Filter Feature.' ),
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Comments Filter feature, or enable your chosen Comments Filter options.' )
 				)
 			),
 		);
 		$aGasp = array(
-			'section_title' => 'G.A.S.P. Comment SPAM Protection',
+			'section_title' => _wpsf__( 'G.A.S.P. Comment SPAM Protection' ),
 			'section_options' => array(
 				array(
 					'enable_comments_gasp_protection',
 					'',
 					'Y',
 					'checkbox',
-					__( 'GASP Protection', 'wp-simple-firewall' ),
-					__( 'Add Growmap Anti Spambot Protection to your comments', 'wp-simple-firewall' ),
-					__( 'Taking the lead from the original GASP plugin for WordPress, we have extended it to include further protection.', 'wp-simple-firewall' )
-						.' '.sprintf( __( '%smore info%s', 'wp-simple-firewall' ), '[<a href="http://icwp.io/2n" target="_blank">', '</a>]' )
+					_wpsf__( 'GASP Protection' ),
+					_wpsf__( 'Add Growmap Anti Spambot Protection to your comments' ),
+					_wpsf__( 'Taking the lead from the original GASP plugin for WordPress, we have extended it to include further protection.' )
+						.' '.sprintf( _wpsf__( '%smore info%s' ), '[<a href="http://icwp.io/2n" target="_blank">', '</a>]' )
 				),
 				array(
 					'enable_comments_gasp_protection_for_logged_in',
 					'',
 					'N',
 					'checkbox',
-					__( 'Include Logged-In Users', 'wp-simple-firewall' ),
-					__( 'You may also enable GASP for logged in users', 'wp-simple-firewall' ),
-					__( 'Since logged-in users would be expected to be vetted already, this is off by default.', 'wp-simple-firewall' )
+					_wpsf__( 'Include Logged-In Users' ),
+					_wpsf__( 'You may also enable GASP for logged in users' ),
+					_wpsf__( 'Since logged-in users would be expected to be vetted already, this is off by default.' )
 				),
 				array(
 					'comments_cooldown_interval',
 					'',
 					'30',
 					'integer',
-					__( 'Comments Cooldown', 'wp-simple-firewall' ),
-					__( 'Limit posting comments to X seconds after the page has loaded', 'wp-simple-firewall' ),
-					__( "By forcing a comments cooldown period, you restrict a Spambot's ability to post mutliple times to your posts.", 'wp-simple-firewall' )
+					_wpsf__( 'Comments Cooldown' ),
+					_wpsf__( 'Limit posting comments to X seconds after the page has loaded' ),
+					_wpsf__( "By forcing a comments cooldown period, you restrict a Spambot's ability to post mutliple times to your posts." )
 				),
 				array(
 					'comments_token_expire_interval',
 					'',
 					'600',
 					'integer',
-					__( 'Comment Token Expire', 'wp-simple-firewall' ),
-					__( 'A visitor has X seconds within which to post a comment', 'wp-simple-firewall' ),
-					__( "Default: 600 seconds (10 minutes). Each visitor is given a unique 'Token' so they can comment. This restricts spambots, but we need to force these tokens to expire and at the same time not bother the visitors.", 'wp-simple-firewall' )
+					_wpsf__( 'Comment Token Expire' ),
+					_wpsf__( 'A visitor has X seconds within which to post a comment' ),
+					_wpsf__( "Default: 600 seconds (10 minutes). Each visitor is given a unique 'Token' so they can comment. This restricts spambots, but we need to force these tokens to expire and at the same time not bother the visitors." )
 					
 				),
 				array(
 					'custom_message_checkbox',
 					'',
-					__( "I'm not a spammer", 'wp-simple-firewall' ),
+					_wpsf__( "I'm not a spammer" ),
 					'text',
-					__( 'Custom Checkbox Message', 'wp-simple-firewall' ),
-					__( 'If you want a custom checkbox message, please provide this here', 'wp-simple-firewall' ),
-					__( "You can customise the message beside the checkbox.", 'wp-simple-firewall' )
-						.'<br />'.sprintf( __( 'Default Message: %s', 'wp-simple-firewall' ), __("Please check the box to confirm you're not a spammer", 'wp-simple-firewall') )
+					_wpsf__( 'Custom Checkbox Message' ),
+					_wpsf__( 'If you want a custom checkbox message, please provide this here' ),
+					_wpsf__( "You can customise the message beside the checkbox." )
+						.'<br />'.sprintf( _wpsf__( 'Default Message: %s' ), _wpsf__("Please check the box to confirm you're not a spammer") )
 				),
 				array(
 					'custom_message_alert',
 					'',
-					__( "Please check the box to confirm you're not a spammer", 'wp-simple-firewall' ),
+					_wpsf__( "Please check the box to confirm you're not a spammer" ),
 					'text',
-					__( 'Custom Alert Message', 'wp-simple-firewall' ),
-					__( 'If you want a custom alert message, please provide this here', 'wp-simple-firewall' ),
-					__( "This alert message is displayed when a visitor attempts to submit a comment without checking the box.", 'wp-simple-firewall' )
-						.'<br />'.sprintf( __( 'Default Message: %s', 'wp-simple-firewall' ), __("Please check the box to confirm you're not a spammer", 'wp-simple-firewall') )
+					_wpsf__( 'Custom Alert Message' ),
+					_wpsf__( 'If you want a custom alert message, please provide this here' ),
+					_wpsf__( "This alert message is displayed when a visitor attempts to submit a comment without checking the box." )
+						.'<br />'.sprintf( _wpsf__( 'Default Message: %s' ), _wpsf__("Please check the box to confirm you're not a spammer") )
 				),
 				array(
 					'custom_message_comment_wait',
 					'',
-					__( "Please wait %s seconds before posting your comment", 'wp-simple-firewall' ),
+					_wpsf__( "Please wait %s seconds before posting your comment" ),
 					'text',
-					__( 'Custom Wait Message', 'wp-simple-firewall' ),
-					__( 'If you want a custom submit-button wait message, please provide this here.', 'wp-simple-firewall' ),
-					__( "Where you see the '%s' this will be the number of seconds. You must ensure you include 1, and only 1, of these.", 'wp-simple-firewall' )
-						.'<br />'.sprintf( __( 'Default Message: %s', 'wp-simple-firewall' ), __('Please wait %s seconds before posting your comment', 'wp-simple-firewall') )
+					_wpsf__( 'Custom Wait Message' ),
+					_wpsf__( 'If you want a custom submit-button wait message, please provide this here.' ),
+					_wpsf__( "Where you see the '%s' this will be the number of seconds. You must ensure you include 1, and only 1, of these." )
+						.'<br />'.sprintf( _wpsf__( 'Default Message: %s' ), _wpsf__('Please wait %s seconds before posting your comment') )
 				),
 				array(
 					'custom_message_comment_reload',
 					'',
-					__( "Please reload this page to post a comment", 'wp-simple-firewall' ),
+					_wpsf__( "Please reload this page to post a comment" ),
 					'text',
-					__( 'Custom Reload Message', 'wp-simple-firewall' ),
-					__( 'If you want a custom message when the comment token has expired, please provide this here.', 'wp-simple-firewall' ),
-					__( 'This message is displayed on the submit-button when the comment token is expired', 'wp-simple-firewall' )
-						.'<br />'.sprintf( __( 'Default Message: %s', 'wp-simple-firewall' ), __("Please reload this page to post a comment", 'wp-simple-firewall') )
+					_wpsf__( 'Custom Reload Message' ),
+					_wpsf__( 'If you want a custom message when the comment token has expired, please provide this here.' ),
+					_wpsf__( 'This message is displayed on the submit-button when the comment token is expired' )
+						.'<br />'.sprintf( _wpsf__( 'Default Message: %s' ), _wpsf__("Please reload this page to post a comment") )
 				)
 			)
 		);

@@ -52,87 +52,87 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 		if ( $this->hasEncryptOption() ) {
 			
 			$aAccessKey = array(
-				'section_title' => __( 'Admin Access Restriction', 'wp-simple-firewall' ),
+				'section_title' => _wpsf__( 'Admin Access Restriction' ),
 				'section_options' => array(
 					array(
 						'enable_admin_access_restriction',
 						'',
 						'N',
 						'checkbox',
-						__( 'Enable Access Key', 'wp-simple-firewall' ),
-						__( 'Enforce Admin Access Restriction', 'wp-simple-firewall' ),
-						__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.', 'wp-simple-firewall' )
-							.' '.sprintf( __( '%smore info%s', 'wp-simple-firewall' ), '[<a href="http://icwp.io/2n" target="_blank">', '</a>]' )
+						_wpsf__( 'Enable Access Key' ),
+						_wpsf__( 'Enforce Admin Access Restriction' ),
+						_wpsf__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.' )
+							.' '.sprintf( _wpsf__( '%smore info%s' ), '[<a href="http://icwp.io/2n" target="_blank">', '</a>]' )
 					),
 					array(
 						'admin_access_timeout',
 						'',
 						self::Default_AccessKeyTimeout,
 						'integer',
-						__( 'Access Key Timeout', 'wp-simple-firewall' ),
-						__( 'Specify A Timeout For Plugin Admin Access', 'wp-simple-firewall' ),
-						__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again. Default: 30 minutes.', 'wp-simple-firewall' ),
+						_wpsf__( 'Access Key Timeout' ),
+						_wpsf__( 'Specify A Timeout For Plugin Admin Access' ),
+						_wpsf__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again. Default: 30 minutes.' ),
 					),
 					array(
 						'admin_access_key',
 						'',
 						'',
 						'password',
-						__( 'Admin Access Key', 'wp-simple-firewall' ),
-						__( 'Specify Your Plugin Access Key', 'wp-simple-firewall' ),
-						__( 'If you forget this, you could potentially lock yourself out from using this plugin.', 'wp-simple-firewall' )
-							.'<strong>'.__( 'Leave it blank to not update it', 'wp-simple-firewall' ).'</strong>',
+						_wpsf__( 'Admin Access Key' ),
+						_wpsf__( 'Specify Your Plugin Access Key' ),
+						_wpsf__( 'If you forget this, you could potentially lock yourself out from using this plugin.' )
+							.'<strong>'._wpsf__( 'Leave it blank to not update it' ).'</strong>',
 					)
 				)
 			);
 		}
 		
 		$aGeneral = array(
-			'section_title' => __( 'General Plugin Options', 'wp-simple-firewall' ),
+			'section_title' => _wpsf__( 'General Plugin Options' ),
 			'section_options' => array(
 				array(
 					'enable_firewall',
 					'',	'N',
 					'checkbox',
-					__( 'Enable Firewall', 'wp-simple-firewall' ),
-					__( 'Enable (or Disable) The WordPress Firewall Feature', 'wp-simple-firewall' ),
-					__( 'Regardless of any other settings, this option will turn off the Firewall feature, or enable your selected Firewall options', 'wp-simple-firewall' )
+					_wpsf__( 'Enable Firewall' ),
+					_wpsf__( 'Enable (or Disable) The WordPress Firewall Feature' ),
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Firewall feature, or enable your selected Firewall options' )
 				),
 				array(
 					'enable_login_protect',
 					'',
 					'Y',
 					'checkbox',
-					__( 'Enable Login Protect', 'wp-simple-firewall' ),
-					__( 'Enable (or Disable) The Login Protection Feature', 'wp-simple-firewall' ),
-					__( 'Regardless of any other settings, this option will turn off the Login Protect feature, or enable your selected Login Protect options', 'wp-simple-firewall' )
+					_wpsf__( 'Enable Login Protect' ),
+					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Login Protect feature, or enable your selected Login Protect options' )
 				),
 				array(
 					'enable_comments_filter',
 					'',
 					'Y',
 					'checkbox',
-					__( 'Enable Comments Filter', 'wp-simple-firewall' ),
-					__( 'Enable (or Disable) The Comments Filter Feature', 'wp-simple-firewall' ),
-					__( 'Regardless of any other settings, this option will turn off the Comments Filter feature, or enable your selected Comments Filter options', 'wp-simple-firewall' )
+					_wpsf__( 'Enable Comments Filter' ),
+					_wpsf__( 'Enable (or Disable) The Comments Filter Feature' ),
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Comments Filter feature, or enable your selected Comments Filter options' )
 				),
 				array(
 					'enable_lockdown',
 					'',
 					'N',
 					'checkbox',
-					__( 'Enable Lockdown', 'wp-simple-firewall' ),
-					__( 'Enable (or Disable) The Lockdown Feature', 'wp-simple-firewall' ),
-					__( 'Regardless of any other settings, this option will turn off the Lockdown feature, or enable your selected Lockdown options', 'wp-simple-firewall' )
+					_wpsf__( 'Enable Lockdown' ),
+					_wpsf__( 'Enable (or Disable) The Lockdown Feature' ),
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Lockdown feature, or enable your selected Lockdown options' )
 				),
 				array(
 					'enable_autoupdates',
 					'',
 					'N',
 					'checkbox',
-					__( 'Enable Auto Updates', 'wp-simple-firewall' ),
-					__( 'Enable (or Disable) The Auto Updates Feature', 'wp-simple-firewall' ),
-					__( 'Regardless of any other settings, this option will turn off the Auto Updates feature, or enable your selected Auto Updates options', 'wp-simple-firewall' )
+					_wpsf__( 'Enable Auto Updates' ),
+					_wpsf__( 'Enable (or Disable) The Auto Updates Feature' ),
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Auto Updates feature, or enable your selected Auto Updates options' )
 				),
 				/*
 				array(
@@ -150,42 +150,42 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_WPSF {
 					'',
 					'Y',
 					'checkbox',
-					__( 'Plugin Upgrade Notice', 'wp-simple-firewall' ),
-					__( 'Display A Notice When An Upgrade Is Available', 'wp-simple-firewall' ),
-					__( 'Displays a notice at the top of your WordPress admin section when a plugin upgrade is available', 'wp-simple-firewall' )
+					_wpsf__( 'Plugin Upgrade Notice' ),
+					_wpsf__( 'Display A Notice When An Upgrade Is Available' ),
+					_wpsf__( 'Displays a notice at the top of your WordPress admin section when a plugin upgrade is available' )
 				),
 				array(
 					'delete_on_deactivate',
 					'',
 					'N',
 					'checkbox',
-					__( 'Delete Plugin Settings', 'wp-simple-firewall' ),
-					__( 'Delete All Plugin Settings Upon Plugin Deactivation', 'wp-simple-firewall' ),
-					__( 'Careful: Removes all plugin options when you deactivate the plugin', 'wp-simple-firewall' )
+					_wpsf__( 'Delete Plugin Settings' ),
+					_wpsf__( 'Delete All Plugin Settings Upon Plugin Deactivation' ),
+					_wpsf__( 'Careful: Removes all plugin options when you deactivate the plugin' )
 				)
 			)
 		);
 		
 		$aEmail = array(
-			'section_title' => __( 'Email Options', 'wp-simple-firewall' ),
+			'section_title' => _wpsf__( 'Email Options' ),
 			'section_options' => array(
 				array(
 					'block_send_email_address',
 					'',
 					'',
 					'email',
-					__( 'Report Email', 'wp-simple-firewall' ),
-					__( 'Where to send email reports', 'wp-simple-firewall' ),
-					__( 'If this is empty, it will default to the blog admin email address', 'wp-simple-firewall' )
+					_wpsf__( 'Report Email' ),
+					_wpsf__( 'Where to send email reports' ),
+					_wpsf__( 'If this is empty, it will default to the blog admin email address' )
 				),
 				array(
 					'send_email_throttle_limit',
 					'',
 					'10',
 					'integer',
-					__( 'Email Throttle Limit', 'wp-simple-firewall' ),
-					__( 'Limit Emails Per Second', 'wp-simple-firewall' ),
-					__( 'You throttle emails sent by this plugin by limiting the number of emails sent every second. This is useful in case you get hit by a bot attack. Zero (0) turns this off. Suggested: 10', 'wp-simple-firewall' )
+					_wpsf__( 'Email Throttle Limit' ),
+					_wpsf__( 'Limit Emails Per Second' ),
+					_wpsf__( 'You throttle emails sent by this plugin by limiting the number of emails sent every second. This is useful in case you get hit by a bot attack. Zero (0) turns this off. Suggested: 10' )
 				)
 			)
 		);
