@@ -96,10 +96,12 @@ class ICWP_DataProcessor {
 	 * 
 	 * @param array $inaCurrent			- the list to which to add the new addresses
 	 * @param array $inaNewRawAddresses	- the new IPv4 addresses
-	 * @param int $outnNewAdded		- the count of newly added IPs
+	 * @param int $outnNewAdded			- the count of newly added IPs
 	 * @return unknown|Ambigous <multitype:multitype: , string>
 	 */
 	public static function Add_New_Raw_Ips( $inaCurrent, $inaNewRawAddresses, &$outnNewAdded = 0 ) {
+		
+		$outnNewAdded = 0;
 		
 		if ( empty( $inaNewRawAddresses ) ) {
 			return $inaCurrent;

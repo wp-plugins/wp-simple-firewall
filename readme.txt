@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
 Requires at least: 3.2.0
 Tested up to: 3.7
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 
 Complete and Simple WordPress Security. Unrestricted, with no premium features.
 
@@ -223,6 +223,11 @@ This is best described on the blog: http://icwp.io/2u
 
 Best described here: http://icwp.io/2v
 
+= I'm getting an update message although I have auto update enabled? =
+
+The Automatic (Background) WordPress updates happens on a WordPress schedule - it doesn't happen immediately when an update is detected.
+You can either manually upgrade, or WordPress will handle it in due course.
+
 == Screenshots ==
 
 == Changelog ==
@@ -231,6 +236,10 @@ Best described here: http://icwp.io/2v
 
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+
+= 2.0.2 =
+
+*	CHANGED:	WordPress filters used to programmatically update whitelists now update the Login Protection IP whitelist
 
 = 2.0.1 =
 

@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.0.1
+ * Version: 2.0.2
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -56,7 +56,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	static public $VERSION			= '2.0.1';
+	static public $VERSION			= '2.0.2';
 
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
@@ -554,7 +554,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 		}
 		
 		// This is only done on WP Admin loads so as not to affect the front-end and only if the firewall is enabled
-		if ( $this->getIsMainFeatureEnabled( 'firewall' ) ) {
+		if ( $this->getIsMainFeatureEnabled( 'firewall' ) ||  $this->getIsMainFeatureEnabled( 'login_protect' ) ) {
 			$this->filterIpLists();
 		}
 		
@@ -1259,11 +1259,29 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 	 */
 	protected function filterIpLists() {
 		
-		$nNewAddedCount = 0;
-		$mResult = $this->processIpFilter( 'ips_whitelist', 'icwp_simple_firewall_whitelist_ips', $nNewAddedCount );
-		if ( $mResult !== false && $nNewAddedCount > 0 ) {
-			$this->m_oFirewallOptions->setOpt( 'ips_whitelist', $mResult );
-			$this->resetFirewallProcessor();
+		$aNewFilterIps = $this->processIpFilter( 'ips_whitelist', 'icwp_simple_firewall_whitelist_ips', $nNewAddedCount );
+		if ( $aNewFilterIps !== false ) {
+			
+			$this->loadOptionsHandler( 'Firewall' );
+			$aExistingIpList = $this->m_oFirewallOptions->getOpt( 'ips_whitelist' );
+			if ( !is_array( $aExistingIpList ) ) {
+				$aExistingIpList = array();
+			}
+			$aNewList = ICWP_DataProcessor::Add_New_Raw_Ips( $aExistingIpList, $aNewFilterIps, $nNewAddedCount );
+			if ( $nNewAddedCount > 0 ) {
+				$this->m_oFirewallOptions->setOpt( 'ips_whitelist', $aNewList );
+				$this->resetFirewallProcessor();
+			}
+			$this->loadOptionsHandler( 'LoginProtect' );
+			$aExistingIpList = $this->m_oLoginProtectOptions->getOpt( 'ips_whitelist' );
+			if ( !is_array( $aExistingIpList ) ) {
+				$aExistingIpList = array();
+			}
+			$aNewList = ICWP_DataProcessor::Add_New_Raw_Ips( $aExistingIpList, $aNewFilterIps, $nNewAddedCount );
+			if ( $nNewAddedCount > 0 ) {
+				$this->m_oLoginProtectOptions->setOpt( 'ips_whitelist', $aNewList );
+				$this->resetLoginProcessor();
+			}
 		}
 		
 		$nNewAddedCount = 0;
@@ -1300,14 +1318,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Base_Plugin {
 				}
 				$aNewIps[ $sIP ] = $sLabel;
 			}
-			
-			// Get the existing list
-			$this->loadOptionsHandler( 'Firewall' );
-			$aExistingIpList = $this->m_oFirewallOptions->getOpt( $insExistingListKey );
-			if ( !is_array( $aExistingIpList ) ) {
-				$aExistingIpList = array();
-			}
-			return ICWP_DataProcessor::Add_New_Raw_Ips( $aExistingIpList, $aNewIps, $outnNewAdded );
+			return $aNewIps;
 		}
 		return false;
 	}
