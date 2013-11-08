@@ -74,7 +74,7 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_WPSF {
 				)
 			)
 		);
-		$aAccess = array(
+		$aObscurity = array(
 			'section_title' => _wpsf__( 'WordPress Obscurity Options' ),
 			'section_options' => array(
 				array(
@@ -92,7 +92,8 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_WPSF {
 
 		$this->m_aOptions = array(
 			$aBase,
-			$aAccess
+			$aAccess,
+			$aObscurity
 		);
 		
 		if ( false && $this->getCanDoAuthSalts() ) {
