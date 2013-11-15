@@ -20,6 +20,12 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 if ( !class_exists('ICWP_LockdownProcessor') ):
 
 class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
+
+	const Slug = 'lockdown';
+
+	public function __construct( $insOptionPrefix = '' ) {
+		parent::__construct( $insOptionPrefix.self::Slug.'_processor' );
+	}
 	
 	/**
 	 * Resets the object values to be re-used anew

@@ -20,7 +20,7 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-lockdown.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_Lockdown') ):
 
-class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_WPSF {
+class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_V1 {
 	
 	const StoreName = 'lockdown_options';
 	

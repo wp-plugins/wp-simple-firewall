@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_CommentsFilter') ):
 
-class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_WPSF {
+class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_V1 {
 
 	const StoreName = 'commentsfilter_options';
 	

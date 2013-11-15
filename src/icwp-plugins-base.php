@@ -191,7 +191,7 @@ class ICWP_WPSF_Base_Plugin {
 	protected function createMenu() {
 
 		$sFullParentMenuId = $this->getFullParentMenuId();
-		add_menu_page( self::ParentTitle, self::ParentName, self::ParentPermissions, $sFullParentMenuId, array( $this, 'onDisplayAll' ), $this->getImageUrl( 'icontrolwp_16x16.png' ) );
+		add_menu_page( self::ParentTitle, self::ParentName, self::ParentPermissions, $sFullParentMenuId, array( $this, 'onDisplayAll' ), $this->getImageUrl( 'pluginlogo_16x16.png' ) );
 
 		//Create and Add the submenu items
 		$this->createPluginSubMenuItems();

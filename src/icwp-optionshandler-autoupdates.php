@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_AutoUpdates') ):
 
-class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_WPSF {
+class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_V1 {
 	
 	const StoreName = 'autoupdates_options';
 	
@@ -37,7 +37,7 @@ class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_WPSF {
 				array(
 					'enable_autoupdates',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					_wpsf__( 'Enable Auto Updates' ),
 					_wpsf__( 'Enable (or Disable) The Simple Firewall Automatic Updates Feature' ),

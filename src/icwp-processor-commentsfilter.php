@@ -20,8 +20,8 @@ require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 if ( !class_exists('ICWP_CommentsFilterProcessor') ):
 
 class ICWP_CommentsFilterProcessor extends ICWP_BaseDbProcessor_WPSF {
-	
-	const TableName					= 'comments_filter';
+
+	const Slug = 'comments_filter';
 	
 	/**
 	 * @var string
@@ -65,8 +65,8 @@ class ICWP_CommentsFilterProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	protected $m_fAllowTwoFactorByPass;
 	
-	public function __construct() {
-		parent::__construct( self::TableName );
+	public function __construct( $insOptionPrefix = '' ) {
+		parent::__construct( $insOptionPrefix.self::Slug.'_processor', self::Slug );
 		$this->createTable();
 		$this->reset();
 	}

@@ -20,6 +20,8 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 if ( !class_exists('ICWP_FirewallProcessor') ):
 
 class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
+
+	const Slug = 'firewall';
 	
 	protected $m_nRequestTimestamp;
 	
@@ -63,8 +65,8 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	 */
 	protected $m_aPageParamValues;
 
-	public function __construct() {
-		parent::__construct();
+	public function __construct( $insOptionPrefix = '' ) {
+		parent::__construct( $insOptionPrefix.self::Slug.'_processor' );
 		
 		$sMessage = "You were blocked by the %sWordPress Simple Firewall%s.";
 		$this->m_sFirewallMessage = sprintf( $sMessage, '<a href="http://wordpress.org/plugins/wp-simple-firewall/" target="_blank">', '</a>');
@@ -145,7 +147,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 			$this->logInfo( 'Could not parse the URI so cannot effectively firewall.' );
 			return true;
 		}
-		
+
 		// Set up the page parameters ($_GET and $_POST and optionally $_COOKIE). If there are none, quit since there's nothing for the firewall to check.
 		$this->setPageParams();
 		if ( empty( $this->m_aPageParams ) ) {

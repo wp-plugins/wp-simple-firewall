@@ -17,9 +17,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_WpFunctions_WPSF') ):
+if ( !class_exists('ICWP_WpFunctions_V1') ):
 
-class ICWP_WpFunctions_WPSF {
+class ICWP_WpFunctions_V1 {
 
 	/**
 	 * @var string

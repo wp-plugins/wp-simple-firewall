@@ -21,6 +21,7 @@ if ( !class_exists('ICWP_LoginProtectProcessor') ):
 
 class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	
+	const Slug = 'login_protect';
 	const TableName = 'login_auth';
 	
 	/**
@@ -46,9 +47,9 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 * @var boolean
 	 */
 	protected $m_fAllowTwoFactorByPass;
-	
-	public function __construct() {
-		parent::__construct( self::TableName );
+
+	public function __construct( $insOptionPrefix = '' ) {
+		parent::__construct( $insOptionPrefix.self::Slug.'_processor', self::TableName );
 
 		$this->m_sGaspKey = uniqid();
 		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';

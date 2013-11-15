@@ -20,6 +20,8 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 if ( !class_exists('ICWP_EmailProcessor') ):
 
 class ICWP_EmailProcessor extends ICWP_BaseProcessor_WPSF {
+
+	const Slug = 'email';
 	
 	protected $m_sRecipientAddress;
 	protected $m_sSiteName;
@@ -48,6 +50,10 @@ class ICWP_EmailProcessor extends ICWP_BaseProcessor_WPSF {
 	 * @var boolean
 	 */
 	protected $m_fEmailIsThrottled;
+
+	public function __construct( $insOptionPrefix = '' ) {
+		parent::__construct( $insOptionPrefix.self::Slug.'_processor' );
+	}
 	
 	public function reset() {
 		parent::reset();

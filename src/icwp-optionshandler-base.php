@@ -3,7 +3,7 @@
  * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  * 
- * Version: 2013-08-27-A
+ * Version: 2013-11-15-V1
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -17,9 +17,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_OptionsHandler_Base_WPSF') ):
+if ( !class_exists('ICWP_OptionsHandler_Base_V1') ):
 
-class ICWP_OptionsHandler_Base_WPSF {
+class ICWP_OptionsHandler_Base_V1 {
 	
 	const CollateSeparator = '--SEP--';
 	
@@ -293,7 +293,7 @@ class ICWP_OptionsHandler_Base_WPSF {
 	 * 
 	 * @param string $insUpdateKey - if only want to update a single key, supply it here.
 	 */
-	protected function buildOptions() {
+	public function buildOptions() {
 
 		$this->defineOptions();
 		$this->loadStoredOptionsValues();

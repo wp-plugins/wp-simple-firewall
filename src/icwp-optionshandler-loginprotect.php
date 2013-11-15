@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_LoginProtect') ):
 
-class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_WPSF {
+class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_V1 {
 	
 	const StoreName = 'loginprotect_options';
 	

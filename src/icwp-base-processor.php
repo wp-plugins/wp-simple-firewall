@@ -32,6 +32,16 @@ class ICWP_BaseProcessor_WPSF {
 	const LOG_CATEGORY_LOGINPROTECT = 2;
 
 	/**
+	 * @var ICWP_BaseProcessor_WPSF
+	 */
+	protected static $oInstance = NULL;
+
+	/**
+	 * @var string
+	 */
+	protected $m_sStorageKey;
+
+	/**
 	 * @var boolean
 	 */
 	protected $m_fNeedSave;
@@ -69,8 +79,25 @@ class ICWP_BaseProcessor_WPSF {
 	 * @var ICWP_OptionsHandler_Base_WPSF
 	 */
 	protected $m_oOptionsHandler;
+	
+	public static function GetInstance( $insStorageKey, $inaOptions ) {
+		
+		if ( self::$oInstance !== null ) {
+			return self::$oInstance;
+		}
+		self::$oInstance = get_option( $insStorageKey );
+		if ( empty(self::$oInstance) ) {
+			self::$oInstance = new self( $insStorageKey );
+			self::$oInstance->setOptions( $inaOptions );
+		}
+		else {
+			self::$oInstance->reset();
+		}
+		return self::$oInstance;
+	}
 
-	public function __construct() {
+	public function __construct( $insStorageKey ) {
+		$this->m_sStorageKey = $insStorageKey;
 		$this->m_fNeedSave = true;
 		$this->reset();
 	}
@@ -93,12 +120,19 @@ class ICWP_BaseProcessor_WPSF {
 	/**
 	 * @param string $infKey
 	 */
-	public function store( $infKey ) {
+	public function store() {
 		if ( $this->getNeedSave() ) {
 			$this->doPreStore();
 			$this->setNeedSave( false );
-			update_option( $infKey, $this );
+			update_option( $this->m_sStorageKey, $this );
 		}
+	}
+
+	/**
+	 * @param string $infKey
+	 */
+	public function deleteStore() {
+		delete_option( $this->m_sStorageKey );
 	}
 	
 	/**

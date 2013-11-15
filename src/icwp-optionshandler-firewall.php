@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_Firewall') ):
 
-class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
+class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 	
 	const StoreName = 'firewall_options';
 	
@@ -63,7 +63,8 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 			'section_options' => array(
 				array(
 					'enable_firewall',
-					'',	'N',
+					'',
+					'Y',
 					'checkbox',
 					_wpsf__( 'Enable Firewall' ),
 					_wpsf__( 'Enable (or Disable) The WordPress Firewall Feature' ),
@@ -86,7 +87,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 				array(
 					'block_dir_traversal',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					_wpsf__( 'Directory Traversals' ),
 					_wpsf__( 'Block Directory Traversals' ),
@@ -95,7 +96,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 				array(
 					'block_sql_queries',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					_wpsf__( 'SQL Queries' ),
 					_wpsf__( 'Block SQL Queries' ),
@@ -113,7 +114,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 				array(
 					'block_field_truncation',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					_wpsf__( 'Field Truncation' ),
 					_wpsf__( 'Block Field Truncation Attacks' ),
@@ -194,7 +195,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_WPSF {
 				array(
 					'whitelist_admins',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					_wpsf__( 'Ignore Administrators' ),
 					_wpsf__( 'Ignore users logged in as Administrator' ),

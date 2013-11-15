@@ -20,6 +20,12 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 if ( !class_exists('ICWP_AutoUpdatesProcessor') ):
 
 class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
+
+	const Slug = 'autoupdates';
+
+	public function __construct( $insOptionPrefix = '' ) {
+		parent::__construct( $insOptionPrefix.self::Slug.'_processor' );
+	}
 	
 	/**
 	 * Resets the object values to be re-used anew
@@ -31,45 +37,66 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	/**
 	 */
 	public function run() {
-		
 		if ( $this->m_aOptions['autoupdate_core'] == 'core_never' ) {
-			add_filter( 'allow_minor_auto_core_updates', '__return_false' );
-			add_filter( 'allow_major_auto_core_updates', '__return_false' );
+			add_filter( 'allow_minor_auto_core_updates', '__return_false', 99 );
+			add_filter( 'allow_major_auto_core_updates', '__return_false', 99 );
 		}
 		else if ( $this->m_aOptions['autoupdate_core'] == 'core_minor' ) {
-			add_filter( 'allow_minor_auto_core_updates', '__return_true' );
-			add_filter( 'allow_major_auto_core_updates', '__return_false' );
+			add_filter( 'allow_minor_auto_core_updates', '__return_true', 99 );
+			add_filter( 'allow_major_auto_core_updates', '__return_false', 99 );
 		}
 		else if ( $this->m_aOptions['autoupdate_core'] == 'core_major' ) {
-			add_filter( 'allow_minor_auto_core_updates', '__return_true' );
-			add_filter( 'allow_major_auto_core_updates', '__return_true' );
+			add_filter( 'allow_minor_auto_core_updates', '__return_true', 99 );
+			add_filter( 'allow_major_auto_core_updates', '__return_true', 99 );
 		}
-		
-		$sFunction = ( $this->m_aOptions['enable_autoupdate_translations'] == 'Y' )? '__return_true' : '__return_false';
-		add_filter( 'auto_update_translation', $sFunction );
-		
-		add_filter( 'auto_update_plugin', array( $this, 'autoupdate_plugins' ), 1, 2 );
-		
-		$sFunction = ( $this->m_aOptions['enable_autoupdate_themes'] == 'Y' )? '__return_true' : '__return_false';
-		add_filter( 'auto_update_themes', $sFunction );
-		
+
+		add_filter( 'auto_update_translation',	array( $this, 'autoupdate_translations' ), 99, 2 );
+		add_filter( 'auto_update_plugin',		array( $this, 'autoupdate_plugins' ), 99, 2 );
+		add_filter( 'auto_update_theme',		array( $this, 'autoupdate_themes' ), 99, 2 );
+
 		if ( $this->m_aOptions['enable_autoupdate_ignore_vcs'] == 'Y' ) {
 			add_filter( 'automatic_updates_is_vcs_checkout', array( $this, 'disable_for_vcs'), 10, 2 );
 		}
-		
+
 		if ( $this->m_aOptions['enable_autoupdate_disable_all'] == 'Y' ) {
-			add_filter( 'automatic_updater_disabled', '__return_true' );
+			add_filter( 'automatic_updater_disabled', '__return_true', 99 );
 		}
 	}
+
+	/**
+	 * 
+	 */
+	public function force_run_autoupdates( ) {
+		$lock_name = 'auto_updater.lock'; //ref: /wp-admin/includes/class-wp-upgrader.php
+		delete_option( $lock_name );
+		wp_maybe_auto_update();
+		wp_redirect( get_admin_url( null, 'update-core.php') );
+	}
 	
+	public function autoupdate_translations( $infUpdate, $insSlug ) {
+		if ( $this->m_aOptions['enable_autoupdate_translations'] == 'Y' ) {
+			return true;
+		}
+		return $infUpdate;
+	}
+
 	public function autoupdate_plugins( $infUpdate, $insPluginSlug ) {
-		
-		if ( strpos( $insPluginSlug, 'icwp-wpsf.php') !== false ) {
-			return $this->m_aOptions['autoupdate_plugin_wpsf'] == 'Y';
+		if ( strpos( $insPluginSlug, 'icwp-wpabu.php') !== false ) {
+			return $this->m_aOptions['autoupdate_plugin_wpabu'] == 'Y';
 		}
 		if ( $this->m_aOptions['enable_autoupdate_plugins'] == 'Y' ) {
 			return true;
 		}
+		return $infUpdate;
+	}
+	
+	public function autoupdate_themes( $infUpdate, $insThemeSlug ) {
+		var_dump($insThemeSlug);
+		if ( $this->m_aOptions['enable_autoupdate_themes'] == 'Y' ) {
+		var_dump(' update true! ');
+			return true;
+		}
+		var_dump($infUpdate);
 		return $infUpdate;
 	}
 	

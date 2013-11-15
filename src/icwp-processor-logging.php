@@ -21,11 +21,13 @@ if ( !class_exists('ICWP_LoggingProcessor') ):
 
 class ICWP_LoggingProcessor extends ICWP_BaseDbProcessor_WPSF {
 	
+	const Slug = 'logging';
 	const TableName = 'wpsf_log';
-	protected $m_sRequestId;
 	
-	public function __construct() {
-		parent::__construct( self::TableName );
+	protected $m_sRequestId;
+
+	public function __construct( $insOptionPrefix = '' ) {
+		parent::__construct( $insOptionPrefix.self::Slug.'_processor', self::TableName );
 		$this->createTable();
 	}
 	

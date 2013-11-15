@@ -92,7 +92,8 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 			'section_options' => array(
 				array(
 					'enable_firewall',
-					'',	'N',
+					'',
+					'Y',
 					'checkbox',
 					_wpsf__( 'Enable Firewall' ),
 					_wpsf__( 'Enable (or Disable) The WordPress Firewall Feature' ),
@@ -128,7 +129,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 				array(
 					'enable_autoupdates',
 					'',
-					'N',
+					'Y',
 					'checkbox',
 					_wpsf__( 'Enable Auto Updates' ),
 					_wpsf__( 'Enable (or Disable) The Auto Updates Feature' ),
