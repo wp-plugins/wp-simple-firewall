@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.1.1
+ * Version: 2.1.2
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.1.1';  //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	const PluginVersion					= '2.1.2';  //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	/**
 	 * Should be updated each new release.
 	 * @var string
@@ -531,21 +531,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 			$this->deleteOption('login_processor');
 			$this->deleteOption('comments_processor');
 		}//if
-		
-		//Someone clicked the button to acknowledge the update
-		if ( isset( $_POST[$this->m_sOptionPrefix.'hide_update_notice'] ) && isset( $_POST['user_id'] ) ) {
-			$this->updateVersionUserMeta( $_POST['user_id'] );
-			if ( $this->isShowMarketing() ) {
-				wp_redirect( admin_url( "admin.php?page=".$this->getFullParentMenuId() ) );
-			}
-			else {
-				wp_redirect( admin_url( $_POST['redirect_page'] ) );
-			}
-		}
-		if ( isset( $_POST[$this->m_sOptionPrefix.'hide_translation_notice'] ) && isset( $_POST['user_id'] ) ) {
-			$this->updateTranslationNoticeShownUserMeta( $_POST['user_id'] );
-			wp_redirect( admin_url( $_POST['redirect_page'] ) );
-		}
 	}
 	
 	/**
@@ -973,6 +958,23 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 			}
 		}
 		
+		if ( $this->isValidAdminArea() ) {
+			//Someone clicked the button to acknowledge the update
+			if ( isset( $_POST[$this->m_sOptionPrefix.'hide_update_notice'] ) && isset( $_POST['user_id'] ) ) {
+				$this->updateVersionUserMeta( $_POST['user_id'] );
+				if ( $this->isShowMarketing() ) {
+					wp_redirect( admin_url( "admin.php?page=".$this->getFullParentMenuId() ) );
+				}
+				else {
+					wp_redirect( admin_url( $_POST['redirect_page'] ) );
+				}
+			}
+			if ( isset( $_POST[$this->m_sOptionPrefix.'hide_translation_notice'] ) && isset( $_POST['user_id'] ) ) {
+				$this->updateTranslationNoticeShownUserMeta( $_POST['user_id'] );
+				wp_redirect( admin_url( $_POST['redirect_page'] ) );
+			}
+		}
+		
 		if ( $this->isValidAdminArea()
 				&& $this->m_oPluginMainOptions->getOpt('enable_upgrade_admin_notice') == 'Y'
 				&& $this->hasPermissionToSubmit()
@@ -1146,6 +1148,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 	}
 	
 	protected function getAdminNoticeHtml_Translations() {
+		$oCurrentUser = wp_get_current_user();
+		if ( !($oCurrentUser instanceof WP_User) ) {
+			return '';
+		}
+		$nUserId = $oCurrentUser->ID;
+		
 		$sRedirectPage = 'index.php';
 		ob_start(); ?>
 			<style>
@@ -1169,6 +1177,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 	}
 	
 	protected function getAdminNoticeHtml_VersionUpgrade() {
+
+		$oCurrentUser = wp_get_current_user();
+		if ( !($oCurrentUser instanceof WP_User) ) {
+			return '';
+		}
+		$nUserId = $oCurrentUser->ID;
+		
 // 		$sRedirectPage = isset( $GLOBALS['pagenow'] ) ? $GLOBALS['pagenow'] : 'index.php';
 		$sRedirectPage = 'admin.php?page=icwp-wpsf';
 		ob_start(); ?>

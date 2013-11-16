@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
 Requires at least: 3.2.0
 Tested up to: 3.7
-Stable tag: 2.1.1
+Stable tag: 2.1.2
 
 Complete and Simple WordPress Security. Unrestricted, with no premium features.
 
@@ -237,9 +237,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
-= 2.1.1 =
+= 2.1.2 =
 
 *	FIX:		A bug that prevented auto-updates of this plugin.
+*	FIX:		Not being able to hide translations and upgrade notices.
 *	ADDED:		Tweaks to auto-update feature to allow interfacing with the iControlWP service to customize the auto update system.
 
 = 2.1.0 =
