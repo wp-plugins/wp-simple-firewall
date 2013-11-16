@@ -22,9 +22,21 @@ if ( !class_exists('ICWP_AutoUpdatesProcessor') ):
 class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 
 	const Slug = 'autoupdates';
+	
+	/**
+	 * @var array
+	 */
+	protected $m_aAutoUpdatePluginFiles;
+	
+	/**
+	 * @var array
+	 */
+	protected $m_aAutoUpdateThemeFiles;
 
 	public function __construct( $insOptionPrefix = '' ) {
-		parent::__construct( $insOptionPrefix.self::Slug.'_processor' );
+		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ) );
+		$this->setAutoUpdatesFiles( array(), 'plugins' );
+		$this->setAutoUpdatesFiles( array(), 'themes' );
 	}
 	
 	/**
@@ -32,6 +44,15 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	 */
 	public function reset() {
 		parent::reset();
+	}
+	
+	public function setAutoUpdatesFiles( $inaFiles = array(), $insContext = 'plugins' ) {
+		if ( $insContext == 'plugins' ) {
+			$this->m_aAutoUpdatePluginFiles = $inaFiles;
+		}
+		if ( $insContext == 'themes' ) {
+			$this->m_aAutoUpdateThemeFiles = $inaFiles;
+		}
 	}
 	
 	/**
@@ -81,8 +102,14 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	}
 
 	public function autoupdate_plugins( $infUpdate, $insPluginSlug ) {
-		if ( strpos( $insPluginSlug, 'icwp-wpabu.php') !== false ) {
-			return $this->m_aOptions['autoupdate_plugin_wpabu'] == 'Y';
+
+		if ( strpos( $insPluginSlug, 'icwp-wpsf.php') !== false ) {
+			return $this->m_aOptions['autoupdate_plugin_wpsf'] == 'Y';
+		}
+		if ( !empty( $this->m_aAutoUpdatePluginFiles ) && is_array($this->m_aAutoUpdatePluginFiles) ) {
+			if ( in_array( $insPluginSlug, $this->m_aAutoUpdatePluginFiles ) ) {
+				return true;
+			}
 		}
 		if ( $this->m_aOptions['enable_autoupdate_plugins'] == 'Y' ) {
 			return true;
@@ -91,12 +118,14 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	}
 	
 	public function autoupdate_themes( $infUpdate, $insThemeSlug ) {
-		var_dump($insThemeSlug);
 		if ( $this->m_aOptions['enable_autoupdate_themes'] == 'Y' ) {
-		var_dump(' update true! ');
 			return true;
 		}
-		var_dump($infUpdate);
+		if ( !empty( $this->m_aAutoUpdateThemeFiles ) && is_array($this->m_aAutoUpdateThemeFiles) ) {
+			if ( in_array( $insThemeSlug, $this->m_aAutoUpdateThemeFiles ) ) {
+				return true;
+			}
+		}
 		return $infUpdate;
 	}
 	

@@ -66,7 +66,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	protected $m_aPageParamValues;
 
 	public function __construct( $insOptionPrefix = '' ) {
-		parent::__construct( $insOptionPrefix.self::Slug.'_processor' );
+		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ) );
 		
 		$sMessage = "You were blocked by the %sWordPress Simple Firewall%s.";
 		$this->m_sFirewallMessage = sprintf( $sMessage, '<a href="http://wordpress.org/plugins/wp-simple-firewall/" target="_blank">', '</a>');

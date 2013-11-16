@@ -382,6 +382,11 @@ class ICWP_BaseProcessor_WPSF {
 		}
 		return true;
 	}
+
+	protected function constructStorageKey( $insPrefix = '', $insSlug = '' ) {
+		$sTemplate = '%s%s_processor';
+		return sprintf($sTemplate, $insPrefix, $insSlug );
+	}
 }
 
 endif;

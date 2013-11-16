@@ -130,7 +130,6 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_V1 {
  		$sWpConfigPath = is_file( ABSPATH.'wp-config.php' )? ABSPATH.'wp-config.php' : ABSPATH.'..'.ICWP_DS.'wp-config.php';
  		
  		if ( !is_file( $sWpConfigPath ) ) {
- 			var_dump('no wpconfig');
  			return false;
  		}
  		$mResult = $oWpFilesystem->getCanReadWriteFile( $sWpConfigPath );

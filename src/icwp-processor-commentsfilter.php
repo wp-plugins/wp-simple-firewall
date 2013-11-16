@@ -66,7 +66,7 @@ class ICWP_CommentsFilterProcessor extends ICWP_BaseDbProcessor_WPSF {
 	protected $m_fAllowTwoFactorByPass;
 	
 	public function __construct( $insOptionPrefix = '' ) {
-		parent::__construct( $insOptionPrefix.self::Slug.'_processor', self::Slug );
+		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ), self::Slug );
 		$this->createTable();
 		$this->reset();
 	}

@@ -52,7 +52,7 @@ class ICWP_EmailProcessor extends ICWP_BaseProcessor_WPSF {
 	protected $m_fEmailIsThrottled;
 
 	public function __construct( $insOptionPrefix = '' ) {
-		parent::__construct( $insOptionPrefix.self::Slug.'_processor' );
+		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ) );
 	}
 	
 	public function reset() {

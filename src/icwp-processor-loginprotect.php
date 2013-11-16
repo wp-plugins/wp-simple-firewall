@@ -49,7 +49,7 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	protected $m_fAllowTwoFactorByPass;
 
 	public function __construct( $insOptionPrefix = '' ) {
-		parent::__construct( $insOptionPrefix.self::Slug.'_processor', self::TableName );
+		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ), self::TableName );
 
 		$this->m_sGaspKey = uniqid();
 		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';

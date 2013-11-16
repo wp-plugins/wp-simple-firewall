@@ -24,7 +24,7 @@ class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
 	const Slug = 'lockdown';
 
 	public function __construct( $insOptionPrefix = '' ) {
-		parent::__construct( $insOptionPrefix.self::Slug.'_processor' );
+		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ) );
 	}
 	
 	/**

@@ -64,7 +64,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 				array(
 					'enable_firewall',
 					'',
-					'Y',
+					'N',
 					'checkbox',
 					_wpsf__( 'Enable Firewall' ),
 					_wpsf__( 'Enable (or Disable) The WordPress Firewall Feature' ),

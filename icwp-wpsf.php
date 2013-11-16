@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.1.0
+ * Version: 2.1.1
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.1.0';  //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	const PluginVersion					= '2.1.1';  //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	/**
 	 * Should be updated each new release.
 	 * @var string
@@ -311,10 +311,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 		$sSourceFile = dirname(__FILE__).'/src/icwp-optionshandler-'.strtolower($insOptionHandler).'.php'; // e.g. icwp-optionshandler-wpsf.php
 
 		if ( $insOptionHandler == 'PluginMain' ) {
-			$sClassName = 'ICWP_OptionsHandler_'.ucfirst( self::PluginSlug ); // e.g. ICWP_OptionsHandler_Wpabu
+			$sClassName = 'ICWP_OptionsHandler_'.ucfirst( self::PluginSlug ); // e.g. ICWP_OptionsHandler_Wpsf
 		}
 		else {
-			$sClassName = 'ICWP_OptionsHandler_'.$insOptionHandler; // e.g. ICWP_OptionsHandler_Wpabu
+			$sClassName = 'ICWP_OptionsHandler_'.$insOptionHandler; // e.g. ICWP_OptionsHandler_Wpsf
 		}
 		
 		require_once( $sSourceFile );
@@ -370,6 +370,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 			$sSiteName = function_exists( 'get_bloginfo' )? get_bloginfo('name') : '';
 			$this->m_oEmailProcessor->setSiteName( $sSiteName );
 		}
+		return $this->{$sProcessorVarName};
 	}
 	
 	/**
@@ -443,6 +444,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 			}
 		}
 		return $aOptions;
+	}
+	
+	public function getProcessor( $insProcessor ) {
+		return $this->loadProcessor( $insProcessor );
 	}
 	
 	protected function getAllProcessors() {
