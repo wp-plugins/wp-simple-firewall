@@ -26,6 +26,11 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	/**
 	 * @var array
 	 */
+	protected $m_fDoForceRunAutoUpdates = false;
+	
+	/**
+	 * @var array
+	 */
 	protected $m_aAutoUpdatePluginFiles;
 	
 	/**
@@ -44,6 +49,20 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	 */
 	public function reset() {
 		parent::reset();
+	}
+	
+	/**
+	 * @param boolean $infDoForceRun
+	 */
+	public function setForceRunAutoUpdates( $infDoForceRun = false ) {
+		$this->m_fDoForceRunAutoUpdates = $infDoForceRun;
+	}
+	
+	/**
+	 * @param boolean $infDoForceRun
+	 */
+	public function getForceRunAutoUpdates( $infDoForceRun = false ) {
+		return $this->m_fDoForceRunAutoUpdates;
 	}
 	
 	public function setAutoUpdatesFiles( $inaFiles = array(), $insContext = 'plugins' ) {
@@ -82,6 +101,10 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 		if ( $this->m_aOptions['enable_autoupdate_disable_all'] == 'Y' ) {
 			add_filter( 'automatic_updater_disabled', '__return_true', 99 );
 		}
+		
+		if ( $this->getForceRunAutoUpdates() ) {
+			$this->force_run_autoupdates();
+		}
 	}
 
 	/**
@@ -90,8 +113,12 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	public function force_run_autoupdates( ) {
 		$lock_name = 'auto_updater.lock'; //ref: /wp-admin/includes/class-wp-upgrader.php
 		delete_option( $lock_name );
+		if ( !defined('DOING_CRON') ) {
+			define( 'DOING_CRON', true ); // this prevent WP from disabling the plugin pre-upgrade
+		}
 		wp_maybe_auto_update();
-		wp_redirect( get_admin_url( null, 'update-core.php') );
+ 		wp_redirect( get_admin_url( null, 'update-core.php') );
+ 		exit();
 	}
 	
 	public function autoupdate_translations( $infUpdate, $insSlug ) {

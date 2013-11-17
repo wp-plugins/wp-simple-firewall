@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.1.2
+ * Version: 2.1.3
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.1.2';  //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	const PluginVersion					= '2.1.3';  //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	/**
 	 * Should be updated each new release.
 	 * @var string
@@ -156,8 +156,20 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 		if ( isset( $_GET['turnoffperm'] ) ) {
 			$this->setPermissionToSubmit( false );
 		}
+// 		$this->setupAutoUpdates();
 	}
 
+	/* Not used... yet?
+	protected function setupAutoUpdates() {
+		require_once( $this->m_sPluginDir.'/src/lib/plugin-update-checker.php' );
+		$MyUpdateChecker = new PluginUpdateChecker(
+				'http://autoupdates.icontrolwp.com/wp-simple-firewall-updates.json',
+				$this->m_sPluginRootFile,
+				'wp-simple-firewall'
+		);
+	}
+	*/
+	
 	/**
 	 * @param array $aPlugins
 	 * @return unknown
@@ -838,7 +850,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 		
 		if ( isset( $_GET['force_run_auto_updates'] ) && $_GET['force_run_auto_updates'] == 'now' ) {
 			$this->loadProcessor( 'AutoUpdates' );
-			add_action( 'init', array( $this->m_oAutoUpdatesProcessor, 'force_run_autoupdates' ) );
+			$this->m_oAutoUpdatesProcessor->setForceRunAutoUpdates( true );
 			return;
 		}
 		
@@ -1036,15 +1048,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 		}
 		remove_action( 'shutdown', array( $this, 'onWpShutdown' ) );
 	}
+
+	public function onWpActivatePlugin() {
+		$this->loadOptionsHandler( 'all', true );
+	}
 	
 	public function onWpDeactivatePlugin() {
 		if ( $this->m_oPluginMainOptions->getOpt( 'delete_on_deactivate' ) == 'Y' ) {
 			$this->deleteAllPluginDbOptions();
 		}
-	}
-	
-	public function onWpActivatePlugin() {
-		$this->loadOptionsHandler( 'all', true );
 	}
 	
 	public function addRawIpsToFirewallList( $insListName, $inaNewIps ) {
