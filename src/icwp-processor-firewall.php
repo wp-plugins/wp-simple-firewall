@@ -37,6 +37,11 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	private $m_sFirewallMessage;
 
 	/**
+	 * @var boolean
+	 */
+	protected $m_fRequestIsWhitelisted;
+
+	/**
 	 * @var string
 	 */
 	protected $m_sListItemLabel;
@@ -111,6 +116,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 		parent::reset();
 		$this->m_nRequestTimestamp = time();
 		$this->m_nLoopProtect = 0;
+		$this->m_fRequestIsWhitelisted = false;
 	}
 	
 	/**
@@ -158,7 +164,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 		
 		if ( $this->m_nRequestIp === false ) {
 			$this->logCritical(
-				"Visitor IP address could not be determined so we're by-passing the firewall. Label: %s"
+				"Visitor IP address could not be determined so we're by-passing the firewall."
 			);
 			return true;
 		}
@@ -173,7 +179,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 			return true;
 		}
 		
-		//Check if the visitor is excluded from the firewall from the outset.
+		// Check if the visitor is excluded from the firewall from the outset.
 		if ( $this->isVisitorOnBlacklist() ) {
 			$this->m_sFirewallMessage .= ' Your IP is Blacklisted.';
 			$this->logWarning(
@@ -184,19 +190,15 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 			return false;
 		}
 		
-		/* Removed as of version 1.5.0
-		// Checking this comes before all else but after the IP whitelist/blacklist check.
-		if ( $this->m_aBlockSettings[ 'block_wplogin_access' ] ) {
-			$fIsPermittedVisitor = $this->doPassCheckBlockWpLogin();
-		}
-		*/
-		
 		$this->logInfo( 'Visitor IP was neither whitelisted nor blacklisted. Firewall checking started.' );
 		
 		$fIsPermittedVisitor = true;
 
 		// Check if the page and its parameters are whitelisted.
 		if ( $fIsPermittedVisitor && $this->isPageWhitelisted() ) {
+			$this->logWarning(
+				sprintf( 'All page request parameters were whitelisted (either by page or by parameters).%s','')
+			);
 			return true;
 		}
 		
@@ -220,33 +222,6 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 		}
 
 		return $fIsPermittedVisitor;
-	}
-	
-	/**
-	 * This function assumes that isVisitorOnWhitelist() check has been run previously. Meaning the
-	 * current visitor is NOT on the whitelist and so if the page they're accessing is wp-login then
-	 * they do not pass this check.
-	 * 
-	 * If whitelisted IPs is empty, we never block access.
-	 * 
-	 * @return boolean
-	 */
-	protected function doPassCheckBlockWpLogin() {
-		
-		list( $sRequestPage, $sRequestQuery ) = $this->m_aRequestUriParts;
-		
-		if ( substr_count( $sRequestPage, '/wp-login.php' ) > 0 ) {
-			
-			// We don't block wp-login.php if there are no whitelisted IPs.
-			if ( count( $this->m_aOptions[ 'ips_whitelist' ] ) < 1 ) {
-				$this->logInfo( 'Requested: Block access to wp-login.php, but this was skipped because whitelisted IPs list was empty.' );
-				return true;
-			}
-			
-			$this->logWarning( 'Requested: Block access to wp-login.php. Visitor not on IP whitelist and blocked by firewall.' );
-			return false;
-		}
-		return true;
 	}
 	
 	protected function doPassCheckBlockDirTraversal() {
@@ -283,6 +258,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 			'/0x[0-9a-f][0-9a-f]/i',
 			'/\/\*\*\//'
 		);
+
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$this->logWarning( 'Blocked WordPress Terms.' );
@@ -440,11 +416,10 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	}
 	
 	/**
-	 * 
 	 * @return boolean
 	 */
 	public function isPageWhitelisted() {
-		return empty( $this->m_aPageParams );
+		return empty( $this->m_aPageParams ) || $this->m_fRequestIsWhitelisted;
 	}
 	
 	public function filterWhitelistedPagesAndParams() {
@@ -479,7 +454,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 		
 		// Now we compare pages in the whitelist with the parts of the request uri. If we get a match, that page is whitelisted
 		$aWhitelistPages = array_keys( $inaWhitelistPagesParams );
-		
+
 		// 1. Is the page in the list of white pages?
 		$fPageWhitelisted = false;
 		foreach ( $inaWhitelistPagesParams as $sPageName => $aWhitlistedParams ) {
@@ -491,7 +466,9 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 				}
 			}
 			else {
-				if ( preg_match( self::PcreDelimiter. preg_quote( $sPageName, self::PcreDelimiter ).'$'.self::PcreDelimiter, $sRequestPage ) ) {
+				$sWhitelistedPageAsPreg = preg_quote( $sPageName, self::PcreDelimiter );
+				$sWhitelistedPageAsPreg = sprintf( '%s%s$%s', self::PcreDelimiter, $sWhitelistedPageAsPreg, self::PcreDelimiter );
+				if ( preg_match( $sWhitelistedPageAsPreg, $sRequestPage ) ) {
 					$fPageWhitelisted = true;
 					break;
 				}
@@ -507,10 +484,11 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 			}
 		}
 		
-		// There's a list of globally whitelisted parameters (i.e. parameter ignored for all pages)
+		// Given the page is found to be on the whitelist, we want to check if it's the whole page, or certain parameters only
 		if ( $fPageWhitelisted ) {
 			// the current page is whitelisted - now check if it has request parameters.
 			if ( empty( $aWhitlistedParams ) ) {
+				$this->m_fRequestIsWhitelisted = true;
 				return true; //because it's just plain whitelisted as represented by an empty or unset array
 			}
 			foreach ( $aWhitlistedParams as $sWhitelistParam ) {
@@ -522,6 +500,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 			// After removing all the whitelisted params, we now check if there are any params left that'll
 			// need matched later in the firewall checking. If there are no parameters left, we return true.
 			if ( empty( $this->m_aPageParams ) ) {
+				$this->m_fRequestIsWhitelisted = true;
 				return true;
 			}
 		}
@@ -549,6 +528,9 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 		if ( !empty( $this->m_aPageParams ) ) {
 			$this->filterWhitelistedPagesAndParams();
 		}
+		else {
+			$this->m_fRequestIsWhitelisted = true;
+		}
 		return true;
 	}
 	
@@ -560,7 +542,8 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 			'/wp-admin/page-new.php'		=> array(),
 			'/wp-admin/link-add.php'		=> array(),
 			'/wp-admin/media-upload.php'	=> array(),
-			'/wp-admin/post.php'			=> array(),
+			'/wp-admin/post.php'			=> array( 'content' ),
+			'/wp-admin/plugin-editor.php'	=> array( 'newcontent' ),
 			'/wp-admin/page.php'			=> array(),
 			'/wp-admin/admin-ajax.php'		=> array(),
 			'/wp-comments-post.php'			=> array(
