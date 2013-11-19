@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.1.5
+ * Version: 2.2.0
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.1.5';  //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	const PluginVersion					= '2.2.0';  //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	/**
 	 * Should be updated each new release.
 	 * @var string
@@ -172,14 +172,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 	}
 	
 	protected function override() {
-		if ( is_file( path_join($this->m_sPluginDir, 'forceOff') ) ) {
+		if ( $this->m_oWpFs->exists( path_join($this->m_sPluginDir, 'forceOff') ) ) {
 			$this->setSharedOption( 'enable_firewall', 'N' );
 			$this->setSharedOption( 'enable_login_protect', 'N' );
 			$this->setSharedOption( 'enable_comments_filter', 'N' );
 			$this->setSharedOption( 'enable_autoupdates', 'N' );
 			$this->setSharedOption( 'enable_admin_access_restriction', 'N' );
 		}
-		else if ( is_file( path_join($this->m_sPluginDir, 'forceOn') ) ) {
+		else if ( $this->m_oWpFs->exists( path_join($this->m_sPluginDir, 'forceOn') ) ) {
 			$this->setSharedOption( 'enable_firewall', 'Y' );
 			$this->setSharedOption( 'enable_login_protect', 'Y' );
 			$this->setSharedOption( 'enable_comments_filter', 'Y' );
@@ -218,10 +218,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 	 */
 	public function getIsMainFeatureEnabled( $insFeature ) {
 		
-		if ( is_file( $this->m_sPluginPath . 'forceOff' ) ) {
+		if ( $this->m_oWpFs->exists( $this->m_sPluginPath . 'forceOff' ) ) {
 			return false;
 		}
-		else if ( is_file( $this->m_sPluginPath . 'forceOn' ) ) {
+		else if ( $this->m_oWpFs->exists( $this->m_sPluginPath . 'forceOn' ) ) {
 			return true;
 		}
 		

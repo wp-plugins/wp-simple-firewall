@@ -93,7 +93,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 				array(
 					'enable_firewall',
 					'',
-					'Y',
+					'N',
 					'checkbox',
 					_wpsf__( 'Enable Firewall' ),
 					_wpsf__( 'Enable (or Disable) The WordPress Firewall Feature' ),
@@ -111,7 +111,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 				array(
 					'enable_comments_filter',
 					'',
-					'Y',
+					'N',
 					'checkbox',
 					_wpsf__( 'Enable Comments Filter' ),
 					_wpsf__( 'Enable (or Disable) The Comments Filter Feature' ),
@@ -258,12 +258,12 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 			
 			if ( $fCanDiskWrite === false || $fCanRemoteGet === false ) {
 				require_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
-				$oWpFilesystem = new ICWP_WpFilesystem_WPSF();
+				$oWpFs = new ICWP_WpFilesystem_V1();
 				
-				$fCanRemoteGet = $oWpFilesystem->getCanWpRemoteGet();
+				$fCanRemoteGet = $oWpFs->getCanWpRemoteGet();
 				$this->setOpt( 'capability_can_remote_get', $fCanRemoteGet? 'Y' : 'N' );
 				
-				$fCanDiskWrite = $oWpFilesystem->getCanDiskWrite();
+				$fCanDiskWrite = $oWpFs->getCanDiskWrite();
 				$this->setOpt( 'capability_can_disk_write', $fCanDiskWrite? 'Y' : 'N' );
 			}
 		}// '1.8.2', '<='

@@ -88,7 +88,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_V1 {
 				array(
 					'login_limit_interval',
 					'',
-					'5',
+					'10',
 					'integer',
 					'Login Cooldown Interval',
 					'Limit login attempts to every X seconds',

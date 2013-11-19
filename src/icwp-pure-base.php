@@ -5,6 +5,7 @@ if ( !defined('ICWP_DS') ) {
 }
 
 require_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
+require_once( dirname(__FILE__).'/icwp-wpfilesystem.php' );
 
 if ( !class_exists('ICWP_Pure_Base_V1') ):
 
@@ -54,6 +55,10 @@ class ICWP_Pure_Base_V1 {
 	/**
 	 * @var string
 	 */
+	protected $m_sPluginDir;
+	/**
+	 * @var string
+	 */
 	protected $m_sPluginPath;
 	/**
 	 * @var string
@@ -80,6 +85,11 @@ class ICWP_Pure_Base_V1 {
 	 * @var ICWP_WpFunctions_V1;
 	 */
 	protected $m_oWpFunctions;
+	
+	/**
+	 * @var ICWP_WpFilesystem_V1;
+	 */
+	protected $m_oWpFs;
 
 	public function __construct() {
 	
@@ -97,6 +107,7 @@ class ICWP_Pure_Base_V1 {
 		add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 
 		$this->m_fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
+		$this->m_oWpFs = ICWP_WpFilesystem_V1::GetInstance();
 		$this->setPaths();
 		$this->registerActivationHooks();
 	}

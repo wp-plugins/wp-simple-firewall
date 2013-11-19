@@ -3,7 +3,7 @@
  * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  * 
- * Version: 2013-09-13_A
+ * Version: 2013-11-19
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -17,9 +17,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_WpFilesystem_WPSF') ):
+if ( !class_exists('ICWP_WpFilesystem_V1') ):
 
-class ICWP_WpFilesystem_WPSF {
+class ICWP_WpFilesystem_V1 {
+
+	/**
+	 * @var ICWP_WpFilesystem_V1
+	 */
+	protected static $oInstance = NULL;
 
 	/**
 	 * @var object
@@ -31,16 +36,33 @@ class ICWP_WpFilesystem_WPSF {
 	 */
 	protected $m_sWpConfigPath = null;
 	
+	/**
+	 * @return ICWP_WpFilesystem_V1
+	 */
+	public static function GetInstance() {
+		if ( is_null( self::$oInstance ) ) {
+			self::$oInstance = new self();
+		}
+		return self::$oInstance;
+	}
+	
 	public function __construct() {
 		$this->initFileSystem();
-		$this->setWpConfigPath();
+// 		$this->setWpConfigPath();
+	}
+	
+	/**
+	 * @return boolean	true/false whether file/directory exists
+	 */
+	public function exists( $insPath ) {
+		return $this->fileAction( 'file_exists', $insPath );
 	}
 	
 	protected function setWpConfigPath() {
 		$this->m_sWpConfigPath = ABSPATH.'wp-config.php';
-		if ( !is_file($this->m_sWpConfigPath)  ) {
+		if ( !$this->exists($this->m_sWpConfigPath)  ) {
 			$this->m_sWpConfigPath = ABSPATH.'..'.ICWP_DS.'wp-config.php';
-			if ( !is_file($this->m_sWpConfigPath)  ) {
+			if ( !$this->exists($this->m_sWpConfigPath)  ) {
 				$this->m_sWpConfigPath = false;
 			}
 		}
@@ -149,7 +171,7 @@ class ICWP_WpFilesystem_WPSF {
 	 * @return string|null
 	 */
 	public function getFileContent( $insFilePath ) {
-		if ( !file_exists( $insFilePath ) ) {
+		if ( !$this->exists( $insFilePath ) ) {
 			return null;
 		}
 		if ( $this->m_oWpFilesystem ) {
@@ -187,6 +209,32 @@ class ICWP_WpFilesystem_WPSF {
 		else {
 			return unlink( $insFilePath );
 		}
+	}
+
+	public function fileAction( $insFunctionName, $inaParams ) {
+		$aFunctionMap = array(
+			'file_exists'	=> 'exists',
+			'touch'			=> 'touch'
+		);
+		
+		if ( !is_array($inaParams) ) {
+			$inaParams = array($inaParams);
+		}
+		
+		if ( !$this->m_oWpFilesystem ) {
+			if ( function_exists( $insFunctionName ) ) {
+				call_user_func_array( $insFunctionName, $inaParams );
+			}
+			else {
+				return false;
+			}
+		}
+		if ( !array_key_exists($insFunctionName, $aFunctionMap) ) {
+			return false;
+		}
+		$sWpFunctionName = $aFunctionMap[$insFunctionName];
+		$sResult = call_user_func_array( array($this->m_oWpFilesystem, $sWpFunctionName), $inaParams );
+		return $sResult;
 	}
 }
 

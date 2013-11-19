@@ -50,11 +50,8 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 
 	public function __construct( $insOptionPrefix = '' ) {
 		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ), self::TableName );
-
 		$this->m_sGaspKey = uniqid();
-		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
 		$this->updateLastLoginThrottleTime( time() );
-
 		$this->createTable();
 		$this->reset();
 	}
@@ -64,6 +61,7 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function reset() {
 		parent::reset();
+		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
 	}
 	
 	/**
@@ -245,13 +243,13 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 * @return unknown|WP_Error
 	 */
 	public function checkLoginInterval_Filter( $inoUser, $insUsername, $insPassword ) {
-
 		// No login attempt was made.
 		if ( empty( $insUsername ) ) {
 			return $inoUser;
 		}
 
 		// Is there an interval set?
+		$this->setLoginCooldownInterval();
 		$nRequiredLoginInterval = $this->m_nRequiredLoginInterval;
 		if ( $nRequiredLoginInterval === false || $nRequiredLoginInterval == 0 ) {
 			return $inoUser;
@@ -285,24 +283,24 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	}
 	
 	protected function getLastLoginTime() {
-		
+		$oWpFs = ICWP_WpFilesystem_V1::GetInstance();
 		// Check that there is a login throttle file. If it exists and its modified time is greater than the 
 		// current $this->m_nLastLoginTime it suggests another process has touched the file and updated it
 		// concurrently. So, we update our $this->m_nEmailThrottleTime accordingly.
-		if ( is_file( self::$sModeFile_LoginThrottled ) ) {
+		if ( $oWpFs->fileAction( 'file_exists', self::$sModeFile_LoginThrottled ) ) {
 			$nModifiedTime = filemtime( self::$sModeFile_LoginThrottled );
 			if ( $nModifiedTime > $this->m_nLastLoginTime ) {
 				$this->m_nLastLoginTime = $nModifiedTime;
 			}
 		}
+		else { }
 		return $this->m_nLastLoginTime;
 	}
 	
 	public function updateLastLoginThrottleTime( $innLastLoginTime ) {
+		$oWpFs = ICWP_WpFilesystem_V1::GetInstance();
 		$this->m_nLastLoginTime = $innLastLoginTime;
-		if ( function_exists('touch') ) {
-			@touch( self::$sModeFile_LoginThrottled, $innLastLoginTime );
-		}
+		$oWpFs->fileAction( 'touch', array(self::$sModeFile_LoginThrottled, $innLastLoginTime) );
 		$this->setNeedSave();
 	}
 

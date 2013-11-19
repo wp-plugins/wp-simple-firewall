@@ -40,7 +40,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_V1 {
 				array(
 					'enable_comments_filter',
 					'',
-					'Y',
+					'N',
 					'checkbox',
 					_wpsf__( 'Enable Comments Filter' ),
 					_wpsf__( 'Enable (or Disable) The SPAM Comments Filter Feature.' ),

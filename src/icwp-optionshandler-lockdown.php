@@ -117,22 +117,22 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_V1 {
 	
 	protected function getCanDoAuthSalts() {
 		require_once( dirname(__FILE__).'/icwp-wpfilesystem.php' );
-		$oWpFilesystem = new ICWP_WpFilesystem_WPSF();
+		$oWpFs = ICWP_WpFilesystem_V1::GetInstance();
 		
-		if ( !$oWpFilesystem->getCanWpRemoteGet() ) {
+		if ( !$oWpFs->getCanWpRemoteGet() ) {
 			return false;
 		}
 		
-		if ( !$oWpFilesystem->getCanDiskWrite() ) {
+		if ( !$oWpFs->getCanDiskWrite() ) {
 			return false;
 		}
 		
- 		$sWpConfigPath = is_file( ABSPATH.'wp-config.php' )? ABSPATH.'wp-config.php' : ABSPATH.'..'.ICWP_DS.'wp-config.php';
+ 		$sWpConfigPath = $oWpFs->exists( ABSPATH.'wp-config.php' )? ABSPATH.'wp-config.php' : ABSPATH.'..'.ICWP_DS.'wp-config.php';
  		
- 		if ( !is_file( $sWpConfigPath ) ) {
+ 		if ( !$oWpFs->exists( $sWpConfigPath ) ) {
  			return false;
  		}
- 		$mResult = $oWpFilesystem->getCanReadWriteFile( $sWpConfigPath );
+ 		$mResult = $oWpFs->getCanReadWriteFile( $sWpConfigPath );
  		return !empty( $mResult );
 	}
 

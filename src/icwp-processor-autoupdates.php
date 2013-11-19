@@ -40,8 +40,6 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 
 	public function __construct( $insOptionPrefix = '' ) {
 		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ) );
-		$this->setAutoUpdatesFiles( array(), 'plugins' );
-		$this->setAutoUpdatesFiles( array(), 'themes' );
 	}
 	
 	/**
@@ -63,15 +61,6 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	 */
 	public function getForceRunAutoUpdates( $infDoForceRun = false ) {
 		return $this->m_fDoForceRunAutoUpdates;
-	}
-	
-	public function setAutoUpdatesFiles( $inaFiles = array(), $insContext = 'plugins' ) {
-		if ( $insContext == 'plugins' ) {
-			$this->m_aAutoUpdatePluginFiles = $inaFiles;
-		}
-		if ( $insContext == 'themes' ) {
-			$this->m_aAutoUpdateThemeFiles = $inaFiles;
-		}
 	}
 	
 	/**
@@ -129,12 +118,16 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	}
 
 	public function autoupdate_plugins( $infUpdate, $insPluginSlug ) {
-
+		
 		if ( strpos( $insPluginSlug, 'icwp-wpsf.php') !== false ) {
 			return $this->m_aOptions['autoupdate_plugin_wpsf'] == 'Y';
 		}
-		if ( !empty( $this->m_aAutoUpdatePluginFiles ) && is_array($this->m_aAutoUpdatePluginFiles) ) {
-			if ( in_array( $insPluginSlug, $this->m_aAutoUpdatePluginFiles ) ) {
+
+		$aAutoUpdatePluginFiles = array();
+		$aAutoUpdatePluginFiles = apply_filters( 'icwp_wpsf_autoupdate_plugins', $aAutoUpdatePluginFiles );
+		
+		if ( !empty( $aAutoUpdatePluginFiles ) && is_array($aAutoUpdatePluginFiles) ) {
+			if ( in_array( $insPluginSlug, $aAutoUpdatePluginFiles ) ) {
 				return true;
 			}
 		}
@@ -145,14 +138,19 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	}
 	
 	public function autoupdate_themes( $infUpdate, $insThemeSlug ) {
-		if ( $this->m_aOptions['enable_autoupdate_themes'] == 'Y' ) {
-			return true;
-		}
-		if ( !empty( $this->m_aAutoUpdateThemeFiles ) && is_array($this->m_aAutoUpdateThemeFiles) ) {
-			if ( in_array( $insThemeSlug, $this->m_aAutoUpdateThemeFiles ) ) {
+		
+		$aAutoUpdateThemeFiles = array();
+		$aAutoUpdateThemeFiles = apply_filters( 'icwp_wpsf_autoupdate_themes', $aAutoUpdateThemeFiles );
+		
+		if ( !empty( $aAutoUpdateThemeFiles ) && is_array($aAutoUpdateThemeFiles) ) {
+			if ( in_array( $insThemeSlug, $aAutoUpdateThemeFiles ) ) {
 				return true;
 			}
 		}
+		if ( $this->m_aOptions['enable_autoupdate_themes'] == 'Y' ) {
+			return true;
+		}
+		
 		return $infUpdate;
 	}
 	

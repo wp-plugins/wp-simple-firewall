@@ -85,13 +85,13 @@ class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
 	public function resetAuthKeysSalts() {
 		
 		require_once( dirname(__FILE__).'/icwp-wpfilesystem.php' );
-		$oWpFilesystem = new ICWP_WpFilesystem_WPSF();
+		$oWpFs = ICWP_WpFilesystem_V1::GetInstance();
 		
 		// Get the new Salts
 		$sSaltsUrl = 'https://api.wordpress.org/secret-key/1.1/salt/';
-		$sSalts = $oWpFilesystem->getUrlContent( $sSaltsUrl );
+		$sSalts = $oWpFs->getUrlContent( $sSaltsUrl );
 		
-		$sWpConfigContent = $oWpFilesystem->getContent_WpConfig();
+		$sWpConfigContent = $oWpFs->getContent_WpConfig();
 		if ( is_null( $sWpConfigContent ) ) {
 			return;
 		}
@@ -125,7 +125,7 @@ class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
 			}
 		}
 		$aContent[$nStartLine] = $sSalts;
-		$oWpFilesystem->putContent_WpConfig( implode( PHP_EOL, $aContent ) );
+		$oWpFs->putContent_WpConfig( implode( PHP_EOL, $aContent ) );
 	}
 }
 
