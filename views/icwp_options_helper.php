@@ -3,8 +3,7 @@
 function printOptionsPageHeader( $insSection = '' ) {
 	$sLinkedIcwp = '<a href="http://icwp.io/3a" target="_blank">iControlWP</a>';
 	echo '<div class="page-header">';
-	echo '<a href="http://icwp.io/2k" target="_blank"><div class="icon32" id="pluginlogo_32"><br /></div></a>';
-	echo '<h2>';
+	echo '<h2><a id="pluginlogo_32" class="header-icon32" href="http://icwp.io/2k" target="_blank"></a>';
 	$sBaseTitle = sprintf( _wpsf__( 'WordPress Simple Firewall (from %s)' ), $sLinkedIcwp );
 	if ( !empty($insSection) ) {
 		echo sprintf( '%s :: %s', $insSection, $sBaseTitle );

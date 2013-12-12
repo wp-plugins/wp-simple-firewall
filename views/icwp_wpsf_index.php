@@ -8,7 +8,7 @@ $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
 $fAutoUpdatesOn = $icwp_aMainOptions['enable_autoupdates'] == 'Y';
 
-$sLatestVersionBranch = '2.0.x';
+$sLatestVersionBranch = '2.x.x';
 $sOn = _wpsf__( 'On' );
 $sOff = _wpsf__( 'Off' );
 ?>
@@ -194,6 +194,12 @@ $sOff = _wpsf__( 'Off' );
 				<p><?php printf( _wpsf__('%snew%s refers to the absolute latest release.'), '<span class="label">', '</span>' ) ; ?></p>
 				<?php
 				$aNewLog = array(
+					'ADDED: Various fixes and verification of WordPress 3.8 compatibility.',
+					'ADDED: Integration with iControlWP and the automatic updates system.',
+					'ADDED: Better filesystem handling methods.',
+					'ADDED: Better firewall logic for whitelisting rules.',
+					'ADDED: Some new firewall white listing parameters to help with post editing.',
+					'ADDED: Option to run automatic updates upon demand according to your settings',
 					'ADDED: Localization capabilities. All we need now are translators.',
 					'ADDED: Option to mask the WordPress version so the real version is never publicly visible.'
 				);
