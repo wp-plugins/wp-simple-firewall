@@ -37,7 +37,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_V1 {
 				array(
 					'enable_login_protect',
 					'',
-					'Y',
+					'N',
 					'checkbox',
 					_wpsf__( 'Enable Login Protect' ),
 					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),

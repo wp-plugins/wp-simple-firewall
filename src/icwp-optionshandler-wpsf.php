@@ -101,7 +101,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 				array(
 					'enable_login_protect',
 					'',
-					'Y',
+					'N',
 					'checkbox',
 					_wpsf__( 'Enable Login Protect' ),
 					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
@@ -150,9 +150,9 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 					'',
 					'Y',
 					'checkbox',
-					_wpsf__( 'Plugin Upgrade Notice' ),
-					_wpsf__( 'Display A Notice When An Upgrade Is Available' ),
-					_wpsf__( 'Displays a notice at the top of your WordPress admin section when a plugin upgrade is available' )
+					_wpsf__( 'Plugin Notices' ),
+					_wpsf__( 'Display Notices For Updates' ),
+					_wpsf__( 'Disable this option to hide certain plugin admin notices about available updates and post-update notices' )
 				),
 				array(
 					'delete_on_deactivate',

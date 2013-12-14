@@ -371,7 +371,7 @@ class ICWP_Pure_Base_V1 {
 		}
 		$this->doAdminNoticeOptionsUpdated();
 		if ( $this->hasPermissionToView() ) {
-			$this->doAdminNoticeVersionUpgrade();
+			$this->doAdminNoticePostUpgrade();
 		}
 		if ( $this->hasPermissionToView() ) {
 			$this->doAdminNoticeTranslations();
@@ -391,6 +391,9 @@ class ICWP_Pure_Base_V1 {
 		if ( !isset( $this->m_sPluginFile ) ) {
 			return;
 		}
+		if ( !$this->getShowAdminNotices() ) {
+			return;
+		}
 
 		$this->loadWpFunctions();
 		$oUpdate = $this->m_oWpFunctions->getIsPluginUpdateAvailable( $this->m_sPluginFile );
@@ -408,7 +411,11 @@ class ICWP_Pure_Base_V1 {
 		}
 	}
 	
-	protected function doAdminNoticeVersionUpgrade(){
+	protected function doAdminNoticePostUpgrade() {
+		
+		if ( !$this->getShowAdminNotices() ) {
+			return;
+		}
 	
 		$oCurrentUser = wp_get_current_user();
 		if ( !($oCurrentUser instanceof WP_User) ) {
@@ -433,6 +440,11 @@ class ICWP_Pure_Base_V1 {
 	}
 	
 	protected function doAdminNoticeTranslations(){
+		
+		if ( !$this->getShowAdminNotices() ) {
+			return;
+		}
+		
 		$oCurrentUser = wp_get_current_user();
 		if ( !($oCurrentUser instanceof WP_User) ) {
 			return;
@@ -495,6 +507,13 @@ class ICWP_Pure_Base_V1 {
 		} else {
 			return $sFullNotice;
 		}
+	}
+	
+	/**
+	 * 
+	 */
+	protected function getShowAdminNotices() {
+		return true;
 	}
 	
 	/**
