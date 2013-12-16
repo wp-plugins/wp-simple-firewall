@@ -35,7 +35,7 @@ class ICWP_AutoUpdatesProcessor_V1 extends ICWP_BaseProcessor_V1 {
 	/**
 	 * @param boolean $infDoForceRun
 	 */
-	public function setForceRunAutoUpdates() {
+	public function setForceRunAutoUpdates( $infDoForceRun ) {
 		$this->m_fDoForceRunAutoUpdates = $infDoForceRun;
 	}
 	
