@@ -15,7 +15,8 @@ Complete and Simple WordPress Security. Unrestricted, with no premium features.
 The WordPress Simple Firewall is the only WordPress security plugin that *protects itself* - this plugin
 will prevent access to itself so that unauthorized users can't deactivate or screw with your security settings.
 
-A basic intro to all the features:
+An intro to the features and why you should use the Simple Firewall before getting all complicated with bulky
+security plugins.
 
 [youtube http://www.youtube.com/watch?v=r307fu3Eqbo]
 
