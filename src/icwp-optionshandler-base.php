@@ -536,7 +536,7 @@ class ICWP_OptionsHandler_Base_V1 {
 	
 	protected function getVisitorIpAddress( $infAsLong = true ) {
 		require_once( dirname(__FILE__).'/icwp-base-processor.php' );
-		return ICWP_BaseProcessor_WPSF::GetVisitorIpAddress( $infAsLong );
+		return ICWP_BaseProcessor_V1::GetVisitorIpAddress( $infAsLong );
 	}
 	
 	/**

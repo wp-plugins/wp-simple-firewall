@@ -919,7 +919,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 	}
 	
 	protected function resetAutoUpdatesProcessor() {
-		$this->m_oLockdownProcessor = false;
+		$this->m_oAutoUpdatesProcessor = false;
 		$this->deleteOption( 'autoupdates_processor' );
 		$this->loadProcessor( 'AutoUpdates' );
 	}

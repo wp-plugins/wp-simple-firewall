@@ -17,78 +17,68 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_AutoUpdatesProcessor') ):
+if ( !class_exists('ICWP_AutoUpdatesProcessor_V1') ):
 
-class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
+class ICWP_AutoUpdatesProcessor_V1 extends ICWP_BaseProcessor_V1 {
 
 	const Slug = 'autoupdates';
 	
 	/**
-	 * @var array
+	 * @var boolean
 	 */
 	protected $m_fDoForceRunAutoUpdates = false;
 	
-	/**
-	 * @var array
-	 */
-	protected $m_aAutoUpdatePluginFiles;
-	
-	/**
-	 * @var array
-	 */
-	protected $m_aAutoUpdateThemeFiles;
-
 	public function __construct( $insOptionPrefix = '' ) {
 		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ) );
 	}
 	
 	/**
-	 * Resets the object values to be re-used anew
-	 */
-	public function reset() {
-		parent::reset();
-	}
-	
-	/**
 	 * @param boolean $infDoForceRun
 	 */
-	public function setForceRunAutoUpdates( $infDoForceRun = false ) {
+	public function setForceRunAutoUpdates() {
 		$this->m_fDoForceRunAutoUpdates = $infDoForceRun;
 	}
 	
 	/**
 	 * @param boolean $infDoForceRun
 	 */
-	public function getForceRunAutoUpdates( $infDoForceRun = false ) {
+	public function getForceRunAutoUpdates() {
 		return $this->m_fDoForceRunAutoUpdates;
 	}
 	
 	/**
 	 */
 	public function run() {
-		if ( $this->m_aOptions['autoupdate_core'] == 'core_never' ) {
-			add_filter( 'allow_minor_auto_core_updates', '__return_false', 99 );
-			add_filter( 'allow_major_auto_core_updates', '__return_false', 99 );
+		
+		// When we force run we only want our filters.
+		if ( $this->getForceRunAutoUpdates() ) {
+			$aFilters = array(
+				'allow_minor_auto_core_updates',
+				'allow_major_auto_core_updates',
+				'auto_update_translation',
+				'auto_update_plugin',
+				'auto_update_theme',
+				'automatic_updates_is_vcs_checkout',
+				'automatic_updater_disabled'
+			);
+			foreach( $aFilters as $sFilter ) {
+				remove_all_filters( $sFilter );
+			}
 		}
-		else if ( $this->m_aOptions['autoupdate_core'] == 'core_minor' ) {
-			add_filter( 'allow_minor_auto_core_updates', '__return_true', 99 );
-			add_filter( 'allow_major_auto_core_updates', '__return_false', 99 );
-		}
-		else if ( $this->m_aOptions['autoupdate_core'] == 'core_major' ) {
-			add_filter( 'allow_minor_auto_core_updates', '__return_true', 99 );
-			add_filter( 'allow_major_auto_core_updates', '__return_true', 99 );
-		}
+		
+		add_filter( 'allow_minor_auto_core_updates',	array( $this, 'autoupdate_core_minor' ), 1001 );
+		add_filter( 'allow_major_auto_core_updates',	array( $this, 'autoupdate_core_major' ), 1001 );
 
-		add_filter( 'auto_update_translation',	array( $this, 'autoupdate_translations' ), 99, 2 );
-		add_filter( 'auto_update_plugin',		array( $this, 'autoupdate_plugins' ), 99, 2 );
-		add_filter( 'auto_update_theme',		array( $this, 'autoupdate_themes' ), 99, 2 );
+		add_filter( 'auto_update_translation',	array( $this, 'autoupdate_translations' ), 1001, 2 );
+		add_filter( 'auto_update_plugin',		array( $this, 'autoupdate_plugins' ), 1001, 2 );
+		add_filter( 'auto_update_theme',		array( $this, 'autoupdate_themes' ), 1001, 2 );
 
 		if ( $this->m_aOptions['enable_autoupdate_ignore_vcs'] == 'Y' ) {
 			add_filter( 'automatic_updates_is_vcs_checkout', array( $this, 'disable_for_vcs'), 10, 2 );
 		}
 
 		if ( $this->m_aOptions['enable_autoupdate_disable_all'] == 'Y' ) {
-			add_filter( 'automatic_updater_disabled', '__return_true', 99 );
+			add_filter( 'automatic_updater_disabled', '__return_true', 1001 );
 		}
 		
 		if ( $this->getForceRunAutoUpdates() ) {
@@ -97,34 +87,81 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 	}
 
 	/**
-	 * 
+	 * Will force-run the WordPress automatic updates process and then redirect to the updates screen.
 	 */
-	public function force_run_autoupdates( ) {
+	public function force_run_autoupdates( $insRedirect = 'update-core.php' ) {
 		$lock_name = 'auto_updater.lock'; //ref: /wp-admin/includes/class-wp-upgrader.php
 		delete_option( $lock_name );
 		if ( !defined('DOING_CRON') ) {
-			define( 'DOING_CRON', true ); // this prevent WP from disabling the plugin pre-upgrade
+			define( 'DOING_CRON', true ); // this prevents WP from disabling plugins pre-upgrade
 		}
 		wp_maybe_auto_update();
- 		wp_redirect( get_admin_url( null, 'update-core.php') );
+ 		wp_redirect( get_admin_url( null, $insRedirect ) );
  		exit();
 	}
 	
+	/**
+	 * This is a filter method designed to say whether a major core WordPress upgrade should be permitted,
+	 * based on the plugin settings.
+	 * 
+	 * @param boolean $infUpdate
+	 * @return boolean
+	 */
+	public function autoupdate_core_major( $infUpdate ) {
+		if ( $this->m_aOptions['autoupdate_core'] == 'core_never' ) {
+			return false;
+		}
+		else if ( $this->m_aOptions['autoupdate_core'] == 'core_major' ) {
+			return true;
+		}
+		return $infUpdate;
+	}
+	
+	/**
+	 * This is a filter method designed to say whether a minor core WordPress upgrade should be permitted,
+	 * based on the plugin settings.
+	 * 
+	 * @param boolean $infUpdate
+	 * @return boolean
+	 */
+	public function autoupdate_core_minor( $infUpdate ) {
+		if ( $this->m_aOptions['autoupdate_core'] == 'core_never' ) {
+			return false;
+		}
+		else if ( $this->m_aOptions['autoupdate_core'] == 'core_minor' ) {
+			return true;
+		}
+		return $infUpdate;
+	}
+	
+	/**
+	 * This is a filter method designed to say whether a WordPress translations upgrades should be permitted,
+	 * based on the plugin settings.
+	 * 
+	 * @param boolean $infUpdate
+	 * @return boolean
+	 */
 	public function autoupdate_translations( $infUpdate, $insSlug ) {
 		if ( $this->m_aOptions['enable_autoupdate_translations'] == 'Y' ) {
 			return true;
 		}
 		return $infUpdate;
 	}
-
+	
+	/**
+	 * This is a filter method designed to say whether WordPress plugin upgrades should be permitted,
+	 * based on the plugin settings.
+	 * 
+	 * @param boolean $infUpdate
+	 * @return boolean
+	 */
 	public function autoupdate_plugins( $infUpdate, $insPluginSlug ) {
 		
 		if ( strpos( $insPluginSlug, 'icwp-wpsf.php') !== false ) {
 			return $this->m_aOptions['autoupdate_plugin_wpsf'] == 'Y';
 		}
 
-		$aAutoUpdatePluginFiles = array();
-		$aAutoUpdatePluginFiles = apply_filters( 'icwp_wpsf_autoupdate_plugins', $aAutoUpdatePluginFiles );
+		$aAutoUpdatePluginFiles = apply_filters( 'icwp_wpsf_autoupdate_plugins', array() );
 		
 		if ( !empty( $aAutoUpdatePluginFiles ) && is_array($aAutoUpdatePluginFiles) ) {
 			if ( in_array( $insPluginSlug, $aAutoUpdatePluginFiles ) ) {
@@ -137,10 +174,16 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 		return $infUpdate;
 	}
 	
+	/**
+	 * This is a filter method designed to say whether WordPress theme upgrades should be permitted,
+	 * based on the plugin settings.
+	 * 
+	 * @param boolean $infUpdate
+	 * @return boolean
+	 */
 	public function autoupdate_themes( $infUpdate, $insThemeSlug ) {
 		
-		$aAutoUpdateThemeFiles = array();
-		$aAutoUpdateThemeFiles = apply_filters( 'icwp_wpsf_autoupdate_themes', $aAutoUpdateThemeFiles );
+		$aAutoUpdateThemeFiles = apply_filters( 'icwp_wpsf_autoupdate_themes', array() );
 		
 		if ( !empty( $aAutoUpdateThemeFiles ) && is_array($aAutoUpdateThemeFiles) ) {
 			if ( in_array( $insThemeSlug, $aAutoUpdateThemeFiles ) ) {
@@ -154,9 +197,20 @@ class ICWP_AutoUpdatesProcessor extends ICWP_BaseProcessor_WPSF {
 		return $infUpdate;
 	}
 	
+	/**
+	 * This is a filter method designed to say whether WordPress automatic upgrades should be permitted
+	 * if a version control system is detected.
+	 * 
+	 * @param boolean $infUpdate
+	 * @return boolean
+	 */
 	public function disable_for_vcs( $checkout, $context ) {
 		return false;
 	}
 }
 
+endif;
+
+if ( !class_exists('ICWP_AutoUpdatesProcessor') ):
+	class ICWP_AutoUpdatesProcessor extends ICWP_AutoUpdatesProcessor_V1 { }
 endif;

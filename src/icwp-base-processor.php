@@ -18,9 +18,9 @@
  *
  */
 
-if ( !class_exists('ICWP_BaseProcessor_WPSF') ):
+if ( !class_exists('ICWP_BaseProcessor_V1') ):
 
-class ICWP_BaseProcessor_WPSF {
+class ICWP_BaseProcessor_V1 {
 	
 	const PcreDelimiter = '/';
 	const LOG_MESSAGE_LEVEL_INFO = 0;
@@ -32,7 +32,7 @@ class ICWP_BaseProcessor_WPSF {
 	const LOG_CATEGORY_LOGINPROTECT = 2;
 
 	/**
-	 * @var ICWP_BaseProcessor_WPSF
+	 * @var ICWP_BaseProcessor_V1
 	 */
 	protected static $oInstance = NULL;
 
@@ -389,4 +389,8 @@ class ICWP_BaseProcessor_WPSF {
 	}
 }
 
+endif;
+
+if ( !class_exists('ICWP_BaseProcessor_WPSF') ):
+	class ICWP_BaseProcessor_WPSF extends ICWP_BaseProcessor_V1 { }
 endif;
