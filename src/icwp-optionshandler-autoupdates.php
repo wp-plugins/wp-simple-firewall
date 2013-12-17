@@ -45,6 +45,20 @@ class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_V1 {
 				)
 			)
 		);
+		$aAutoUpdateAll = array(
+			'section_title' => _wpsf__('Disable ALL WordPress Automatic Updates'),
+			'section_options' => array(
+				array(
+					'enable_autoupdate_disable_all',
+					'',
+					'N',
+					'checkbox',
+					_wpsf__( 'Disable All' ),
+					_wpsf__( 'Completely Disable WordPress Automatic Updates' ),
+					_wpsf__( 'When selected, regardless of any other settings, all WordPress automatic updates on this site will be completely disabled!' )
+				)
+			)
+		);
 		$aAutoUpdatePlugin = array(
 			'section_title' => _wpsf__('Automatic Plugin Self-Update'),
 			'section_options' => array(
@@ -114,17 +128,27 @@ class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_V1 {
 				)
 			)
 		);
-		$aAutoUpdateAll = array(
-			'section_title' => _wpsf__('Disable ALL WordPress Automatic Updates'),
+		
+		$aAutoUpdateEmail = array(
+			'section_title' => _wpsf__('Automatic Update Email Notifications'),
 			'section_options' => array(
 				array(
-					'enable_autoupdate_disable_all',
+					'enable_upgrade_notification_email',
 					'',
-					'N',
+					'Y',
 					'checkbox',
-					_wpsf__( 'Disable All' ),
-					_wpsf__( 'Completely Disable WordPress Automatic Updates' ),
-					_wpsf__( 'When selected, regardless of any other settings, all WordPress automatic updates on this site will be completely disabled!' )
+					_wpsf__( 'Send Report Email' ),
+					_wpsf__( 'Send email notices after automatic updates' ),
+					_wpsf__( 'You can turn on/off email notices from automatic updates by un/checking this box.' )
+				),
+				array(
+					'override_email_address',
+					'',
+					'',
+					'email',
+					_wpsf__( 'Report Email Address' ),
+					_wpsf__( 'Where to send upgrade notification reports' ),
+					_wpsf__( 'If this is empty, it will default to the Site admin email address' )
 				)
 			)
 		);
@@ -134,6 +158,7 @@ class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_V1 {
 			$aAutoUpdateAll,
 			$aAutoUpdatePlugin,
 			$aAutoUpdateComponents,
+			$aAutoUpdateEmail
 		);
 	}
 

@@ -194,6 +194,7 @@ $sOff = _wpsf__( 'Off' );
 				<p><?php printf( _wpsf__('%snew%s refers to the absolute latest release.'), '<span class="label">', '</span>' ) ; ?></p>
 				<?php
 				$aNewLog = array(
+					'ADDED: Options to automatic updates to control where and whether email notifications are sent.',
 					'ADDED: Various fixes and verification of WordPress 3.8 compatibility.',
 					'ADDED: Integration with iControlWP and the automatic updates system.',
 					'ADDED: Better filesystem handling methods.',

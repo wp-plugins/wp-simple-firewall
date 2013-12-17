@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.2.4
+ * Version: 2.2.5
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.2.4';
+	const PluginVersion					= '2.2.5';
 	/**
 	 * @var string
 	 */
@@ -155,19 +155,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 		if ( isset( $_GET['turnoffperm'] ) ) {
 			$this->setPermissionToSubmit( false );
 		}
-	}
-	
-	/**
-	 * @param array $aPlugins
-	 * @return unknown
-	 */
-	public function hide_plugin( $inaPlugins ) {
-		foreach ( $inaPlugins as $sSlug => $aData ) {
-			if ( strpos( $sSlug, 'icwp-wpsf.php' ) !== false ) {
-				unset( $inaPlugins[$sSlug] );
-			}
-		}
-		return $inaPlugins;
 	}
 	
 	protected function override() {
@@ -507,8 +494,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V1 {
 			$this->getSubmenuPageTitle( 'Firewall' )		=> array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( 'Login Protect' )	=> array( 'Login Protect', $this->getSubmenuId('login_protect'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( 'Comments Filter' )	=> array( 'Comments Filter', $this->getSubmenuId('comments_filter'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( 'Automatic Updates' )	=> array( 'Automatic Updates', $this->getSubmenuId('autoupdates'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( 'Lockdown' )		=> array( 'Lockdown', $this->getSubmenuId('lockdown'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Auto Updates' )	=> array( 'Auto Updates', $this->getSubmenuId('autoupdates'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( 'Log' )				=> array( 'Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' )
 		);
 	}

@@ -74,13 +74,16 @@ class ICWP_AutoUpdatesProcessor_V1 extends ICWP_BaseProcessor_V1 {
 		add_filter( 'auto_update_theme',		array( $this, 'autoupdate_themes' ), 1001, 2 );
 
 		if ( $this->m_aOptions['enable_autoupdate_ignore_vcs'] == 'Y' ) {
-			add_filter( 'automatic_updates_is_vcs_checkout', array( $this, 'disable_for_vcs'), 10, 2 );
+			add_filter( 'automatic_updates_is_vcs_checkout', array( $this, 'disable_for_vcs' ), 10, 2 );
 		}
 
 		if ( $this->m_aOptions['enable_autoupdate_disable_all'] == 'Y' ) {
 			add_filter( 'automatic_updater_disabled', '__return_true', 1001 );
 		}
 		
+		add_filter( 'auto_core_update_send_email', array( $this, 'autoupdate_send_email' ), 1001, 1 ); //more parameter options here for later
+		add_filter( 'auto_core_update_email', array( $this, 'autoupdate_email_override' ), 1001, 1 ); //more parameter options here for later
+
 		if ( $this->getForceRunAutoUpdates() ) {
 			$this->force_run_autoupdates();
 		}
@@ -206,6 +209,29 @@ class ICWP_AutoUpdatesProcessor_V1 extends ICWP_BaseProcessor_V1 {
 	 */
 	public function disable_for_vcs( $checkout, $context ) {
 		return false;
+	}
+	
+	/**
+	 * A filter on whether or not a notification email is send after core upgrades are attempted.
+	 * 
+	 * @param boolean $infSendEmail
+	 * @return boolean
+	 */
+	public function autoupdate_send_email( $infSendEmail ) {
+		return $this->m_aOptions['enable_upgrade_notification_email'] == 'Y';
+	}
+	
+	/**
+	 * A filter on the target email address to which to send upgrade notification emails.
+	 * 
+	 * @param array $inaEmailParam
+	 * @return array
+	 */
+	public function autoupdate_email_override( $inaEmailParams ) {
+		if ( !empty( $this->m_aOptions['override_email_address'] ) ) {
+			$inaEmailParams['to'] = $this->m_aOptions['override_email_address'];
+		}
+		return $inaEmailParams;
 	}
 }
 
