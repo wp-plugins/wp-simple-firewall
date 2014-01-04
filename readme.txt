@@ -238,6 +238,11 @@ You can either manually upgrade, or WordPress will handle it in due course.
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
+= 2.3.0 =
+
+*	ADDED:		Automatic cleaning of GASP Comments Filter and Login Protection database entries (older than 24hrs) using WordPress Cron (everyday @ 6am)
+*	CHANGED:	Huge code refactoring to allow for more easily use with other WordPress plugins.
+
 = 2.2.5 =
 
 *	ADDED:		Email sending options for automatic update notifications - options to change the notification email address, or turn it off completely.

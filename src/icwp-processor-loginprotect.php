@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_LoginProtectProcessor') ):
+if ( !class_exists('ICWP_LoginProtectProcessor_V1') ):
 
-class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
 	const Slug = 'login_protect';
 	const TableName = 'login_auth';
@@ -62,6 +62,18 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	public function reset() {
 		parent::reset();
 		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
+		$this->genSecretKey();
+	}
+	
+	/**
+	 * Set the secret key by which authentication is validated.
+	 * 
+	 * @param string $insSecretKey
+	 */
+	public function genSecretKey( $infForceUpdate = false ) {
+		if ( empty( $this->m_sSecretKey ) || $infForceUpdate ) {
+			$this->m_sSecretKey = md5( mt_rand() );
+		}
 	}
 	
 	/**
@@ -71,6 +83,9 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function setSecretKey( $insSecretKey = '' ) {
 		if ( !empty( $insSecretKey ) ) {
+			$this->genSecretKey();
+		}
+		else {
 			$this->m_sSecretKey = $insSecretKey;
 		}
 	}
@@ -104,6 +119,8 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 * @param ICWP_OptionsHandler_LoginProtect $inoOptions
 	 */
 	public function run() {
+		parent::run();
+		
 		$aWhitelist = $this->m_aOptions['ips_whitelist'];
 		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::GetVisitorIpAddress() ) ) {
 			return true;
@@ -183,7 +200,7 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 * Should return false when logging is disabled.
 	 *
 	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_BaseProcessor_WPSF::getLogData()
+	 * @see ICWP_WPSF_BaseProcessor::getLogData()
 	 */
 	public function flushLogData() {
 	
@@ -680,6 +697,21 @@ class ICWP_LoginProtectProcessor extends ICWP_BaseDbProcessor_WPSF {
 		$sQuery = sprintf( $sQuery, $this->m_sTableName, $inaData['unique_id'], $inaData['wp_username'] );
 		return $this->selectRowFromTable( $sQuery );
 	}
+
+	/**
+	 * This is hooked into a cron in the base class and overrides the parent method.
+	 * 
+	 * It'll delete everything older than 24hrs.
+	 */
+	public function cleanupDatabase() {
+		$nTimeStamp = time() - DAY_IN_SECONDS;
+		$this->deleteAllRowsOlderThan( $nTimeStamp );
+	}
+
 }
 
+endif;
+
+if ( !class_exists('ICWP_WPSF_LoginProtectProcessor') ):
+	class ICWP_WPSF_LoginProtectProcessor extends ICWP_LoginProtectProcessor_V1 { }
 endif;

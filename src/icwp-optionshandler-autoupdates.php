@@ -17,14 +17,34 @@
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_OptionsHandler_AutoUpdates') ):
+if ( !class_exists('ICWP_OptionsHandler_AutoUpdates_V2') ):
 
-class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_V1 {
+class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 	
 	const StoreName = 'autoupdates_options';
 	
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
+	}
+	
+	/**
+	 * @return void
+	 */
+	public function setOptionsKeys() {
+		if ( !isset( $this->m_aOptionsKeys ) ) {
+			$this->m_aOptionsKeys = array(
+				'enable_autoupdates',
+				'enable_autoupdate_disable_all',
+				'autoupdate_plugin_wpsf',
+				'autoupdate_core',
+				'enable_autoupdate_translations',
+				'enable_autoupdate_plugins',
+				'enable_autoupdate_themes',
+				'enable_autoupdate_ignore_vcs',
+				'enable_upgrade_notification_email',
+				'override_email_address'
+			);
+		}
 	}
 	
 	public function doPrePluginOptionsSave() {}
@@ -164,10 +184,12 @@ class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_Base_V1 {
 
 	public function updateHandler() {
 
-		$sCurrentVersion = empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ];
-		if ( version_compare( $sCurrentVersion, '1.9.0', '<' ) ) {
-		}//v1.9.0
+		$sCurrentVersion = $this->getVersion();
+		$sCurrentVersion = empty( $sCurrentVersion )? '0.0' : $sCurrentVersion;
+		if ( version_compare( $sCurrentVersion, '1.9.0', '<' ) ) { }//v1.9.0
 	}
 }
 
 endif;
+
+class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_AutoUpdates_V2 { }

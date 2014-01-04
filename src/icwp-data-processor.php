@@ -25,6 +25,54 @@ class ICWP_DataProcessor {
 	
 	public static $fUseFilter = false;
 	
+	/**
+	 * Cloudflare compatible.
+	 * 
+	 * @return number - visitor IP Address as IP2Long
+	 */
+	public static function GetVisitorIpAddress( $infAsLong = true ) {
+	
+		$aAddressSourceOptions = array(
+			'HTTP_CF_CONNECTING_IP',
+			'HTTP_CLIENT_IP',
+			'HTTP_X_FORWARDED_FOR',
+			'HTTP_X_FORWARDED',
+			'HTTP_FORWARDED',
+			'REMOTE_ADDR'
+		);
+		$fCanUseFilter = function_exists( 'filter_var' ) && defined( 'FILTER_FLAG_NO_PRIV_RANGE' ) && defined( 'FILTER_FLAG_IPV4' );
+		
+		$aIpAddresses = array();
+		foreach( $aAddressSourceOptions as $sOption ) {
+			if ( empty( $_SERVER[ $sOption ] ) ) {
+				continue;
+			}
+			$sIpAddressToTest = $_SERVER[ $sOption ];
+			
+			$aIpAddresses = explode( ',', $sIpAddressToTest ); //sometimes a comma-separated list is returned
+			foreach( $aIpAddresses as $sIpAddress ) {
+				
+				if ( $fCanUseFilter && !self::IsAddressInPublicIpRange( $sIpAddress ) ) {
+					continue;
+				}
+				else {
+					return $infAsLong? ip2long( $sIpAddress ) : $sIpAddress;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Assumes a valid IPv4 address is provided as we're only testing for a whether the IP is public or not.
+	 * 
+	 * @param string $insIpAddress
+	 * @uses filter_var
+	 */
+	public static function IsAddressInPublicIpRange( $insIpAddress ) {
+		return filter_var( $insIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE );
+	}
+	
 	static public function ExtractIpAddresses( $insAddresses = '' ) {
 		
 		$aRawAddresses = array();

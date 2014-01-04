@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_Firewall') ):
 
-class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
+class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 	
 	const StoreName = 'firewall_options';
 	
@@ -27,19 +27,46 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
 	
+	/**
+	 * @return void
+	 */
+	public function setOptionsKeys() {
+		if ( !isset( $this->m_aOptionsKeys ) ) {
+			$this->m_aOptionsKeys = array(
+				'enable_firewall',
+				'include_cookie_checks',
+				'block_dir_traversal',
+				'block_sql_queries',
+				'block_wordpress_terms',
+				'block_field_truncation',
+				'block_exe_file_uploads',
+				'block_leading_schema',
+				'block_response',
+				'block_send_email',
+				'ips_whitelist',
+				'page_params_whitelist',
+				'whitelist_admins',
+				'ips_blacklist',
+				'enable_firewall_log'
+			);
+		}
+	}
+	
 	public function doPrePluginOptionsSave() {
 
-		$aIpWhitelist = $this->getOpt( 'ips_blacklist' );
+		$aIpWhitelist = $this->getOpt( 'ips_whitelist' );
 		if ( $aIpWhitelist === false ) {
 			$aIpWhitelist = '';
 			$this->setOpt( 'ips_whitelist', $aIpWhitelist );
 		}
+		$this->processIpFilter( 'ips_whitelist', 'icwp_simple_firewall_whitelist_ips' );
 		
 		$aIpBlacklist = $this->getOpt( 'ips_blacklist' );
 		if ( $aIpBlacklist === false ) {
 			$aIpBlacklist = '';
 			$this->setOpt( 'ips_blacklist', $aIpBlacklist );
 		}
+		$this->processIpFilter( 'ips_blacklist', 'icwp_simple_firewall_blacklist_ips' );
 		
 		$aPageWhitelist = $this->getOpt( 'page_params_whitelist' );
 		if ( $aPageWhitelist === false ) {
@@ -55,10 +82,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 	}
 	
 	public function defineOptions() {
-
-		$this->m_aDirectSaveOptions = array( 'whitelist_admins' );
-		
-		$this->m_aFirewallBase = 	array(
+		$aFirewallBase = 	array(
 			'section_title' => _wpsf__( 'Enable WordPress Firewall' ),
 			'section_options' => array(
 				array(
@@ -72,7 +96,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 				)
 			)
 		);
-		$this->m_aBlockTypesSection =  array(
+		$aBlockTypesSection =  array(
 			'section_title' => _wpsf__( 'Firewall Blocking Options' ),
 			'section_options' => array(
 				array(
@@ -146,7 +170,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 			array( 'redirect_home',			'Redirect To Home Page' ),
 			array( 'redirect_404',			'Return 404' ),
 		);
-		$this->m_aBlockSection = array(
+		$aBlockSection = array(
 			'section_title' => _wpsf__( 'Choose Firewall Block Response' ),
 			'section_options' => array(
 				array(
@@ -170,7 +194,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 			)
 		);
 		
-		$this->m_aWhitelistSection = array(
+		$aWhitelistSection = array(
 			'section_title' => _wpsf__( 'Whitelists - IPs, Pages, Parameters, and Users that by-pass the Firewall' ),
 			'section_options' => array(
 				array(
@@ -204,7 +228,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 			)
 		);
 		
-		$this->m_aBlacklistSection = array(
+		$aBlacklistSection = array(
 			'section_title' => _wpsf__( 'Choose IP Addresses To Blacklist' ),
 			'section_options' => array(
 				array(
@@ -218,7 +242,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 				)
 			)
 		);
-		$this->m_aFirewallMiscSection = array(
+		$aMisc = array(
 			'section_title' => _wpsf__( 'Miscellaneous Plugin Options' ),
 			'section_options' => array(
 				array(
@@ -234,12 +258,12 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 		);
 
 		$this->m_aOptions = array(
-			$this->m_aFirewallBase,
-			$this->m_aBlockSection,
-			$this->m_aWhitelistSection,
-			$this->m_aBlacklistSection,
-			$this->m_aBlockTypesSection,
-			$this->m_aFirewallMiscSection
+			$aFirewallBase,
+			$aBlockSection,
+			$aWhitelistSection,
+			$aBlacklistSection,
+			$aBlockTypesSection,
+			$aMisc
 		);
 	}
 
@@ -247,27 +271,37 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_V1 {
 
 		$sCurrentVersion = empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ];
 		if ( version_compare( $sCurrentVersion, '1.4.0', '<' ) ) {
-			$aSettingsKey = array(
-				'current_plugin_version',
-				'enable_firewall',
-				'include_cookie_checks',
-				'block_dir_traversal',
-				'block_sql_queries',
-				'block_wordpress_terms',
-				'block_field_truncation',
-				'block_exe_file_uploads',
-				'block_leading_schema',
-				'block_send_email',
-				'ips_whitelist',
-				'ips_blacklist',
-				'page_params_whitelist',
-				'block_response',
-				'enable_firewall_log',
-				'whitelist_admins'
-			);
-			$this->migrateOptions( $aSettingsKey );
 		}//v1.4.0
 	}
+
+	public function addRawIpsToFirewallList( $insListName, $inaNewIps ) {
+		if ( empty( $inaNewIps ) ) {
+			return;
+		}
+		
+		$aIplist = $this->getOpt( $insListName );
+		if ( empty( $aIplist ) ) {
+			$aIplist = array();
+		}
+		$aNewList = array();
+		foreach( $inaNewIps as $sAddress ) {
+			$aNewList[ $sAddress ] = '';
+		}
+		$this->setOpt( $insListName, ICWP_DataProcessor::Add_New_Raw_Ips( $aIplist, $aNewList ) );
+	}
+
+	public function removeRawIpsFromFirewallList( $insListName, $inaRemoveIps ) {
+		if ( empty( $inaRemoveIps ) ) {
+			return;
+		}
+		
+		$aIplist = $this->getOpt( $insListName );
+		if ( empty( $aIplist ) || empty( $inaRemoveIps ) ) {
+			return;
+		}
+		$this->setOpt( $insListName, ICWP_DataProcessor::Remove_Raw_Ips( $aIplist, $inaRemoveIps ) );
+	}
+	
 }
 
 endif;

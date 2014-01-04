@@ -17,11 +17,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_OptionsHandler_Base_V1') ):
+if ( !class_exists('ICWP_OptionsHandler_Base_V2') ):
 
-class ICWP_OptionsHandler_Base_V1 {
+class ICWP_OptionsHandler_Base_V2 {
 	
+	/**
+	 * @var string
+	 */
 	const CollateSeparator = '--SEP--';
+	/**
+	 * @var string
+	 */
+	const PluginVersionKey = 'current_plugin_version';
 	
 	/**
 	 * @var boolean
@@ -84,6 +91,11 @@ class ICWP_OptionsHandler_Base_V1 {
 	 */
 	protected $m_aOptionsStoreName;
 	
+	/**
+	 * @var array
+	 */
+	protected $m_aOptionsKeys;
+	
 	public function __construct( $insPrefix, $insStoreName, $insVersion ) {
 		$this->m_sOptionPrefix = $insPrefix;
 		$this->m_aOptionsStoreName = $insStoreName;
@@ -92,10 +104,17 @@ class ICWP_OptionsHandler_Base_V1 {
 		$this->m_fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
 		
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
-		add_action( 'plugins_loaded', array( $this, 'doUpdates' ) );
+		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ), 1 );
 	}
 	
-	public function doUpdates() {
+	/**
+	 * A action added to WordPress 'plugins_loaded' hook
+	 */
+	public function onWpPluginsLoaded() {
+		$this->doUpdates();
+	}
+	
+	protected function doUpdates() {
 		if ( $this->hasPluginManageRights() ) {
 			$this->buildOptions();
 			$this->updateHandler();
@@ -119,14 +138,46 @@ class ICWP_OptionsHandler_Base_V1 {
 	 * @return string
 	 */
 	public function getVersion() {
-		return $this->m_sVersion;
+		return $this->getOpt( self::PluginVersionKey );
 	}
 
 	/**
 	 * @return string
 	 */
 	public function setVersion( $insVersion ) {
-		return $this->m_sVersion = $insVersion;
+		return $this->setOpt( self::PluginVersionKey, $insVersion );
+	}
+	
+	/**
+	 * Gets the array of all possible options keys
+	 * 
+	 * @return array
+	 */
+	public function getOptionsKeys() {
+		$this->setOptionsKeys();
+		return $this->m_aOptionsKeys;
+	}
+	
+	/**
+	 * @return void
+	 */
+	public function setOptionsKeys() {
+		if ( !isset( $this->m_aOptionsKeys ) ) {
+			$this->m_aOptionsKeys = array();
+		}
+	}
+	
+	/**
+	 * Determines whether the given option key is a valid options
+	 * 
+	 * @return boolean
+	 */
+	public function getIsOptionKey( $insOptionKey ) {
+		if ( $insOptionKey == self::PluginVersionKey ) {
+			return true;
+		}
+		$this->setOptionsKeys();
+		return ( in_array( $insOptionKey, $this->m_aOptionsKeys ) );
 	}
 	
 	/**
@@ -137,6 +188,10 @@ class ICWP_OptionsHandler_Base_V1 {
 	 * @return boolean
 	 */
 	public function setOpt( $insKey, $inmValue ) {
+		
+		if ( !$this->getIsOptionKey( $insKey ) ) {
+			return false;
+		}
 		
 		if ( !isset( $this->m_aOptionsValues ) ) {
 			$this->loadStoredOptionsValues();
@@ -437,6 +492,10 @@ class ICWP_OptionsHandler_Base_V1 {
 		foreach ( $aAllInputOptions as $sInputKey ) {
 			$aInput = explode( ':', $sInputKey );
 			list( $sOptionType, $sOptionKey ) = $aInput;
+			
+			if ( !$this->getIsOptionKey( $sOptionKey ) ) {
+				continue;
+			}
 
 			$sOptionValue = $this->getFromPost( $sOptionKey );
 			if ( is_null($sOptionValue) ) {
@@ -535,8 +594,8 @@ class ICWP_OptionsHandler_Base_V1 {
 	}
 	
 	protected function getVisitorIpAddress( $infAsLong = true ) {
-		require_once( dirname(__FILE__).'/icwp-base-processor.php' );
-		return ICWP_BaseProcessor_V1::GetVisitorIpAddress( $infAsLong );
+		require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+		return ICWP_DataProcessor::GetVisitorIpAddress( $infAsLong );
 	}
 	
 	/**
@@ -564,6 +623,54 @@ class ICWP_OptionsHandler_Base_V1 {
 		$sKey = $this->m_sOptionPrefix.$insKey;
 		return $this->m_fIsMultisite? delete_site_option($sKey) : delete_option($sKey);
 	}
+
+	
+	/**
+	 * @param string $insExistingListKey
+	 * @param string $insFilterName
+	 * @param integer $outnNewAdded
+	 * @return array|false
+	 */
+	protected function processIpFilter( $insExistingListKey, $insFilterName ) {
+		$aFilterIps = apply_filters( $insFilterName, array() );
+		if ( empty( $aFilterIps ) ) {
+			return false;
+		}
+			
+		$aNewIps = array();
+		foreach( $aFilterIps as $mKey => $sValue ) {
+			if ( is_string( $mKey ) ) { //it's the IP
+				$sIP = $mKey;
+				$sLabel = $sValue;
+			}
+			else { //it's not an associative array, so the value is the IP
+				$sIP = $sValue;
+				$sLabel = '';
+			}
+			$aNewIps[ $sIP ] = $sLabel;
+		}
+		
+		// now add and store the new IPs
+		$aExistingIpList = $this->getOpt( $insExistingListKey );
+		if ( !is_array( $aExistingIpList ) ) {
+			$aExistingIpList = array();
+		}
+
+		$this->loadDataProcessor();
+		$nNewAddedCount = 0;
+		$aNewList = ICWP_DataProcessor::Add_New_Raw_Ips( $aExistingIpList, $aNewIps, $nNewAddedCount );
+		if ( $nNewAddedCount > 0 ) {
+			$this->setOpt( $insExistingListKey, $aNewList );
+		}
+	}
+	
+	protected function loadDataProcessor() {
+		if ( !class_exists($class_name) ) {
+			require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+		}
+	}
 }
 
 endif;
+
+class ICWP_OptionsHandler_Base_Wpsf extends ICWP_OptionsHandler_Base_V2 { }

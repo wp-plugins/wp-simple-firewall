@@ -18,9 +18,9 @@
  *
  */
 
-if ( !class_exists('ICWP_BaseProcessor_V1') ):
+if ( !class_exists('ICWP_BaseProcessor_V2') ):
 
-class ICWP_BaseProcessor_V1 {
+class ICWP_BaseProcessor_V2 {
 	
 	const PcreDelimiter = '/';
 	const LOG_MESSAGE_LEVEL_INFO = 0;
@@ -30,11 +30,6 @@ class ICWP_BaseProcessor_V1 {
 	const LOG_CATEGORY_DEFAULT = 0;
 	const LOG_CATEGORY_FIREWALL = 1;
 	const LOG_CATEGORY_LOGINPROTECT = 2;
-
-	/**
-	 * @var ICWP_BaseProcessor_V1
-	 */
-	protected static $oInstance = NULL;
 
 	/**
 	 * @var string
@@ -79,22 +74,6 @@ class ICWP_BaseProcessor_V1 {
 	 * @var ICWP_OptionsHandler_Base_WPSF
 	 */
 	protected $m_oOptionsHandler;
-	
-	public static function GetInstance( $insStorageKey, $inaOptions ) {
-		
-		if ( self::$oInstance !== null ) {
-			return self::$oInstance;
-		}
-		self::$oInstance = get_option( $insStorageKey );
-		if ( empty(self::$oInstance) ) {
-			self::$oInstance = new self( $insStorageKey );
-			self::$oInstance->setOptions( $inaOptions );
-		}
-		else {
-			self::$oInstance->reset();
-		}
-		return self::$oInstance;
-	}
 
 	public function __construct( $insStorageKey ) {
 		$this->m_sStorageKey = $insStorageKey;
@@ -106,9 +85,14 @@ class ICWP_BaseProcessor_V1 {
 	 * Resets the object values to be re-used anew
 	 */
 	public function reset() {
-		$this->m_nRequestIp = self::GetVisitorIpAddress();
+		$this->m_nRequestIp = $this->getVisitorIpAddress();
 		$this->resetLog();
 	}
+	
+	/**
+	 * Override to set what this processor does when it's "run"
+	 */
+	public function run() { }
 	
 	/**
 	 * Ensure that when we save the object later, it doesn't save unnecessary data.
@@ -121,8 +105,8 @@ class ICWP_BaseProcessor_V1 {
 	 * @param string $infKey
 	 */
 	public function store() {
+		$this->doPreStore();
 		if ( $this->getNeedSave() ) {
-			$this->doPreStore();
 			$this->setNeedSave( false );
 			update_option( $this->m_sStorageKey, $this );
 		}
@@ -232,47 +216,9 @@ class ICWP_BaseProcessor_V1 {
 	 * 
 	 * @return number - visitor IP Address as IP2Long
 	 */
-	public static function GetVisitorIpAddress( $infAsLong = true ) {
-	
-		$aAddressSourceOptions = array(
-			'HTTP_CLIENT_IP',
-			'HTTP_X_FORWARDED_FOR',
-			'HTTP_X_FORWARDED',
-			'HTTP_FORWARDED',
-			'REMOTE_ADDR'
-		);
-		
-		$fCanUseFilter = function_exists( 'filter_var' ) && defined( 'FILTER_FLAG_NO_PRIV_RANGE' ) && defined( 'FILTER_FLAG_IPV4' );
-		
-		$aIpAddresses = array();
-		foreach( $aAddressSourceOptions as $sOption ) {
-			if ( empty( $_SERVER[ $sOption ] ) ) {
-				continue;
-			}
-			$sIpAddressToTest = $_SERVER[ $sOption ];
-			
-			$aIpAddresses = explode( ',', $sIpAddressToTest ); //sometimes a comma-separated list is returned
-			foreach( $aIpAddresses as $sIpAddress ) {
-				
-				if ( $fCanUseFilter && !self::IsAddressInPublicIpRange( $sIpAddress ) ) {
-					continue;
-				}
-				else {
-					return $infAsLong? ip2long( $sIpAddress ) : $sIpAddress;
-				}
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * Assumes a valid IPv4 address is provided as we're only testing for a whether the IP is public or not.
-	 * 
-	 * @param string $insIpAddress
-	 * @uses filter_var
-	 */
-	public static function IsAddressInPublicIpRange( $insIpAddress ) {
-		return filter_var( $insIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE );
+	public function getVisitorIpAddress( $infAsLong = true ) {
+		require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+		return ICWP_DataProcessor::GetVisitorIpAddress( $infAsLong );
 	}
 
 	/**
@@ -339,7 +285,7 @@ class ICWP_BaseProcessor_V1 {
 	 * 
 	 * @param ICWP_EmailProcessor $inoEmailHandler
 	 */
-	public function setEmailHandler( ICWP_EmailProcessor &$inoEmailHandler ) {
+	public function setEmailHandler( &$inoEmailHandler ) {
 		$this->m_oEmailHandler = $inoEmailHandler;
 	}
 	
@@ -387,10 +333,17 @@ class ICWP_BaseProcessor_V1 {
 		$sTemplate = '%s%s_processor';
 		return sprintf($sTemplate, $insPrefix, $insSlug );
 	}
+	
+	/**
+	 * Override this to provide custom cleanup.
+	 */
+	public function deleteAndCleanUp() {
+		$this->deleteStore();
+	}
 }
 
 endif;
 
-if ( !class_exists('ICWP_BaseProcessor_WPSF') ):
-	class ICWP_BaseProcessor_WPSF extends ICWP_BaseProcessor_V1 { }
+if ( !class_exists('ICWP_WPSF_BaseProcessor') ):
+	class ICWP_WPSF_BaseProcessor extends ICWP_BaseProcessor_V2 { }
 endif;

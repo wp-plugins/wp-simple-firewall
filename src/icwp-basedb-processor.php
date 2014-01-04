@@ -20,9 +20,13 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
 if ( !class_exists('ICWP_BaseDbProcessor_WPSF') ):
 
-class ICWP_BaseDbProcessor_WPSF extends ICWP_BaseProcessor_WPSF {
+class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	
 	const DB_TABLE_PREFIX	= 'icwp_';
+	
+	/**
+	 */
+	const CleanupCronActionHook = 'icwp_wpsf_cron_cleanupactionhook';
 
 	/**
 	 * A link to the WordPress Database object so we don't have to "global" that every time.
@@ -35,11 +39,16 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_BaseProcessor_WPSF {
 	 * @var string
 	 */
 	protected $m_sTableName;
+	/**
+	 * @var array 
+	 */
+	protected $m_aDataToWrite;
 	
 	public function __construct( $insStorageKey, $insTableName ) {
 		parent::__construct( $insStorageKey );
 		$this->reset();
 		$this->setTableName( $insTableName );
+		$this->createCleanupCron();
 	}
 
 	/**
@@ -47,6 +56,7 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_BaseProcessor_WPSF {
 	 */
 	public function doPreStore() {
 		parent::doPreStore();
+		$this->commitData();
 		unset( $this->m_oWpdb );
 	}
 	
@@ -55,8 +65,78 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_BaseProcessor_WPSF {
 	 */
 	public function reset() {
 		parent::reset();
+		$this->loadWpdb();
+	}
+	
+	/**
+	 * Override to set what this processor does when it's "run"
+	 */
+	public function run() {
+		add_action( self::CleanupCronActionHook, array( $this, 'cleanupDatabase' ) );
+	}
+	
+	/**
+	 * Loads our WPDB object if required.
+	 */
+	protected function loadWpdb() {
+		if ( !is_null( $this->m_oWpdb ) ) {
+			return;
+		}
 		global $wpdb;
 		$this->m_oWpdb = $wpdb;
+	}
+	
+	/**
+	 * @param array $inaLogData
+	 * @return type
+	 */
+	public function addDataToWrite( $inaLogData ) {
+		if ( empty( $inaLogData ) || empty( $inaLogData['messages'] ) ) {
+			return;
+		}
+		if ( empty( $this->m_aDataToWrite ) ) {
+			$this->m_aDataToWrite = array();
+		}
+		$this->m_aDataToWrite[] = $this->completeDataForWrite( $inaLogData );
+	}
+	
+	/**
+	 * Ensures the data provided for writing to the db meets all the requirements.
+	 * 
+	 * This should be overridden per implementation
+	 * 
+	 * @return array
+	 */
+	protected function completeDataForWrite( $inaLogData ) {
+		if ( is_null( $inaLogData ) ) {
+			return array();
+		}
+		return $inaLogData;
+	}
+	
+	/**
+	 * @return boolean - whether the write to the DB was successful.
+	 */
+	public function commitData() {
+		if ( empty( $this->m_aDataToWrite ) ) {
+			return;
+		}
+		$this->loadWpdb();
+		$fSuccess = true;
+		foreach( $this->m_aDataToWrite as $aDataEntry ) {
+			$fSuccess = $fSuccess && $this->insertIntoTable( $aDataEntry );
+		}
+		if ( $fSuccess ) {
+			$this->flushData();
+		}
+		return $fSuccess;
+	}
+	
+	/**
+	 * 
+	 */
+	protected function flushData() {
+		$this->m_aDataToWrite = null;
 	}
 	
 	public function insertIntoTable( $inaData ) {
@@ -82,6 +162,19 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_BaseProcessor_WPSF {
 	
 	public function deleteRowsFromTable( $inaWhere ) {
 		return $this->m_oWpdb->delete( $this->m_sTableName, $inaWhere );
+	}
+	
+	protected function deleteAllRowsOlderThan( $innTimeStamp ) {
+		$sQuery = "
+			DELETE from `%s`
+			WHERE
+				`created_at`		< '%s'
+		";
+		$sQuery = sprintf( $sQuery,
+				$this->m_sTableName,
+				$innTimeStamp
+		);
+		$this->doSql( $sQuery );
 	}
 
 	public function createTable() {
@@ -123,6 +216,29 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_BaseProcessor_WPSF {
 	
 	private function setTableName( $insTableName ) {
 		return $this->m_sTableName = $this->m_oWpdb->base_prefix . self::DB_TABLE_PREFIX . $insTableName;
+	}
+	
+	/**
+	 * Override this to provide custom cleanup.
+	 */
+	public function deleteAndCleanUp() {
+		parent::deleteAndCleanUp();
+		$this->dropTable();
+	}
+
+	/**
+	 * Will setup the cleanup cron to clean out old entries. This should be overridden per implementation.
+	 */
+	protected function createCleanupCron() {
+		if ( ! wp_next_scheduled( self::CleanupCronActionHook ) && ! defined( 'WP_INSTALLING' ) ) {
+			// Schedule auto updates for 6 a.m.
+			$nNextRun = strtotime( 'today 6am' ) - get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+			wp_schedule_event( $nNextRun, 'daily', self::CleanupCronActionHook );
+		}
+	}
+	
+	public function cleanupDatabase() {
+		//by default do nothing - override this method
 	}
 	
 }

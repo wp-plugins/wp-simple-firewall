@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_LockdownProcessor') ):
+if ( !class_exists('ICWP_LockdownProcessor_V1') ):
 
-class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
+class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
 	const Slug = 'lockdown';
 
@@ -129,4 +129,8 @@ class ICWP_LockdownProcessor extends ICWP_BaseProcessor_WPSF {
 	}
 }
 
+endif;
+
+if ( !class_exists('ICWP_WPSF_LockdownProcessor') ):
+	class ICWP_WPSF_LockdownProcessor extends ICWP_LockdownProcessor_V1 { }
 endif;

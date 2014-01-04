@@ -4,24 +4,40 @@ if ( !defined('ICWP_DS') ) {
 	define( 'ICWP_DS', DIRECTORY_SEPARATOR );
 }
 
+require_once( dirname(__FILE__).'/icwp-once.php' );
 require_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
 require_once( dirname(__FILE__).'/icwp-wpfilesystem.php' );
 
-if ( !class_exists('ICWP_Pure_Base_V1') ):
+if ( !class_exists('ICWP_Pure_Base_V3') ):
 
-class ICWP_Pure_Base_V1 {
+class ICWP_Pure_Base_V3 extends ICWP_Once {
 
-	const BaseTitle			= 'iControlWP Plugins';
-	const BaseSlug			= 'icwp';
-	const BasePermissions	= 'manage_options';
+	const BaseTitle				= 'iControlWP Plugins';
+	const BaseSlug				= 'icwp';
+	const BasePermissions		= 'manage_options';
 	
-	const ViewExt			= '.php';
-	const ViewDir			= 'views';
-
+	const ViewExt				= '.php';
+	const ViewDir				= 'views';
+	
 	/**
 	 * @var string
 	 */
 	protected $m_sVersion;
+	/**
+	 * Set to true if it should never be shown in the dashboard
+	 * @var string
+	 */
+	protected $m_fHeadless = false;
+	/**
+	 * Set to true if this contains components from another plugin to stand alone
+	 * @var string
+	 */
+	protected $m_fStandAlone = false;
+	/**
+	 * Set to true if this contains components from another plugin to stand alone
+	 * @var string
+	 */
+	protected $m_sAutoUpdateUrl = '';
 	/**
 	 * @var boolean
 	 */
@@ -77,6 +93,8 @@ class ICWP_Pure_Base_V1 {
 	
 	protected $m_sParentMenuIdSuffix;
 	
+	protected $m_sPluginSlug;
+	
 	protected $m_fShowMarketing = '';
 	
 	protected $m_fAutoPluginUpgrade = false;
@@ -92,7 +110,7 @@ class ICWP_Pure_Base_V1 {
 	protected $m_oWpFs;
 
 	public function __construct() {
-	
+		
 		add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 		add_action( 'init',						array( $this, 'onWpInit' ), 0 );
 		if ( $this->isValidAdminArea() ) {
@@ -110,6 +128,25 @@ class ICWP_Pure_Base_V1 {
 		$this->m_oWpFs = ICWP_WpFilesystem_V1::GetInstance();
 		$this->setPaths();
 		$this->registerActivationHooks();
+	}
+	
+	/**
+	 * This is a generic plugin auto-update checker. Since the library is never included WordPress.org
+	 * plugins, this may never actually run.
+	 * 
+	 * @return void
+	 */
+	protected function setupAutoUpdates() {
+		$sLibSource = $this->m_sPluginDir.'/src/lib/plugin-update-checker.php';
+		if ( !is_file($sLibSource) || empty( $this->m_sAutoUpdateUrl ) ) {
+			return;
+		}
+		require_once( $sLibSource );
+		$oUpdateChecker = new PluginUpdateChecker(
+			$this->m_sAutoUpdateUrl,
+			$this->m_sPluginRootFile,
+			$this->m_sPluginTextDomain
+		);
 	}
 	
 	protected function isValidAdminArea() {
@@ -144,6 +181,13 @@ class ICWP_Pure_Base_V1 {
 		$this->m_sPluginFile	= plugin_basename( $this->m_sPluginRootFile );
 		$this->m_sPluginDir		= dirname( $this->m_sPluginRootFile ).ICWP_DS;
 		$this->m_sPluginUrl		= plugins_url( '/', $this->m_sPluginRootFile ) ; //this seems to use SSL more reliably than WP_PLUGIN_URL
+	}
+	
+	/**
+	 * @return string
+	 */
+	public function getPluginFile() {
+		return $this->m_sPluginFile;
 	}
 
 	/**
@@ -202,6 +246,7 @@ class ICWP_Pure_Base_V1 {
 	 * Hooked to 'plugins_loaded'
 	 */
 	public function onWpPluginsLoaded() {
+		$this->setupAutoUpdates();
 		if ( is_admin() ) {
 			//Handle plugin upgrades
 			$this->handlePluginUpgrade();
@@ -211,6 +256,8 @@ class ICWP_Pure_Base_V1 {
 		if ( $this->isIcwpPluginFormSubmit() ) {
 			$this->handlePluginFormSubmit();
 		}
+		add_filter( 'all_plugins', array( $this, 'hidePluginFromTableList' ) );
+		add_filter( 'site_transient_update_plugins', array( $this, 'hidePluginUpdatesFromUI' ) );
 		$this->removePluginConflicts(); // removes conflicts with other plugins
 	}
 
@@ -219,6 +266,54 @@ class ICWP_Pure_Base_V1 {
 	 * that interfere with normal operations.
 	 */
 	protected function removePluginConflicts() {}
+	
+	/**
+	 * Added to a WordPress filter ('all_plugins') which will remove this particular plugin from the
+	 * list of all plugins based on the "plugin file" name.
+	 * 
+	 * @uses $this->m_fHeadless if the plugin is headless, it is hidden
+	 * @return array
+	 */
+	public function hidePluginFromTableList( $inaPlugins ) {
+		
+		if ( !$this->m_fHeadless ) {
+			return $inaPlugins;
+		}
+		
+		foreach ( $inaPlugins as $sName => $aData ) {
+			if ( $this->m_sPluginFile === $sName ) {
+				unset( $inaPlugins[$sName] );
+			}
+		}
+		return $inaPlugins;
+	}
+	
+	/**
+	 * Added to the WordPress filter ('site_transient_update_plugins') in order to remove visibility of updates 
+	 * from the WordPress Admin UI.
+	 * 
+	 * In order to ensure that WordPress still checks for plugin updates it will not remove this plugin from
+	 * the list of plugins if DOING_CRON is set to true.
+	 * 
+	 * @uses $this->m_fHeadless if the plugin is headless, it is hidden
+	 * @return StdClass 
+	 */
+	public function hidePluginUpdatesFromUI( $inoPlugins ) {
+		
+		if ( ( defined( 'DOING_CRON' ) && DOING_CRON ) || !$this->m_fHeadless ) {
+			return $inoPlugins;
+		}
+		
+		if ( !empty( $inoPlugins->response ) ) {
+			$aResponse = $inoPlugins->response;
+			foreach ( $aResponse as $sPluginFile => $oData ) {
+				if ( $sPluginFile == $this->m_sPluginFile ) {
+					unset( $inoPlugins->response[$sPluginFile] );
+				}
+			}
+		}
+		return $inoPlugins;
+	}
 	
 	/**
 	 * Load the multilingual aspect of the plugin
@@ -253,6 +348,10 @@ class ICWP_Pure_Base_V1 {
 	
 	protected function createMenu() {
 
+		if ( $this->m_fHeadless ) {
+			return true;
+		}
+		
 		$sFullParentMenuId = $this->getFullParentMenuId();
 		add_menu_page( self::BaseTitle, $this->m_sPluginMenuTitle, self::BasePermissions, $sFullParentMenuId, array( $this, 'onDisplayAll' ), $this->getImageUrl( 'pluginlogo_16x16.png' ) );
 		//Create and Add the submenu items
@@ -682,9 +781,18 @@ class ICWP_Pure_Base_V1 {
 	}
 
 	/**
+	 * Use this to wrap up the function when the PHP process is coming to an end.  Call from onWpShudown()
+	 */
+	protected function shutdown() {
+		
+	}
+	
+	/**
 	 * Hooked to 'shutdown'
 	 */
-	public function onWpShutdown() { }
+	public function onWpShutdown() {
+		$this->shutdown();
+	}
 	
 	public function onWpActivatePlugin() { }
 	public function onWpDeactivatePlugin() { }
@@ -711,8 +819,73 @@ class ICWP_Pure_Base_V1 {
 	protected function getJsUrl( $insJs ) {
 		return $this->m_sPluginUrl.'resources/js/'.$insJs;
 	}
+	
+	/**
+	 * @param string $insKey
+	 * @return mixed|null
+	 */
+	protected function fetchRequest( $insKey, $infIncludeCookie = true ) {
+		$mFetchVal = $this->fetchPost( $insKey );
+		if ( is_null( $mFetchVal ) ) {
+			$mFetchVal = $this->fetchGet( $insKey );
+			if ( is_null( $mFetchVal ) ) {
+				$mFetchVal = $this->fetchCookie( $insKey );
+			}
+		}
+		return $mFetchVal;
+	}
+	/**
+	 * @param string $insKey
+	 * @return mixed|null
+	 */
+	protected function fetchGet( $insKey ) {
+		if ( function_exists( 'filter_input' ) && defined( 'INPUT_GET' ) ) {
+			return filter_input( INPUT_GET, $insKey );
+		}
+		return $this->arrayFetch( $_GET, $insKey );
+	}
+	/**
+	 * @param string $insKey		The $_POST key
+	 * @return mixed|null
+	 */
+	protected function fetchPost( $insKey ) {
+		if ( function_exists( 'filter_input' ) && defined( 'INPUT_POST' ) ) {
+			return filter_input( INPUT_POST, $insKey );
+		}
+		return $this->arrayFetch( $_POST, $insKey );
+	}
+	/**
+	 * @param string $insKey		The $_POST key
+	 * @return mixed|null
+	 */
+	protected function fetchCookie( $insKey ) {
+		if ( function_exists( 'filter_input' ) && defined( 'INPUT_COOKIE' ) ) {
+			return filter_input( INPUT_COOKIE, $insKey );
+		}
+		return $this->arrayFetch( $_COOKIE, $insKey );
+	}
+	/**
+	 * @param string $insKey		The $_GET key
+	 * @return mixed|null
+	 */
+	protected function arrayFetch( &$inaArray, $insKey ) {
+		if ( empty( $inaArray ) ) {
+			return null;
+		}
+		if ( !isset( $inaArray[$insKey] ) ) {
+			return null;
+		}
+		return $inaArray[$insKey];
+	}
 
-}//CLASS ICWP_WTB_Base_Plugin
+	/**
+	 * Performs a wp_die() but lets us do something first.
+	 */
+	protected function doWpDie( $insText = '' ) {
+		wp_die( $insText );
+		exit();
+	}
+	
+}//CLASS ICWP_Pure_Base_V3
 
 endif;
-

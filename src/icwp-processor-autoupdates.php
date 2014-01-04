@@ -17,11 +17,15 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_AutoUpdatesProcessor_V1') ):
+if ( !class_exists('ICWP_AutoUpdatesProcessor_V2') ):
 
-class ICWP_AutoUpdatesProcessor_V1 extends ICWP_BaseProcessor_V1 {
+class ICWP_AutoUpdatesProcessor_V2 extends ICWP_BaseProcessor_V2 {
 
 	const Slug = 'autoupdates';
+	
+	const FilterPriority = 1001;
+	
+	protected $m_sPluginFile;
 	
 	/**
 	 * @var boolean
@@ -43,12 +47,14 @@ class ICWP_AutoUpdatesProcessor_V1 extends ICWP_BaseProcessor_V1 {
 	 * @param boolean $infDoForceRun
 	 */
 	public function getForceRunAutoUpdates() {
-		return $this->m_fDoForceRunAutoUpdates;
+		return apply_filters( 'icwp_force_autoupdate', $this->m_fDoForceRunAutoUpdates );
 	}
 	
 	/**
 	 */
-	public function run() {
+	public function run( $insPluginFile = '' ) {
+		
+		$this->m_sPluginFile = $insPluginFile;
 		
 		// When we force run we only want our filters.
 		if ( $this->getForceRunAutoUpdates() ) {
@@ -66,41 +72,47 @@ class ICWP_AutoUpdatesProcessor_V1 extends ICWP_BaseProcessor_V1 {
 			}
 		}
 		
-		add_filter( 'allow_minor_auto_core_updates',	array( $this, 'autoupdate_core_minor' ), 1001 );
-		add_filter( 'allow_major_auto_core_updates',	array( $this, 'autoupdate_core_major' ), 1001 );
+		add_filter( 'allow_minor_auto_core_updates',	array( $this, 'autoupdate_core_minor' ), self::FilterPriority );
+		add_filter( 'allow_major_auto_core_updates',	array( $this, 'autoupdate_core_major' ), self::FilterPriority );
 
-		add_filter( 'auto_update_translation',	array( $this, 'autoupdate_translations' ), 1001, 2 );
-		add_filter( 'auto_update_plugin',		array( $this, 'autoupdate_plugins' ), 1001, 2 );
-		add_filter( 'auto_update_theme',		array( $this, 'autoupdate_themes' ), 1001, 2 );
+		add_filter( 'auto_update_translation',	array( $this, 'autoupdate_translations' ), self::FilterPriority, 2 );
+		add_filter( 'auto_update_plugin',		array( $this, 'autoupdate_plugins' ), self::FilterPriority, 2 );
+		add_filter( 'auto_update_theme',		array( $this, 'autoupdate_themes' ), self::FilterPriority, 2 );
 
 		if ( $this->m_aOptions['enable_autoupdate_ignore_vcs'] == 'Y' ) {
 			add_filter( 'automatic_updates_is_vcs_checkout', array( $this, 'disable_for_vcs' ), 10, 2 );
 		}
 
 		if ( $this->m_aOptions['enable_autoupdate_disable_all'] == 'Y' ) {
-			add_filter( 'automatic_updater_disabled', '__return_true', 1001 );
+			add_filter( 'automatic_updater_disabled', '__return_true', self::FilterPriority );
 		}
 		
-		add_filter( 'auto_core_update_send_email', array( $this, 'autoupdate_send_email' ), 1001, 1 ); //more parameter options here for later
-		add_filter( 'auto_core_update_email', array( $this, 'autoupdate_email_override' ), 1001, 1 ); //more parameter options here for later
+		add_filter( 'auto_core_update_send_email', array( $this, 'autoupdate_send_email' ), self::FilterPriority, 1 ); //more parameter options here for later
+		add_filter( 'auto_core_update_email', array( $this, 'autoupdate_email_override' ), self::FilterPriority, 1 ); //more parameter options here for later
 
 		if ( $this->getForceRunAutoUpdates() ) {
-			$this->force_run_autoupdates();
+			$this->force_run_autoupdates( 'update-core.php' ); //we'll redirect to the updates page for to show
 		}
 	}
 
 	/**
 	 * Will force-run the WordPress automatic updates process and then redirect to the updates screen.
 	 */
-	public function force_run_autoupdates( $insRedirect = 'update-core.php' ) {
+	public function force_run_autoupdates( $insRedirect = false ) {
 		$lock_name = 'auto_updater.lock'; //ref: /wp-admin/includes/class-wp-upgrader.php
 		delete_option( $lock_name );
 		if ( !defined('DOING_CRON') ) {
 			define( 'DOING_CRON', true ); // this prevents WP from disabling plugins pre-upgrade
 		}
+		
+		// does the actual updating
 		wp_maybe_auto_update();
- 		wp_redirect( get_admin_url( null, $insRedirect ) );
- 		exit();
+		
+		if ( !empty( $insRedirect ) ) {
+			wp_redirect( get_admin_url( null, $insRedirect ) );
+			exit();
+		}
+		return true;
 	}
 	
 	/**
@@ -159,13 +171,13 @@ class ICWP_AutoUpdatesProcessor_V1 extends ICWP_BaseProcessor_V1 {
 	 * @return boolean
 	 */
 	public function autoupdate_plugins( $infUpdate, $insPluginSlug ) {
-		
-		if ( strpos( $insPluginSlug, 'icwp-wpsf.php') !== false ) {
-			return $this->m_aOptions['autoupdate_plugin_wpsf'] == 'Y';
+
+		if ( $insPluginSlug === $this->m_sPluginFile ) {
+			return $this->m_aOptions['autoupdate_plugin_self'] == 'Y';
 		}
 
 		$aAutoUpdatePluginFiles = apply_filters( 'icwp_wpsf_autoupdate_plugins', array() );
-		
+
 		if ( !empty( $aAutoUpdatePluginFiles ) && is_array($aAutoUpdatePluginFiles) ) {
 			if ( in_array( $insPluginSlug, $aAutoUpdatePluginFiles ) ) {
 				return true;
@@ -237,6 +249,6 @@ class ICWP_AutoUpdatesProcessor_V1 extends ICWP_BaseProcessor_V1 {
 
 endif;
 
-if ( !class_exists('ICWP_AutoUpdatesProcessor') ):
-	class ICWP_AutoUpdatesProcessor extends ICWP_AutoUpdatesProcessor_V1 { }
+if ( !class_exists('ICWP_WPSF_AutoUpdatesProcessor') ):
+	class ICWP_WPSF_AutoUpdatesProcessor extends ICWP_AutoUpdatesProcessor_V2 { }
 endif;

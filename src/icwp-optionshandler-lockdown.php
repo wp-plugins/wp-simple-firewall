@@ -20,12 +20,26 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-lockdown.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_Lockdown') ):
 
-class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_V1 {
+class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 	
 	const StoreName = 'lockdown_options';
 	
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
+	}
+	
+	/**
+	 * @return void
+	 */
+	public function setOptionsKeys() {
+		if ( !isset( $this->m_aOptionsKeys ) ) {
+			$this->m_aOptionsKeys = array(
+				'enable_lockdown',
+				'disable_file_editing',
+				'mask_wordpress_version',
+				'action_reset_auth_salts'
+			);
+		}
 	}
 	
 	public function doPrePluginOptionsSave() {
@@ -136,8 +150,6 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_V1 {
  		return !empty( $mResult );
 	}
 
-	public function updateHandler() {
-	}
 }
 
 endif;

@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_Wpsf') ):
 
-class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
+class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 
 	const StoreName = 'plugin_options';
 	const Default_AccessKeyTimeout = 30;
@@ -28,17 +28,27 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
 	
+	/**
+	 * @return void
+	 */
+	public function setOptionsKeys() {
+		if ( !isset( $this->m_aOptionsKeys ) ) {
+			$this->m_aOptionsKeys = array(
+				'enable_admin_access_restriction',
+				'admin_access_timeout',
+				'admin_access_key',
+				'enable_firewall',
+				'enable_login_protect',
+				'enable_comments_filter',
+				'enable_lockdown',
+				'enable_autoupdates',
+				'enable_upgrade_admin_notice',
+				'delete_on_deactivate'
+			);
+		}
+	}
+	
 	public function defineOptions() {
-
-		$this->m_aIndependentOptions = array(
-			'firewall_processor',
-			'login_processor',
-			'comments_processor',
-			'lockdown_processor',
-			'autoupdates_processor',
-			'logging_processor',
-			'email_processor'
-		);
 		
 		$aNonUiOptions = array(
 			'secret_key',
@@ -134,17 +144,6 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 					_wpsf__( 'Enable (or Disable) The Auto Updates Feature' ),
 					_wpsf__( 'Regardless of any other settings, this option will turn off the Auto Updates feature, or enable your selected Auto Updates options' )
 				),
-				/*
-				array(
-					'enable_auto_plugin_upgrade',
-					'',
-					'N',
-					'checkbox',
-					'Auto-Upgrade',
-					'When an upgrade is detected, the plugin will automatically initiate the upgrade.',
-					'If you prefer to manage plugin upgrades, deselect this option. Otherwise, this plugin will auto-upgrade once any available update is detected.'
-				),
-				*/
 				array(
 					'enable_upgrade_admin_notice',
 					'',
@@ -165,7 +164,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 				)
 			)
 		);
-		
+
 		$aEmail = array(
 			'section_title' => _wpsf__( 'Email Options' ),
 			'section_options' => array(
@@ -191,8 +190,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 		);
 
 		$this->m_aOptions = array(
-			$aGeneral,
-			$aEmail
+			$aGeneral
 		);
 		if ( isset( $aAccessKey ) ) {
 			array_unshift( $this->m_aOptions, $aAccessKey );
@@ -214,20 +212,6 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_V1 {
 		if ( empty( $sAccessKey ) ) {
 			$this->setOpt( 'enable_admin_access_restriction', 'N' );
 		}
-		
-		$sEmail = $this->getOpt( 'block_send_email_address');
-		if ( empty( $sEmail ) || !is_email( $sEmail ) ) {
-			$sEmail = get_option('admin_email');
-		}
-		if ( is_email( $sEmail ) ) {
-			$this->setOpt( 'block_send_email_address', $sEmail );
-		}
-
-		$sLimit = $this->getOpt( 'send_email_throttle_limit' );
-		if ( !is_numeric( $sLimit ) || $sLimit < 0 ) {
-			$sLimit = 0;
-		}
-		$this->setOpt( 'send_email_throttle_limit', $sLimit );
 	}
 	
 	protected function updateHandler() {

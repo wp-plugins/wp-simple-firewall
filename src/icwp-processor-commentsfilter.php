@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_CommentsFilterProcessor') ):
+if ( !class_exists('ICWP_CommentsFilterProcessor_V1') ):
 
-class ICWP_CommentsFilterProcessor extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 
 	const Slug = 'comments_filter';
 	
@@ -27,38 +27,41 @@ class ICWP_CommentsFilterProcessor extends ICWP_BaseDbProcessor_WPSF {
 	 * @var string
 	 */
 	static protected $sModeFile_LoginThrottled;
-	
 	/**
 	 * The unique comment token assigned to this page
 	 * @var integer
 	 */
 	protected $m_sUniqueToken;
-	
 	/**
 	 * The unique comment token assigned to this page
 	 * @var integer
 	 */
 	protected $m_sUniqueFormId;
-	
 	/**
 	 * The length of time that must pass between a page being loaded and comment being posted.
 	 * @var integer
 	 */
 	protected $m_nCommentCooldown;
-	
 	/**
 	 * The maxium length of time that comment token may last and be used.
 	 * @var integer
 	 */
 	protected $m_nCommentTokenExpire;
-	
+	/**
+	 * @var integer
+	 */
 	protected $m_nLastLoginTime;
+	/**
+	 * @var string
+	 */
 	protected $m_sSecretKey;
-	
+	/**
+	 * @var string
+	 */
 	protected $m_sGaspKey;
 	
 	/**
-	 * Flag as to whether Two Factor Authentication will be by-pass when sending the verification
+	 * Flag as to whether Two Factor Authentication will be by-passed when sending the verification
 	 * email fails.
 	 * 
 	 * @var boolean
@@ -83,6 +86,8 @@ class ICWP_CommentsFilterProcessor extends ICWP_BaseDbProcessor_WPSF {
 	/**
 	 */
 	public function run() {
+		parent::run();
+		
 		// Add GASP checking to the comment form.
 		if ( $this->m_aOptions[ 'enable_comments_gasp_protection' ] == 'Y' ) {
 			add_action(	'comment_form',					array( $this, 'printGaspFormHook_Action' ), 1 );
@@ -400,6 +405,7 @@ class ICWP_CommentsFilterProcessor extends ICWP_BaseDbProcessor_WPSF {
 			$this->doSql( $sQuery );
 		}
 		else {
+			$aWhere = array();
 			$aWhere['ip_long']		= $this->m_nRequestIp;
 			$aWhere['post_id']		= $insPostId;
 			$this->deleteRowsFromTable( $aWhere );
@@ -426,6 +432,19 @@ class ICWP_CommentsFilterProcessor extends ICWP_BaseDbProcessor_WPSF {
 		return md5( $sToken );
 	}
 	
+	/**
+	 * This is hooked into a cron in the base class and overrides the parent method.
+	 * 
+	 * It'll delete everything older than 24hrs.
+	 */
+	public function cleanupDatabase() {
+		$nTimeStamp = time() - DAY_IN_SECONDS;
+		$this->deleteAllRowsOlderThan( $nTimeStamp );
+	}
 }
 
+endif;
+
+if ( !class_exists('ICWP_WPSF_CommentsFilterProcessor') ):
+	class ICWP_WPSF_CommentsFilterProcessor extends ICWP_CommentsFilterProcessor_V1 { }
 endif;

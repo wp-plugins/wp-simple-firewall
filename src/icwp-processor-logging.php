@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_LoggingProcessor') ):
+if ( !class_exists('ICWP_LoggingProcessor_V1') ):
 
-class ICWP_LoggingProcessor extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
 	const Slug = 'logging';
 	const TableName = 'wpsf_log';
@@ -34,7 +34,6 @@ class ICWP_LoggingProcessor extends ICWP_BaseDbProcessor_WPSF {
 	public function reset() {
 		parent::reset();
 		$this->m_sRequestId = uniqid();
-		$this->m_nRequestIp = self::GetVisitorIpAddress();
 	}
 	
 	/**
@@ -49,19 +48,12 @@ class ICWP_LoggingProcessor extends ICWP_BaseDbProcessor_WPSF {
 	}
 	
 	/**
-	 * @return array - numerical array of all log data entries.
+	 * Ensures the log data provided has all the necessary data points to be written to the DB
+	 * 
+	 * @param array $inaLogData
+	 * @return array
 	 */
-	public function writeLog( $inaLogData ) {
-		
-		if ( empty( $inaLogData ) || empty( $inaLogData['messages'] ) ) {
-			return;
-		}
-		$aData = $this->completeLogData( $inaLogData );
-		$fSuccess = $this->insertIntoTable( $aData );
-		return $fSuccess;
-	}
-	
-	protected function completeLogData( $inaLogData ) {
+	protected function completeDataForWrite( $inaLogData ) {
 		
 		if ( !isset( $inaLogData['category'] ) ) {
 			$inaLogData['category'] = self::LOG_CATEGORY_DEFAULT;
@@ -107,4 +99,8 @@ class ICWP_LoggingProcessor extends ICWP_BaseDbProcessor_WPSF {
 	}
 }
 
+endif;
+
+if ( !class_exists('ICWP_WPSF_LoggingProcessor') ):
+	class ICWP_WPSF_LoggingProcessor extends ICWP_LoggingProcessor_V1 { }
 endif;

@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_LoginProtect') ):
 
-class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_V1 {
+class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	
 	const StoreName = 'loginprotect_options';
 	
@@ -27,11 +27,37 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_V1 {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
 	
+	/**
+	 * @return void
+	 */
+	public function setOptionsKeys() {
+		if ( !isset( $this->m_aOptionsKeys ) ) {
+			$this->m_aOptionsKeys = array(
+				'enable_login_protect',
+				'ips_whitelist',
+				'enable_two_factor_auth_by_ip',
+				'enable_two_factor_bypass_on_email_fail',
+				'login_limit_interval',
+				'enable_login_gasp_check',
+				'enable_login_protect_log'
+			);
+		}
+	}
+	
+	public function doPrePluginOptionsSave() {
+		$aIpWhitelist = $this->getOpt( 'ips_whitelist' );
+		if ( $aIpWhitelist === false ) {
+			$aIpWhitelist = '';
+			$this->setOpt( 'ips_whitelist', $aIpWhitelist );
+		}
+		$this->processIpFilter( 'ips_whitelist', 'icwp_simple_firewall_whitelist_ips' );
+	}
+	
 	public function defineOptions() {
 
 		$this->m_aDirectSaveOptions = array();
 		
-		$this->m_aOptionsBase = array(
+		$aOptionsBase = array(
 			'section_title' => _wpsf__( 'Enable Login Protection' ),
 			'section_options' => array(
 				array(
@@ -45,7 +71,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_V1 {
 				)
 			),
 		);
-		$this->m_aWhitelist = array(
+		$aWhitelist = array(
 			'section_title' => _wpsf__( 'Whitelist IPs that by-pass Login Protect' ),
 			'section_options' => array(
 				array(
@@ -59,7 +85,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_V1 {
 				)
 			)
 		);
-		$this->m_aTwoFactorAuth = array(
+		$aTwoFactorAuth = array(
 			'section_title' => _wpsf__( 'Two-Factor Authentication Protection Options' ),
 			'section_options' => array(
 				array(
@@ -82,7 +108,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_V1 {
 				)
 			)
 		);
-		$this->m_aLoginProtect = array(
+		$aLoginProtect = array(
 			'section_title' => _wpsf__( 'Login Protection Options' ),
 			'section_options' => array(
 				array(
@@ -106,7 +132,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_V1 {
 			)
 		);
 		
-		$this->m_aLoggingSection = array(
+		$aLoggingSection = array(
 			'section_title' => _wpsf__( 'Logging Options' ),
 			'section_options' => array(
 				array(
@@ -122,11 +148,11 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_V1 {
 		);
 
 		$this->m_aOptions = array(
-			$this->m_aOptionsBase,
-			$this->m_aWhitelist,
-			$this->m_aTwoFactorAuth,
-			$this->m_aLoginProtect,
-			$this->m_aLoggingSection
+			$aOptionsBase,
+			$aWhitelist,
+			$aTwoFactorAuth,
+			$aLoginProtect,
+			$aLoggingSection
 		);
 	}
 

@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_FirewallProcessor') ):
+if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 
-class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
+class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
 	const Slug = 'firewall';
 	
@@ -78,7 +78,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	}
 	
 	/**
-	 * @see ICWP_BaseProcessor_WPSF::setOptions()
+	 * @see ICWP_WPSF_BaseProcessor::setOptions()
 	 */
 	public function setOptions( &$inaOptions ) {
 		parent::setOptions( $inaOptions );
@@ -123,7 +123,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	 * Should return false when logging is disabled.
 	 * 
 	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_BaseProcessor_WPSF::getLogData()
+	 * @see ICWP_WPSF_BaseProcessor::getLogData()
 	 */
 	public function flushLogData() {
 		
@@ -146,6 +146,11 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	 * @return boolean - true if visitor is permitted, false if it should be blocked.
 	 */
 	public function doFirewallCheck() {
+		
+		if ( $this->m_aOptions[ 'whitelist_admins' ] == 'Y' && is_super_admin() ) {
+			$this->logInfo( 'Logged-in administrators currently by-pass all firewall checking.' );
+			return true;
+		}
 
 		// if we couldn't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
 		$this->setRequestUriPageParts();
@@ -353,7 +358,7 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 					if ( $fFAIL ) {
 						$this->m_sFirewallMessage .= " Something in the URL, Form or Cookie data wasn't appropriate.";
 						$this->logWarning(
-							sprintf( 'Page parameter failed firewall check. The value was %s and the term matched was %s', $mValue, $sTerm )
+							sprintf( 'Page parameter failed firewall check. The offending value was %s', $mValue )
 						);
 						return false;
 					}
@@ -399,10 +404,9 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 		
 		switch( $this->m_aOptions['block_response'] ) {
 			case 'redirect_die':
-				die();
+				break;
 			case 'redirect_die_message':
 				wp_die( $this->m_sFirewallMessage );
-				exit();
 				break;
 			case 'redirect_home':
 				header( "Location: ".home_url() );
@@ -410,9 +414,11 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 				break;
 			case 'redirect_404':
 				header( "Location: ".home_url().'/404' );
-				exit();
+				break;
+			default:
 				break;
 		}
+		exit();
 	}
 	
 	/**
@@ -602,4 +608,8 @@ class ICWP_FirewallProcessor extends ICWP_BaseProcessor_WPSF {
 	}
 }
 
+endif;
+
+if ( !class_exists('ICWP_WPSF_FirewallProcessor') ):
+	class ICWP_WPSF_FirewallProcessor extends ICWP_FirewallProcessor_V1 { }
 endif;
