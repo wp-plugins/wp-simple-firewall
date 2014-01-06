@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
 if ( !class_exists('ICWP_AutoUpdatesProcessor_V2') ):
 
-class ICWP_AutoUpdatesProcessor_V2 extends ICWP_BaseProcessor_V2 {
+class ICWP_AutoUpdatesProcessor_V3 extends ICWP_BaseProcessor_V2 {
 
 	const Slug = 'autoupdates';
 	
@@ -250,5 +250,5 @@ class ICWP_AutoUpdatesProcessor_V2 extends ICWP_BaseProcessor_V2 {
 endif;
 
 if ( !class_exists('ICWP_WPSF_AutoUpdatesProcessor') ):
-	class ICWP_WPSF_AutoUpdatesProcessor extends ICWP_AutoUpdatesProcessor_V2 { }
+	class ICWP_WPSF_AutoUpdatesProcessor extends ICWP_AutoUpdatesProcessor_V3 { }
 endif;
