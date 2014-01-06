@@ -481,6 +481,9 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @return void|boolean
 	 */
 	public function updatePluginOptionsFromSubmit( $sAllOptionsInput ) {
+		
+		require_once ( dirname(__FILE__).'/icwp-data-processor.php' );
+		$oProcessor = new ICWP_WPSF_DataProcessor();
 	
 		if ( empty( $sAllOptionsInput ) ) {
 			return;
@@ -523,21 +526,12 @@ class ICWP_OptionsHandler_Base_V2 {
 					$sOptionValue = md5( $sTempValue );
 				}
 				else if ( $sOptionType == 'ip_addresses' ) { //ip addresses are textareas, where each is separated by newline
-						
-					if ( !class_exists('ICWP_DataProcessor') ) {
-						require_once ( dirname(__FILE__).'/icwp-data-processor.php' );
-					}
-					$oProcessor = new ICWP_DataProcessor();
 					$sOptionValue = $oProcessor->ExtractIpAddresses( $sOptionValue );
 				}
 				else if ( $sOptionType == 'email' && function_exists( 'is_email' ) && !is_email( $sOptionValue ) ) {
 					$sOptionValue = '';
 				}
 				else if ( $sOptionType == 'comma_separated_lists' ) {
-					if ( !class_exists('ICWP_DataProcessor') ) {
-						require_once ( dirname(__FILE__).'/icwp-data-processor.php' );
-					}
-					$oProcessor = new ICWP_DataProcessor();
 					$sOptionValue = $oProcessor->ExtractCommaSeparatedList( $sOptionValue );
 				}
 			}
@@ -595,7 +589,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	
 	protected function getVisitorIpAddress( $infAsLong = true ) {
 		require_once( dirname(__FILE__).'/icwp-data-processor.php' );
-		return ICWP_DataProcessor::GetVisitorIpAddress( $infAsLong );
+		return ICWP_WPSF_DataProcessor::GetVisitorIpAddress( $infAsLong );
 	}
 	
 	/**
@@ -658,7 +652,7 @@ class ICWP_OptionsHandler_Base_V2 {
 
 		$this->loadDataProcessor();
 		$nNewAddedCount = 0;
-		$aNewList = ICWP_DataProcessor::Add_New_Raw_Ips( $aExistingIpList, $aNewIps, $nNewAddedCount );
+		$aNewList = ICWP_WPSF_DataProcessor::Add_New_Raw_Ips( $aExistingIpList, $aNewIps, $nNewAddedCount );
 		if ( $nNewAddedCount > 0 ) {
 			$this->setOpt( $insExistingListKey, $aNewList );
 		}

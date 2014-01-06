@@ -287,7 +287,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 		foreach( $inaNewIps as $sAddress ) {
 			$aNewList[ $sAddress ] = '';
 		}
-		$this->setOpt( $insListName, ICWP_DataProcessor::Add_New_Raw_Ips( $aIplist, $aNewList ) );
+		$this->setOpt( $insListName, ICWP_WPSF_DataProcessor::Add_New_Raw_Ips( $aIplist, $aNewList ) );
 	}
 
 	public function removeRawIpsFromFirewallList( $insListName, $inaRemoveIps ) {
@@ -299,7 +299,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 		if ( empty( $aIplist ) || empty( $inaRemoveIps ) ) {
 			return;
 		}
-		$this->setOpt( $insListName, ICWP_DataProcessor::Remove_Raw_Ips( $aIplist, $inaRemoveIps ) );
+		$this->setOpt( $insListName, ICWP_WPSF_DataProcessor::Remove_Raw_Ips( $aIplist, $inaRemoveIps ) );
 	}
 	
 }

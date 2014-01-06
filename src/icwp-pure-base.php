@@ -10,7 +10,7 @@ require_once( dirname(__FILE__).'/icwp-wpfilesystem.php' );
 
 if ( !class_exists('ICWP_Pure_Base_V3') ):
 
-class ICWP_Pure_Base_V3 extends ICWP_Once {
+class ICWP_Pure_Base_V3 extends ICWP_WPSF_Once {
 
 	const BaseTitle				= 'iControlWP Plugins';
 	const BaseSlug				= 'icwp';

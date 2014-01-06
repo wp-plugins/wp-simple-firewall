@@ -136,8 +136,8 @@ class ICWP_ImportWpf2Processor extends ICWP_ImportBaseProcessor {
 		if ( empty( $aTargetIpWhitelist ) ) {
 			$aTargetIpWhitelist = array();
 		}
-		$this->m_oFirewallOptions->setOpt( $this->m_aOptionsMap['WP_firewall_whitelisted_ip'], ICWP_DataProcessor::Add_New_Raw_Ips( $aTargetIpWhitelist, $aNewList ) );
-// 		$this->updateTargetOption( $this->m_aOptionsMap['WP_firewall_whitelisted_ip'], ICWP_DataProcessor::Add_New_Raw_Ips( $aTargetIpWhitelist, $aNewList ) );
+		$this->m_oFirewallOptions->setOpt( $this->m_aOptionsMap['WP_firewall_whitelisted_ip'], ICWP_WPSF_DataProcessor::Add_New_Raw_Ips( $aTargetIpWhitelist, $aNewList ) );
+// 		$this->updateTargetOption( $this->m_aOptionsMap['WP_firewall_whitelisted_ip'], ICWP_WPSF_DataProcessor::Add_New_Raw_Ips( $aTargetIpWhitelist, $aNewList ) );
 
 		// Whitelisted Pages and Vars... maybe later :|
 	}

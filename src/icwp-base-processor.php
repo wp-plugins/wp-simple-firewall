@@ -218,7 +218,7 @@ class ICWP_BaseProcessor_V2 {
 	 */
 	public function getVisitorIpAddress( $infAsLong = true ) {
 		require_once( dirname(__FILE__).'/icwp-data-processor.php' );
-		return ICWP_DataProcessor::GetVisitorIpAddress( $infAsLong );
+		return ICWP_WPSF_DataProcessor::GetVisitorIpAddress( $infAsLong );
 	}
 
 	/**

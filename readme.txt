@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
 Requires at least: 3.2.0
 Tested up to: 3.8
-Stable tag: 2.2.5
+Stable tag: 2.3.0
 
 Complete and Simple WordPress Security. Unrestricted, with no premium features.
 

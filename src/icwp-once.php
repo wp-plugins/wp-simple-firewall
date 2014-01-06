@@ -17,16 +17,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_Once') ):
+if ( !class_exists('ICWP_Once_V1') ):
 
-class ICWP_Once {
+class ICWP_Once_V1 {
 	/**
-	 * @var ICWP_Once
+	 * @var ICWP_WPSF_Once
 	 */
 	protected static $oInstance = NULL;
 	
 	/**
-	 * @return ICWP_Once
+	 * @return ICWP_Once_V1
 	 */
 	public static function & GetInstance( $insCalledClass = '' ) {
 		if ( is_null( self::$oInstance ) ) {
@@ -42,4 +42,8 @@ class ICWP_Once {
 	}
 }
 
+endif;
+
+if ( !class_exists('ICWP_WPSF_Once') ):
+	class ICWP_WPSF_Once extends ICWP_Once_V1 { }
 endif;

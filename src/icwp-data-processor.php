@@ -19,9 +19,9 @@
  *
  */
 
-if ( !class_exists('ICWP_DataProcessor') ):
+if ( !class_exists('ICWP_DataProcessor_V1') ):
 
-class ICWP_DataProcessor {
+class ICWP_DataProcessor_V1 {
 	
 	public static $fUseFilter = false;
 	
@@ -306,4 +306,8 @@ class ICWP_DataProcessor {
 	}
 }
 
+endif;
+
+if ( !class_exists('ICWP_WPSF_DataProcessor') ):
+	class ICWP_WPSF_DataProcessor extends ICWP_DataProcessor_V1 { }
 endif;

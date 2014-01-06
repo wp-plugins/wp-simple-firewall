@@ -113,7 +113,7 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$this->createUniquePostCommentToken( $post->ID, $this->m_sUniqueToken );
 
 		require_once( dirname(__FILE__).'/icwp-data-processor.php' );
-		$this->m_sUniqueFormId = ICWP_DataProcessor::GenerateRandomString( rand(7, 23), true );
+		$this->m_sUniqueFormId = ICWP_WPSF_DataProcessor::GenerateRandomString( rand(7, 23), true );
 		
 		echo $this->getGaspCommentsHookHtml();
 	}
