@@ -17,7 +17,7 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_AutoUpdatesProcessor_V2') ):
+if ( !class_exists('ICWP_AutoUpdatesProcessor_V3') ):
 
 class ICWP_AutoUpdatesProcessor_V3 extends ICWP_BaseProcessor_V2 {
 
