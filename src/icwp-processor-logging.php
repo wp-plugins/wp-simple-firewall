@@ -23,7 +23,8 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
 	const Slug = 'logging';
 	const TableName = 'wpsf_log';
-	
+	const DaysToKeepLog = 7;
+
 	protected $m_sRequestId;
 
 	public function __construct( $insOptionPrefix = '' ) {
@@ -37,6 +38,7 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 	
 	/**
+	 * @param boolean $infReverseOrder
 	 * @return array - numerical array of all log data entries.
 	 */
 	public function getLogs( $infReverseOrder = false ) {
@@ -96,6 +98,16 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			// full delete of the log and recreate
 			$this->recreateTable();
 		}
+	}
+
+	/**
+	 * This is hooked into a cron in the base class and overrides the parent method.
+	 *
+	 * It'll delete everything older than 7 days.
+	 */
+	public function cleanupDatabase() {
+		$nTimeStamp = time() - DAY_IN_SECONDS * self::DaysToKeepLog;
+		$this->deleteAllRowsOlderThan( $nTimeStamp );
 	}
 }
 

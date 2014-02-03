@@ -319,7 +319,10 @@ class ICWP_Pure_Base_V3 extends ICWP_WPSF_Once {
 	 * Load the multilingual aspect of the plugin
 	 */
 	public function load_textdomain() {
-		load_plugin_textdomain( $this->m_sPluginTextDomain, false, dirname( $this->m_sPluginRootFile ) . '/languages/' );
+		$stest = dirname( $this->m_sPluginRootFile );
+//		var_dump($stest);
+//		var_dump($this->m_sPluginTextDomain);
+		load_plugin_textdomain( $this->m_sPluginTextDomain, false, dirname($this->m_sPluginFile) . '/languages/' );
 	}
 
 	public function onWpInit() { }

@@ -2,7 +2,6 @@
 include_once( dirname(__FILE__).ICWP_DS.'icwp_options_helper.php' );
 include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 $sPluginName = 'WordPress Simple Firewall';
-
 $aLogTypes = array(
 	0	=>	_wpsf__('Info'),
 	1	=>	_wpsf__('Warning'),

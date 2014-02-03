@@ -238,7 +238,7 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	}
 	
 	public function cleanupDatabase() {
-		//by default do nothing - override this method
+		//by default do nothing - oiverrde this method
 	}
 	
 }

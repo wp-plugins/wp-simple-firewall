@@ -154,6 +154,7 @@ class ICWP_AutoUpdatesProcessor_V3 extends ICWP_BaseProcessor_V2 {
 	 * based on the plugin settings.
 	 * 
 	 * @param boolean $infUpdate
+	 * @param string $insSlug
 	 * @return boolean
 	 */
 	public function autoupdate_translations( $infUpdate, $insSlug ) {
@@ -168,6 +169,7 @@ class ICWP_AutoUpdatesProcessor_V3 extends ICWP_BaseProcessor_V2 {
 	 * based on the plugin settings.
 	 * 
 	 * @param boolean $infUpdate
+	 * @param boolean $insPluginSlug
 	 * @return boolean
 	 */
 	public function autoupdate_plugins( $infUpdate, $insPluginSlug ) {

@@ -165,10 +165,10 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 			),
 		);
 		$aRedirectOptions = array( 'select',
-			array( 'redirect_die_message',	'Die With Message' ),
-			array( 'redirect_die', 			'Die' ),
-			array( 'redirect_home',			'Redirect To Home Page' ),
-			array( 'redirect_404',			'Return 404' ),
+			array( 'redirect_die_message',	_wpsf__( 'Die With Message' ) ),
+			array( 'redirect_die', 			_wpsf__( 'Die' ) ),
+			array( 'redirect_home',			_wpsf__( 'Redirect To Home Page' ) ),
+			array( 'redirect_404',			_wpsf__( 'Return 404' ) ),
 		);
 		$aBlockSection = array(
 			'section_title' => _wpsf__( 'Choose Firewall Block Response' ),

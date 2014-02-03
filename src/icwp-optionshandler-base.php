@@ -622,7 +622,6 @@ class ICWP_OptionsHandler_Base_V2 {
 	/**
 	 * @param string $insExistingListKey
 	 * @param string $insFilterName
-	 * @param integer $outnNewAdded
 	 * @return array|false
 	 */
 	protected function processIpFilter( $insExistingListKey, $insFilterName ) {
@@ -659,7 +658,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 	
 	protected function loadDataProcessor() {
-		if ( !class_exists($class_name) ) {
+		if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
 			require_once( dirname(__FILE__).'/icwp-data-processor.php' );
 		}
 	}

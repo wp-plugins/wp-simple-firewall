@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.3.2
+ * Version: 2.3.3
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.3.2';
+	const PluginVersion					= '2.3.3';
 	/**
 	 * @var string
 	 */
@@ -117,12 +117,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	protected $m_oLockdownProcessor;
 	
 	/**
-	 * @var ICWP_AutoUpdatesProcessor
+	 * @var ICWP_WPSF_AutoUpdatesProcessor
 	 */
 	protected $m_oAutoUpdatesProcessor;
 	
 	/**
-	 * @var ICWP_LoggingProcessor
+	 * @var ICWP_WPSF_LoggingProcessor
 	 */
 	protected $m_oLoggingProcessor;
 	
@@ -189,8 +189,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	/**
 	 * Should be called from the constructor so as to ensure it is called as early as possible.
 	 * 
-	 * @param array $inaNewLogData
-	 * @return boolean
+	 * @return void
 	 */
 	public function runFirewallProcess() {
 
@@ -235,12 +234,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		}
 		$this->m_aPluginMenu = array(
 			//Menu Page Title => Menu Item name, page ID (slug), callback function for this page - i.e. what to do/load.
-			$this->getSubmenuPageTitle( 'Firewall' )			=> array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Login Protect' )		=> array( 'Login Protect', $this->getSubmenuId('login_protect'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Comments Filter' )		=> array( 'Comments Filter', $this->getSubmenuId('comments_filter'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Automatic Updates' )	=> array( 'Automatic Updates', $this->getSubmenuId('autoupdates'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Lockdown' )			=> array( 'Lockdown', $this->getSubmenuId('lockdown'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( 'Log' )					=> array( 'Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' )
+			$this->getSubmenuPageTitle( _wpsf__('Firewall') )			=> array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( _wpsf__('Login Protect') )		=> array( 'Login Protect', $this->getSubmenuId('login_protect'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( _wpsf__('Comments Filter') )	=> array( 'Comments Filter', $this->getSubmenuId('comments_filter'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( _wpsf__('Automatic Updates') )	=> array( 'Automatic Updates', $this->getSubmenuId('autoupdates'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( _wpsf__('Lockdown') )			=> array( 'Lockdown', $this->getSubmenuId('lockdown'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( _wpsf__('Log' ) )				=> array( 'Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' )
 		);
 	}
 
@@ -282,7 +281,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 		$sPrefix = str_replace(' ', '-', strtolower($this->m_sPluginMenuTitle) ) .'_page_'.self::BaseSlug.'-'.self::PluginSlug.'-';
 		$sCurrent = str_replace( $sPrefix, '', current_filter() );
-		
+
 		switch( $sCurrent ) {
 			case 'toplevel_page_'.self::BaseSlug.'-'.self::PluginSlug : //special case
 				$this->onDisplayMainMenu();
@@ -357,8 +356,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$aIpBlacklist = $this->m_oFirewallOptions->getOpt( 'ips_blacklist' );
 		$this->loadProcessor( 'Logging' );
 
+		$aLogData = $this->m_oLoggingProcessor->getLogs( true );
 		$aData = array(
-			'firewall_log'		=> $this->m_oLoggingProcessor->getLogs( true ),
+			'firewall_log'		=> $aLogData,
 			'ip_whitelist'		=> isset( $aIpWhitelist['ips'] )? $aIpWhitelist['ips'] : array(),
 			'ip_blacklist'		=> isset( $aIpBlacklist['ips'] )? $aIpBlacklist['ips'] : array(),
 		);
@@ -690,8 +690,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	/**
 	 * Updates the current log data with new data.
 	 * 
-	 * @param array $inaNewLogData
-	 * @return boolean
+	 * @return void
 	 */
 	protected function updateLogStore() {
 

@@ -191,7 +191,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 	
 	public function displayVerifiedUserMessage_Filter( $insMessage ) {
-		$sStyles .= 'background-color: #FAFFE8; border: 1px solid #DDDDDD; margin: 8px 0 10px 8px; padding: 16px;';
+		$sStyles = 'background-color: #FAFFE8; border: 1px solid #DDDDDD; margin: 8px 0 10px 8px; padding: 16px;';
 		$insMessage .= '<h3 style="'.$sStyles.'">You successfully verified your IP address - you may now login.</h3>';
 		return $insMessage;
 	}
@@ -634,9 +634,10 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 	/**
-	 * @param string $sEmail
+	 * @param WP_User $inoUser
 	 * @param string $insIpAddress
-	 * @param string $insAuthLink
+	 * @param string $insUniqueId
+	 * @return boolean
 	 */
 	public function sendEmailTwoFactorVerify( WP_User $inoUser, $insIpAddress, $insUniqueId ) {
 	
@@ -706,6 +707,23 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	public function cleanupDatabase() {
 		$nTimeStamp = time() - DAY_IN_SECONDS;
 		$this->deleteAllRowsOlderThan( $nTimeStamp );
+	}
+
+	/**
+	 * @param $innTimeStamp
+	 */
+	protected function deleteAllRowsOlderThan( $innTimeStamp ) {
+		$sQuery = "
+			DELETE from `%s`
+			WHERE
+				`created_at`		< '%s'
+				AND `pending`		= '1'
+		";
+		$sQuery = sprintf( $sQuery,
+			$this->m_sTableName,
+			$innTimeStamp
+		);
+		$this->doSql( $sQuery );
 	}
 
 }
