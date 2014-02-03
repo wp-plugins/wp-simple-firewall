@@ -35,7 +35,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 			$this->m_aOptionsKeys = array(
 				'enable_autoupdates',
 				'enable_autoupdate_disable_all',
-				'autoupdate_plugin_wpsf',
+				'autoupdate_plugin_self',
 				'autoupdate_core',
 				'enable_autoupdate_translations',
 				'enable_autoupdate_plugins',
@@ -83,7 +83,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 			'section_title' => _wpsf__('Automatic Plugin Self-Update'),
 			'section_options' => array(
 				array(
-					'autoupdate_plugin_wpsf',
+					'autoupdate_plugin_self',
 					'',
 					'Y',
 					'checkbox',

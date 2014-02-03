@@ -177,7 +177,7 @@ $sOff = _wpsf__( 'Off' );
 					}
 				?>
 					<ul>
-						<li><?php printf( _wpsf__('Automatically Update WordPress Simple Firewall Plugin: %s'), ($icwp_aAutoUpdatesOptions['autoupdate_plugin_wpsf'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Automatically Update WordPress Simple Firewall Plugin: %s'), ($icwp_aAutoUpdatesOptions['autoupdate_plugin_self'] == 'Y')? $sOn : $sOff ); ?></li>
 						<li><?php printf( _wpsf__('Automatically Update WordPress Core: %s'), $sAutoCoreUpdateOption ); ?></li>
 						<li><?php printf( _wpsf__('Automatically Update Plugins: %s'), ($icwp_aAutoUpdatesOptions['enable_autoupdate_plugins'] == 'Y')? $sOn : $sOff ); ?></li>
 						<li><?php printf( _wpsf__('Automatically Update Themes: %s'), ($icwp_aAutoUpdatesOptions['enable_autoupdate_themes'] == 'Y')? $sOn : $sOff ); ?></li>
