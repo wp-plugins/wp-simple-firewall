@@ -24,7 +24,7 @@ require_once( dirname(__FILE__).'/icwp-pure-base.php' );
 
 if ( !class_exists('ICWP_Feature_Master') ):
 
-class ICWP_Feature_Master extends ICWP_Pure_Base_V3 {
+class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 	
 	/**
 	 *@var array

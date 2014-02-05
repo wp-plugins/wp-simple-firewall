@@ -36,6 +36,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 				'enable_login_protect',
 				'ips_whitelist',
 				'enable_two_factor_auth_by_ip',
+				'enable_two_factor_auth_by_cookie',
 				'enable_two_factor_bypass_on_email_fail',
 				'login_limit_interval',
 				'enable_login_gasp_check',
@@ -93,9 +94,18 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'',
 					'N',
 					'checkbox',
-					_wpsf__( 'Two-Factor Authentication' ),
+					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('IP') ),
 					_wpsf__( 'Two-Factor Login Authentication By IP Address' ),
 					_wpsf__( 'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address' )
+				),
+				array(
+					'enable_two_factor_auth_by_cookie',
+					'',
+					'N',
+					'checkbox',
+					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('Cookie') ),
+					_wpsf__( 'Two-Factor Login Authentication By Cookie' ),
+					_wpsf__( 'This will restrict all user login sessions to a single browser. Use this if your users have dynamic IP addresses.' )
 				),
 				array(
 					'enable_two_factor_bypass_on_email_fail',

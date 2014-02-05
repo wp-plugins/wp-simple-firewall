@@ -133,3 +133,7 @@ table#tbl_tbs_options_javascript td {
 .bootstrap-wpadmin .row.row_number_1 {
 	padding-top: 18px;
 }
+
+label input[type=checkbox] {
+	height: 16px !important;
+}

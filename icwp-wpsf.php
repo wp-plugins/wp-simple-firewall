@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.3.4
+ * Version: 2.4.0
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.3.4';
+	const PluginVersion					= '2.4.0';
 	/**
 	 * @var string
 	 */
@@ -488,7 +488,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 		if ( $sAccessKey === $sStoredAccessKey ) {
 			$this->setPermissionToSubmit( true );
-			header( 'Location: '.admin_url('admin.php?page=icwp-wpsf') );
+			header( 'Location: '.network_admin_url('admin.php?page=icwp-wpsf') );
 			exit();
 		}
 		return false;
@@ -617,7 +617,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			$this->m_oFirewallOptions->removeRawIpsFromFirewallList( 'ips_blacklist', array( $this->fetchGet( 'unblackip' ) ) );
 			$this->resetProcessor( 'Firewall' );
 		}
-		wp_safe_redirect( admin_url( "admin.php?page=".$this->getSubmenuId('firewall_log') ) ); //means no admin message is displayed
+		wp_safe_redirect( network_admin_url( "admin.php?page=".$this->getSubmenuId('firewall_log') ) ); //means no admin message is displayed
 		exit();
 	}
 	
@@ -656,15 +656,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			if ( isset( $_POST[$this->m_sOptionPrefix.'hide_update_notice'] ) && isset( $_POST['user_id'] ) ) {
 				$this->updateVersionUserMeta( $_POST['user_id'] );
 				if ( $this->isShowMarketing() ) {
-					wp_redirect( admin_url( "admin.php?page=".$this->getFullParentMenuId() ) );
+					wp_redirect( network_admin_url( "admin.php?page=".$this->getFullParentMenuId() ) );
 				}
 				else {
-					wp_redirect( admin_url( $_POST['redirect_page'] ) );
+					wp_redirect( network_admin_url( $_POST['redirect_page'] ) );
 				}
 			}
 			if ( isset( $_POST[$this->m_sOptionPrefix.'hide_translation_notice'] ) && isset( $_POST['user_id'] ) ) {
 				$this->updateTranslationNoticeShownUserMeta( $_POST['user_id'] );
-				wp_redirect( admin_url( $_POST['redirect_page'] ) );
+				wp_redirect( network_admin_url( $_POST['redirect_page'] ) );
 			}
 		}
 		

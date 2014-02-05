@@ -23,7 +23,8 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
 	const Slug = 'login_protect';
 	const TableName = 'login_auth';
-	
+	const AuthActiveCookie = 'wpsf_auth';
+
 	/**
 	 * @var string
 	 */
@@ -105,10 +106,29 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * @return boolean
 	 */
 	public function getNeedsEmailHandler() {
-		if ( isset( $this->m_aOptions['enable_two_factor_auth_by_ip'] ) && $this->m_aOptions['enable_two_factor_auth_by_ip'] == 'Y' ) {
-			return true;
+		return $this->getIsTwoFactorAuthOn();
+	}
+
+	/**
+	 * @param string $insType		can be either 'ip' or 'cookie'. If empty, both are checked looking for either.
+	 * @return bool
+	 */
+	public function getIsTwoFactorAuthOn( $insType = '' ) {
+
+		$fIp = isset( $this->m_aOptions['enable_two_factor_auth_by_ip'] ) && ($this->m_aOptions['enable_two_factor_auth_by_ip'] == 'Y');
+		$fCookie = isset( $this->m_aOptions['enable_two_factor_auth_by_cookie'] ) && ($this->m_aOptions['enable_two_factor_auth_by_cookie'] == 'Y');
+
+		switch( $insType ) {
+			case 'ip':
+				return $fIp;
+				break;
+			case 'cookie':
+				return $fCookie;
+				break;
+			default:
+				return $fIp || $fCookie;
+				break;
 		}
-		return false;
 	}
 	
 	public function setLogging() {
@@ -116,7 +136,6 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 	/**
-	 * @param ICWP_OptionsHandler_LoginProtect $inoOptions
 	 */
 	public function run() {
 		parent::run();
@@ -137,21 +156,22 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
 			add_filter( 'authenticate', array( $this, 'checkLoginInterval_Filter' ), 10, 3);
 		}
-		
-		if ( $this->m_aOptions['enable_two_factor_auth_by_ip'] == 'Y' ) {
+
+		if ( $this->getIsTwoFactorAuthOn() ) {
 			// User has clicked a link in their email to validate their IP address for login.
 			if ( isset( $_GET['wpsf-action'] ) && $_GET['wpsf-action'] == 'linkauth' ) {
 				$this->validateUserAuthLink();
 			}
-				
+
 			// If their click was successful we give them a lovely message
 			if ( isset( $_GET['wpsfipverified']) ) {
 				add_filter( 'login_message', array( $this, 'displayVerifiedUserMessage_Filter' ) );
 			}
-				
+
+
 			// Check the current logged-in user every page load.
 			add_action( 'init', array( $this, 'checkCurrentUserAuth_Action' ) );
-		
+
 			// At this stage (30,3) WordPress has already authenticated the user. So if the login
 			// is valid, the filter will have a valid WP_User object passed to it.
 			add_filter( 'authenticate', array( $this, 'checkUserAuthLogin_Filter' ), 30, 3);
@@ -336,7 +356,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * 		b) then, we give back a message saying that if the login was successful, they would have received a verification email. In this way we give nothing away.
 	 * 		c) note at this stage, if the username was empty, we give back nothing (this happens when wp-login.php is loaded as normal.
 	 *
-	 * @param WP_User|string $inmUser	- the docs say the first parameter a string, WP actually gives a WP_User object (or null)
+	 * @param WP_User|string $inoUser	- the docs say the first parameter a string, WP actually gives a WP_User object (or null)
 	 * @param string $insUsername
 	 * @param string $insPassword
 	 * @return WP_Error|WP_User|null	- WP_User when the login success AND the IP is authenticated. null when login not successful but IP is valid. WP_Error otherwise.
@@ -549,11 +569,15 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			$inaWhere['wp_username']
 		);
 		$this->doSql( $sQuery );
-		
+
+		// Now activate the new one.
+
+		// Set the necessary cookie
+		$this->setAuthActiveCookie( $inaWhere['unique_id'] );
+
+		// Updates the database
 		$inaWhere['pending']	= 1;
 		$inaWhere['deleted_at']	= 0;
-		
-		// Now activate the new one.
 		$mResult = $this->updateRowsFromTable( array( 'pending' => 0 ), $inaWhere );
 		if ( $mResult ) {
 			$this->logInfo(
@@ -561,6 +585,14 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			);
 		}
 		return $mResult;
+	}
+
+	/**
+	 * @param $insUniqueId
+	 */
+	public function setAuthActiveCookie( $insUniqueId ) {
+		$nWeek = defined( 'WEEK_IN_SECONDS' )? WEEK_IN_SECONDS : 24*60*60;
+		setcookie( self::AuthActiveCookie, $insUniqueId, time()+$nWeek, COOKIEPATH, COOKIE_DOMAIN, false );
 	}
 	
 	/**
@@ -581,20 +613,31 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			FROM `%s`
 			WHERE
 				`wp_username`		= '%s'
-				AND `ip_long`		= '%s'
 				AND `pending`		= '0'
 				AND `deleted_at`	= '0'
 				AND `expired_at`	= '0'
 		";
+//				AND `ip_long`		= '%s'
 		$sQuery = sprintf( $sQuery,
 			$this->m_sTableName,
-			$inaWhere['wp_username'],
-			$this->m_nRequestIp
+			$inaWhere['wp_username']
 		);
+//			$this->m_nRequestIp
 
 		$mResult = $this->selectCustomFromTable( $sQuery );
+
+
 		if ( is_array( $mResult ) && count( $mResult ) == 1 ) {
-			return true;
+			// Now we test based on which types of 2-factor auth is enabled
+			$fVerified = true;
+			$aUserAuthData = $mResult[0];
+			if ( $this->getIsTwoFactorAuthOn('ip') && ( $this->m_nRequestIp != $aUserAuthData['ip_long'] ) ) {
+				$fVerified = false;
+			}
+			if ( $fVerified && $this->getIsTwoFactorAuthOn('cookie') && !$this->isAuthCookieValid($aUserAuthData['unique_id']) ) {
+				$fVerified = false;
+			}
+			return $fVerified;
 		}
 		else {
 			$this->logWarning(
@@ -602,6 +645,10 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			);
 			return false;
 		}
+	}
+
+	public function isAuthCookieValid( $insUniqueId ) {
+		return isset( $_COOKIE[self::AuthActiveCookie] ) && $_COOKIE[self::AuthActiveCookie] == $insUniqueId;
 	}
 	
 	public function verifyCurrentUser() {

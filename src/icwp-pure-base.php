@@ -8,9 +8,9 @@ require_once( dirname(__FILE__).'/icwp-once.php' );
 require_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
 require_once( dirname(__FILE__).'/icwp-wpfilesystem.php' );
 
-if ( !class_exists('ICWP_Pure_Base_V3') ):
+if ( !class_exists('ICWP_Pure_Base_V4') ):
 
-class ICWP_Pure_Base_V3 extends ICWP_WPSF_Once {
+class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 
 	const BaseTitle				= 'iControlWP Plugins';
 	const BaseSlug				= 'icwp';
@@ -114,12 +114,13 @@ class ICWP_Pure_Base_V3 extends ICWP_WPSF_Once {
 		add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 		add_action( 'init',						array( $this, 'onWpInit' ), 0 );
 		if ( $this->isValidAdminArea() ) {
-			add_action( 'admin_init',			array( $this, 'onWpAdminInit' ) );
-			add_action( 'admin_notices',		array( $this, 'onWpAdminNotices' ) );
-			add_action( 'admin_menu',			array( $this, 'onWpAdminMenu' ) );
-			add_action(	'network_admin_menu',	array( $this, 'onWpNetworkAdminMenu' ) );
-			add_action( 'plugin_action_links',	array( $this, 'onWpPluginActionLinks' ), 10, 4 );
-			add_action( 'deactivate_plugin',	array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
+			add_action( 'admin_init',				array( $this, 'onWpAdminInit' ) );
+			add_action( 'admin_notices',			array( $this, 'onWpAdminNotices' ) );
+			add_action( 'network_admin_notices',	array( $this, 'onWpAdminNotices' ) );
+			add_action( 'admin_menu',				array( $this, 'onWpAdminMenu' ) );
+			add_action(	'network_admin_menu',		array( $this, 'onWpNetworkAdminMenu' ) );
+			add_action( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
+			add_action( 'deactivate_plugin',		array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
 		}
 		add_action( 'in_plugin_update_message-'.$this->m_sPluginFile, array( $this, 'onWpPluginUpdateMessage' ) );
 		add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
@@ -457,7 +458,7 @@ class ICWP_Pure_Base_V3 extends ICWP_WPSF_Once {
 					unset( $inaActionLinks['deactivate'] );
 				}
 			}
-			$sSettingsLink = '<a href="'.admin_url( "admin.php" ).'?page='.$this->getSubmenuId().'">' . 'Dashboard' . '</a>';
+			$sSettingsLink = '<a href="'.network_admin_url( "admin.php" ).'?page='.$this->getSubmenuId().'">' . 'Dashboard' . '</a>';
 			array_unshift( $inaActionLinks, $sSettingsLink );
 		}
 		return $inaActionLinks;
@@ -467,6 +468,9 @@ class ICWP_Pure_Base_V3 extends ICWP_WPSF_Once {
 	 * Override this method to handle all the admin notices
 	 */
 	public function onWpAdminNotices() {
+		if ( !$this->isValidAdminArea() ) {
+			return true;
+		}
 		// Do we have admin priviledges?
 		if ( !current_user_can( 'manage_options' ) ) {
 			return;
@@ -889,6 +893,6 @@ class ICWP_Pure_Base_V3 extends ICWP_WPSF_Once {
 		exit();
 	}
 	
-}//CLASS ICWP_Pure_Base_V3
+}//CLASS
 
 endif;

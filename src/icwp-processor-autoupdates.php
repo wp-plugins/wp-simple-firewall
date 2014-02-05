@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_AutoUpdatesProcessor_V3') ):
+if ( !class_exists('ICWP_AutoUpdatesProcessor_V4') ):
 
-class ICWP_AutoUpdatesProcessor_V3 extends ICWP_BaseProcessor_V2 {
+class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 
 	const Slug = 'autoupdates';
 	
@@ -109,7 +109,7 @@ class ICWP_AutoUpdatesProcessor_V3 extends ICWP_BaseProcessor_V2 {
 		wp_maybe_auto_update();
 		
 		if ( !empty( $insRedirect ) ) {
-			wp_redirect( get_admin_url( null, $insRedirect ) );
+			wp_redirect( network_admin_url( $insRedirect ) );
 			exit();
 		}
 		return true;
@@ -238,7 +238,7 @@ class ICWP_AutoUpdatesProcessor_V3 extends ICWP_BaseProcessor_V2 {
 	/**
 	 * A filter on the target email address to which to send upgrade notification emails.
 	 * 
-	 * @param array $inaEmailParam
+	 * @param array $inaEmailParams
 	 * @return array
 	 */
 	public function autoupdate_email_override( $inaEmailParams ) {
@@ -252,5 +252,5 @@ class ICWP_AutoUpdatesProcessor_V3 extends ICWP_BaseProcessor_V2 {
 endif;
 
 if ( !class_exists('ICWP_WPSF_AutoUpdatesProcessor') ):
-	class ICWP_WPSF_AutoUpdatesProcessor extends ICWP_AutoUpdatesProcessor_V3 { }
+	class ICWP_WPSF_AutoUpdatesProcessor extends ICWP_AutoUpdatesProcessor_V4 { }
 endif;
