@@ -712,7 +712,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 	
 	protected function shutdown() {
-		do_action('icwp_wpsf_cron_cleanupactionhook');
 		$this->updateLogStore();
 		parent::shutdown();
 	}
