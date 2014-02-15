@@ -31,7 +31,7 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ), self::TableName );
 		$this->createTable();
 	}
-	
+
 	public function reset() {
 		parent::reset();
 		$this->m_sRequestId = uniqid();

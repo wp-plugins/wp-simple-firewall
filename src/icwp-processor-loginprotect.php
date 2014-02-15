@@ -212,7 +212,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
 	public function displayVerifiedUserMessage_Filter( $insMessage ) {
 		$sStyles = 'background-color: #FAFFE8; border: 1px solid #DDDDDD; margin: 8px 0 10px 8px; padding: 16px;';
-		$insMessage .= '<h3 style="'.$sStyles.'">You successfully verified your IP address - you may now login.</h3>';
+		$insMessage .= '<h3 style="'.$sStyles.'">'._wpsf__('You have successfully verified your identity - you may now login').'</h3>';
 		return $insMessage;
 	}
 	
@@ -314,7 +314,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		remove_filter( 'authenticate', 'wp_authenticate_username_password', 20, 3 );  // wp-includes/user.php
 		remove_filter( 'authenticate', array( $this, 'checkUserAuthLogin_Filter' ), 30, 3);
 	
-		$sErrorString = sprintf( "Sorry, you must wait %s seconds before attempting to login again.", ($nRequiredLoginInterval - $nLoginInterval ) );
+		$sErrorString = sprintf( _wpsf__( "Login Cooldown in effect. You must wait %s seconds before attempting to login again." ), ($nRequiredLoginInterval - $nLoginInterval ) );
 		$oError = new WP_Error( 'wpsf_logininterval', $sErrorString );
 		return $oError;
 	}
@@ -404,8 +404,8 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
 	public function getGaspLoginHtml() {
 	
-		$sLabel = "I'm a human.";
-		$sAlert = "Please check the box to show us you're a human.";
+		$sLabel = _wpsf__("I'm a human.");
+		$sAlert = _wpsf__("Please check the box to show us you're a human.");
 	
 		$sUniqElem = 'icwp_wpsf_login_p'.uniqid();
 		
@@ -447,7 +447,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 					return true;
 				}
 			</script>
-			<noscript>You MUST enable Javascript to be able to login</noscript>
+			<noscript>'._wpsf__('You MUST enable Javascript to be able to login').'</noscript>
 			<input type="hidden" id="icwp_wpsf_login_email" name="icwp_wpsf_login_email" value="" />
 		';
 
@@ -464,16 +464,16 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	public function doGaspChecks( $insUsername ) {
 		if ( !isset( $_POST[ $this->getGaspCheckboxName() ] ) ) {
 			$this->logWarning(
-				sprintf( 'User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".', $insUsername, long2ip($this->m_nRequestIp) )
+				sprintf( _wpsf__('User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip($this->m_nRequestIp) )
 			);
 			wp_die( "You must check that box to say you're not a bot." );
 			return false;
 		}
 		else if ( isset( $_POST['icwp_wpsf_login_email'] ) && $_POST['icwp_wpsf_login_email'] !== '' ){
 			$this->logWarning(
-				sprintf( 'User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".', $insUsername, long2ip($this->m_nRequestIp) )
+				sprintf( _wpsf__('User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip($this->m_nRequestIp) )
 			);
-			wp_die( 'You smell like a bot.' );
+			wp_die( _wpsf__('You appear to be a bot - terminating login attempt.') );
 			return false;
 		}
 		return true;
@@ -530,7 +530,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$mResult = $this->insertIntoTable( $inaData );
 		if ( $mResult ) {
 			$this->logInfo(
-				sprintf( 'User "%s" created a pending Two-Factor Authentication for IP Address "%s".', $inaData[ 'wp_username' ], $inaData[ 'ip' ] )
+				sprintf( _wpsf__('User "%s" created a pending Two-Factor Authentication for IP Address "%s".'), $inaData[ 'wp_username' ], $inaData[ 'ip' ] )
 			);
 			$mResult = $inaData;
 		}
@@ -581,7 +581,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$mResult = $this->updateRowsFromTable( array( 'pending' => 0 ), $inaWhere );
 		if ( $mResult ) {
 			$this->logInfo(
-				sprintf( 'User "%s" has verified their IP Address using Two-Factor Authentication.', $inaWhere[ 'wp_username' ] )
+				sprintf( _wpsf__('User "%s" verified their identity using Two-Factor Authentication.'), $inaWhere[ 'wp_username' ] )
 			);
 		}
 		return $mResult;
@@ -641,7 +641,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 		else {
 			$this->logWarning(
-				sprintf( 'User "%s" was found to be un-verified at this given IP Address "%s".', $inaWhere[ 'wp_username' ], long2ip( $this->m_nRequestIp ) )
+				sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address "%s"'), $inaWhere[ 'wp_username' ], long2ip( $this->m_nRequestIp ) )
 			);
 			return false;
 		}
@@ -658,7 +658,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			$aData = array( 'wp_username' => $oUser->user_login );
 			if ( !$this->isUserVerified( $aData ) ) {
 				$this->logWarning(
-					sprintf( 'User "%s" was logged out.', $oUser->user_login )
+					sprintf( _wpsf__('User "%s" was forcefully logged out as they are not verified.'), $oUser->user_login )
 				);
 				wp_logout();
 				$this->redirectToLogin();
@@ -692,23 +692,23 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$sAuthLink = $this->getTwoFactorVerifyLink( $this->m_sSecretKey, $inoUser->user_login, $insUniqueId );
 		
 		$aMessage = array(
-			'You, or someone pretending to be you, just attempted to login into your WordPress site.',
-			'The IP Address from which they tried to login is not currently valid.',
-			'To validate this address, click the following link, and then login again.',
-			'IP Address: '. $insIpAddress,
-			'Authentication Link: '. $sAuthLink
+			_wpsf__('You, or someone pretending to be you, just attempted to login into your WordPress site.'),
+			_wpsf__('The IP Address / Cookie from which they tried to login is not currently verified.'),
+			_wpsf__('To validate this user, click the following link and then attempt to login again.'),
+			sprintf( _wpsf__('IP Address: %s'), $insIpAddress ),
+			sprintf( _wpsf__('Authentication Link: %s'), $sAuthLink ),
 		);
-		$sEmailSubject = 'Two-Factor Login Verification: ' . home_url();
+		$sEmailSubject = sprintf( _wpsf__('Two-Factor Login Verification for: %s'), home_url() );
 		
 		$fResult = $this->sendEmailTo( $sEmail, $sEmailSubject, $aMessage );
 		if ( $fResult ) {
 			$this->logInfo(
-				sprintf( 'User "%s" was sent an email to verify their Two-Factor Login for IP Address "%s".', $inoUser->user_login, $insIpAddress )
+				sprintf( _wpsf__('User "%s" was sent an email to verify their Identity using Two-Factor Login Auth for IP address "%s".'), $inoUser->user_login, $insIpAddress )
 			);
 		}
 		else {
 			$this->logCritical(
-				sprintf( 'Tried to send User "%s" email to verify their Two-Factor Login for IP Address "%s", but email sending failed.', $inoUser->user_login, $insIpAddress )
+				sprintf( _wpsf__('Tried to send User "%s" email to verify their Identity using Two-Factor Login Auth for IP Address "%s", but email sending failed.'), $inoUser->user_login, $insIpAddress )
 			);
 		}
 		return $fResult;

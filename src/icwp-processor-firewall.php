@@ -148,28 +148,28 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	public function doFirewallCheck() {
 		
 		if ( $this->m_aOptions[ 'whitelist_admins' ] == 'Y' && is_super_admin() ) {
-			$this->logInfo( 'Logged-in administrators currently by-pass all firewall checking.' );
+			$this->logInfo( _wpsf__('Logged-in administrators currently by-pass all firewall checking.') );
 			return true;
 		}
 
 		// if we couldn't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
 		$this->setRequestUriPageParts();
 		if ( empty( $this->m_aRequestUriParts ) ) {
-			$this->logInfo( 'Could not parse the URI so cannot effectively firewall.' );
+			$this->logInfo( _wpsf__('Cannot Run Firewall checking because parsing the URI failed.') );
 			return true;
 		}
 
 		// Set up the page parameters ($_GET and $_POST and optionally $_COOKIE). If there are none, quit since there's nothing for the firewall to check.
 		$this->setPageParams();
 		if ( empty( $this->m_aPageParams ) ) {
-			$this->logInfo( 'After any whitelist options were applied, there were no page parameters to check on this visit.' );
+			$this->logInfo( _wpsf__('After whitelist options were applied, there were no page parameters to check on this visit.') );
 			return true;
 		}
 		$this->m_aPageParamValuesToCheck = array_values( $this->m_aPageParams );
 		
 		if ( $this->m_nRequestIp === false ) {
 			$this->logCritical(
-				"Visitor IP address could not be determined so we're by-passing the firewall."
+				_wpsf__("Visitor IP address could not be determined so by-passing the Firewall.")
 			);
 			return true;
 		}
@@ -177,8 +177,8 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		// Check if the visitor is excluded from the firewall from the outset.
 		if ( $this->isVisitorOnWhitelist() ) {
 			$this->logInfo(
-				sprintf( 'Visitor is whitelisted by IP Address. Label: %s',
-					empty( $this->m_sListItemLabel )? 'No label.' : $this->m_sListItemLabel
+				sprintf( _wpsf__('Visitor is white-listed by IP Address. Label: %s'),
+					empty( $this->m_sListItemLabel )? _wpsf__('No label.') : $this->m_sListItemLabel
 				)
 			);
 			return true;
@@ -188,21 +188,21 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		if ( $this->isVisitorOnBlacklist() ) {
 			$this->m_sFirewallMessage .= ' Your IP is Blacklisted.';
 			$this->logWarning(
-				sprintf( 'Visitor was blacklisted by IP Address. Label: %s',
-					empty( $this->m_sListItemLabel )? 'No label.' : $this->m_sListItemLabel
+				sprintf( _wpsf__('Visitor was black-listed by IP Address. Label: %s'),
+					empty( $this->m_sListItemLabel )? _wpsf__('No label.') : $this->m_sListItemLabel
 				)
 			);
 			return false;
 		}
 		
-		$this->logInfo( 'Visitor IP was neither whitelisted nor blacklisted. Firewall checking started.' );
+		$this->logInfo( _wpsf__('Visitor IP was neither white-listed nor black-listed. Firewall checking started...') );
 		
 		$fIsPermittedVisitor = true;
 
 		// Check if the page and its parameters are whitelisted.
 		if ( $fIsPermittedVisitor && $this->isPageWhitelisted() ) {
 			$this->logWarning(
-				sprintf( 'All page request parameters were whitelisted (either by page or by parameters).%s','')
+				_wpsf__('All page request parameters were white-listed.' )
 			);
 			return true;
 		}
@@ -237,7 +237,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		);
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms );
 		if ( !$fPass ) {
-			$this->logWarning( 'Blocked Directory Traversal.' );
+			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('Directory Traversal') ) );
 		}
 		return $fPass;
 	}
@@ -250,7 +250,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		);
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
-			$this->logWarning( 'Requested: Block access to wp-login.php, but this was skipped because whitelisted IPs list was empty.' );
+			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('SQL Queries') ) );
 		}
 		return $fPass;
 	}
@@ -266,7 +266,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
-			$this->logWarning( 'Blocked WordPress Terms.' );
+			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('WordPress Terms') ) );
 		}
 		return $fPass;
 	}
@@ -278,7 +278,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		);
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
-			$this->logWarning( 'Blocked Field Truncation.' );
+			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('Field Truncation') ) );
 		}
 		return $fPass;
 	}
@@ -298,7 +298,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 			}
 			$fPass = $this->doPassCheck( $aFileNames, $aTerms, true );
 			if ( !$fPass ) {
-				$this->logWarning( 'Blocked EXE File Uploads.' );
+				$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('EXE File Uploads') ) );
 			}
 			return $fPass;
 		}
@@ -311,7 +311,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		);
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
-			$this->logWarning( 'Blocked Leading Schema.' );
+			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('Leading Schema') ) );
 		}
 		return $fPass;
 	}
@@ -375,22 +375,22 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		switch( $this->m_aOptions['block_response'] ) {
 			case 'redirect_die':
 				$this->logWarning(
-					sprintf( 'Firewall Block: Visitor connection was killed with %s', 'die()' )
+					sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor connection was killed with wp_die()') )
 				);
 				break;
 			case 'redirect_die_message':
 				$this->logWarning(
-					sprintf( 'Firewall Block: Visitor connection was killed with %s and message', 'wp_die()' )
+					sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor connection was killed with wp_die() and message') )
 				);
 				break;
 			case 'redirect_home':
 				$this->logWarning(
-					sprintf( 'Firewall Block: Visitor was sent HOME: %s', home_url() )
+					sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor was sent HOME') )
 				);
 				break;
 			case 'redirect_404':
 				$this->logWarning(
-					sprintf( 'Firewall Block: Visitor was sent 404: %s', home_url().'/404' )
+					sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor was sent 404') )
 				);
 				break;
 		}
@@ -517,11 +517,15 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		
 		if ( !isset( $_SERVER['REQUEST_URI'] ) || empty( $_SERVER['REQUEST_URI'] ) ) {
 			$this->m_aRequestUriParts = false;
-			$this->logWarning( 'Could not parse the details of this page call as $_SERVER[REQUEST_URI] was empty or not defined.' );
+			$this->logWarning(
+				sprintf( _wpsf__('Could not parse the details of this page call as "%s" was empty or not defined '), $_SERVER['REQUEST_URI'] )
+			);
 			return false;
 		}
 		$this->m_aRequestUriParts = explode( '?', $_SERVER['REQUEST_URI'] );
-		$this->logInfo( sprintf( 'Page Request URI: %s', $_SERVER['REQUEST_URI'] ) );
+		$this->logInfo(
+			sprintf( _wpsf__('Page Request URI: %s'), $_SERVER['REQUEST_URI'] )
+		);
 		return true;
 	}
 	
@@ -591,20 +595,19 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
 		$sIp = long2ip( $this->m_nRequestIp );
 		$aMessage = array(
-			'WordPress Simple Firewall has blocked a visitor to your site.',
-			'Log details for this visitor are below:',
-			'- IP Address: '.$sIp,
+			_wpsf__('WordPress Simple Firewall has blocked a page visit to your site.'),
+			_wpsf__('Log details for this visitor are below:'),
+			'- '.sprintf( _wpsf__('IP Address: %s'), $sIp )
 		);
 		foreach( $this->m_aLogMessages as $aLogItem ) {
 			list( $sLogType, $sLogMessage ) = $aLogItem;
-			$aMessage[] = '-  '.$sLogMessage;
+			$aMessage[] = '- '.$sLogMessage;
 		}
-		
-		$sEmailSubject = 'Firewall Block Alert: ' . home_url();
-		$aMessage[] = 'You could look up the offending IP Address here: http://ip-lookup.net/?ip='.$sIp;
-		
-		$this->logInfo( 'Firewall block email.' );
+		$aMessage[] = sprintf( _wpsf__('You can look up the offending IP Address here: %s'), 'http://ip-lookup.net/?ip='.$sIp );
+
+		$sEmailSubject = sprintf( _wpsf__('Firewall Block Email Alert: %s'), home_url() );
 		$this->sendEmail( $sEmailSubject, $aMessage );
+		$this->logInfo( _wpsf__('Firewall block email alert sent.') );
 	}
 }
 

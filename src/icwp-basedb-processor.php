@@ -231,8 +231,7 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 */
 	protected function createCleanupCron() {
 		if ( ! wp_next_scheduled( self::CleanupCronActionHook ) && ! defined( 'WP_INSTALLING' ) ) {
-			// Schedule auto updates for 6 a.m.
-			$nNextRun = strtotime( 'today 6am' ) - get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+			$nNextRun = strtotime( 'tomorrow 6am' ) - get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
 			wp_schedule_event( $nNextRun, 'daily', self::CleanupCronActionHook );
 		}
 	}

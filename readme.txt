@@ -238,6 +238,11 @@ You can either manually upgrade, or WordPress will handle it in due course.
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
+= 2.4.1 =
+
+*	ADDED:      More strings to the translation set for better multilingual support
+*	FIXED:      Automatic cleaning of database logs wasn't actually working as expected. Should now be fixed.
+
 = 2.4.0 =
 
 *	NEW:        Option to enable Two-Factor Authentication based on Cookie. In this way you can tie a user session to a single browser.

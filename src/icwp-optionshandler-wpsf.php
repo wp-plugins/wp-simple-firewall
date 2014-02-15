@@ -38,6 +38,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 				'admin_access_timeout',
 				'admin_access_key',
 				'enable_firewall',
+				'enable_logging',
 				'enable_login_protect',
 				'enable_comments_filter',
 				'enable_lockdown',
@@ -212,6 +213,8 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 		if ( empty( $sAccessKey ) ) {
 			$this->setOpt( 'enable_admin_access_restriction', 'N' );
 		}
+
+		$this->setOpt( 'enable_logging', 'Y' );
 	}
 	
 	protected function updateHandler() {
