@@ -68,6 +68,7 @@ class ICWP_DataProcessor_V1 {
 	 * 
 	 * @param string $insIpAddress
 	 * @uses filter_var
+	 * @return boolean
 	 */
 	public static function IsAddressInPublicIpRange( $insIpAddress ) {
 		return filter_var( $insIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE );

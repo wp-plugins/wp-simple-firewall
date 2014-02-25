@@ -68,7 +68,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					_wpsf__( 'Enable Login Protect' ),
 					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Login Protect feature, or enable your selected Login Protect options' )
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Login Protect feature, or enable your selected Login Protect options' ),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3y" target="_blank">', '</a>' )
 				)
 			),
 		);
@@ -96,7 +97,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('IP') ),
 					_wpsf__( 'Two-Factor Login Authentication By IP Address' ),
-					_wpsf__( 'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address' )
+					_wpsf__( 'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address' ),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3s" target="_blank">', '</a>' )
 				),
 				array(
 					'enable_two_factor_auth_by_cookie',
@@ -105,7 +107,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('Cookie') ),
 					_wpsf__( 'Two-Factor Login Authentication By Cookie' ),
-					_wpsf__( 'This will restrict all user login sessions to a single browser. Use this if your users have dynamic IP addresses.' )
+					_wpsf__( 'This will restrict all user login sessions to a single browser. Use this if your users have dynamic IP addresses.' ),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3t" target="_blank">', '</a>' )
 				),
 				array(
 					'enable_two_factor_bypass_on_email_fail',
@@ -126,9 +129,10 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'',
 					'10',
 					'integer',
-					'Login Cooldown Interval',
-					'Limit login attempts to every X seconds',
-					'WordPress will process only ONE login attempt for every number of seconds specified. Zero (0) turns this off. Suggested: 5'
+					_wpsf__('Login Cooldown Interval'),
+					_wpsf__('Limit login attempts to every X seconds'),
+					_wpsf__('WordPress will process only ONE login attempt for every number of seconds specified. Zero (0) turns this off. Suggested: 5'),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3q" target="_blank">', '</a>' )
 				),
 				array(
 					'enable_login_gasp_check',
@@ -137,7 +141,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					_wpsf__( 'G.A.S.P Protection' ),
 					_wpsf__( 'Use G.A.S.P. Protection To Prevent Login Attempts By Bots' ),
-					_wpsf__( 'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques. Recommended: ON' )
+					_wpsf__( 'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques. Recommended: ON' ),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3r" target="_blank">', '</a>' )
 				)
 			)
 		);

@@ -22,8 +22,7 @@ function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $i
 
 	$iRowWidth = 8; //8 spans.
 	$iOptionWidth = $iRowWidth / $iOptionsPerRow;
-	$sOptionValue;
-	
+
 	//Take each Options Section in turn
 	foreach ( $inaAllPluginOptions as $sOptionSection ) {
 		
@@ -66,13 +65,13 @@ function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $i
 			</div>
 		';
 
-	}//foreach section
+	}
 
 }//printAllPluginOptionsForm
 
 function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 	
-	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $mOptionType, $sOptionHumanName, $sOptionTitle, $sOptionHelpText ) = $inaOption;
+	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $mOptionType, $sOptionHumanName, $sOptionTitle, $sOptionHelpText, $sHelpLink ) = $inaOption;
 	
 	if ( $sOptionKey == 'spacer' ) {
 		$sHtml = '
@@ -80,19 +79,18 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 			</div>
 		';
 	} else {
-	
+
+		$sHelpLink = !empty($sHelpLink)? '<span>['.$sHelpLink.']</span>' : '';
 		$sSpanId = 'span_'.$insVarPrefix.$sOptionKey;
 		$sHtml = '
 			<div class="span'.$iSpanSize.'" id="'.$sSpanId.'">
 				<div class="control-group">
-					<label class="control-label" for="'.$insVarPrefix.$sOptionKey.'">'.$sOptionHumanName.'<br /></label>
+					<label class="control-label" for="'.$insVarPrefix.$sOptionKey.'">'.$sOptionHumanName.'<br />'.$sHelpLink.'</label>
 					<div class="controls">
 					  <div class="option_section'.( ($sOptionSaved == 'Y')? ' selected_item':'' ).'" id="option_section_'.$insVarPrefix.$sOptionKey.'">
 						<label>
 		';
 		$sAdditionalClass = '';
-		$sTextInput = '';
-		$sChecked = '';
 		$sHelpSection = '';
 		
 		if ( $mOptionType === 'checkbox' ) {
@@ -107,8 +105,6 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 						class="'.$sAdditionalClass.'"
 						id="'.$insVarPrefix.$sOptionKey.'" />
 						'.$sOptionTitle;
-			
-			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 
 		}
 		else if ( $mOptionType === 'text' ) {
@@ -121,9 +117,6 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 						placeholder="'.$sTextInput.'"
 						id="'.$insVarPrefix.$sOptionKey.'"
 						class="span5" />';
-			
-			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
-			
 		}
 		else if ( $mOptionType === 'password' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
@@ -135,8 +128,6 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 						placeholder="'.$sTextInput.'"
 						id="'.$insVarPrefix.$sOptionKey.'"
 						class="span5" />';
-			
-			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 		}
 		else if ( $mOptionType === 'email' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
@@ -148,9 +139,7 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 						placeholder="'.$sTextInput.'"
 						id="'.$insVarPrefix.$sOptionKey.'"
 						class="span5" />';
-			
-			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
-			
+
 		}
 		else if ( is_array($mOptionType) ) { //it's a select, or radio
 			
@@ -171,9 +160,6 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 				$sHtml .= '
 				</select>';
 			}
-			
-			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
-			
 		}
 		else if ( $mOptionType === 'ip_addresses' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
@@ -201,8 +187,6 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 						id="'.$insVarPrefix.$sOptionKey.'"
 						rows="'.$nRows.'"
 						class="span5">'.$sTextInput.'</textarea>';
-			
-			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 		}
 		else if ( $mOptionType === 'integer' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
@@ -214,16 +198,22 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 						placeholder="'.$sTextInput.'"
 						id="'.$insVarPrefix.$sOptionKey.'"
 						class="span5" />';
-			
-			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 		}
 		else {
 			$sHtml .= 'we should never reach this point';
 		}
+
+//		$sOptionHelpText = '<p class="help-block">'
+//			.$sOptionHelpText
+//			.( isset($sHelpLink)? '<br /><span class="help-link">['.$sHelpLink.']</span>':'' )
+//			.'</p>';
 		
+		$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
+
 		$sHtml .= '
 						</label>
 						'.$sOptionHelpText.'
+						<div style="clear:both"></div>
 					  </div>
 					</div><!-- controls -->'
 					.$sHelpSection.'
