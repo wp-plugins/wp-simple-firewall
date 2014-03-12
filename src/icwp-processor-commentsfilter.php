@@ -348,14 +348,14 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$sSqlTables = sprintf( $sSqlTables, $this->m_sTableName );
 		$mResult = $this->doSql( $sSqlTables );
 	}
-	
+
 	/**
-	 * 
 	 * @param string $insUniqueToken
 	 * @param string $insPostId
+	 * @param boolean $infSoftDelete
 	 */
 	protected function deleteUniquePostCommentToken( $insUniqueToken, $insPostId, $infSoftDelete = false ) {
-		
+
 		if ( $infSoftDelete ) {
 			$nNow = time();
 			$sQuery = "
@@ -366,10 +366,10 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 						AND `post_id`		= '%s'
 				";
 			$sQuery = sprintf( $sQuery,
-					$this->m_sTableName,
-					$nNow,
-					$sToken,
-					$insPostId
+				$this->m_sTableName,
+				$nNow,
+				$insUniqueToken,
+				$insPostId
 			);
 			$this->doSql( $sQuery );
 		}
@@ -379,14 +379,14 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			$this->deleteRowsFromTable( $aWhere );
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param string $insUniqueToken
 	 * @param string $insPostId
 	 */
 	protected function deleteOldPostCommentTokens( $insPostId, $infSoftDelete = false ) {
-		
+
 		if ( $infSoftDelete ) {
 			$nNow = time();
 			$sQuery = "
@@ -411,7 +411,7 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			$this->deleteRowsFromTable( $aWhere );
 		}
 	}
-	
+
 	protected function createUniquePostCommentToken( $insPostId, &$outsUniqueToken = '' ) {
 
 		// Now add new pending entry
