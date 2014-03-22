@@ -767,11 +767,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 				<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
 				<input type="hidden" value="1" name="<?php echo $this->m_sOptionPrefix; ?>hide_update_notice" id="<?php echo $this->m_sOptionPrefix; ?>hide_update_notice">
 				<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
-				<h4 style="margin:10px 0 3px;">
 					<?php _wpsf_e( 'Note: WordPress Simple Firewall plugin does not automatically turn on when you install/update.' ); ?>
-					<?php printf( _wpsf__( 'There may also be %simportant updates to read about%s.' ), '<a href="http://icwp.io/27" id="fromIcwp" title="WordPress Simple Firewall" target="_blank">', '</a>' ); ?>
+					<?php printf( _wpsf__( 'There may also be %simportant updates to read about%s.' ), '<a href="http://icwp.io/27" id="fromIcwp" title="'._wpsf__( 'WordPress Simple Firewall' ).'" target="_blank">', '</a>' ); ?>
 				</h4>
-				<input type="submit" value="Okay, show me the dashboard." name="submit" class="button" style="float:left; margin-bottom:10px;">
+				<input type="submit" value="<?php _wpsf_e( 'Okay, show me the dashboard' ); ?>" name="submit" class="button" style="float:left; margin-bottom:10px;">
 				<div style="clear:both;"></div>
 			</form>
 		<?php

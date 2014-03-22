@@ -40,7 +40,11 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 				'enable_two_factor_bypass_on_email_fail',
 				'login_limit_interval',
 				'enable_login_gasp_check',
-				'enable_login_protect_log'
+				'enable_login_protect_log',
+				'enable_yubikey',
+				'yubikey_app_id',
+				'yubikey_api_key',
+				'yubikey_unique_keys'
 			);
 		}
 	}
@@ -146,6 +150,52 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 				)
 			)
 		);
+
+		$aYubikeyProtect = array(
+			'section_title' => _wpsf__( 'Yubikey Authentication' ),
+			'section_options' => array(
+				array(
+					'enable_yubikey',
+					'',
+					'N',
+					'checkbox',
+					_wpsf__('Enable Yubikey Authentication'),
+					_wpsf__('Turn On / Off Yubikey Authentication On This Site'),
+					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication'),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3q" target="_blank">', '</a>' )
+				),
+				array(
+					'yubikey_app_id',
+					'',
+					'',
+					'text',
+					_wpsf__('Yubikey App ID'),
+					_wpsf__('Your Unique Yubikey App ID'),
+					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication'),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3q" target="_blank">', '</a>' )
+				),
+				array(
+					'yubikey_api_key',
+					'',
+					'',
+					'text',
+					_wpsf__( 'Yubikey API Key' ),
+					_wpsf__( 'Your Unique Yubikey App API Key' ),
+					_wpsf__( 'Combined with your Yubikey App ID (above) this will form the basis of your Yubikey Authentication' ),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3r" target="_blank">', '</a>' )
+				),
+				array(
+					'yubikey_unique_keys',
+					'',
+					'',
+					'yubikey_unique_keys',
+					_wpsf__( 'Yubikey Unique Keys' ),
+					_wpsf__( 'All Permitted Unique Yubikey Keys For This Site' ),
+					_wpsf__( 'Provide unique Yubikeys that are usable on this site (leave blank to allow any Yubikey device to be used). Multiple key should be separated by new lines - you only need to provide the first 12 characters.' ),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3r" target="_blank">', '</a>' )
+				)
+			)
+		);
 		
 		$aLoggingSection = array(
 			'section_title' => _wpsf__( 'Logging Options' ),
@@ -167,6 +217,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			$aWhitelist,
 			$aTwoFactorAuth,
 			$aLoginProtect,
+			$aYubikeyProtect,
 			$aLoggingSection
 		);
 	}

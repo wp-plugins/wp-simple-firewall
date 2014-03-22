@@ -240,6 +240,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
+= 2.5.0 =
+
+*	ADDED:      Two-Factor Authenticated Login using Yubikey One Time Passwords (OTP).
+
 = 2.4.3 =
 
 *	ADDED:      Translations: Spanish, Italian, Turkish. (~15% complete)

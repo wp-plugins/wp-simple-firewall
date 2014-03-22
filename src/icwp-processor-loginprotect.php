@@ -24,6 +24,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	const Slug = 'login_protect';
 	const TableName = 'login_auth';
 	const AuthActiveCookie = 'wpsf_auth';
+	const YubikeyVerifyApiUrl = 'https://api.yubico.com/wsapi/2.0/verify?id=%s&otp=%s&nonce=%s';
 
 	/**
 	 * @var string
@@ -68,13 +69,15 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
 	/**
 	 * Set the secret key by which authentication is validated.
-	 * 
-	 * @param string $insSecretKey
+	 *
+	 * @param boolean $infForceUpdate
+	 * @return string
 	 */
 	public function genSecretKey( $infForceUpdate = false ) {
 		if ( empty( $this->m_sSecretKey ) || $infForceUpdate ) {
 			$this->m_sSecretKey = md5( mt_rand() );
 		}
+		return $this->m_sSecretKey;
 	}
 	
 	/**
@@ -93,7 +96,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
 	/**
 	 *
-	 * @param array $inoOptions
+	 * @param array $inaOptions
 	 */
 	public function setOptions( &$inaOptions ) {
 		parent::setOptions( $inaOptions );
@@ -155,6 +158,11 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		if ( $this->m_aOptions['login_limit_interval'] > 0 ) {
 			// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
 			add_filter( 'authenticate', array( $this, 'checkLoginInterval_Filter' ), 10, 3);
+		}
+
+		if ( $this->getOption('enable_yubikey') && $this->getIsYubikeyConfigReady() ) {
+			add_filter( 'wp_authenticate_user', array( $this, 'checkYubikeyOtpAuth_Filter' ) );
+			add_action( 'login_form',			array( $this, 'printYubikeyOtp_Action' ) );
 		}
 
 		if ( $this->getIsTwoFactorAuthOn() ) {
@@ -238,8 +246,6 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
 	/**
 	 * Checks the link details to ensure all is valid before authorizing the user.
-	 *
-	 * @return boolean
 	 */
 	public function validateUserAuthLink() {
 		// wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid
@@ -263,7 +269,10 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			header( "Location: ".home_url() );
 		}
 	}
-	
+
+	/**
+	 * @param string $sParams
+	 */
 	public function redirectToLogin( $sParams = '' ) {
 		header( "Location: ".site_url().'/wp-login.php'.$sParams );
 	}
@@ -318,7 +327,10 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$oError = new WP_Error( 'wpsf_logininterval', $sErrorString );
 		return $oError;
 	}
-	
+
+	/**
+	 * @return int
+	 */
 	protected function getLastLoginTime() {
 		$oWpFs = ICWP_WpFilesystem_V1::GetInstance();
 		// Check that there is a login throttle file. If it exists and its modified time is greater than the 
@@ -333,12 +345,96 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		else { }
 		return $this->m_nLastLoginTime;
 	}
-	
+
+	/**
+	 * @param $innLastLoginTime
+	 */
 	public function updateLastLoginThrottleTime( $innLastLoginTime ) {
 		$oWpFs = ICWP_WpFilesystem_V1::GetInstance();
 		$this->m_nLastLoginTime = $innLastLoginTime;
 		$oWpFs->fileAction( 'touch', array(self::$sModeFile_LoginThrottled, $innLastLoginTime) );
 		$this->setNeedSave();
+	}
+
+	public function printYubikeyOtp_Action() {
+		$sHtml =
+			'<p class="yubikey-otp">
+				<label>%s<br />
+					<input type="text" name="yubiotp" class="input" value="" size="20" />
+				</label>
+			</p>
+		';
+		echo sprintf( $sHtml, _wpsf__('Yubikey OTP') );
+	}
+
+	/**
+	 * @param WP_User $inoUser
+	 * @return WP_User|WP_Error
+	 */
+	public function checkYubikeyOtpAuth_Filter( $inoUser ) {
+		$oError = new WP_Error();
+
+		if ( empty( $_POST['yubiotp'] ) ) {
+			$oError->add( 'yubikey_otp_not_provided', _wpsf__( '<strong>ERROR</strong>: The Yubikey OTP was not provided.' ) );
+			return $oError;
+		}
+
+		$sOneTimePassword = trim( $_POST['yubiotp'] );
+
+		$sAppId = $this->getOption('yubikey_app_id');
+		$sApiKey = $this->getOption('yubikey_api_key');
+		$aYubikeyKeys = $this->getOption('yubikey_unique_keys');
+
+		if ( empty($sAppId) || empty($sApiKey) ) {
+			$oError->add('yubikey_not_ready', _wpsf__( '<strong>ERROR</strong>: The Yubikey details are not valid.' ) );
+			return $oError;
+		}
+
+		// check that if we have a list of permitted key, that the one used is on that list.
+		$sKey12 = substr( $sOneTimePassword, 0 , 12 );
+		if ( !empty($aYubikeyKeys) && !in_array( $sKey12, $aYubikeyKeys ) ) {
+			$oError->add('yubikey_not_allowed', _wpsf__( '<strong>ERROR</strong>: The Yubikey provided is not on the list of permitted keys.' ) );
+			return $oError;
+		}
+
+		require_once( 'icwp-wpfilesystem.php' );
+		$oFs = new ICWP_WpFilesystem_V1();
+
+		$sNonce = md5( uniqid( rand() ) );
+		$sUrl = sprintf( self::YubikeyVerifyApiUrl, $sAppId, $sOneTimePassword, $sNonce );
+		$sRawYubiRequest = $oFs->getUrlContent( $sUrl );
+
+		// Validate response.
+		// 1. Check OTP and Nonce
+		if ( !preg_match( '/otp='.$sOneTimePassword.'/', $sRawYubiRequest, $aMatches )
+			|| !preg_match( '/nonce='.$sNonce.'/', $sRawYubiRequest, $aMatches )
+		) {
+			$oError->add('yubikey_mismatch', _wpsf__( '<strong>ERROR</strong>: The Yubikey authentication was not validated successfully.' ) );
+			return $oError;
+		}
+
+		// Optionally we can check the hash, but since we're using HTTPS, this isn't necessary and adds more PHP requirements
+
+		// 2. Check status directly within response
+		preg_match( '/status=([a-zA-Z0-9_]+)/', $sRawYubiRequest, $aMatches );
+		$sStatus = $aMatches[1];
+
+		if ( $sStatus != 'OK' && $sStatus != 'REPLAYED_OTP' ) {
+			$oError->add('yubikey_fail', _wpsf__( '<strong>ERROR</strong>: The Yubikey authentication was not validated successfully.' ) );
+			return $oError;
+		}
+
+		return $inoUser;
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function getIsYubikeyConfigReady() {
+		$sAppId = $this->getOption('yubikey_app_id');
+		$sApiKey = $this->getOption('yubikey_api_key');
+		$sYubikeyKeys = $this->getOption('yubikey_unique_keys');
+		return !empty($sAppId) && !empty($sApiKey) && !empty($sYubikeyKeys);
 	}
 
 	/**

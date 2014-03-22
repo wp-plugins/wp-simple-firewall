@@ -380,6 +380,15 @@ class ICWP_OptionsHandler_Base_V2 {
 						$mCurrentOptionVal = implode( "\n", $this->convertIpListForDisplay( $mCurrentOptionVal ) );
 					}
 				}
+				else if ( $sOptionType == 'yubikey_unique_keys' ) {
+
+					if ( empty( $mCurrentOptionVal ) ) {
+						$mCurrentOptionVal = '';
+					}
+					else {
+						$mCurrentOptionVal = implode( "\n", $mCurrentOptionVal );
+					}
+				}
 				else if ( $sOptionType == 'comma_separated_lists' ) {
 					
 					if ( empty( $mCurrentOptionVal ) ) {
@@ -527,6 +536,9 @@ class ICWP_OptionsHandler_Base_V2 {
 				}
 				else if ( $sOptionType == 'ip_addresses' ) { //ip addresses are textareas, where each is separated by newline
 					$sOptionValue = $oProcessor->ExtractIpAddresses( $sOptionValue );
+				}
+				else if ( $sOptionType == 'yubikey_unique_keys' ) { //ip addresses are textareas, where each is separated by newline and are 12 chars long
+					$sOptionValue = $oProcessor->CleanYubikeyUniqueKeys( $sOptionValue );
 				}
 				else if ( $sOptionType == 'email' && function_exists( 'is_email' ) && !is_email( $sOptionValue ) ) {
 					$sOptionValue = '';

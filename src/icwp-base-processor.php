@@ -148,7 +148,19 @@ class ICWP_BaseProcessor_V2 {
 		$this->m_oOptionsHandler = $inoOptionsHandler;
 		$this->m_aOptions = $this->m_oOptionsHandler->getPluginOptionsValues();
 	}
-	
+
+	/**
+	 * @param $insKey
+	 * @param bool $inmDefault
+	 * @return bool
+	 */
+	public function getOption( $insKey, $inmDefault = false ) {
+		if ( isset( $this->m_aOptions[$insKey] ) ) {
+			return $this->m_aOptions[$insKey];
+		}
+		return $inmDefault;
+	}
+
 	/**
 	 * Resets the log
 	 */

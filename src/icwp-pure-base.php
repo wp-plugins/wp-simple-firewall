@@ -829,13 +829,14 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	
 	/**
 	 * @param string $insKey
+	 * @param boolean $infIncludeCookie
 	 * @return mixed|null
 	 */
 	protected function fetchRequest( $insKey, $infIncludeCookie = true ) {
 		$mFetchVal = $this->fetchPost( $insKey );
 		if ( is_null( $mFetchVal ) ) {
 			$mFetchVal = $this->fetchGet( $insKey );
-			if ( is_null( $mFetchVal ) ) {
+			if ( is_null( $mFetchVal && $infIncludeCookie ) ) {
 				$mFetchVal = $this->fetchCookie( $insKey );
 			}
 		}
@@ -871,8 +872,10 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 		}
 		return $this->arrayFetch( $_COOKIE, $insKey );
 	}
+
 	/**
-	 * @param string $insKey		The $_GET key
+	 * @param array $inaArray
+	 * @param string $insKey		The array key
 	 * @return mixed|null
 	 */
 	protected function arrayFetch( &$inaArray, $insKey ) {
