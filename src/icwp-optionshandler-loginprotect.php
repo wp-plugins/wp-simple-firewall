@@ -162,7 +162,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__('Enable Yubikey Authentication'),
 					_wpsf__('Turn On / Off Yubikey Authentication On This Site'),
 					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication'),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3q" target="_blank">', '</a>' )
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4f" target="_blank">', '</a>' )
 				),
 				array(
 					'yubikey_app_id',
@@ -172,7 +172,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__('Yubikey App ID'),
 					_wpsf__('Your Unique Yubikey App ID'),
 					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication'),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3q" target="_blank">', '</a>' )
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4g" target="_blank">', '</a>' )
 				),
 				array(
 					'yubikey_api_key',
@@ -182,7 +182,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Yubikey API Key' ),
 					_wpsf__( 'Your Unique Yubikey App API Key' ),
 					_wpsf__( 'Combined with your Yubikey App ID (above) this will form the basis of your Yubikey Authentication' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3r" target="_blank">', '</a>' )
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4g" target="_blank">', '</a>' )
 				),
 				array(
 					'yubikey_unique_keys',
@@ -191,8 +191,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'yubikey_unique_keys',
 					_wpsf__( 'Yubikey Unique Keys' ),
 					_wpsf__( 'All Permitted Unique Yubikey Keys For This Site' ),
-					_wpsf__( 'Provide unique Yubikeys that are usable on this site (leave blank to allow any Yubikey device to be used). Multiple key should be separated by new lines - you only need to provide the first 12 characters.' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3r" target="_blank">', '</a>' )
+					_wpsf__( 'Provide unique Yubikeys that are usable on this site (leave blank to allow any Yubikey device to be used). Multiple keys should be separated by new lines - you only need to provide the first 12 characters.' ),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4h" target="_blank">', '</a>' )
 				)
 			)
 		);
