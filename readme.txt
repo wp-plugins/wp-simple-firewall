@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
 Requires at least: 3.2.0
 Tested up to: 3.8
-Stable tag: 2.4.3
+Stable tag: 2.5.0
 
 Complete and Simple WordPress Security. Unrestricted, with no premium features.
 
@@ -242,7 +242,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 = 2.5.0 =
 
-*	ADDED:      Two-Factor Authenticated Login using Yubikey One Time Passwords (OTP).
+*	FEATURE:    Two-Factor Authenticated Login using [Yubikey](http://icwp.io/4i) One Time Passwords (OTP).
 
 = 2.4.3 =
 

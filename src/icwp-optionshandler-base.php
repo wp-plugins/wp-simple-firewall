@@ -386,7 +386,11 @@ class ICWP_OptionsHandler_Base_V2 {
 						$mCurrentOptionVal = '';
 					}
 					else {
-						$mCurrentOptionVal = implode( "\n", $mCurrentOptionVal );
+						$aDisplay = array();
+						foreach( $mCurrentOptionVal as $aParts ) {
+							$aDisplay[] = key($aParts) .', '. reset($aParts);
+						}
+						$mCurrentOptionVal = implode( "\n", $aDisplay );
 					}
 				}
 				else if ( $sOptionType == 'comma_separated_lists' ) {
@@ -458,7 +462,7 @@ class ICWP_OptionsHandler_Base_V2 {
 			}
 		}
 	}
-	
+
 	protected function convertIpListForDisplay( $inaIpList = array() ) {
 
 		$aDisplay = array();

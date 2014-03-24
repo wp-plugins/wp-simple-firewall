@@ -284,11 +284,18 @@ class ICWP_DataProcessor_V1 {
 
 	public static function CleanYubikeyUniqueKeys( $insRawKeys ) {
 		$aKeys = explode( "\n", $insRawKeys );
-		foreach( $aKeys as $nIndex => $sKey ) {
-			$sKey12 = substr( trim( $sKey ), 0, 12 );
-			if ( !empty($sKey12) ) {
-				$aKeys[$nIndex] = $sKey12;
+		foreach( $aKeys as $nIndex => $sUsernameKey ) {
+			if ( empty( $sUsernameKey ) ) {
+				unset( $aKeys[$nIndex] );
+				continue;
 			}
+			$aParts = array_map( 'trim', explode( ',', $sUsernameKey ) );
+			if ( empty( $aParts[0] ) || empty( $aParts[1] ) || strlen( $aParts[1] ) < 12 ) {
+				unset( $aKeys[$nIndex] );
+				continue;
+			}
+			$aParts[1] = substr( $aParts[1], 0, 12 );
+			$aKeys[$nIndex] = array( $aParts[0] => $aParts[1] );
 		}
 		return $aKeys;
 	}

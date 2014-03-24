@@ -171,7 +171,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'text',
 					_wpsf__('Yubikey App ID'),
 					_wpsf__('Your Unique Yubikey App ID'),
-					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication'),
+					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication')
+					. _wpsf__( 'Please review the [more info] link on how to get your own Yubikey App ID and API Key.' ),
 					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4g" target="_blank">', '</a>' )
 				),
 				array(
@@ -181,7 +182,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'text',
 					_wpsf__( 'Yubikey API Key' ),
 					_wpsf__( 'Your Unique Yubikey App API Key' ),
-					_wpsf__( 'Combined with your Yubikey App ID (above) this will form the basis of your Yubikey Authentication' ),
+					_wpsf__( 'Combined with your Yubikey App ID (above) this will form the basis of your Yubikey Authentication.' )
+					. _wpsf__( 'Please review the [more info] link on how to get your own Yubikey App ID and API Key.' ),
 					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4g" target="_blank">', '</a>' )
 				),
 				array(
@@ -190,8 +192,11 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'',
 					'yubikey_unique_keys',
 					_wpsf__( 'Yubikey Unique Keys' ),
-					_wpsf__( 'All Permitted Unique Yubikey Keys For This Site' ),
-					_wpsf__( 'Provide unique Yubikeys that are usable on this site (leave blank to allow any Yubikey device to be used). Multiple keys should be separated by new lines - you only need to provide the first 12 characters.' ),
+					_wpsf__( 'Permitted Username - Yubikey Pairs For This Site' ),
+					'<strong>'. sprintf( _wpsf__( 'Format: %s' ), 'Username,Yubikey').'</strong>'
+					.'<br />- '. _wpsf__( 'Provide Username<->Yubikey Pairs that are usable on this site.')
+					.'<br />- '. _wpsf__( 'If a Username if not assigned a Yubikey, Yubikey Authentication is OFF for that user.')
+					.'<br />- '. _wpsf__( 'Each [Username,Key] pair should be separated by a new line: you only need to provide the first 12 characters of the yubikey.' ),
 					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4h" target="_blank">', '</a>' )
 				)
 			)

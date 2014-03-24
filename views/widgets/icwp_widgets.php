@@ -1,28 +1,26 @@
 <?php
-
 function getWidgetIframeHtml( $insSnippet ) {
-	
+
 	$sSubPageNow = isset( $_GET['page'] )? 'page='.$_GET['page'].'&': '';
-	
+
 	$sWidth = '100%';
-	$sBackgroundColor = "#ffffff";
+	$sBackgroundColor = "rgba(0, 0, 0, 0)";
 	$sIframeName = 'iframe-hlt-bootstrapcss-'.$insSnippet;
-	
+
 	if ( strpos( $insSnippet, 'side-widgets') !== false ) {
-		$sHeight = '800px';
+		$sHeight = '1200px';
 	}
 	elseif ( strpos( $insSnippet, 'dashboard-widget-developerchannel') !== false ) {
 		$sHeight = '312px';
 	}
 	elseif ( strpos( $insSnippet, 'dashboard-widget-worpit') !== false ) {
 		$sHeight = '230px';
-			$sBackgroundColor = 'whiteSmoke';
+		$sBackgroundColor = 'whiteSmoke';
 	}
-	
+
 	return '<iframe name="'.$sIframeName.'"
-		src="http://www.hostliketoast.com/custom/remote/plugins/hlt-bootstrapcss-plugin-widgets.php?'.$sSubPageNow.'snippet='.$insSnippet.'"
+		src="http://www.icontrolwp.com/custom/remote/plugins/hlt-bootstrapcss-plugin-widgets.php?'.$sSubPageNow.'snippet='.$insSnippet.'"
 		width="'.$sWidth.'" height="'.$sHeight.'" frameborder="0" scrolling="no" style="background-color:'.$sBackgroundColor.';" ></iframe>
 	';
-	
-}//getWidgetIframeHtml
-?>
+
+}

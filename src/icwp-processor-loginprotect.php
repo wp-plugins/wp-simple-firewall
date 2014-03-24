@@ -356,6 +356,8 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$this->setNeedSave();
 	}
 
+	/**
+	 */
 	public function printYubikeyOtp_Action() {
 		$sHtml =
 			'<p class="yubikey-otp">
@@ -364,7 +366,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 				</label>
 			</p>
 		';
-		echo sprintf( $sHtml, _wpsf__('Yubikey OTP') );
+		echo sprintf( $sHtml, '<a href="http://icwp.io/4i" target="_blank">'._wpsf__('Yubikey OTP').'</a>' );
 	}
 
 	/**
@@ -374,26 +376,47 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	public function checkYubikeyOtpAuth_Filter( $inoUser ) {
 		$oError = new WP_Error();
 
-		if ( empty( $_POST['yubiotp'] ) ) {
-			$oError->add( 'yubikey_otp_not_provided', _wpsf__( '<strong>ERROR</strong>: The Yubikey OTP was not provided.' ) );
-			return $oError;
+		// Before anything else we check that a Yubikey pair has been provided for this username (and that there are pairs in the first place!)
+		$aYubikeyUsernamePairs = $this->getOption('yubikey_unique_keys');
+		if ( !$this->getIsYubikeyConfigReady() ) { // configuration is clearly not completed yet.
+			return $inoUser;
 		}
 
-		$sOneTimePassword = trim( $_POST['yubiotp'] );
-
+		$sOneTimePassword =  empty( $_POST['yubiotp'] )? '' : trim( $_POST['yubiotp'] );
 		$sAppId = $this->getOption('yubikey_app_id');
 		$sApiKey = $this->getOption('yubikey_api_key');
-		$aYubikeyKeys = $this->getOption('yubikey_unique_keys');
 
-		if ( empty($sAppId) || empty($sApiKey) ) {
-			$oError->add('yubikey_not_ready', _wpsf__( '<strong>ERROR</strong>: The Yubikey details are not valid.' ) );
-			return $oError;
+		// check that if we have a list of permitted keys, that the one used is on that list connected with the username.
+		$sYubikey12 = substr( $sOneTimePassword, 0 , 12 );
+		$fUsernameFound = false; // if username is never found, it means there's no yubikey specified which means we can bypass this authentication method.
+		$fFoundMatch = false;
+		foreach( $aYubikeyUsernamePairs as $aUsernameYubikeyPair ) {
+			if ( isset( $aUsernameYubikeyPair[$inoUser->user_login] ) ) {
+				$fUsernameFound = true;
+				if ( $aUsernameYubikeyPair[$inoUser->user_login] == $sYubikey12 ) {
+					$fFoundMatch = true;
+					break;
+				}
+			}
 		}
 
-		// check that if we have a list of permitted key, that the one used is on that list.
-		$sKey12 = substr( $sOneTimePassword, 0 , 12 );
-		if ( !empty($aYubikeyKeys) && !in_array( $sKey12, $aYubikeyKeys ) ) {
-			$oError->add('yubikey_not_allowed', _wpsf__( '<strong>ERROR</strong>: The Yubikey provided is not on the list of permitted keys.' ) );
+		// If no yubikey-username pair found for given username, we by-pass Yubikey auth.
+		if ( !$fUsernameFound ) {
+			$this->logWarning(
+				sprintf( _wpsf__('User "%s" logged in without a Yubikey One Time Password because no username-yubikey pair was found for this user.'), $inoUser->user_login )
+			);
+			return $inoUser;
+		}
+
+		// Username was found in the list of key pairs, but the yubikey provided didn't match that username.
+		if ( !$fFoundMatch ) {
+			$oError->add(
+				'yubikey_not_allowed',
+				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey provided is not on the list of permitted keys for this user.') )
+			);
+			$this->logWarning(
+				sprintf( _wpsf__('User "%s" attempted to login but Yubikey ID used was not in list of authorised keys: "%s".'), $inoUser->user_login, $sYubikey12 )
+			);
 			return $oError;
 		}
 
@@ -409,7 +432,13 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		if ( !preg_match( '/otp='.$sOneTimePassword.'/', $sRawYubiRequest, $aMatches )
 			|| !preg_match( '/nonce='.$sNonce.'/', $sRawYubiRequest, $aMatches )
 		) {
-			$oError->add('yubikey_mismatch', _wpsf__( '<strong>ERROR</strong>: The Yubikey authentication was not validated successfully.' ) );
+			$oError->add(
+				'yubikey_validate_fail',
+				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
+			);
+			$this->logWarning(
+				sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API.'), $inoUser->user_login )
+			);
 			return $oError;
 		}
 
@@ -420,10 +449,19 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$sStatus = $aMatches[1];
 
 		if ( $sStatus != 'OK' && $sStatus != 'REPLAYED_OTP' ) {
-			$oError->add('yubikey_fail', _wpsf__( '<strong>ERROR</strong>: The Yubikey authentication was not validated successfully.' ) );
+			$oError->add(
+				'yubikey_validate_fail',
+				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
+			);
+			$this->logWarning(
+				sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API response status: %s.'), $inoUser->user_login, $sStatus )
+			);
 			return $oError;
 		}
 
+		$this->logInfo(
+			sprintf( _wpsf__('User "%s" successfully logged in using a validated Yubikey One Time Password.'), $inoUser->user_login )
+		);
 		return $inoUser;
 	}
 
@@ -433,8 +471,8 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	protected function getIsYubikeyConfigReady() {
 		$sAppId = $this->getOption('yubikey_app_id');
 		$sApiKey = $this->getOption('yubikey_api_key');
-		$sYubikeyKeys = $this->getOption('yubikey_unique_keys');
-		return !empty($sAppId) && !empty($sApiKey) && !empty($sYubikeyKeys);
+		$aYubikeyKeys = $this->getOption('yubikey_unique_keys');
+		return !empty($sAppId) && !empty($sApiKey) && !empty($aYubikeyKeys);
 	}
 
 	/**
