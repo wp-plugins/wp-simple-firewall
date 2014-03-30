@@ -198,7 +198,20 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					.'<br />- '. _wpsf__( 'If a Username if not assigned a Yubikey, Yubikey Authentication is OFF for that user.')
 					.'<br />- '. _wpsf__( 'Each [Username,Key] pair should be separated by a new line: you only need to provide the first 12 characters of the yubikey.' ),
 					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4h" target="_blank">', '</a>' )
-				)
+				),
+				/*
+				array(
+					'enable_yubikey_only',
+					'',
+					'N',
+					'checkbox',
+					_wpsf__('Enable Yubikey Only'),
+					_wpsf__('Turn On / Off Yubikey Only Authentication'),
+					_wpsf__('Yubikey Only Authentication is where you can login into your WordPress site with just a Yubikey OTP.')
+					.'<br />- '. _wpsf__("You don't need to enter a username or a password, just a valid Yubikey OTP.")
+					.'<br />- '. _wpsf__("Check your list of Yubikeys as only 1 WordPress username may be assigned to a given Yubikey ID (but you may have multiple Yubikeys for a given username)."),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4f" target="_blank">', '</a>' )
+				),*/
 			)
 		);
 		

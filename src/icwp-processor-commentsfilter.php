@@ -438,6 +438,9 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * It'll delete everything older than 24hrs.
 	 */
 	public function cleanupDatabase() {
+		if ( !$this->getTableExists() ) {
+			return;
+		}
 		$nTimeStamp = time() - DAY_IN_SECONDS;
 		$this->deleteAllRowsOlderThan( $nTimeStamp );
 	}

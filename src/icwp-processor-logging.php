@@ -76,7 +76,6 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 	
 	public function createTable() {
-	
 		// Set up log table
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
 			`id` int(11) NOT NULL AUTO_INCREMENT,
@@ -106,6 +105,9 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * It'll delete everything older than 7 days.
 	 */
 	public function cleanupDatabase() {
+		if ( !$this->getTableExists() ) {
+			return;
+		}
 		$nTimeStamp = time() - DAY_IN_SECONDS * self::DaysToKeepLog;
 		$this->deleteAllRowsOlderThan( $nTimeStamp );
 	}

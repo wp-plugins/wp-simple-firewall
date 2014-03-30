@@ -72,7 +72,9 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * Override to set what this processor does when it's "run"
 	 */
 	public function run() {
-		add_action( self::CleanupCronActionHook, array( $this, 'cleanupDatabase' ) );
+		if ( $this->getTableExists() ) {
+			add_action( self::CleanupCronActionHook, array( $this, 'cleanupDatabase' ) );
+		}
 	}
 	
 	/**
@@ -211,6 +213,7 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * @param string $insSql
 	 */
 	public function doSql( $insSql ) {
+		$this->loadWpdb();
 		return $this->m_oWpdb->query( $insSql );
 	}
 	
@@ -239,7 +242,18 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	public function cleanupDatabase() {
 		//by default do nothing - oiverrde this method
 	}
-	
+
+	/**
+	 * @return bool
+	 */
+	public function getTableExists() {
+		$sQuery = "
+			SHOW TABLES LIKE '%s'
+		";
+		$sQuery = sprintf( $sQuery, $this->m_sTableName );
+		$mResult = $this->m_oWpdb->get_var( $sQuery );
+		return !is_null( $mResult );
+	}
 }
 
 endif;

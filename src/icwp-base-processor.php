@@ -102,7 +102,6 @@ class ICWP_BaseProcessor_V2 {
 	}
 
 	/**
-	 * @param string $infKey
 	 */
 	public function store() {
 		$this->doPreStore();
@@ -113,7 +112,6 @@ class ICWP_BaseProcessor_V2 {
 	}
 
 	/**
-	 * @param string $infKey
 	 */
 	public function deleteStore() {
 		delete_option( $this->m_sStorageKey );
@@ -135,14 +133,14 @@ class ICWP_BaseProcessor_V2 {
 
 	/**
 	 *
-	 * @param array $inoOptions
+	 * @param array $inaOptions
 	 */
 	public function setOptions( &$inaOptions ) {
 		$this->m_aOptions = $inaOptions;
 	}
 	/**
 	 *
-	 * @param array $inoOptionsHandler
+	 * @param ICWP_OptionsHandler_Base_WPSF $inoOptionsHandler
 	 */
 	public function setOptionsHandler( ICWP_OptionsHandler_Base_WPSF &$inoOptionsHandler ) {
 		$this->m_oOptionsHandler = $inoOptionsHandler;
@@ -226,7 +224,8 @@ class ICWP_BaseProcessor_V2 {
 	/**
 	 * Cloudflare compatible.
 	 * 
-	 * @return number - visitor IP Address as IP2Long
+	 * @param boolean $infAsLong - visitor IP Address as IP2Long
+	 * @return integer - visitor IP Address as IP2Long
 	 */
 	public function getVisitorIpAddress( $infAsLong = true ) {
 		require_once( dirname(__FILE__).'/icwp-data-processor.php' );
