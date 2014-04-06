@@ -351,6 +351,12 @@ class ICWP_BaseProcessor_V2 {
 	public function deleteAndCleanUp() {
 		$this->deleteStore();
 	}
+
+	/**
+	 */
+	protected function loadDataProcessor() {
+		require_once( dirname(__FILE__) . '/icwp-data-processor.php' );
+	}
 }
 
 endif;

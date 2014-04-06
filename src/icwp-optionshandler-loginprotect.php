@@ -40,6 +40,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 				'enable_two_factor_bypass_on_email_fail',
 				'login_limit_interval',
 				'enable_login_gasp_check',
+				'enable_prevent_remote_post',
 				'enable_login_protect_log',
 				'enable_yubikey',
 				'yubikey_app_id',
@@ -147,6 +148,16 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Use G.A.S.P. Protection To Prevent Login Attempts By Bots' ),
 					_wpsf__( 'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques. Recommended: ON' ),
 					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3r" target="_blank">', '</a>' )
+				),
+				array(
+					'enable_prevent_remote_post',
+					'',
+					'Y',
+					'checkbox',
+					_wpsf__( 'Prevent Remote Login' ),
+					_wpsf__( 'Prevents Remote Login Attempts From Other Locations' ),
+					_wpsf__( 'Prevents any login attempts that do not originate from your website. This prevent bots from attempting to login remotely. Recommended: ON' ),
+					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4n" target="_blank">', '</a>' )
 				)
 			)
 		);

@@ -142,25 +142,36 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function run() {
 		parent::run();
-		
+		$this->loadDataProcessor();
+
+		$sRequestMethod = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'REQUEST_METHOD' );
+		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
+
 		$aWhitelist = $this->m_aOptions['ips_whitelist'];
 		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::GetVisitorIpAddress() ) ) {
 			return true;
 		}
-		
+
+		// check for remote posting before anything else.
+		if ( $fIsPost && $this->m_aOptions['enable_prevent_remote_post'] == 'Y' ) {
+			add_filter( 'authenticate',			array( $this, 'checkRemotePostLogin_Filter' ), 9, 3);
+		}
+
 		// Add GASP checking to the login form.
 		if ( $this->m_aOptions['enable_login_gasp_check'] == 'Y' ) {
 			add_action( 'login_form',			array( $this, 'printGaspLoginCheck_Action' ) );
 			add_filter( 'login_form_middle',	array( $this, 'printGaspLoginCheck_Filter' ) );
-			add_filter( 'authenticate',			array( $this, 'checkLoginForGasp_Filter' ), 9, 3);
+			add_filter( 'authenticate',			array( $this, 'checkLoginForGasp_Filter' ), 22, 3);
 		}
 
-		if ( $this->m_aOptions['login_limit_interval'] > 0 ) {
+		// Do GASP checking if it's a form submit.
+		if ( $fIsPost && $this->m_aOptions['login_limit_interval'] > 0 ) {
 			// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
 			add_filter( 'authenticate', array( $this, 'checkLoginInterval_Filter' ), 10, 3);
 		}
 
-		if ( $this->getOption('enable_yubikey') && $this->getIsYubikeyConfigReady() ) {
+		// check for Yubikey auth after user is authenticated with WordPress.
+		if ( $fIsPost && $this->getOption('enable_yubikey') && $this->getIsYubikeyConfigReady() ) {
 			add_filter( 'wp_authenticate_user', array( $this, 'checkYubikeyOtpAuth_Filter' ) );
 			add_action( 'login_form',			array( $this, 'printYubikeyOtp_Action' ) );
 		}
@@ -180,31 +191,65 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			// Check the current logged-in user every page load.
 			add_action( 'init', array( $this, 'checkCurrentUserAuth_Action' ) );
 
-			// At this stage (30,3) WordPress has already authenticated the user. So if the login
+			// At this stage (30,3) WordPress has already (20) authenticated the user. So if the login
 			// is valid, the filter will have a valid WP_User object passed to it.
 			add_filter( 'authenticate', array( $this, 'checkUserAuthLogin_Filter' ), 30, 3);
 		}
 	}
-	
+
+	/**
+	 */
 	public function printGaspLoginCheck_Action() {
 		echo $this->getGaspLoginHtml();
 	}
-	
+
+	/**
+	 * @return string
+	 */
 	public function printGaspLoginCheck_Filter() {
 		return $this->getGaspLoginHtml();
 	}
 
+	/**
+	 * @param $inoUser
+	 * @param $insUsername
+	 * @param $insPassword
+	 * @return mixed
+	 */
+	public function checkRemotePostLogin_Filter( $inoUser, $insUsername, $insPassword ) {
+		$this->loadDataProcessor();
+		$sHttpRef = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'HTTP_REFERER' );
+		$sHttpRef = is_null( $sHttpRef )? '' : $sHttpRef;
+		if ( empty($sHttpRef) || ( strpos($sHttpRef, home_url()) !== 0 ) ) {
+			$this->logWarning(
+				sprintf( _wpsf__('User "%s" attempted to login but the HTTP REFERER was either empty or it was a remote login attempt. Bot Perhaps? HTTP REFERER: "%s".'), $insUsername, $sHttpRef )
+			);
+			wp_die(
+				_wpsf__( 'Sorry, you must login directly from within the site.'
+					.'<br /><a href="http://icwp.io/4n" target="_blank">&rarr;'._wpsf__('More Info').'</a>' )
+			);
+		}
+		return $inoUser;
+	}
+
+	/**
+	 * @param $inoUser
+	 * @param $insUsername
+	 * @param $insPassword
+	 * @return WP_Error
+	 */
 	public function checkLoginForGasp_Filter( $inoUser, $insUsername, $insPassword ) {
-	
+
 		if ( empty( $insUsername ) || is_wp_error( $inoUser ) ) {
 			return $inoUser;
 		}
 		if ( $this->doGaspChecks( $insUsername ) ) {
 			return $inoUser;
 		}
-		return null;
+		//This doesn't actually ever get returned because we die() within doGaspChecks()
+		return new WP_Error('wpsf_gaspfail', _wpsf__('G.A.S.P. Checking Failed.') );
 	}
-	
+
 	/**
 	 * Checks whether the current user that is logged-in is authenticated by IP address.
 	 * 

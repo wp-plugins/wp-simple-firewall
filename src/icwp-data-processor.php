@@ -323,6 +323,67 @@ class ICWP_DataProcessor_V1 {
 		}
 		return $sPassword;
 	}
+
+	/**
+	 * @param string $insKey
+	 * @param boolean $infIncludeCookie
+	 * @return mixed|null
+	 */
+	public static function FetchRequest( $insKey, $infIncludeCookie = true ) {
+		$mFetchVal = self::FetchPost( $insKey );
+		if ( is_null( $mFetchVal ) ) {
+			$mFetchVal = self::FetchGet( $insKey );
+			if ( is_null( $mFetchVal && $infIncludeCookie ) ) {
+				$mFetchVal = self::FetchCookie( $insKey );
+			}
+		}
+		return $mFetchVal;
+	}
+	/**
+	 * @param string $insKey
+	 * @return mixed|null
+	 */
+	public static function FetchGet( $insKey ) {
+		if ( function_exists( 'filter_input' ) && defined( 'INPUT_GET' ) ) {
+			return filter_input( INPUT_GET, $insKey );
+		}
+		return self::ArrayFetch( $_GET, $insKey );
+	}
+	/**
+	 * @param string $insKey		The $_POST key
+	 * @return mixed|null
+	 */
+	public static function FetchPost( $insKey ) {
+		if ( function_exists( 'filter_input' ) && defined( 'INPUT_POST' ) ) {
+			return filter_input( INPUT_POST, $insKey );
+		}
+		return self::ArrayFetch( $_POST, $insKey );
+	}
+	/**
+	 * @param string $insKey		The $_POST key
+	 * @return mixed|null
+	 */
+	public static function FetchCookie( $insKey ) {
+		if ( function_exists( 'filter_input' ) && defined( 'INPUT_COOKIE' ) ) {
+			return filter_input( INPUT_COOKIE, $insKey );
+		}
+		return self::ArrayFetch( $_COOKIE, $insKey );
+	}
+
+	/**
+	 * @param array $inaArray
+	 * @param string $insKey		The array key
+	 * @return mixed|null
+	 */
+	public static function ArrayFetch( &$inaArray, $insKey ) {
+		if ( empty( $inaArray ) ) {
+			return null;
+		}
+		if ( !isset( $inaArray[$insKey] ) ) {
+			return null;
+		}
+		return $inaArray[$insKey];
+	}
 }
 
 endif;
