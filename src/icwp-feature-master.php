@@ -167,7 +167,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 		
 		require_once( $sSourceFile );
 		if ( $infRecreate || !isset( $this->{$sOptionsVarName} ) ) {
-		 	$this->{$sOptionsVarName} = new $sClassName( $this->m_sOptionPrefix, $this->m_sVersion, $infFullBuild );
+		 	$this->{$sOptionsVarName} = new $sClassName( self::$sOptionPrefix, $this->m_sVersion, $infFullBuild );
 		}
 		if ( $infFullBuild ) {
 			$this->{$sOptionsVarName}->buildOptions();
@@ -202,7 +202,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 				$oTemp->reset();
 			}
 			else {
-				$oTemp = new $sClassName( $this->m_sOptionPrefix );
+				$oTemp = new $sClassName( self::$sOptionPrefix );
 			}
 			$this->{$sProcessorVarName} = $oTemp;
 		}

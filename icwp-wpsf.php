@@ -135,12 +135,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		
 		$this->m_fNetworkAdminOnly = true;
 		$this->m_sPluginRootFile = __FILE__; //ensure all relative paths etc. are setup.
-		
+
+		self::$sOptionPrefix			= sprintf( '%s_%s_', self::BaseSlug, self::PluginSlug );
 		$this->m_sVersion				= self::PluginVersion;
 		$this->m_sPluginHumanName		= "WordPress Simple Firewall";
 		$this->m_sPluginTextDomain		= self::PluginTextDomain;
 		$this->m_sPluginMenuTitle		= "Simple Firewall";
-		$this->m_sOptionPrefix			= sprintf( '%s_%s_', self::BaseSlug, self::PluginSlug );
 		$this->m_sPluginSlug			= self::PluginSlug;
 		$this->m_sParentMenuIdSuffix	= self::PluginSlug;
 		
@@ -498,7 +498,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		//Ensures we're actually getting this request from WP.
 		check_admin_referer( $this->getSubmenuId() );
 
-		$aInputOptions = $this->fetchPost( $this->m_sOptionPrefix.'all_options_input' );
+		$aInputOptions = $this->fetchPost( self::$sOptionPrefix.'all_options_input' );
 		if ( is_null( $aInputOptions ) ) {
 			return false;
 		}
@@ -526,12 +526,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		if ( isset($_POST[ 'import-wpf2-submit' ] ) ) {
 			$this->importFromFirewall2Plugin();
 		}
-		else if ( !isset($_POST[$this->m_sOptionPrefix.'all_options_input']) ) {
+		else if ( !isset($_POST[self::$sOptionPrefix.'all_options_input']) ) {
 			return;
 		}
 		else {
 			$this->loadOptionsHandler( 'Firewall' );
-			$this->m_oFirewallOptions->updatePluginOptionsFromSubmit( $_POST[$this->m_sOptionPrefix.'all_options_input'] );
+			$this->m_oFirewallOptions->updatePluginOptionsFromSubmit( $_POST[self::$sOptionPrefix.'all_options_input'] );
 		}
 		$this->setSharedOption( 'enable_firewall', $this->m_oFirewallOptions->getOpt( 'enable_firewall' ) );
 		$this->resetProcessor( 'Firewall' );
@@ -541,11 +541,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		//Ensures we're actually getting this request from WP.
 		check_admin_referer( $this->getSubmenuId('login_protect' ) );
 		
-		if ( !isset($_POST[$this->m_sOptionPrefix.'all_options_input']) ) {
+		if ( !isset($_POST[self::$sOptionPrefix.'all_options_input']) ) {
 			return;
 		}
 		$this->loadOptionsHandler( 'LoginProtect' );
-		$this->m_oLoginProtectOptions->updatePluginOptionsFromSubmit( $_POST[$this->m_sOptionPrefix.'all_options_input'] );
+		$this->m_oLoginProtectOptions->updatePluginOptionsFromSubmit( $_POST[self::$sOptionPrefix.'all_options_input'] );
 		$this->setSharedOption( 'enable_login_protect', $this->m_oLoginProtectOptions->getOpt( 'enable_login_protect' ) );
 		$this->resetProcessor( 'LoginProtect' );
 	}
@@ -554,11 +554,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		//Ensures we're actually getting this request from WP.
 		check_admin_referer( $this->getSubmenuId('comments_filter' ) );
 		
-		if ( !isset($_POST[$this->m_sOptionPrefix.'all_options_input']) ) {
+		if ( !isset($_POST[self::$sOptionPrefix.'all_options_input']) ) {
 			return;
 		}
 		$this->loadOptionsHandler( 'CommentsFilter' );
-		$this->m_oCommentsFilterOptions->updatePluginOptionsFromSubmit( $_POST[$this->m_sOptionPrefix.'all_options_input'] );
+		$this->m_oCommentsFilterOptions->updatePluginOptionsFromSubmit( $_POST[self::$sOptionPrefix.'all_options_input'] );
 		$this->setSharedOption( 'enable_comments_filter', $this->m_oCommentsFilterOptions->getOpt( 'enable_comments_filter' ) );
 		$this->resetProcessor( 'CommentsFilter' );
 	}
@@ -567,11 +567,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		//Ensures we're actually getting this request from WP.
 		check_admin_referer( $this->getSubmenuId('lockdown' ) );
 		
-		if ( !isset($_POST[$this->m_sOptionPrefix.'all_options_input']) ) {
+		if ( !isset($_POST[self::$sOptionPrefix.'all_options_input']) ) {
 			return;
 		}
 		$this->loadOptionsHandler( 'Lockdown' );
-		$this->m_oLockdownOptions->updatePluginOptionsFromSubmit( $_POST[$this->m_sOptionPrefix.'all_options_input'] );
+		$this->m_oLockdownOptions->updatePluginOptionsFromSubmit( $_POST[self::$sOptionPrefix.'all_options_input'] );
 		$this->setSharedOption( 'enable_lockdown', $this->m_oLockdownOptions->getOpt( 'enable_lockdown' ) );
 		$this->resetProcessor( 'Lockdown' );
 	}
@@ -586,11 +586,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			return;
 		}
 		
-		if ( !isset($_POST[$this->m_sOptionPrefix.'all_options_input']) ) {
+		if ( !isset($_POST[self::$sOptionPrefix.'all_options_input']) ) {
 			return;
 		}
 		$this->loadOptionsHandler( 'AutoUpdates' );
-		$this->m_oAutoUpdatesOptions->updatePluginOptionsFromSubmit( $_POST[$this->m_sOptionPrefix.'all_options_input'] );
+		$this->m_oAutoUpdatesOptions->updatePluginOptionsFromSubmit( $_POST[self::$sOptionPrefix.'all_options_input'] );
 		$this->setSharedOption( 'enable_autoupdates', $this->m_oAutoUpdatesOptions->getOpt( 'enable_autoupdates' ) );
 		$this->resetProcessor( 'AutoUpdates' );
 	}
@@ -653,7 +653,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		
 		if ( $this->isValidAdminArea() ) {
 			//Someone clicked the button to acknowledge the update
-			if ( isset( $_POST[$this->m_sOptionPrefix.'hide_update_notice'] ) && isset( $_POST['user_id'] ) ) {
+			if ( isset( $_POST[self::$sOptionPrefix.'hide_update_notice'] ) && isset( $_POST['user_id'] ) ) {
 				$this->updateVersionUserMeta( $_POST['user_id'] );
 				if ( $this->isShowMarketing() ) {
 					wp_redirect( network_admin_url( "admin.php?page=".$this->getFullParentMenuId() ) );
@@ -662,7 +662,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 					wp_redirect( network_admin_url( $_POST['redirect_page'] ) );
 				}
 			}
-			if ( isset( $_POST[$this->m_sOptionPrefix.'hide_translation_notice'] ) && isset( $_POST['user_id'] ) ) {
+			if ( isset( $_POST[self::$sOptionPrefix.'hide_translation_notice'] ) && isset( $_POST['user_id'] ) ) {
 				$this->updateTranslationNoticeShownUserMeta( $_POST['user_id'] );
 				wp_redirect( network_admin_url( $_POST['redirect_page'] ) );
 			}
@@ -734,7 +734,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			</style>
 			<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall'); ?>">
 				<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
-				<input type="hidden" value="1" name="<?php echo $this->m_sOptionPrefix; ?>hide_translation_notice" id="<?php echo $this->m_sOptionPrefix; ?>hide_translation_notice">
+				<input type="hidden" value="1" name="<?php echo self::$sOptionPrefix; ?>hide_translation_notice" id="<?php echo self::$sOptionPrefix; ?>hide_translation_notice">
 				<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
 				<h4 style="margin:10px 0 3px;">
 					<?php _wpsf_e( 'Would you like to help translate the WordPress Simple Firewall into your language?' ); ?>
@@ -765,7 +765,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			</style>
 			<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall'); ?>">
 				<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
-				<input type="hidden" value="1" name="<?php echo $this->m_sOptionPrefix; ?>hide_update_notice" id="<?php echo $this->m_sOptionPrefix; ?>hide_update_notice">
+				<input type="hidden" value="1" name="<?php echo self::$sOptionPrefix; ?>hide_update_notice" id="<?php echo self::$sOptionPrefix; ?>hide_update_notice">
 				<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
 					<?php _wpsf_e( 'Note: WordPress Simple Firewall plugin does not automatically turn on when you install/update.' ); ?>
 					<?php printf( _wpsf__( 'There may also be %simportant updates to read about%s.' ), '<a href="http://icwp.io/27" id="fromIcwp" title="'._wpsf__( 'WordPress Simple Firewall' ).'" target="_blank">', '</a>' ); ?>

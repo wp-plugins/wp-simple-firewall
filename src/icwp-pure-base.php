@@ -87,7 +87,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	/**
 	 * @var string
 	 */
-	protected $m_sOptionPrefix;
+	protected static $sOptionPrefix = '';
 
 	protected $m_aPluginMenu;
 	
@@ -408,7 +408,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	protected function getBaseDisplayData( $insSubmenuId = '' ) {
 		return array(
 			'plugin_url'		=> $this->m_sPluginUrl,
-			'var_prefix'		=> $this->m_sOptionPrefix,
+			'var_prefix'		=> self::$sOptionPrefix,
 			'sPluginName'		=> $this->m_sPluginHumanName,
 			'fShowAds'			=> $this->isShowMarketing(),
 			'nonce_field'		=> $this->getSubmenuId( $insSubmenuId ),
@@ -528,7 +528,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 			return;
 		}
 		$nUserId = $oCurrentUser->ID;
-		$sCurrentVersion = get_user_meta( $nUserId, $this->m_sOptionPrefix.'current_version', true );
+		$sCurrentVersion = get_user_meta( $nUserId, self::$sOptionPrefix.'current_version', true );
 		// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
 		// If we can never set it, we shouldn't force the Ads on those users who can't get rid of it.
 		if ( empty( $sCurrentVersion ) ) { //the value has never been set, or it's been installed for the first time.
@@ -557,7 +557,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 		}
 		$nUserId = $oCurrentUser->ID;
 		
-		$sAlreadyShowTranslationNotice = get_user_meta( $nUserId, $this->m_sOptionPrefix.'plugin_translation_notice', true );
+		$sAlreadyShowTranslationNotice = get_user_meta( $nUserId, self::$sOptionPrefix.'plugin_translation_notice', true );
 		// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
 		if ( empty( $sAlreadyShowTranslationNotice ) ) {
 			//the value has never been set, or it's been installed for the first time.
@@ -658,7 +658,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 		else {
 			$nUserId = $innId;
 		}
-		update_user_meta( $nUserId, $this->m_sOptionPrefix.$insKey, $inmValue );
+		update_user_meta( $nUserId, self::$sOptionPrefix.$insKey, $inmValue );
 	}
 
 	/**
@@ -689,20 +689,20 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	}
 		
 	public function enqueueBootstrapAdminCss() {
-		wp_register_style( $this->m_sOptionPrefix.'bootstrap_wpadmin_css', $this->getCssUrl( 'bootstrap-wpadmin.css' ), false, $this->m_sVersion );
-		wp_enqueue_style( $this->m_sOptionPrefix.'bootstrap_wpadmin_css' );
+		wp_register_style( self::$sOptionPrefix.'bootstrap_wpadmin_css', $this->getCssUrl( 'bootstrap-wpadmin.css' ), false, $this->m_sVersion );
+		wp_enqueue_style( self::$sOptionPrefix.'bootstrap_wpadmin_css' );
 	}
 
 	public function enqueueBootstrapLegacyAdminCss() {
-		wp_register_style( $this->m_sOptionPrefix.'bootstrap_wpadmin_legacy_css', $this->getCssUrl( 'bootstrap-wpadmin-legacy.css' ), false, $this->m_sVersion );
-		wp_enqueue_style( $this->m_sOptionPrefix.'bootstrap_wpadmin_legacy_css' );
-		wp_register_style( $this->m_sOptionPrefix.'bootstrap_wpadmin_css_fixes', $this->getCssUrl('bootstrap-wpadmin-fixes.css'),  array( $this->m_sOptionPrefix.'bootstrap_wpadmin_legacy_css'), $this->m_sVersion );
-		wp_enqueue_style( $this->m_sOptionPrefix.'bootstrap_wpadmin_css_fixes' );
+		wp_register_style( self::$sOptionPrefix.'bootstrap_wpadmin_legacy_css', $this->getCssUrl( 'bootstrap-wpadmin-legacy.css' ), false, $this->m_sVersion );
+		wp_enqueue_style( self::$sOptionPrefix.'bootstrap_wpadmin_legacy_css' );
+		wp_register_style( self::$sOptionPrefix.'bootstrap_wpadmin_css_fixes', $this->getCssUrl('bootstrap-wpadmin-fixes.css'),  array( self::$sOptionPrefix.'bootstrap_wpadmin_legacy_css'), $this->m_sVersion );
+		wp_enqueue_style( self::$sOptionPrefix.'bootstrap_wpadmin_css_fixes' );
 	}
 
 	public function enqueuePluginAdminCss() {
-		wp_register_style( $this->m_sOptionPrefix.'plugin_css', $this->getCssUrl('plugin.css'), array($this->m_sOptionPrefix.'bootstrap_wpadmin_css_fixes'), $this->m_sVersion );
-		wp_enqueue_style( $this->m_sOptionPrefix.'plugin_css' );
+		wp_register_style( self::$sOptionPrefix.'plugin_css', $this->getCssUrl('plugin.css'), array(self::$sOptionPrefix.'bootstrap_wpadmin_css_fixes'), $this->m_sVersion );
+		wp_enqueue_style( self::$sOptionPrefix.'plugin_css' );
 	}
 
 	protected function redirect( $insUrl, $innTimeout = 1 ) {
@@ -784,7 +784,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	}
 
 	public function getOptionKey( $insKey ) {
-		return $this->m_sOptionPrefix.$insKey;
+		return self::$sOptionPrefix.$insKey;
 	}
 
 	/**
