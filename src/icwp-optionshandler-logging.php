@@ -26,18 +26,10 @@ class ICWP_OptionsHandler_Logging extends ICWP_OptionsHandler_Base_Wpsf {
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
-	
+
 	/**
-	 * @return void
+	 * @return bool|void
 	 */
-	public function setOptionsKeys() {
-		if ( !isset( $this->m_aOptionsKeys ) ) {
-			$this->m_aOptionsKeys = array(
-				'enable_logging'
-			);
-		}
-	}
-	
 	public function defineOptions() {
 		$aBase = array(
 			'section_title' => _wpsf__( 'Enable Logging' ),

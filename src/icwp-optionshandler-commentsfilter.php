@@ -29,26 +29,10 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
-	
+
 	/**
-	 * @return void
+	 * @return bool|void
 	 */
-	public function setOptionsKeys() {
-		if ( !isset( $this->m_aOptionsKeys ) ) {
-			$this->m_aOptionsKeys = array(
-				'enable_comments_filter',
-				'enable_comments_gasp_protection',
-				'enable_comments_gasp_protection_for_logged_in',
-				'comments_cooldown_interval',
-				'comments_token_expire_interval',
-				'custom_message_checkbox',
-				'custom_message_alert',
-				'custom_message_comment_wait',
-				'custom_message_comment_reload'
-			);
-		}
-	}
-	
 	public function defineOptions() {
 
 		$this->m_aDirectSaveOptions = array();

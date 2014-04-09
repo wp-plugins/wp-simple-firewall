@@ -26,27 +26,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
-	
-	/**
-	 * @return void
-	 */
-	public function setOptionsKeys() {
-		if ( !isset( $this->m_aOptionsKeys ) ) {
-			$this->m_aOptionsKeys = array(
-				'enable_autoupdates',
-				'enable_autoupdate_disable_all',
-				'autoupdate_plugin_self',
-				'autoupdate_core',
-				'enable_autoupdate_translations',
-				'enable_autoupdate_plugins',
-				'enable_autoupdate_themes',
-				'enable_autoupdate_ignore_vcs',
-				'enable_upgrade_notification_email',
-				'override_email_address'
-			);
-		}
-	}
-	
+
 	public function doPrePluginOptionsSave() {}
 	
 	public function defineOptions() {

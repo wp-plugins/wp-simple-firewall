@@ -26,19 +26,10 @@ class ICWP_OptionsHandler_Email extends ICWP_OptionsHandler_Base_Wpsf {
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
-	
+
 	/**
-	 * @return void
+	 * @return bool|void
 	 */
-	public function setOptionsKeys() {
-		if ( !isset( $this->m_aOptionsKeys ) ) {
-			$this->m_aOptionsKeys = array(
-				'block_send_email_address',
-				'send_email_throttle_limit'
-			);
-		}
-	}
-	
 	public function defineOptions() {
 		$aEmail = array(
 			'section_title' => _wpsf__( 'Email Options' ),

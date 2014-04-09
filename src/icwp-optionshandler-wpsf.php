@@ -27,28 +27,10 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
-	
+
 	/**
-	 * @return void
+	 * @return bool|void
 	 */
-	public function setOptionsKeys() {
-		if ( !isset( $this->m_aOptionsKeys ) ) {
-			$this->m_aOptionsKeys = array(
-				'enable_admin_access_restriction',
-				'admin_access_timeout',
-				'admin_access_key',
-				'enable_firewall',
-				'enable_logging',
-				'enable_login_protect',
-				'enable_comments_filter',
-				'enable_lockdown',
-				'enable_autoupdates',
-				'enable_upgrade_admin_notice',
-				'delete_on_deactivate'
-			);
-		}
-	}
-	
 	public function defineOptions() {
 		
 		$aNonUiOptions = array(
@@ -165,30 +147,6 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Delete Plugin Settings' ),
 					_wpsf__( 'Delete All Plugin Settings Upon Plugin Deactivation' ),
 					_wpsf__( 'Careful: Removes all plugin options when you deactivate the plugin' )
-				)
-			)
-		);
-
-		$aEmail = array(
-			'section_title' => _wpsf__( 'Email Options' ),
-			'section_options' => array(
-				array(
-					'block_send_email_address',
-					'',
-					'',
-					'email',
-					_wpsf__( 'Report Email' ),
-					_wpsf__( 'Where to send email reports' ),
-					_wpsf__( 'If this is empty, it will default to the blog admin email address' )
-				),
-				array(
-					'send_email_throttle_limit',
-					'',
-					'10',
-					'integer',
-					_wpsf__( 'Email Throttle Limit' ),
-					_wpsf__( 'Limit Emails Per Second' ),
-					_wpsf__( 'You throttle emails sent by this plugin by limiting the number of emails sent every second. This is useful in case you get hit by a bot attack. Zero (0) turns this off. Suggested: 10' )
 				)
 			)
 		);

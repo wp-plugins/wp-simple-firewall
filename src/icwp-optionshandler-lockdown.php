@@ -28,20 +28,6 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
 	
-	/**
-	 * @return void
-	 */
-	public function setOptionsKeys() {
-		if ( !isset( $this->m_aOptionsKeys ) ) {
-			$this->m_aOptionsKeys = array(
-				'enable_lockdown',
-				'disable_file_editing',
-				'mask_wordpress_version',
-				'action_reset_auth_salts'
-			);
-		}
-	}
-	
 	public function doPrePluginOptionsSave() {
 		
 		if ( $this->getOpt( 'action_reset_auth_salts' ) == 'Y' ) {
@@ -56,7 +42,10 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 			$this->setOpt( 'mask_wordpress_version', preg_replace( '/[^a-z0-9_.-]/i', '', $sCurrent ) );
 		}
 	}
-	
+
+	/**
+	 * @return bool|void
+	 */
 	public function defineOptions() {
 
 		$aBase = array(

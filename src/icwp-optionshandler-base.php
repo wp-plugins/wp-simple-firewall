@@ -94,7 +94,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	/**
 	 * @var array
 	 */
-	protected $m_aOptionsKeys;
+	protected $aOptionsKeys;
 	
 	public function __construct( $insPrefix, $insStoreName, $insVersion ) {
 		$this->m_sOptionPrefix = $insPrefix;
@@ -142,6 +142,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	/**
+	 * @param string
 	 * @return string
 	 */
 	public function setVersion( $insVersion ) {
@@ -155,29 +156,40 @@ class ICWP_OptionsHandler_Base_V2 {
 	 */
 	public function getOptionsKeys() {
 		$this->setOptionsKeys();
-		return $this->m_aOptionsKeys;
+		return $this->aOptionsKeys;
 	}
 	
 	/**
 	 * @return void
 	 */
 	public function setOptionsKeys() {
-		if ( !isset( $this->m_aOptionsKeys ) ) {
-			$this->m_aOptionsKeys = array();
+		if ( !empty( $this->aOptionsKeys ) ) {
+			return;
+		}
+		$this->defineOptions();
+		$this->aOptionsKeys = array();
+		foreach( $this->m_aOptions as $aOptionsSection ) {
+			if ( !isset($aOptionsSection['section_options']) ) {
+				continue;
+			}
+			foreach( $aOptionsSection['section_options'] as $aOption ) {
+				$this->aOptionsKeys[] = $aOption[0];
+			}
 		}
 	}
 	
 	/**
 	 * Determines whether the given option key is a valid options
-	 * 
+	 *
+	 * @param string
 	 * @return boolean
 	 */
-	public function getIsOptionKey( $insOptionKey ) {
-		if ( $insOptionKey == self::PluginVersionKey ) {
+	public function getIsOptionKey( $sOptionKey ) {
+		if ( $sOptionKey == self::PluginVersionKey ) {
 			return true;
 		}
 		$this->setOptionsKeys();
-		return ( in_array( $insOptionKey, $this->m_aOptionsKeys ) );
+		return ( in_array( $sOptionKey, $this->aOptionsKeys ) );
 	}
 	
 	/**

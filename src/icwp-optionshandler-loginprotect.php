@@ -27,29 +27,6 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
 	
-	/**
-	 * @return void
-	 */
-	public function setOptionsKeys() {
-		if ( !isset( $this->m_aOptionsKeys ) ) {
-			$this->m_aOptionsKeys = array(
-				'enable_login_protect',
-				'ips_whitelist',
-				'enable_two_factor_auth_by_ip',
-				'enable_two_factor_auth_by_cookie',
-				'enable_two_factor_bypass_on_email_fail',
-				'login_limit_interval',
-				'enable_login_gasp_check',
-				'enable_prevent_remote_post',
-				'enable_login_protect_log',
-				'enable_yubikey',
-				'yubikey_app_id',
-				'yubikey_api_key',
-				'yubikey_unique_keys'
-			);
-		}
-	}
-	
 	public function doPrePluginOptionsSave() {
 		$aIpWhitelist = $this->getOpt( 'ips_whitelist' );
 		if ( $aIpWhitelist === false ) {
@@ -58,7 +35,10 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 		}
 		$this->processIpFilter( 'ips_whitelist', 'icwp_simple_firewall_whitelist_ips' );
 	}
-	
+
+	/**
+	 * @return bool|void
+	 */
 	public function defineOptions() {
 
 		$this->m_aDirectSaveOptions = array();

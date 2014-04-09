@@ -26,32 +26,9 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
 	}
-	
+
 	/**
-	 * @return void
 	 */
-	public function setOptionsKeys() {
-		if ( !isset( $this->m_aOptionsKeys ) ) {
-			$this->m_aOptionsKeys = array(
-				'enable_firewall',
-				'include_cookie_checks',
-				'block_dir_traversal',
-				'block_sql_queries',
-				'block_wordpress_terms',
-				'block_field_truncation',
-				'block_exe_file_uploads',
-				'block_leading_schema',
-				'block_response',
-				'block_send_email',
-				'ips_whitelist',
-				'page_params_whitelist',
-				'whitelist_admins',
-				'ips_blacklist',
-				'enable_firewall_log'
-			);
-		}
-	}
-	
 	public function doPrePluginOptionsSave() {
 
 		$aIpWhitelist = $this->getOpt( 'ips_whitelist' );
@@ -80,7 +57,10 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 			$aIpWhitelist = $this->setOpt( 'block_response', $sBlockResponse );
 		}
 	}
-	
+
+	/**
+	 * @return bool|void
+	 */
 	public function defineOptions() {
 		$aFirewallBase = 	array(
 			'section_title' => _wpsf__( 'Enable WordPress Firewall' ),
