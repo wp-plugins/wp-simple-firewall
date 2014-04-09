@@ -74,7 +74,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Enable Login Protect' ),
 					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
 					_wpsf__( 'Regardless of any other settings, this option will turn off the Login Protect feature, or enable your selected Login Protect options' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3y" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3y" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			),
 		);
@@ -103,7 +103,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('IP') ),
 					_wpsf__( 'Two-Factor Login Authentication By IP Address' ),
 					_wpsf__( 'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3s" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3s" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'enable_two_factor_auth_by_cookie',
@@ -113,7 +113,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('Cookie') ),
 					_wpsf__( 'Two-Factor Login Authentication By Cookie' ),
 					_wpsf__( 'This will restrict all user login sessions to a single browser. Use this if your users have dynamic IP addresses.' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3t" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3t" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'enable_two_factor_bypass_on_email_fail',
@@ -137,7 +137,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__('Login Cooldown Interval'),
 					_wpsf__('Limit login attempts to every X seconds'),
 					_wpsf__('WordPress will process only ONE login attempt for every number of seconds specified. Zero (0) turns this off. Suggested: 5'),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3q" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3q" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'enable_login_gasp_check',
@@ -147,7 +147,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'G.A.S.P Protection' ),
 					_wpsf__( 'Use G.A.S.P. Protection To Prevent Login Attempts By Bots' ),
 					_wpsf__( 'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques. Recommended: ON' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3r" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3r" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'enable_prevent_remote_post',
@@ -157,7 +157,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Prevent Remote Login' ),
 					_wpsf__( 'Prevents Remote Login Attempts From Other Locations' ),
 					_wpsf__( 'Prevents any login attempts that do not originate from your website. This prevent bots from attempting to login remotely. Recommended: ON' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4n" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/4n" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
 		);
@@ -173,7 +173,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__('Enable Yubikey Authentication'),
 					_wpsf__('Turn On / Off Yubikey Authentication On This Site'),
 					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication'),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4f" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/4f" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'yubikey_app_id',
@@ -184,7 +184,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__('Your Unique Yubikey App ID'),
 					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication')
 					. _wpsf__( 'Please review the [more info] link on how to get your own Yubikey App ID and API Key.' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4g" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/4g" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'yubikey_api_key',
@@ -195,7 +195,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Your Unique Yubikey App API Key' ),
 					_wpsf__( 'Combined with your Yubikey App ID (above) this will form the basis of your Yubikey Authentication.' )
 					. _wpsf__( 'Please review the [more info] link on how to get your own Yubikey App ID and API Key.' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4g" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/4g" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'yubikey_unique_keys',
@@ -208,7 +208,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					.'<br />- '. _wpsf__( 'Provide Username<->Yubikey Pairs that are usable on this site.')
 					.'<br />- '. _wpsf__( 'If a Username if not assigned a Yubikey, Yubikey Authentication is OFF for that user.')
 					.'<br />- '. _wpsf__( 'Each [Username,Key] pair should be separated by a new line: you only need to provide the first 12 characters of the yubikey.' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4h" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/4h" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				/*
 				array(

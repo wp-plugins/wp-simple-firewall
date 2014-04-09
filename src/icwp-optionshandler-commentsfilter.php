@@ -64,7 +64,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Enable Comments Filter' ),
 					_wpsf__( 'Enable (or Disable) The SPAM Comments Filter Feature.' ),
 					_wpsf__( 'Regardless of any other settings, this option will turn off the Comments Filter feature, or enable your chosen Comments Filter options.' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3z" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3z" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			),
 		);
@@ -79,8 +79,8 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'GASP Protection' ),
 					_wpsf__( 'Add Growmap Anti Spambot Protection to your comments' ),
 					_wpsf__( 'Taking the lead from the original GASP plugin for WordPress, we have extended it to include further protection.' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3n" target="_blank">', '</a>' )
-						.' | '.sprintf( _wpsf__( '%sblog%s' ), '<a href="http://icwp.io/2n" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3n" target="_blank">'._wpsf__( 'more info' ).'</a>'
+						.' | <a href="http://icwp.io/2n" target="_blank">'._wpsf__( 'blog' ).'</a>'
 				),
 				array(
 					'enable_comments_gasp_protection_for_logged_in',
@@ -99,7 +99,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Comments Cooldown' ),
 					_wpsf__( 'Limit posting comments to X seconds after the page has loaded' ),
 					_wpsf__( "By forcing a comments cooldown period, you restrict a Spambot's ability to post mutliple times to your posts." ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3o" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3o" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'comments_token_expire_interval',
@@ -109,8 +109,8 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Comment Token Expire' ),
 					_wpsf__( 'A visitor has X seconds within which to post a comment' ),
 					_wpsf__( "Default: 600 seconds (10 minutes). Each visitor is given a unique 'Token' so they can comment. This restricts spambots, but we need to force these tokens to expire and at the same time not bother the visitors." ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3o" target="_blank">', '</a>' )
-					
+					'<a href="http://icwp.io/3o" target="_blank">'._wpsf__( 'more info' ).'</a>'
+
 				),
 				array(
 					'custom_message_checkbox',
@@ -121,7 +121,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'If you want a custom checkbox message, please provide this here' ),
 					_wpsf__( "You can customise the message beside the checkbox." )
 						.'<br />'.sprintf( _wpsf__( 'Default Message: %s' ), _wpsf__("Please check the box to confirm you're not a spammer") ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3p" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3p" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'custom_message_alert',
@@ -132,7 +132,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'If you want a custom alert message, please provide this here' ),
 					_wpsf__( "This alert message is displayed when a visitor attempts to submit a comment without checking the box." )
 						.'<br />'.sprintf( _wpsf__( 'Default Message: %s' ), _wpsf__("Please check the box to confirm you're not a spammer") ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3p" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3p" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'custom_message_comment_wait',
@@ -143,7 +143,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'If you want a custom submit-button wait message, please provide this here.' ),
 					_wpsf__( "Where you see the '%s' this will be the number of seconds. You must ensure you include 1, and only 1, of these." )
 						.'<br />'.sprintf( _wpsf__( 'Default Message: %s' ), _wpsf__('Please wait %s seconds before posting your comment') ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3p" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3p" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'custom_message_comment_reload',
@@ -154,7 +154,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'If you want a custom message when the comment token has expired, please provide this here.' ),
 					_wpsf__( 'This message is displayed on the submit-button when the comment token is expired' )
 						.'<br />'.sprintf( _wpsf__( 'Default Message: %s' ), _wpsf__("Please reload this page to post a comment") ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3p" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3p" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
 		);

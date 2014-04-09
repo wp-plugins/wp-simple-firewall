@@ -93,7 +93,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Enable Firewall' ),
 					_wpsf__( 'Enable (or Disable) The WordPress Firewall Feature' ),
 					_wpsf__( 'Regardless of any other settings, this option will turn off the Firewall feature, or enable your selected Firewall options' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/43" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/43" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
 		);

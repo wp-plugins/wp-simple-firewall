@@ -73,8 +73,8 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 						_wpsf__( 'Enable Access Key' ),
 						_wpsf__( 'Enforce Admin Access Restriction' ),
 						_wpsf__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.' ),
-						sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/40" target="_blank">', '</a>' )
-						.' | '.sprintf( _wpsf__( '%sblog%s' ), '<a href="http://icwp.io/45" target="_blank">', '</a>' )
+						'<a href="http://icwp.io/40" target="_blank">'._wpsf__( 'more info' ).'</a>'
+						.' | <a href="http://icwp.io/45" target="_blank">'._wpsf__( 'blog' ).'</a>'
 					),
 					array(
 						'admin_access_timeout',
@@ -84,7 +84,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 						_wpsf__( 'Access Key Timeout' ),
 						_wpsf__( 'Specify A Timeout For Plugin Admin Access' ),
 						_wpsf__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again. Default: 30 minutes.' ),
-						sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/41" target="_blank">', '</a>' )
+						'<a href="http://icwp.io/41" target="_blank">'._wpsf__( 'more info' ).'</a>'
 					),
 					array(
 						'admin_access_key',
@@ -95,7 +95,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 						_wpsf__( 'Specify Your Plugin Access Key' ),
 						_wpsf__( 'If you forget this, you could potentially lock yourself out from using this plugin.' )
 							.'<strong>'._wpsf__( 'Leave it blank to not update it' ).'</strong>',
-						sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/42" target="_blank">', '</a>' )
+						'<a href="http://icwp.io/42" target="_blank">'._wpsf__( 'more info' ).'</a>'
 					)
 				)
 			);

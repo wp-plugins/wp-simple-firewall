@@ -62,7 +62,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Enable Auto Updates' ),
 					_wpsf__( 'Enable (or Disable) The Simple Firewall Automatic Updates Feature' ),
 					_wpsf__( 'Regardless of any other settings, this option will turn off the Auto Updates feature, or enable your selected Auto Updates options.' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3w" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3w" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
 		);
@@ -77,7 +77,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Disable All' ),
 					_wpsf__( 'Completely Disable WordPress Automatic Updates' ),
 					_wpsf__( 'When selected, regardless of any other settings, all WordPress automatic updates on this site will be completely disabled!' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3v" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3v" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
 		);
@@ -92,7 +92,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Auto Update Plugin' ),
 					_wpsf__( 'Always Automatically Update This Plugin' ),
 					_wpsf__( 'Regardless of any component settings below, automatically update the WordPress Simple Firewall plugin.' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3u" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3u" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
 		);
@@ -112,7 +112,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'WordPress Core Updates' ),
 					_wpsf__( 'Decide how the WordPress Core will automatically update, if at all' ),
 					_wpsf__( 'At least automatically upgrading minor versions is recommended (and is the WordPress default).' ),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/3x" target="_blank">', '</a>' )
+					'<a href="http://icwp.io/3x" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'enable_autoupdate_translations',

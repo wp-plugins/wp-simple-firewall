@@ -225,8 +225,8 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 				sprintf( _wpsf__('User "%s" attempted to login but the HTTP REFERER was either empty or it was a remote login attempt. Bot Perhaps? HTTP REFERER: "%s".'), $insUsername, $sHttpRef )
 			);
 			wp_die(
-				_wpsf__( 'Sorry, you must login directly from within the site.'
-					.'<br /><a href="http://icwp.io/4n" target="_blank">&rarr;'._wpsf__('More Info').'</a>' )
+				_wpsf__( 'Sorry, you must login directly from within the site.' )
+					.'<br /><a href="http://icwp.io/4n" target="_blank">&rarr;'._wpsf__('More Info').'</a>'
 			);
 		}
 		return $inoUser;
