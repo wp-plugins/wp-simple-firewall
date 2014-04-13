@@ -64,16 +64,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @var boolean
 	 */
 	protected $m_fIsMultisite;
-	
-	/**
-	 * This is used primarily for the options deletion/cleanup.  We store the names
-	 * of options here that are not modified directly by the user/UI so that we can
-	 * cleanup later on.
-	 * 
-	 * @var array
-	 */
-	protected $m_aIndependentOptions;
-	
+
 	/**
 	 * These are options that need to be stored, but are never set by the UI.
 	 * 
@@ -166,16 +157,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( !empty( $this->aOptionsKeys ) ) {
 			return;
 		}
-		$this->defineOptions();
-		$this->aOptionsKeys = array();
-		foreach( $this->m_aOptions as $aOptionsSection ) {
-			if ( !isset($aOptionsSection['section_options']) ) {
-				continue;
-			}
-			foreach( $aOptionsSection['section_options'] as $aOption ) {
-				$this->aOptionsKeys[] = $aOption[0];
-			}
-		}
+		$this->buildOptions();
 	}
 	
 	/**
@@ -238,9 +220,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @return array
 	 */
 	public function getOptions() {
-		if ( !isset( $this->m_aOptions ) ) {
-			$this->buildOptions();
-		}
+		$this->buildOptions();
 		return $this->m_aOptions;
 	}
 
@@ -263,20 +243,11 @@ class ICWP_OptionsHandler_Base_V2 {
 		
 		$this->doPrePluginOptionsSave();
 		$this->updateOptionsVersion();
-		
 		if ( !$this->m_fNeedSave ) {
 			return true;
 		}
 		
 		$this->updateOption( $this->m_aOptionsStoreName, $this->m_aOptionsValues );
-		
-		// Direct save options allow us to get fast access to certain values without loading the whole thing
-		if ( isset( $this->m_aDirectSaveOptions ) && is_array( $this->m_aDirectSaveOptions ) ) {
-			foreach( $this->m_aDirectSaveOptions as $sOptionKey ) {
-				$this->updateOption( $sOptionKey, $this->getOpt( $sOptionKey ) );
-			}
-		}
-		
 		$this->m_fNeedSave = false;
 	}
 	
@@ -365,6 +336,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		$this->defineOptions();
 		$this->loadStoredOptionsValues();
 
+		$this->aOptionsKeys = array();
 		foreach ( $this->m_aOptions as &$aOptionsSection ) {
 			
 			if ( empty( $aOptionsSection ) || !isset( $aOptionsSection['section_options'] ) ) {
@@ -374,7 +346,9 @@ class ICWP_OptionsHandler_Base_V2 {
 			foreach ( $aOptionsSection['section_options'] as &$aOptionParams ) {
 				
 				list( $sOptionKey, $sOptionValue, $sOptionDefault, $sOptionType ) = $aOptionParams;
-				
+
+				$this->aOptionsKeys[] = $sOptionKey;
+
 				if ( $this->getOpt( $sOptionKey ) === false ) {
 					$this->setOpt( $sOptionKey, $sOptionDefault );
 				}
@@ -425,6 +399,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		// Cater for Non-UI options that don't necessarily go through the UI
 		if ( isset($this->m_aNonUiOptions) && is_array($this->m_aNonUiOptions) ) {
 			foreach( $this->m_aNonUiOptions as $sOption ) {
+				$this->aOptionsKeys[] = $sOption;
 				if ( !$this->getOpt( $sOption ) ) {
 					$this->setOpt( $sOption, '' );
 				}
@@ -458,21 +433,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * Deletes all the options including direct save.
 	 */
 	public function deletePluginOptions() {
-
 		$this->deleteOption( $this->m_aOptionsStoreName );
-		
-		// Direct save options allow us to get fast access to certain values without loading the whole thing
-		if ( isset($this->m_aDirectSaveOptions) && is_array( $this->m_aDirectSaveOptions ) ) {
-			foreach( $this->m_aDirectSaveOptions as $sOptionKey ) {
-				$this->deleteOption( $sOptionKey );
-			}
-		}
-		// Independent options are those untouched by the User/UI that are saved elsewhere and directly to the WP Options table. They are "meta" options
-		if ( isset($this->m_aIndependentOptions) && is_array( $this->m_aIndependentOptions ) ) {
-			foreach( $this->m_aIndependentOptions as $sOptionKey ) {
-				$this->deleteOption( $sOptionKey );
-			}
-		}
 	}
 
 	protected function convertIpListForDisplay( $inaIpList = array() ) {

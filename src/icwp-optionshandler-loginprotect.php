@@ -41,8 +41,6 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	 */
 	public function defineOptions() {
 
-		$this->m_aDirectSaveOptions = array();
-		
 		$aOptionsBase = array(
 			'section_title' => _wpsf__( 'Enable Login Protection' ),
 			'section_options' => array(

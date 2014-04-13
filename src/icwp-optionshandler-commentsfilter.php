@@ -35,8 +35,6 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 	 */
 	public function defineOptions() {
 
-		$this->m_aDirectSaveOptions = array();
-		
 		$aBase = array(
 			'section_title' => _wpsf__( 'Enable Comments Filter' ),
 			'section_options' => array(

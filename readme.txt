@@ -6,14 +6,14 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.5.3
+Stable tag: 2.5.4
 
 Complete and Simple WordPress Security. Unrestricted, with no premium features.
 
 == Description ==
 
-The WordPress Simple Firewall is the only WordPress security plugin that *protects itself* - this plugin
-will prevent access to itself so that unauthorized users can't deactivate or screw with your security settings.
+The WordPress Simple Firewall is the only WordPress security plugin that *protects itself* - it
+will prevent access to its own settings so that unauthorized users can't deactivate or screw with your security settings.
 
 An intro to the features and why you should use the Simple Firewall before getting all complicated with bulky
 security plugins.
@@ -239,6 +239,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+
+= 2.5.4 =
+
+*	FIX:        Bug where Automatic Updates was not working in some cases.
 
 = 2.5.3 =
 

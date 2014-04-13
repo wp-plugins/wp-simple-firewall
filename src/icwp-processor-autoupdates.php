@@ -169,46 +169,76 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	 * based on the plugin settings.
 	 * 
 	 * @param boolean $infUpdate
-	 * @param boolean $insPluginSlug
+	 * @param StdClass|string $mPluginItem
 	 * @return boolean
 	 */
-	public function autoupdate_plugins( $infUpdate, $insPluginSlug ) {
+	public function autoupdate_plugins( $infUpdate, $mPluginItem ) {
 
-		if ( $insPluginSlug === $this->m_sPluginFile ) {
-			return $this->m_aOptions['autoupdate_plugin_self'] == 'Y';
+		// first, is global auto updates for plugins set
+		if ( $this->getOption('enable_autoupdate_plugins') == 'Y' ) {
+			return true;
+		}
+
+		if ( is_string( $mPluginItem ) ) {
+			$sItemFile = $mPluginItem;
+		}
+		else if ( is_object( $mPluginItem ) && isset( $mPluginItem->plugin ) )  {
+			$sItemFile = $mPluginItem->plugin;
+		}
+		// at this point we don't have a slug to use so we just return the current update setting
+		else {
+			return $infUpdate;
+		}
+
+		if ( $sItemFile === $this->m_sPluginFile ) {
+			return $this->getOption('autoupdate_plugin_self') == 'Y';
 		}
 
 		$aAutoUpdatePluginFiles = apply_filters( 'icwp_wpsf_autoupdate_plugins', array() );
 
-		if ( !empty( $aAutoUpdatePluginFiles ) && is_array($aAutoUpdatePluginFiles) ) {
-			if ( in_array( $insPluginSlug, $aAutoUpdatePluginFiles ) ) {
+		if ( !empty( $aAutoUpdatePluginFiles )
+			&& is_array($aAutoUpdatePluginFiles)
+			&& in_array( $sItemFile, $aAutoUpdatePluginFiles ) ) {
+
 				return true;
-			}
 		}
-		if ( $this->m_aOptions['enable_autoupdate_plugins'] == 'Y' ) {
-			return true;
-		}
+
 		return $infUpdate;
 	}
 	
 	/**
 	 * This is a filter method designed to say whether WordPress theme upgrades should be permitted,
 	 * based on the plugin settings.
-	 * 
+	 *
 	 * @param boolean $infUpdate
+	 * @param stdClass|string $mThemeItem
 	 * @return boolean
 	 */
-	public function autoupdate_themes( $infUpdate, $insThemeSlug ) {
-		
+	public function autoupdate_themes( $infUpdate, $mThemeItem ) {
+
+		// first, is global auto updates for themes set
+		if ( $this->getOption('enable_autoupdate_themes') == 'Y' ) {
+			return true;
+		}
+
+		if ( is_string( $mThemeItem ) ) {
+			$sItemFile = $mThemeItem;
+		}
+		else if ( is_object( $mThemeItem ) && isset( $mThemeItem->theme ) )  {
+			$sItemFile = $mThemeItem->theme;
+		}
+		// at this point we don't have a slug to use so we just return the current update setting
+		else {
+			return $infUpdate;
+		}
+
 		$aAutoUpdateThemeFiles = apply_filters( 'icwp_wpsf_autoupdate_themes', array() );
 		
-		if ( !empty( $aAutoUpdateThemeFiles ) && is_array($aAutoUpdateThemeFiles) ) {
-			if ( in_array( $insThemeSlug, $aAutoUpdateThemeFiles ) ) {
+		if ( !empty( $aAutoUpdateThemeFiles )
+			&& is_array($aAutoUpdateThemeFiles)
+			&& in_array( $sItemFile, $aAutoUpdateThemeFiles ) ) {
+
 				return true;
-			}
-		}
-		if ( $this->m_aOptions['enable_autoupdate_themes'] == 'Y' ) {
-			return true;
 		}
 		
 		return $infUpdate;

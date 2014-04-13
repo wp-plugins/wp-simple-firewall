@@ -153,10 +153,7 @@ class ICWP_BaseProcessor_V2 {
 	 * @return bool
 	 */
 	public function getOption( $insKey, $inmDefault = false ) {
-		if ( isset( $this->m_aOptions[$insKey] ) ) {
-			return $this->m_aOptions[$insKey];
-		}
-		return $inmDefault;
+		return isset( $this->m_aOptions[$insKey] )? $this->m_aOptions[$insKey] : $inmDefault;
 	}
 
 	/**
