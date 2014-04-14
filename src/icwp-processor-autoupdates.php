@@ -169,21 +169,21 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	 * based on the plugin settings.
 	 * 
 	 * @param boolean $infUpdate
-	 * @param StdClass|string $mPluginItem
+	 * @param StdClass|string $mItem
 	 * @return boolean
 	 */
-	public function autoupdate_plugins( $infUpdate, $mPluginItem ) {
+	public function autoupdate_plugins( $infUpdate, $mItem ) {
 
 		// first, is global auto updates for plugins set
 		if ( $this->getOption('enable_autoupdate_plugins') == 'Y' ) {
 			return true;
 		}
 
-		if ( is_string( $mPluginItem ) ) {
-			$sItemFile = $mPluginItem;
+		if ( is_object( $mItem ) && isset( $mItem->plugin ) )  { // WP 3.8.2+
+			$sItemFile = $mItem->plugin;
 		}
-		else if ( is_object( $mPluginItem ) && isset( $mPluginItem->plugin ) )  {
-			$sItemFile = $mPluginItem->plugin;
+		else if ( is_string( $mItem ) ) { // WP pre-3.8.2
+			$sItemFile = $mItem;
 		}
 		// at this point we don't have a slug to use so we just return the current update setting
 		else {
@@ -211,21 +211,21 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	 * based on the plugin settings.
 	 *
 	 * @param boolean $infUpdate
-	 * @param stdClass|string $mThemeItem
+	 * @param stdClass|string $mItem
 	 * @return boolean
 	 */
-	public function autoupdate_themes( $infUpdate, $mThemeItem ) {
+	public function autoupdate_themes( $infUpdate, $mItem ) {
 
 		// first, is global auto updates for themes set
 		if ( $this->getOption('enable_autoupdate_themes') == 'Y' ) {
 			return true;
 		}
 
-		if ( is_string( $mThemeItem ) ) {
-			$sItemFile = $mThemeItem;
+		if ( is_object( $mItem ) && isset( $mItem->theme ) ) { // WP 3.8.2+
+			$sItemFile = $mItem->theme;
 		}
-		else if ( is_object( $mThemeItem ) && isset( $mThemeItem->theme ) )  {
-			$sItemFile = $mThemeItem->theme;
+		else if ( is_string( $mItem ) ) { // WP pre-3.8.2
+			$sItemFile = $mItem;
 		}
 		// at this point we don't have a slug to use so we just return the current update setting
 		else {

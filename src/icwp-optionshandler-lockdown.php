@@ -58,7 +58,8 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					_wpsf__( 'Enable Lockdown' ),
 					_wpsf__( 'Enable (or Disable) The Lockdown Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Lockdown feature, or enable your selected Lockdown options' )
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Lockdown feature, or enable your selected Lockdown options' ),
+					'<a href="http://icwp.io/4r" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
 		);
@@ -73,7 +74,30 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Disable File Editing' ),
 					_wpsf__( 'Disable Ability To Edit Files' ),
 					_wpsf__( 'Removes the option to directly edit any files from within the WordPress admin area.' )
-					.'<br />'._wpsf__( 'Equivalent to setting DISALLOW_FILE_EDIT to TRUE.' )
+					.'<br />'._wpsf__( 'Equivalent to setting DISALLOW_FILE_EDIT to TRUE.' ),
+					'<a href="http://icwp.io/4q" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				),
+				array(
+					'force_ssl_login',
+					'',
+					'N',
+					'checkbox',
+					_wpsf__( 'Force SSL Login' ),
+					_wpsf__( 'Forces Login Form To Be Submitted Over SSL' ),
+					_wpsf__( 'Please only enable this option if you have a valid SSL certificate installed.' )
+					.'<br />'._wpsf__( 'Equivalent to setting FORCE_SSL_LOGIN to TRUE.' ),
+					'<a href="http://icwp.io/4s" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				),
+				array(
+					'force_ssl_admin',
+					'',
+					'N',
+					'checkbox',
+					_wpsf__( 'Force SSL Admin' ),
+					_wpsf__( 'Forces WordPress Admin Dashboard To Be Delivered Over SSL' ),
+					_wpsf__( 'Please only enable this option if you have a valid SSL certificate installed.' )
+					.'<br />'._wpsf__( 'Equivalent to setting FORCE_SSL_ADMIN to TRUE.' ),
+					'<a href="http://icwp.io/4t" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
 		);
@@ -88,7 +112,8 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Mask WordPress Version' ),
 					_wpsf__( 'Prevents Public Display Of Your WordPress Version' ),
 					_wpsf__( 'Enter how you would like your WordPress version displayed publicly. Leave blank to disable this feature.' )
-						.'<br />'._wpsf__( 'Warning: This may interfere with WordPress plugins that rely on the $wp_version variable.' )
+						.'<br />'._wpsf__( 'Warning: This may interfere with WordPress plugins that rely on the $wp_version variable.' ),
+					'<a href="http://icwp.io/43" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
 		);

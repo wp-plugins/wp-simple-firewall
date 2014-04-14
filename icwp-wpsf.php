@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.5.4
+ * Version: 2.5.5
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -182,7 +182,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		if ( empty( $sSetting ) ) {
 			return $sSetting;
 		}
-		$this->setSharedOption( 'enable_admin_access_restriction', $sSetting );
+		$this->m_oPluginMainOptions->setOpt( 'enable_admin_access_restriction', $sSetting );
+		$this->m_oPluginMainOptions->savePluginOptions();
 		return $sSetting;
 	}
 	
@@ -229,9 +230,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 	
 	protected function createPluginSubMenuItems() {
-		if ( !$this->hasPermissionToView() ) {
-			return;
-		}
 		$this->m_aPluginMenu = array(
 			//Menu Page Title => Menu Item name, page ID (slug), callback function for this page - i.e. what to do/load.
 			$this->getSubmenuPageTitle( _wpsf__('Firewall') )			=> array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayAll' ),

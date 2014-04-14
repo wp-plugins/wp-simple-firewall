@@ -38,22 +38,31 @@ class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 */
 	public function run() {
 		
-		if ( $this->m_aOptions['disable_file_editing'] == 'Y' ) {
+		if ( $this->getOption('disable_file_editing') == 'Y' ) {
 			add_filter( 'user_has_cap', array( $this, 'disableFileEditing' ), 0, 3 );
 		}
-		
-		if ( !empty( $this->m_aOptions['mask_wordpress_version'] ) ) {
+
+		$sWpVersionMask = $this->getOption('mask_wordpress_version');
+		if ( !empty( $sWpVersionMask ) ) {
 			global $wp_version;
-			$wp_version = $this->m_aOptions['mask_wordpress_version'];
+			$wp_version = $sWpVersionMask;
 // 			add_filter( 'bloginfo', array( $this, 'maskWordpressVersion' ), 1, 2 );
 // 			add_filter( 'bloginfo_url', array( $this, 'maskWordpressVersion' ), 1, 2 );
-		} 
+		}
 
-		if ( false && $this->m_aOptions['action_reset_auth_salts'] == 'Y' ) {
+		if ( false && $this->getOption('action_reset_auth_salts') == 'Y' ) {
 			add_action( 'init', array( $this, 'resetAuthKeysSalts' ), 1 );
 		}
+
+		if ( $this->getOption( 'force_ssl_login' ) == 'Y' && function_exists('force_ssl_login') ) {
+			force_ssl_login( true );
+		}
+
+		if ( $this->getOption( 'force_ssl_admin' ) == 'Y' && function_exists('force_ssl_admin') ) {
+			force_ssl_admin( true );
+		}
 	}
-	
+
 	/**
 	 * @return array
 	 */

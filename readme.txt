@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.5.4
+Stable tag: 2.5.5
 
 Complete and Simple WordPress Security. Unrestricted, with no premium features.
 
@@ -240,9 +240,15 @@ You can either manually upgrade, or WordPress will handle it in due course.
 *	ADD:		Add various WordPress security features dynamically that would otherwise require wp-config.php editing.
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
+= 2.5.5 =
+
+*	FEATURE:    Added 'Lockdown' feature to force login to WordPress over SSL.
+*	FEATURE:    Added 'Lockdown' feature to force WordPress Admin dashboard to be delivered over SSL.
+*	FIX:        Admin restricted access feature wasn't disabled with the "forceOff" option.
+
 = 2.5.4 =
 
-*	FIX:        Bug where Automatic Updates was not working in some cases.
+*	FIX:        How WordPress Automatic/Background Updates filters worked was changed with WordPress 3.8.2.
 
 = 2.5.3 =
 
