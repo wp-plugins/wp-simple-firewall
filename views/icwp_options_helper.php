@@ -142,24 +142,57 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 
 		}
 		else if ( is_array($mOptionType) ) { //it's a select, or radio
-			
-			$sInputType = array_shift($mOptionType);
+
+			if ( isset( $mOptionType['type'] ) ) {
+				$sInputType = $mOptionType['type'];
+				unset( $mOptionType['type'] );
+			}
+			else {
+				$sInputType =  array_shift($mOptionType);
+			}
 
 			if ( $sInputType == 'select' ) {
-				$sHtml .= '<p>'.$sOptionTitle.'</p>
-				<select id="'.$insVarPrefix.$sOptionKey.'" name="'.$insVarPrefix.$sOptionKey.'">';
+
+				$sFragment = '<p>'.$sOptionTitle.'</p>
+				<select
+				id="'.$insVarPrefix.$sOptionKey.'"
+				name="'.$insVarPrefix.$sOptionKey.'">';
+
+				foreach( $mOptionType as $aInput ) {
+
+					list( $mOptionValue, $sOptionName ) = $aInput;
+					$fSelected = $sOptionSaved == $mOptionValue;
+
+					$sFragment .= '
+					<option
+					value="'.$mOptionValue.'"
+					id="'.$insVarPrefix.$sOptionKey.'_'.$mOptionValue.'"'
+						.( $fSelected? ' selected="selected"' : '') .'>'. $sOptionName.'</option>';
+				}
+				$sFragment .= '</select>';
+
 			}
-			
-			foreach( $mOptionType as $aInput ) {
-				
-				$sHtml .= '
-					<option value="'.$aInput[0].'" id="'.$insVarPrefix.$sOptionKey.'_'.$aInput[0].'"' . (( $sOptionSaved == $aInput[0] )? ' selected="selected"' : '') .'>'. $aInput[1].'</option>';
+			if ( $sInputType == 'multiple_select' ) {
+
+				$sFragment = '<p>'.$sOptionTitle.'</p>
+				<select
+				id="'.$insVarPrefix.$sOptionKey.'"
+				name="'.$insVarPrefix.$sOptionKey.'[]" multiple multiple="multiple" size="'.count($mOptionType).'">';
+
+				foreach( $mOptionType as $mOptionValue => $sOptionName ) {
+
+					$fSelected = in_array( $mOptionValue, $sOptionSaved );
+
+					$sFragment .= '
+					<option
+					value="'.$mOptionValue.'"
+					id="'.$insVarPrefix.$sOptionKey.'_'.$mOptionValue.'"'
+						.( $fSelected? ' selected="selected"' : '') .'>'. $sOptionName.'</option>';
+				}
+				$sFragment .= '</select>';
 			}
-			
-			if ($sInputType == 'select') {
-				$sHtml .= '
-				</select>';
-			}
+
+			$sHtml .= $sFragment;
 		}
 		else if ( $mOptionType === 'ip_addresses' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
@@ -238,4 +271,4 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 	}
 	
 	return $sHtml;
-}//getPluginOptionSpan
+}

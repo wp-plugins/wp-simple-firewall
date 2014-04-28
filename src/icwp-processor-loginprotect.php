@@ -36,11 +36,23 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * @var integer
 	 */
 	protected $m_nRequiredLoginInterval;
-	
+
+	/**
+	 * @var integer
+	 */
 	protected $m_nLastLoginTime;
+	/**
+	 * @var string
+	 */
 	protected $m_sSecretKey;
-	
+	/**
+	 * @var string
+	 */
 	protected $m_sGaspKey;
+	/**
+	 * @var string
+	 */
+	protected $nDaysToKeepLog = 1;
 	
 	/**
 	 * Flag as to whether Two Factor Authentication will be by-pass when sending the verification
@@ -143,6 +155,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	public function run() {
 		parent::run();
 		$this->loadDataProcessor();
+//		$this->recreateTable();
 
 		$sRequestMethod = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'REQUEST_METHOD' );
 		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
@@ -177,6 +190,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 
 		if ( $this->getIsTwoFactorAuthOn() ) {
+
 			// User has clicked a link in their email to validate their IP address for login.
 			if ( isset( $_GET['wpsf-action'] ) && $_GET['wpsf-action'] == 'linkauth' ) {
 				$this->validateUserAuthLink();
@@ -186,7 +200,6 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			if ( isset( $_GET['wpsfipverified']) ) {
 				add_filter( 'login_message', array( $this, 'displayVerifiedUserMessage_Filter' ) );
 			}
-
 
 			// Check the current logged-in user every page load.
 			add_action( 'init', array( $this, 'checkCurrentUserAuth_Action' ) );
@@ -555,7 +568,11 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			}
 		}
 		else if ( $fUserLoginSuccess ) {
-			
+
+			if ( !$this->getIsUserLevelSubjectToTwoFactorAuth( $inoUser->user_level ) ) {
+				return $inoUser;
+			}
+
 			$aData = array( 'wp_username' => $insUsername );
 			if ( $this->isUserVerified( $aData ) ) {
 				return $inoUser;
@@ -579,6 +596,28 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		
 		$sErrorString = "Login is protected by 2-factor authentication. If your login details were correct, you would have received an email to verify this IP address.";
 		return new WP_Error( 'wpsf_loginauth', $sErrorString );
+	}
+
+	/**
+	 * @param integer $nUserLevel
+	 * @return bool
+	 */
+	public function getIsUserLevelSubjectToTwoFactorAuth( $nUserLevel ) {
+
+		$aSubjectedUserLevels = $this->getOption( 'two_factor_auth_user_roles' );
+		if ( !is_array($aSubjectedUserLevels) ) {
+			$aSubjectedUserLevels = array( 0, 1, 2, 3, 8 ); // by default all!
+		}
+		if ( $nUserLevel < 3 && in_array( $nUserLevel, $aSubjectedUserLevels ) ) {
+			return true;
+		}
+		else if ( $nUserLevel < 8 && in_array( 3, $aSubjectedUserLevels ) ) { //any of the editor role levels
+			return true;
+		}
+		else if ( $nUserLevel >= 8 && in_array( 8, $aSubjectedUserLevels ) ) { //any of the admin role levels
+			return true;
+		}
+		return false;
 	}
 	
 	public function getGaspLoginHtml() {
@@ -835,7 +874,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		if ( is_object( $oUser ) && $oUser instanceof WP_User ) {
 			
 			$aData = array( 'wp_username' => $oUser->user_login );
-			if ( !$this->isUserVerified( $aData ) ) {
+			if ( $this->getIsUserLevelSubjectToTwoFactorAuth( $oUser->user_level ) && !$this->isUserVerified( $aData ) ) {
 				$this->logWarning(
 					sprintf( _wpsf__('User "%s" was forcefully logged out as they are not verified.'), $oUser->user_login )
 				);
@@ -934,7 +973,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		if ( !$this->getTableExists() ) {
 			return;
 		}
-		$nTimeStamp = time() - DAY_IN_SECONDS;
+		$nTimeStamp = time() - (DAY_IN_SECONDS * $this->nDaysToKeepLog);
 		$this->deleteAllRowsOlderThan( $nTimeStamp );
 	}
 

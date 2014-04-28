@@ -70,16 +70,34 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 				)
 			)
 		);
+
+		$aTwoAuthRoles = array( 'type' => 'multiple_select',
+			0	=> _wpsf__('Subscribers'),
+			1	=> _wpsf__('Contributors'),
+			2	=> _wpsf__('Authors'),
+			3	=> _wpsf__('Editors'),
+			8	=> _wpsf__('Administrators')
+		);
 		$aTwoFactorAuth = array(
 			'section_title' => _wpsf__( 'Two-Factor Authentication Protection Options' ),
 			'section_options' => array(
+				array(
+					'two_factor_auth_user_roles',
+					'',
+					array( 1, 2, 3, 8 ), // default is Contributors, Authors, Editors and Administrators
+					$aTwoAuthRoles,
+					_wpsf__( 'Two-Factor Auth User Roles' ),
+					_wpsf__( 'All User Roles Subject To Two-Factor Authentication' ),
+					_wpsf__( 'Select which types of users/roles will be subject to two-factor login authentication.' ),
+					'<a href="http://icwp.io/4v" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				),
 				array(
 					'enable_two_factor_auth_by_ip',
 					'',
 					'N',
 					'checkbox',
 					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('IP') ),
-					_wpsf__( 'Two-Factor Login Authentication By IP Address' ),
+					sprintf( _wpsf__( 'Two-Factor Login Authentication By %s' ), _wpsf__('IP Address') ),
 					_wpsf__( 'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address' ),
 					'<a href="http://icwp.io/3s" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
@@ -89,7 +107,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'N',
 					'checkbox',
 					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('Cookie') ),
-					_wpsf__( 'Two-Factor Login Authentication By Cookie' ),
+					sprintf( _wpsf__( 'Two-Factor Login Authentication By %s' ), _wpsf__('Cookie') ),
 					_wpsf__( 'This will restrict all user login sessions to a single browser. Use this if your users have dynamic IP addresses.' ),
 					'<a href="http://icwp.io/3t" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
