@@ -605,16 +605,22 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	public function getIsUserLevelSubjectToTwoFactorAuth( $nUserLevel ) {
 
 		$aSubjectedUserLevels = $this->getOption( 'two_factor_auth_user_roles' );
-		if ( !is_array($aSubjectedUserLevels) ) {
-			$aSubjectedUserLevels = array( 0, 1, 2, 3, 8 ); // by default all!
+		if ( empty($aSubjectedUserLevels) || !is_array($aSubjectedUserLevels) ) {
+			$aSubjectedUserLevels = array( 1, 2, 3, 8 ); // by default all except subscribers!
 		}
+
+		// see: https://codex.wordpress.org/Roles_and_Capabilities#User_Level_to_Role_Conversion
+
+		// authors, contributors and subscribers
 		if ( $nUserLevel < 3 && in_array( $nUserLevel, $aSubjectedUserLevels ) ) {
 			return true;
 		}
-		else if ( $nUserLevel < 8 && in_array( 3, $aSubjectedUserLevels ) ) { //any of the editor role levels
+		// editors
+		if ( $nUserLevel >= 3 && $nUserLevel < 8 && in_array( 3, $aSubjectedUserLevels ) ) {
 			return true;
 		}
-		else if ( $nUserLevel >= 8 && in_array( 8, $aSubjectedUserLevels ) ) { //any of the admin role levels
+		// administrators
+		if ( $nUserLevel >= 8 && $nUserLevel <= 10 && in_array( 8, $aSubjectedUserLevels ) ) {
 			return true;
 		}
 		return false;

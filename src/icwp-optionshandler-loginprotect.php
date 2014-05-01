@@ -34,6 +34,11 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			$this->setOpt( 'ips_whitelist', $aIpWhitelist );
 		}
 		$this->processIpFilter( 'ips_whitelist', 'icwp_simple_firewall_whitelist_ips' );
+
+		$aTwoFactorAuthRoles = $this->getOpt( 'two_factor_auth_user_roles' );
+		if ( empty($aTwoFactorAuthRoles) || !is_array( $aTwoFactorAuthRoles ) ) {
+			$this->setOpt( 'two_factor_auth_user_roles', $this->getTwoFactorUserAuthRoles( true ) );
+		}
 	}
 
 	/**
@@ -71,21 +76,14 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$aTwoAuthRoles = array( 'type' => 'multiple_select',
-			0	=> _wpsf__('Subscribers'),
-			1	=> _wpsf__('Contributors'),
-			2	=> _wpsf__('Authors'),
-			3	=> _wpsf__('Editors'),
-			8	=> _wpsf__('Administrators')
-		);
 		$aTwoFactorAuth = array(
 			'section_title' => _wpsf__( 'Two-Factor Authentication Protection Options' ),
 			'section_options' => array(
 				array(
 					'two_factor_auth_user_roles',
 					'',
-					array( 1, 2, 3, 8 ), // default is Contributors, Authors, Editors and Administrators
-					$aTwoAuthRoles,
+					$this->getTwoFactorUserAuthRoles( true ), // default is Contributors, Authors, Editors and Administrators
+					$this->getTwoFactorUserAuthRoles(),
 					_wpsf__( 'Two-Factor Auth User Roles' ),
 					_wpsf__( 'All User Roles Subject To Two-Factor Authentication' ),
 					_wpsf__( 'Select which types of users/roles will be subject to two-factor login authentication.' ),
@@ -262,6 +260,26 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			);
 			$this->migrateOptions( $aSettingsKey );
 		}//'1.4.0', '<'
+	}
+
+	/**
+	 * @param boolean $fAsDefaultLevels
+	 * @return array
+	 */
+	protected function getTwoFactorUserAuthRoles( $fAsDefaultLevels = false ) {
+		$aTwoAuthRoles = array( 'type' => 'multiple_select',
+			0	=> _wpsf__('Subscribers'),
+			1	=> _wpsf__('Contributors'),
+			2	=> _wpsf__('Authors'),
+			3	=> _wpsf__('Editors'),
+			8	=> _wpsf__('Administrators')
+		);
+		if ( $fAsDefaultLevels ) {
+			unset($aTwoAuthRoles['type']);
+			unset($aTwoAuthRoles[0]);
+			return array_keys($aTwoAuthRoles);
+		}
+		return $aTwoAuthRoles;
 	}
 }
 

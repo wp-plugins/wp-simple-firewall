@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.5.6
+ * Version: 2.5.7
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.5.6';
+	const PluginVersion					= '2.5.7';
 	/**
 	 * @var string
 	 */
@@ -131,7 +131,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @var ICWP_EmailProcessor
 	 */
 	protected $m_oEmailProcessor;
-	
+
+	/**
+	 */
 	public function __construct() {
 		
 		$this->m_fNetworkAdminOnly = true;
@@ -177,7 +179,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			$this->setPermissionToSubmit( false );
 		}
 	}
-	
+
+	/**
+	 * @return string
+	 */
 	protected function override() {
 		$sSetting = parent::override();
 		if ( empty( $sSetting ) ) {
