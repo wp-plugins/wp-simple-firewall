@@ -76,6 +76,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @var ICWP_OptionsHandler_LoginProtect
 	 */
 	protected $m_oLoginProtectOptions;
+	/**
+	 * @var ICWP_OptionsHandler_PrivacyProtect
+	 */
+	protected $m_oPrivacyProtectOptions;
 
 	/**
 	 * @var ICWP_OptionsHandler_CommentsFilter
@@ -111,11 +115,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @var ICWP_CommentsFilterProcessor
 	 */
 	protected $m_oCommentsFilterProcessor;
-	
+
 	/**
 	 * @var ICWP_LockdownProcessor
 	 */
 	protected $m_oLockdownProcessor;
+	/**
+	 * @var ICWP_WPSF_PrivacyProtectProcessor
+	 */
+	protected $m_oPrivacyProtectProcessor;
 	
 	/**
 	 * @var ICWP_WPSF_AutoUpdatesProcessor
@@ -154,6 +162,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 				'firewall'			=> 'Firewall',
 				'login_protect'		=> 'LoginProtect',
 				'comments_filter'	=> 'CommentsFilter',
+				'privacy_protect'	=> 'PrivacyProtect',
 				'lockdown'			=> 'Lockdown',
 				'autoupdates'		=> 'AutoUpdates'
 			),
@@ -163,6 +172,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 				'm_oFirewallOptions',
 				'm_oLoginProtectOptions',
 				'm_oCommentsFilterOptions',
+				'm_oPrivacyProtectOptions',
 				'm_oLockdownOptions',
 				'm_oAutoUpdatesOptions'
 			)
@@ -241,6 +251,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			$this->getSubmenuPageTitle( _wpsf__('Firewall') )			=> array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Login Protect') )		=> array( 'Login Protect', $this->getSubmenuId('login_protect'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Comments Filter') )	=> array( 'Comments Filter', $this->getSubmenuId('comments_filter'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( _wpsf__('Privacy Protect') )	=> array( 'Privacy Protect', $this->getSubmenuId('privacy_protect'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Automatic Updates') )	=> array( 'Automatic Updates', $this->getSubmenuId('autoupdates'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Lockdown') )			=> array( 'Lockdown', $this->getSubmenuId('lockdown'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Log' ) )				=> array( 'Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' )
@@ -289,6 +300,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		switch( $sCurrent ) {
 			case 'toplevel_page_'.self::BaseSlug.'-'.self::PluginSlug : //special case
 				$this->onDisplayMainMenu();
+				break;
+			case 'privacy_protect' :
+				$this->onDisplayPrivacyProtect();
 				break;
 			case 'firewall_log' :
 				$this->onDisplayFirewallLog();
@@ -353,6 +367,18 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$this->display( 'icwp_'.$this->m_sParentMenuIdSuffix.'_index', $aData );
 	}
 	
+	protected function onDisplayPrivacyProtect() {
+
+		$this->loadOptionsHandler( 'PrivacyProtect' );
+		$this->loadProcessor( 'PrivacyProtect' );
+
+		$aData = array(
+			'urlrequests_log'	=> $this->m_oPrivacyProtectProcessor->getLogs( true )
+		);
+		$aData = array_merge( $this->getBaseDisplayData('privacy_protect'), $aData );
+		$this->display( 'icwp_wpsf_config_privacy_protect_index', $aData );
+	}
+
 	protected function onDisplayFirewallLog() {
 
 		$this->loadOptionsHandler( 'Firewall' );
@@ -369,7 +395,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$aData = array_merge( $this->getBaseDisplayData('firewall_log'), $aData );
 		$this->display( 'icwp_wpsf_firewall_log_index', $aData );
 	}
-	
+
 	/**
 	 * 
 	 * @param ICWP_OptionsHandler_Base_WPSF $inoOptions
@@ -517,6 +543,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$this->setSharedOption( 'enable_comments_filter',	$this->m_oPluginMainOptions->getOpt( 'enable_comments_filter' ) );
 		$this->setSharedOption( 'enable_lockdown',			$this->m_oPluginMainOptions->getOpt( 'enable_lockdown' ) );
 		$this->setSharedOption( 'enable_autoupdates',		$this->m_oPluginMainOptions->getOpt( 'enable_autoupdates' ) );
+		$this->setSharedOption( 'enable_privacy_protect',	$this->m_oPluginMainOptions->getOpt( 'enable_privacy_protect' ) );
 		
 		$this->saveOptions();
 		$this->clearCaches();

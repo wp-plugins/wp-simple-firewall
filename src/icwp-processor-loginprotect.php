@@ -599,6 +599,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 	/**
+	 * TODO: http://stackoverflow.com/questions/3499104/how-to-know-the-role-of-current-user-in-wordpress
 	 * @param integer $nUserLevel
 	 * @return bool
 	 */

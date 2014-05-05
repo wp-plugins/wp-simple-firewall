@@ -246,7 +246,6 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( !$this->m_fNeedSave ) {
 			return true;
 		}
-		
 		$this->updateOption( $this->m_aOptionsStoreName, $this->m_aOptionsValues );
 		$this->m_fNeedSave = false;
 	}

@@ -113,6 +113,16 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Regardless of any other settings, this option will turn off the Comments Filter feature, or enable your selected Comments Filter options' )
 				),
 				array(
+					'enable_privacy_protect',
+					'',
+					'N',
+					'checkbox',
+					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Privacy Protection') ),
+					sprintf( _wpsf__( 'Enable (or Disable) The %s Feature' ), _wpsf__('Privacy Protection') ),
+					_wpsf__( 'Regardless of any other settings, this option will turn off the Privacy Protection feature, or enable your selected Privacy Protection options' ),
+					'<a href="http://icwp.io/3y" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				),
+				array(
 					'enable_lockdown',
 					'',
 					'N',

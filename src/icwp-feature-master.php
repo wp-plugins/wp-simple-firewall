@@ -188,7 +188,6 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 		if ( !in_array( $insProcessorName, array_values($aAllProcessors) ) ) {
 			$this->doWpDie( sprintf('Processor %s is not permitted here.', $insProcessorName) );
 		}
-		
 		$sProcessorVarName = 'm_o'.$insProcessorName.'Processor'; // e.g. m_oFirewallProcessor
 		$sSourceFile = dirname(__FILE__).'/icwp-processor-'.strtolower($insProcessorName).'.php'; // e.g. icwp-optionshandler-wpsf.php
 		$sClassName = 'ICWP_'.strtoupper( $this->m_sPluginSlug ).'_'.$insProcessorName.'Processor'; // e.g. ICWP_WPSF_FirewallProcessor

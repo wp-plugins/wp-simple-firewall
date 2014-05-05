@@ -44,7 +44,6 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	}
 	
 	/**
-	 * @param boolean $infDoForceRun
 	 */
 	public function getForceRunAutoUpdates() {
 		return apply_filters( 'icwp_force_autoupdate', $this->m_fDoForceRunAutoUpdates );
