@@ -254,7 +254,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			$this->getSubmenuPageTitle( _wpsf__('Privacy Protect') )	=> array( 'Privacy Protect', $this->getSubmenuId('privacy_protect'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Automatic Updates') )	=> array( 'Automatic Updates', $this->getSubmenuId('autoupdates'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Lockdown') )			=> array( 'Lockdown', $this->getSubmenuId('lockdown'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( _wpsf__('Log' ) )				=> array( 'Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' )
+			$this->getSubmenuPageTitle( _wpsf__('Firewall Log' ) )		=> array( 'Firewall Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' ),
+			$this->getSubmenuPageTitle( _wpsf__('Privacy Log' ) )		=> array( 'Privacy Log', $this->getSubmenuId('privacy_protect_log'), 'onDisplayAll' )
 		);
 	}
 
@@ -301,8 +302,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			case 'toplevel_page_'.self::BaseSlug.'-'.self::PluginSlug : //special case
 				$this->onDisplayMainMenu();
 				break;
-			case 'privacy_protect' :
-				$this->onDisplayPrivacyProtect();
+			case 'privacy_protect_log' :
+				$this->onDisplayPrivacyProtectLog();
 				break;
 			case 'firewall_log' :
 				$this->onDisplayFirewallLog();
@@ -367,16 +368,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$this->display( 'icwp_'.$this->m_sParentMenuIdSuffix.'_index', $aData );
 	}
 	
-	protected function onDisplayPrivacyProtect() {
+	protected function onDisplayPrivacyProtectLog() {
 
-		$this->loadOptionsHandler( 'PrivacyProtect' );
 		$this->loadProcessor( 'PrivacyProtect' );
-
 		$aData = array(
 			'urlrequests_log'	=> $this->m_oPrivacyProtectProcessor->getLogs( true )
 		);
-		$aData = array_merge( $this->getBaseDisplayData('privacy_protect'), $aData );
-		$this->display( 'icwp_wpsf_config_privacy_protect_index', $aData );
+		$aData = array_merge( $this->getBaseDisplayData('privacy_protect_log'), $aData );
+		$this->display( 'icwp_wpsf_privacy_protect_log_index', $aData );
 	}
 
 	protected function onDisplayFirewallLog() {
@@ -443,7 +442,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		if ( !$this->hasPermissionToSubmit() || !$this->isIcwpPluginFormSubmit() ) {
 			return false;
 		}
-		
+
 		$sCurrentPage = $this->fetchGet('page');
 		if ( !is_null($sCurrentPage) ) {
 			switch ( $sCurrentPage ) {
@@ -467,6 +466,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 					break;
 				case $this->getSubmenuId( 'firewall_log' ):
 					$this->handleSubmit_FirewallLog();
+					break;
+				case $this->getSubmenuId( 'privacy_protect' ):
+					$this->handleSubmit_PrivacyProtect();
+					break;
+				case $this->getSubmenuId( 'privacy_protect_log' ):
+					$this->handleSubmit_PrivacyProtectLog();
 					break;
 				default:
 					return false;
@@ -566,11 +571,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$this->setSharedOption( 'enable_firewall', $this->m_oFirewallOptions->getOpt( 'enable_firewall' ) );
 		$this->resetProcessor( 'Firewall' );
 	}
-	
+
 	protected function handleSubmit_LoginProtect() {
 		//Ensures we're actually getting this request from WP.
 		check_admin_referer( $this->getSubmenuId('login_protect' ) );
-		
+
 		if ( !isset($_POST[self::$sOptionPrefix.'all_options_input']) ) {
 			return;
 		}
@@ -578,6 +583,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$this->m_oLoginProtectOptions->updatePluginOptionsFromSubmit( $_POST[self::$sOptionPrefix.'all_options_input'] );
 		$this->setSharedOption( 'enable_login_protect', $this->m_oLoginProtectOptions->getOpt( 'enable_login_protect' ) );
 		$this->resetProcessor( 'LoginProtect' );
+	}
+
+	protected function handleSubmit_PrivacyProtect() {
+		//Ensures we're actually getting this request from WP.
+		check_admin_referer( $this->getSubmenuId('privacy_protect' ) );
+
+		if ( !isset($_POST[self::$sOptionPrefix.'all_options_input']) ) {
+			return;
+		}
+		$this->loadOptionsHandler( 'PrivacyProtect' );
+		$this->m_oPrivacyProtectOptions->updatePluginOptionsFromSubmit( $_POST[self::$sOptionPrefix.'all_options_input'] );
+		$this->setSharedOption( 'enable_privacy_protect', $this->m_oPrivacyProtectOptions->getOpt( 'enable_privacy_protect' ) );
+		$this->resetProcessor( 'PrivacyProtect' );
 	}
 	
 	protected function handleSubmit_CommentsFilter() {
@@ -650,7 +668,33 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		wp_safe_redirect( network_admin_url( "admin.php?page=".$this->getSubmenuId('firewall_log') ) ); //means no admin message is displayed
 		exit();
 	}
-	
+
+	protected function handleSubmit_PrivacyProtectLog() {
+
+		// Ensures we're actually getting this request from a valid WP submission.
+		$sNonce = $this->fetchRequest( '_wpnonce', false );
+		if ( is_null( $sNonce ) || !wp_verify_nonce( $sNonce, $this->getSubmenuId( 'privacy_protect_log' ) ) ) {
+			wp_die();
+		}
+
+		$this->loadOptionsHandler( 'PrivacyProtect' );
+
+		// At the time of writing the page only has 1 form submission item - clear log
+		if ( !is_null( $this->fetchPost( 'clear_log_submit' ) ) ) {
+			$this->loadProcessor( 'PrivacyProtect' );
+			$this->m_oPrivacyProtectProcessor->recreateTable();
+		}
+		else {
+//			$this->m_oFirewallOptions->addRawIpsToFirewallList( 'ips_whitelist', array( $this->fetchGet( 'whiteip' ) ) );
+//			$this->m_oFirewallOptions->removeRawIpsFromFirewallList( 'ips_whitelist', array( $this->fetchGet( 'unwhiteip' ) ) );
+//			$this->m_oFirewallOptions->addRawIpsToFirewallList( 'ips_blacklist', array( $this->fetchGet( 'blackip' ) ) );
+//			$this->m_oFirewallOptions->removeRawIpsFromFirewallList( 'ips_blacklist', array( $this->fetchGet( 'unblackip' ) ) );
+//			$this->resetProcessor( 'Firewall' );
+		}
+		wp_safe_redirect( network_admin_url( "admin.php?page=".$this->getSubmenuId('privacy_protect_log') ) ); //means no admin message is displayed
+		exit();
+	}
+
 	protected function importFromFirewall2Plugin() {
 		$this->loadOptionsHandler( 'all' );
 		require_once( dirname(__FILE__).'/src/icwp-import-wpf2-processor.php' );

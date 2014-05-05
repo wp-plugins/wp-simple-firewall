@@ -42,13 +42,26 @@ class ICWP_PrivacyProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function run() {
 		parent::run();
-
-		if ( $this->m_aOptions[ 'enable_privacy_protect' ] == 'Y' ) {
+		if ( $this->getOption('enable_privacy_protect') == 'Y' ) {
 			add_action( 'http_api_debug',			array( $this, 'logHttpRequest' ), 1000, 5 );
+			add_filter( 'http_request_args',		array( $this, 'cleanHttpRequestData' ), 1000, 2 );
 		}
 	}
 
+	/**
+	 * @param $oHttpResponse
+	 * @param $sResponse
+	 * @param $sCallingClass
+	 * @param $aRequestArgs
+	 * @param $sRequestUrl
+	 * @return bool
+	 */
 	public function logHttpRequest( $oHttpResponse, $sResponse, $sCallingClass, $aRequestArgs, $sRequestUrl ) {
+
+		if ( $this->getOption('ignore_local_requests') == 'Y' && $this->getIsLocalRequest($aRequestArgs) ) {
+			return true;
+		}
+
 		// Now add new pending entry
 		$nNow = time();
 		$aData = array();
@@ -61,6 +74,66 @@ class ICWP_PrivacyProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 
 		$mResult = $this->insertIntoTable( $aData );
 		return $mResult;
+	}
+
+	/**
+	 * @param $aRequestArgs
+	 * @param $sRequestUrl
+	 * @return mixed
+	 */
+	public function cleanHttpRequestData( $aRequestArgs, $sRequestUrl ) {
+
+		$sSiteUrl = str_replace( array( 'http://', 'https://' ), '', network_home_url() );
+		$sRandomUrl = $this->generateRandomString().'.com';
+
+		if ( $this->getOption('filter_site_url') == 'Y'
+			|| ( $this->getOption('filter_wordpressorg_update_data') == 'Y' && ( strpos( $sRequestUrl, 'wordpress.org' ) !== false ) )
+		) {
+			$aRequestArgs['user-agent'] = str_replace( $sSiteUrl, $sRandomUrl, $aRequestArgs['user-agent'] );
+
+			$aHeaders = $aRequestArgs['headers'];
+			foreach( $aHeaders as $sKey => $sValue ) {
+				$aHeaders[$sKey] = str_replace( $sSiteUrl, $sRandomUrl, $aHeaders[$sKey] );
+			}
+			$aRequestArgs['headers'] = $aHeaders;
+
+			$aRequestArgs['icwp_wpsf'] = _wpsf__( 'Site URL filtered by the WordPress Simple Firewall plugin' );
+
+			// Now filter the URL only if it isn't LOCAL
+			if ( isset( $aRequestArgs['local'] ) && $aRequestArgs['local'] != 1 ) {
+				//unfortunately can't filter the URL.
+				//TODO: $pre = apply_filters( 'pre_http_request', false, $r, $url );
+			}
+
+//			if ( isset($aRequestArgs['headers']['wp_install']) ) {
+//				$aRequestArgs['headers']['wp_install'] = str_replace( $sSiteUrl, $sRandomUrl, $aRequestArgs['headers']['wp_install'] );
+//			}
+//			if ( isset($aRequestArgs['headers']['wp_blog']) ) {
+//				$aRequestArgs['headers']['wp_blog'] = str_replace( $sSiteUrl, $sRandomUrl, $aRequestArgs['headers']['wp_blog'] );
+//			}
+		}
+		return $aRequestArgs;
+	}
+
+	/**
+	 * @param $aRequestArgs
+	 * @return bool
+	 */
+	protected function getIsLocalRequest( &$aRequestArgs ) {
+		return isset( $aRequestArgs['local'] ) && $aRequestArgs['local'] == 1;
+	}
+
+	/**
+	 * @param int $nLength
+	 * @return string
+	 */
+	protected function generateRandomString( $nLength = 10 ) {
+		$sCharacters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$sRandomString = '';
+		for ($i = 0; $i < $nLength; $i++) {
+			$sRandomString .= $sCharacters[rand(0, strlen($sCharacters) - 1)];
+		}
+		return $sRandomString;
 	}
 
 	/**

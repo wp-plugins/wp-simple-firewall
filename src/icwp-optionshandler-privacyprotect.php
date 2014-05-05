@@ -49,9 +49,45 @@ class ICWP_OptionsHandler_PrivacyProtect extends ICWP_OptionsHandler_Base_Wpsf {
 				)
 			),
 		);
+		$aFurtherOptions = array(
+			'section_title' => _wpsf__( 'Data Filtering and Logging Options' ),
+			'section_options' => array(
+				array(
+					'ignore_local_requests',
+					'',
+					'Y',
+					'checkbox',
+					_wpsf__( 'Ignore Local Requests' ),
+					_wpsf__( 'Ignore Requests This Site Makes To Itself' ),
+					_wpsf__( 'Does not log any requests this site makes to itself - for example the WP Cron' ),
+					'<a href="http://icwp.io/3y" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				),
+				array(
+					'filter_wordpressorg_update_data',
+					'',
+					'Y',
+					'checkbox',
+					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('WordPress.org Privacy') ),
+					_wpsf__( 'Enable Filtering Of Identifiable Data Sent To WordPress.org' ),
+					_wpsf__( 'With this option enabled, any identifiable information about your site will be stripped from the web requests made to WordPress.org' ),
+					'<a href="http://icwp.io/3y" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				),
+				array(
+					'filter_site_url',
+					'',
+					'N',
+					'checkbox',
+					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Site URL Filter') ),
+					_wpsf__( 'Enable Filtering Of Your Site URL From All Web Calls' ),
+					_wpsf__( 'With this option enabled, all web calls made that contain your site URL will filter this URL and replace it with a random string' ),
+					'<a href="http://icwp.io/3y" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				)
+			)
+		);
 
 		$this->m_aOptions = array(
-			$aOptionsBase
+			$aOptionsBase,
+			$aFurtherOptions
 		);
 	}
 
