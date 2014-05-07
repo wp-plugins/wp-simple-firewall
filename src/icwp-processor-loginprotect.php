@@ -791,7 +791,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			$this->m_sTableName,
 			$sNow,
 			$sNow,
-			$inaWhere['wp_username']
+			esc_sql( $inaWhere['wp_username'] )
 		);
 		$this->doSql( $sQuery );
 
@@ -985,9 +985,9 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 	/**
-	 * @param $innTimeStamp
+	 * @param $nTimeStamp
 	 */
-	protected function deleteAllRowsOlderThan( $innTimeStamp ) {
+	protected function deleteAllRowsOlderThan( $nTimeStamp ) {
 		$sQuery = "
 			DELETE from `%s`
 			WHERE
@@ -996,7 +996,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		";
 		$sQuery = sprintf( $sQuery,
 			$this->m_sTableName,
-			$innTimeStamp
+			esc_sql( $nTimeStamp )
 		);
 		$this->doSql( $sQuery );
 	}

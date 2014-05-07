@@ -90,6 +90,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 			'block_sql_queries',
 			'block_wordpress_terms',
 			'block_field_truncation',
+			'block_php_code',
 			'block_exe_file_uploads',
 			'block_leading_schema'
 		);
@@ -219,6 +220,9 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_field_truncation' ] ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockFieldTruncation();
 		}
+		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_php_code' ] ) {
+			$fIsPermittedVisitor = $this->doPassCheckPhpCode();
+		}
 		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_exe_file_uploads' ] ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockExeFileUploads();
 		}
@@ -282,7 +286,18 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		}
 		return $fPass;
 	}
-	
+
+	protected function doPassCheckPhpCode() {
+		$aTerms = array(
+			'/(include|include_once|require|require_once)(\s*\(|\s*\'|\s*"|\s+\w+)/i'
+		);
+		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
+		if ( !$fPass ) {
+			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('PHP Code') ) );
+		}
+		return $fPass;
+	}
+
 	protected function doPassCheckBlockExeFileUploads() {
 		$aTerms = array(
 			'/\.dll$/i', '/\.rb$/i', '/\.py$/i', '/\.exe$/i', '/\.php[3-6]?$/i', '/\.pl$/i',
