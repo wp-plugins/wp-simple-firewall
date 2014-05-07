@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.5.7
+ * Version: 2.5.8
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.5.7';
+	const PluginVersion					= '2.5.8';
 	/**
 	 * @var string
 	 */
@@ -162,7 +162,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 				'firewall'			=> 'Firewall',
 				'login_protect'		=> 'LoginProtect',
 				'comments_filter'	=> 'CommentsFilter',
-				'privacy_protect'	=> 'PrivacyProtect',
+//				'privacy_protect'	=> 'PrivacyProtect',
 				'lockdown'			=> 'Lockdown',
 				'autoupdates'		=> 'AutoUpdates'
 			),
@@ -251,11 +251,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			$this->getSubmenuPageTitle( _wpsf__('Firewall') )			=> array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Login Protect') )		=> array( 'Login Protect', $this->getSubmenuId('login_protect'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Comments Filter') )	=> array( 'Comments Filter', $this->getSubmenuId('comments_filter'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( _wpsf__('Privacy Protect') )	=> array( 'Privacy Protect', $this->getSubmenuId('privacy_protect'), 'onDisplayAll' ),
+//			$this->getSubmenuPageTitle( _wpsf__('Privacy Protect') )	=> array( 'Privacy Protect', $this->getSubmenuId('privacy_protect'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Automatic Updates') )	=> array( 'Automatic Updates', $this->getSubmenuId('autoupdates'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Lockdown') )			=> array( 'Lockdown', $this->getSubmenuId('lockdown'), 'onDisplayAll' ),
 			$this->getSubmenuPageTitle( _wpsf__('Firewall Log' ) )		=> array( 'Firewall Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' ),
-			$this->getSubmenuPageTitle( _wpsf__('Privacy Log' ) )		=> array( 'Privacy Log', $this->getSubmenuId('privacy_protect_log'), 'onDisplayAll' )
+//			$this->getSubmenuPageTitle( _wpsf__('Privacy Log' ) )		=> array( 'Privacy Log', $this->getSubmenuId('privacy_protect_log'), 'onDisplayAll' )
 		);
 	}
 

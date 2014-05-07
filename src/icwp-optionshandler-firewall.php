@@ -133,6 +133,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'PHP Code' ),
 					sprintf( _wpsf__( 'Block %s' ), _wpsf__( 'PHP Code Includes' ) ),
 					_wpsf__( 'This will block any data that appears to try and include PHP files.' )
+					.'<br />'. _wpsf__( 'Will probably block saving within the Plugin/Theme file editors.' )
 				),
 				array(
 					'block_exe_file_uploads',
