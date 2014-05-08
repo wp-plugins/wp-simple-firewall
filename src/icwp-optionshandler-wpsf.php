@@ -34,6 +34,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	public function defineOptions() {
 		
 		$aNonUiOptions = array(
+			'installation_time',
 			'secret_key',
 			'feedback_admin_notice',
 			'update_success_tracker',
@@ -186,6 +187,11 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 		}
 
 		$this->setOpt( 'enable_logging', 'Y' );
+
+		$nInstalledAt = $this->getOpt( 'installation_time' );
+		if ( empty($nInstalledAt) || $nInstalledAt <= 0 ) {
+			$this->setOpt( 'installation_time', time() );
+		}
 	}
 	
 	protected function updateHandler() {

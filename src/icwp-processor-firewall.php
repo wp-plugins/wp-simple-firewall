@@ -160,6 +160,12 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 			return true;
 		}
 
+		$this->loadDataProcessor();
+		if ( $this->getOption('ignore_search_engines') == 'Y' && ICWP_WPSF_DataProcessor::IsSearchEngineBot() ) {
+			$this->logInfo( _wpsf__('Visitor detected as Search Engine Bot so by-passing Firewall Checking.') );
+			return true;
+		}
+
 		// Set up the page parameters ($_GET and $_POST and optionally $_COOKIE). If there are none, quit since there's nothing for the firewall to check.
 		$this->setPageParams();
 		if ( empty( $this->m_aPageParams ) ) {

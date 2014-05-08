@@ -212,9 +212,18 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 					'',
 					'Y',
 					'checkbox',
-					_wpsf__( 'Ignore Administrators' ),
+					sprintf( _wpsf__( 'Ignore %s' ), _wpsf__( 'Administrators' ) ),
 					_wpsf__( 'Ignore users logged in as Administrator' ),
 					_wpsf__( 'Authenticated administrator users will not be processed by the firewall' )
+				),
+				array(
+					'ignore_search_engines',
+					'',
+					'N',
+					'checkbox',
+					sprintf( _wpsf__( 'Ignore %s' ), _wpsf__( 'Search Engines' ) ),
+					_wpsf__( 'Ignore Search Engine Bots' ),
+					_wpsf__( 'When selected, the firewall will try to recognise search engine spiders/bots and not apply firewall rules to them' )
 				)
 			)
 		);

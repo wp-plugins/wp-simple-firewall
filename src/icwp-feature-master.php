@@ -40,7 +40,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 	 * @var ICWP_OptionsHandler_Wpsf
 	 */
 	protected $m_oPluginMainOptions;
-	
+
 	public function __construct( $inaFeatures, $inaOptions ) {
 		parent::__construct();
 		$this->m_aFeatures = $inaFeatures;
@@ -138,7 +138,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 		$this->m_oPluginMainOptions->setOpt( $insOption, $inmValue );
 	}
 	
-	protected function loadOptionsHandler( $insOptionHandler, $infRecreate = false, $infFullBuild = false ) {
+	protected function loadOptionsHandler( $insOptionHandler = 'PluginMain', $infRecreate = false, $infFullBuild = false ) {
 
 		$aAllHandlers = array_values( $this->getFeaturesMap() );
 		$aAllHandlers[] = 'PluginMain';

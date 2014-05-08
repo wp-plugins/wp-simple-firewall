@@ -468,22 +468,24 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	 * Override this method to handle all the admin notices
 	 */
 	public function onWpAdminNotices() {
-		if ( !$this->isValidAdminArea() ) {
+		// Do we have admin priviledges?
+		if ( !$this->isValidAdminArea() || !current_user_can( 'manage_options' ) ) {
 			return true;
 		}
-		// Do we have admin priviledges?
-		if ( !current_user_can( 'manage_options' ) ) {
-			return;
-		}
+
 		$this->doAdminNoticeOptionsUpdated();
-		if ( $this->hasPermissionToView() ) {
-			$this->doAdminNoticePostUpgrade();
-		}
-		if ( $this->hasPermissionToView() ) {
-			$this->doAdminNoticeTranslations();
-		}
-		if ( $this->hasPermissionToSubmit() ) {
-			$this->doAdminNoticePluginUpgradeAvailable();
+
+		// If we've set to not show admin notices ever
+		if ( $this->getShowAdminNotices() ) {
+
+			if ( $this->hasPermissionToView() ) {
+				$this->doAdminNoticePostUpgrade();
+				$this->doAdminNoticeTranslations();
+				$this->doAdminNoticeMailingListSignup();
+			}
+			if ( $this->hasPermissionToSubmit() ) {
+				$this->doAdminNoticePluginUpgradeAvailable();
+			}
 		}
 	}
 	
@@ -495,9 +497,6 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 		}
 		// We need to have the correct plugin file set before proceeding.
 		if ( !isset( $this->m_sPluginFile ) ) {
-			return;
-		}
-		if ( !$this->getShowAdminNotices() ) {
 			return;
 		}
 
@@ -518,25 +517,9 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	}
 	
 	protected function doAdminNoticePostUpgrade() {
-		
-		if ( !$this->getShowAdminNotices() ) {
-			return;
-		}
-	
-		$oCurrentUser = wp_get_current_user();
-		if ( !($oCurrentUser instanceof WP_User) ) {
-			return;
-		}
-		$nUserId = $oCurrentUser->ID;
-		$sCurrentVersion = get_user_meta( $nUserId, self::$sOptionPrefix.'current_version', true );
-		// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
-		// If we can never set it, we shouldn't force the Ads on those users who can't get rid of it.
-		if ( empty( $sCurrentVersion ) ) { //the value has never been set, or it's been installed for the first time.
-			$this->updateVersionUserMeta( $nUserId );
-			return; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
-		}
-		
-		if ( $sCurrentVersion === $this->m_sVersion ) {
+
+		$sCurrentMetaValue = $this->getUserMeta( 'current_version' );
+		if ( $sCurrentMetaValue === $this->m_sVersion ) {
 			return;
 		}
 		$sHtml = $this->getAdminNoticeHtml_VersionUpgrade();
@@ -544,31 +527,34 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 			$this->getAdminNoticeHtml( $sHtml, 'updated', true );
 		}
 	}
-	
+
+	/**
+	 *
+	 */
 	protected function doAdminNoticeTranslations(){
-		
-		if ( !$this->getShowAdminNotices() ) {
-			return;
-		}
-		
-		$oCurrentUser = wp_get_current_user();
-		if ( !($oCurrentUser instanceof WP_User) ) {
-			return;
-		}
-		$nUserId = $oCurrentUser->ID;
-		
-		$sAlreadyShowTranslationNotice = get_user_meta( $nUserId, self::$sOptionPrefix.'plugin_translation_notice', true );
-		// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
-		if ( empty( $sAlreadyShowTranslationNotice ) ) {
-			//the value has never been set, or it's been installed for the first time.
-			$this->updateTranslationNoticeShownUserMeta( $nUserId, 'M' );
-			return; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
-		}
-		if ( $sAlreadyShowTranslationNotice === 'Y' ) {
+
+		$sCurrentMetaValue = $this->getUserMeta( 'plugin_translation_notice' );
+		if ( $sCurrentMetaValue === 'Y' ) {
 			return;
 		}
 		
 		$sHtml = $this->getAdminNoticeHtml_Translations();
+		if ( !empty($sHtml) ) {
+			$this->getAdminNoticeHtml( $sHtml, 'updated', true );
+		}
+	}
+
+	/**
+	 *
+	 */
+	protected function doAdminNoticeMailingListSignup(){
+
+		$sCurrentMetaValue = $this->getUserMeta( 'plugin_mailing_list_signup' );
+		if ( $sCurrentMetaValue == 'Y' ) {
+			return;
+		}
+
+		$sHtml = $this->getAdminNoticeHtml_MailingListSignup();
 		if ( !empty($sHtml) ) {
 			$this->getAdminNoticeHtml( $sHtml, 'updated', true );
 		}
@@ -587,6 +573,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	protected function getAdminNoticeHtml_OptionsUpdated() { }
 	protected function getAdminNoticeHtml_VersionUpgrade() { }
 	protected function getAdminNoticeHtml_Translations() { }
+	protected function getAdminNoticeHtml_MailingListSignup() { }
 
 	/**
 	 * Provides the basic HTML template for printing a WordPress Admin Notices
@@ -600,9 +587,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	
 		$sFullNotice = '
 			<div id="message" class="'.$insMessageClass.'">
-				<style>
-					#message form { margin: 0px; }
-				</style>
+				<style>#message form { margin: 0px; padding-bottom: 8px; }</style>
 				'.$insNotice.'
 			</div>
 		';
@@ -621,14 +606,24 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	protected function getShowAdminNotices() {
 		return true;
 	}
-	
+
 	/**
 	 * Updates the current (or supplied user ID) user meta data with the version of the plugin
-	 *  
-	 * @param $innId
+	 *
+	 * @param $nId
+	 * @param $sValue
 	 */
-	protected function updateTranslationNoticeShownUserMeta( $innId = '', $insValue = 'Y' ) {
-		$this->updateUserMeta( 'plugin_translation_notice', $insValue, $innId );
+	protected function updateTranslationNoticeShownUserMeta( $nId = '', $sValue = 'Y' ) {
+		$this->updateUserMeta( 'plugin_translation_notice', $sValue, $nId );
+	}
+	/**
+	 * Updates the current (or supplied user ID) user meta data with the version of the plugin
+	 *
+	 * @param $nId
+	 * @param $sValue
+	 */
+	protected function updateMailingListSignupShownUserMeta( $nId = '', $sValue = 'Y' ) {
+		$this->updateUserMeta( 'plugin_mailing_list_signup', $sValue, $nId );
 	}
 	
 	/**
@@ -644,13 +639,14 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	 * Updates the current (or supplied user ID) user meta data with the version of the plugin
 	 * 
 	 * @param string $insKey
-	 * @param anything $inmValue
-	 * @param integeter $innId		-user ID
+	 * @param mixed $mValue
+	 * @param integer $innId		-user ID
+	 * @return boolean
 	 */
-	protected function updateUserMeta( $insKey, $inmValue, $innId = null ) {
+	protected function updateUserMeta( $insKey, $mValue, $innId = null ) {
 		if ( empty( $innId ) ) {
-			$oCurrentUser = wp_get_current_user();
-			if ( !($oCurrentUser instanceof WP_User) ) {
+			$oCurrentUser = $this->getCurrentUser();
+			if ( !$oCurrentUser ) {
 				return;
 			}
 			$nUserId = $oCurrentUser->ID;
@@ -658,7 +654,37 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 		else {
 			$nUserId = $innId;
 		}
-		update_user_meta( $nUserId, self::$sOptionPrefix.$insKey, $inmValue );
+		return update_user_meta( $nUserId, self::$sOptionPrefix.$insKey, $mValue );
+	}
+
+	protected function getUserMeta( $sKey ) {
+
+		$oCurrentUser = $this->getCurrentUser();
+		if ( !$oCurrentUser ) {
+			return;
+		}
+		$nUserId = $oCurrentUser->ID;
+
+		$sCurrentMetaValue = get_user_meta( $nUserId, self::$sOptionPrefix.$sKey, true );
+		// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
+		if ( empty( $sCurrentMetaValue ) ) {
+			//the value has never been set, or it's been installed for the first time.
+			$this->updateUserMeta( $sKey, 'temp', $nUserId );
+			return ''; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
+		}
+		return $sCurrentMetaValue;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	protected function getCurrentUser() {
+		if( !is_user_logged_in() ) {
+			return false;
+		}
+		global $current_user;
+		get_currentuserinfo();
+		return $current_user;
 	}
 
 	/**
@@ -895,7 +921,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 		wp_die( $insText );
 		exit();
 	}
-	
+
 }//CLASS
 
 endif;

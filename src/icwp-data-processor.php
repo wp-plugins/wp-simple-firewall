@@ -251,6 +251,65 @@ class ICWP_DataProcessor_V1 {
 		}
 		return false;
 	}
+
+	/**
+	 * Taken from http://www.phacks.net/detecting-search-engine-bot-and-web-spiders/
+	 */
+	public static function IsSearchEngineBot() {
+
+		if ( empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
+			return false;
+		}
+		$sUserAgent = $_SERVER['HTTP_USER_AGENT'];
+		$sBots = 'Googlebot|bingbot|Twitterbot|Baiduspider|ia_archiver|R6_FeedFetcher|NetcraftSurveyAgent'
+			.'|Sogou web spider|Yahoo! Slurp|facebookexternalhit|PrintfulBot|msnbot|UnwindFetchor|urlresolver|Butterfly|TweetmemeBot';
+
+		return ( preg_match( "/$sBots/", $sUserAgent ) > 0 );
+//
+//		$aBots = array(
+//			'Googlebot',
+//			'bingbot',
+//			'Twitterbot',
+//			'Baiduspider',
+//			'ia_archiver',
+//			'R6_FeedFetcher',
+//			'NetcraftSurveyAgent',
+//			'Sogou web spider',
+//			'Yahoo! Slurp',
+//			'facebookexternalhit',
+//			'PrintfulBot',
+//			'msnbot',
+//			'UnwindFetchor',
+//			'urlresolver',
+//			'Butterfly',
+//			'TweetmemeBot'
+//		);
+		//
+//		$aCrawlers = array(
+//			'Google' => 'Google',
+//			'msnbot' => 'MSN',
+//			'Rambler' => 'Rambler',
+//			'Yahoo' => 'Yahoo',
+//			'AbachoBOT' => 'AbachoBOT',
+//			'accoona' => 'Accoona',
+//			'AcoiRobot' => 'AcoiRobot',
+//			'ASPSeek' => 'ASPSeek',
+//			'CrocCrawler' => 'CrocCrawler',
+//			'Dumbot' => 'Dumbot',
+//			'FAST-WebCrawler' => 'FAST-WebCrawler',
+//			'GeonaBot' => 'GeonaBot',
+//			'Gigabot' => 'Gigabot',
+//			'Lycos' => 'Lycos spider',
+//			'MSRBOT' => 'MSRBOT',
+//			'Scooter' => 'Altavista robot',
+//			'AltaVista' => 'Altavista robot',
+//			'IDBot' => 'ID-Search Bot',
+//			'eStyle' => 'eStyle Bot',
+//			'Scrubby' => 'Scrubby robot'
+//		);
+
+		return array_key_exists( $sUserAgent, $aCrawlers );
+	}
 	
 	/**
 	 * The only ranges currently accepted are a.b.c.d-f.g.h.j

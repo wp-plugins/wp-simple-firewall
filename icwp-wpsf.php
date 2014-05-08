@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.5.8
+ * Version: 2.5.9
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.5.8';
+	const PluginVersion					= '2.5.9';
 	/**
 	 * @var string
 	 */
@@ -295,6 +295,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			return;
 		}
 
+		// Just to ensure the nag bar disappears if/when they visit the dashboard
+		// regardless of clicking the button.
+		$this->updateVersionUserMeta();
+
 		$sPrefix = str_replace(' ', '-', strtolower($this->m_sPluginMenuTitle) ) .'_page_'.self::BaseSlug.'-'.self::PluginSlug.'-';
 		$sCurrent = str_replace( $sPrefix, '', current_filter() );
 
@@ -326,10 +330,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 	
 	public function onDisplayMainMenu() {
-
-		// Just to ensure the nag bar disappears if/when they visit the dashboard
-		// regardless of clicking the button.
-		$this->updateVersionUserMeta();
 
 		$this->loadOptionsHandler( 'all', true );
 		$aAvailableOptions = array_merge( $this->m_oPluginMainOptions->getOptions(), $this->m_oEmailOptions->getOptions() );
@@ -725,10 +725,22 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			}
 		}
 		
+		if ( $this->isValidAdminArea()
+				&& $this->m_oPluginMainOptions->getOpt('enable_upgrade_admin_notice') == 'Y'
+				&& $this->hasPermissionToSubmit()
+			) {
+			$this->m_fDoAutoUpdateCheck = true;
+		}
+	}
+
+	public function onWpAdminInit() {
+		parent::onWpAdminInit();
+
 		if ( $this->isValidAdminArea() ) {
 			//Someone clicked the button to acknowledge the update
-			if ( isset( $_POST[self::$sOptionPrefix.'hide_update_notice'] ) && isset( $_POST['user_id'] ) ) {
-				$this->updateVersionUserMeta( $_POST['user_id'] );
+			$sMetaFlag = self::$sOptionPrefix.'hide_update_notice';
+			if ( $this->fetchRequest( $sMetaFlag ) == 1 ) {
+				$this->updateVersionUserMeta();
 				if ( $this->isShowMarketing() ) {
 					wp_redirect( network_admin_url( "admin.php?page=".$this->getFullParentMenuId() ) );
 				}
@@ -736,17 +748,17 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 					wp_redirect( network_admin_url( $_POST['redirect_page'] ) );
 				}
 			}
-			if ( isset( $_POST[self::$sOptionPrefix.'hide_translation_notice'] ) && isset( $_POST['user_id'] ) ) {
-				$this->updateTranslationNoticeShownUserMeta( $_POST['user_id'] );
+
+			$sMetaFlag = self::$sOptionPrefix.'hide_translation_notice';
+			if ( $this->fetchRequest( $sMetaFlag ) == 1 ) {
+				$this->updateTranslationNoticeShownUserMeta();
 				wp_redirect( network_admin_url( $_POST['redirect_page'] ) );
 			}
-		}
-		
-		if ( $this->isValidAdminArea()
-				&& $this->m_oPluginMainOptions->getOpt('enable_upgrade_admin_notice') == 'Y'
-				&& $this->hasPermissionToSubmit()
-			) {
-			$this->m_fDoAutoUpdateCheck = true;
+
+			$sMetaFlag = self::$sOptionPrefix.'hide_mailing_list_signup';
+			if ( $this->fetchRequest( $sMetaFlag ) == 1 ) {
+				$this->updateMailingListSignupShownUserMeta();
+			}
 		}
 	}
 
@@ -795,21 +807,21 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 	
 	protected function getAdminNoticeHtml_Translations() {
-		$oCurrentUser = wp_get_current_user();
-		if ( !($oCurrentUser instanceof WP_User) ) {
+
+		if ( $this->getInstallationDays() > 7 ) {
 			return '';
 		}
-		$nUserId = $oCurrentUser->ID;
+
+		$sMetaFlag = self::$sOptionPrefix.'hide_translation_notice';
 		
 		$sRedirectPage = 'index.php';
 		ob_start(); ?>
 			<style>
 				a#fromIcwp { padding: 0 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); color: blue; font-weight: bold; }
 			</style>
-			<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall'); ?>">
+			<form id="IcwpTranslationsNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall'); ?>&<?php echo $sMetaFlag; ?>=1">
 				<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
-				<input type="hidden" value="1" name="<?php echo self::$sOptionPrefix; ?>hide_translation_notice" id="<?php echo self::$sOptionPrefix; ?>hide_translation_notice">
-				<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
+				<input type="hidden" value="1" name="<?php echo $sMetaFlag; ?>" id="<?php echo $sMetaFlag; ?>">
 				<h4 style="margin:10px 0 3px;">
 					<?php _wpsf_e( 'Would you like to help translate the WordPress Simple Firewall into your language?' ); ?>
 					<?php printf( _wpsf__( 'Head over to: %s' ), '<a href="http://translate.icontrolwp.com" target="_blank">translate.icontrolwp.com</a>' ); ?>
@@ -825,24 +837,23 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	
 	protected function getAdminNoticeHtml_VersionUpgrade() {
 
-		$oCurrentUser = wp_get_current_user();
-		if ( !($oCurrentUser instanceof WP_User) ) {
+		// for now just showing this for the first 24hrs of installation.
+		if ( $this->getInstallationDays() < 1 ) {
 			return '';
 		}
-		$nUserId = $oCurrentUser->ID;
-		
-// 		$sRedirectPage = isset( $GLOBALS['pagenow'] ) ? $GLOBALS['pagenow'] : 'index.php';
+
+		$sMetaFlag = self::$sOptionPrefix.'hide_update_notice';
+
 		$sRedirectPage = 'admin.php?page=icwp-wpsf';
 		ob_start(); ?>
-			<style>
-				a#fromIcwp { padding: 0 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); color: blue; font-weight: bold; }
-			</style>
-			<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall'); ?>">
+			<style>a#fromIcwp { padding: 0 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); color: blue; font-weight: bold; }</style>
+			<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall'); ?>&<?php echo $sMetaFlag; ?>=1">
 				<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
-				<input type="hidden" value="1" name="<?php echo self::$sOptionPrefix; ?>hide_update_notice" id="<?php echo self::$sOptionPrefix; ?>hide_update_notice">
-				<input type="hidden" value="<?php echo $nUserId; ?>" name="user_id" id="user_id">
+				<input type="hidden" value="1" name="<?php echo $sMetaFlag; ?>" id="<?php echo $sMetaFlag; ?>">
+				<p>
 					<?php _wpsf_e( 'Note: WordPress Simple Firewall plugin does not automatically turn on when you install/update.' ); ?>
 					<?php printf( _wpsf__( 'There may also be %simportant updates to read about%s.' ), '<a href="http://icwp.io/27" id="fromIcwp" title="'._wpsf__( 'WordPress Simple Firewall' ).'" target="_blank">', '</a>' ); ?>
+				</p>
 				</h4>
 				<input type="submit" value="<?php _wpsf_e( 'Okay, show me the dashboard' ); ?>" name="submit" class="button" style="float:left; margin-bottom:10px;">
 				<div style="clear:both;"></div>
@@ -852,7 +863,44 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		ob_end_clean();
 		return $sNotice;
 	}
-		
+
+	/**
+	 * @return string|void
+	 */
+	protected function getAdminNoticeHtml_MailingListSignup() {
+
+		if ( $this->getInstallationDays() > 3 ) {
+			return '';
+		}
+
+		$sMetaFlag = self::$sOptionPrefix.'hide_mailing_list_signup';
+
+		$sRedirectPage = 'admin.php?page=icwp-wpsf';
+		ob_start(); ?>
+		<!-- Begin MailChimp Signup Form -->
+		<div id="mc_embed_signup">
+			<form class="form form-inline" action="http://hostliketoast.us2.list-manage1.com/subscribe/post?u=e736870223389e44fb8915c9a&amp;id=0e1d527259" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+				<p>The WordPress Simple Firewall team has launched a education initiative to raise awareness of WordPress security and to provide further help with the WordPress Simple Firewall plugin. Get Involved here:</p>
+				<input type="text" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Your Email">
+				<input type="text" value="" name="FNAME" class="" id="mce-FNAME" placeholder="Your Name">
+				<input type="submit" value="Get The News" name="subscribe" id="mc-embedded-subscribe" class="button">
+				<a href="<?php echo network_admin_url('admin.php?page=icwp-wpsf').'&'.$sMetaFlag.'=1';?>">Dismiss</a>
+				<div id="mce-responses" class="clear">
+					<div class="response" id="mce-error-response" style="display:none"></div>
+					<div class="response" id="mce-success-response" style="display:none"></div>
+				</div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+				<div style="position: absolute; left: -5000px;"><input type="text" name="b_e736870223389e44fb8915c9a_0e1d527259" tabindex="-1" value=""></div>
+				<div class="clear"></div>
+			</form>
+		</div>
+
+		<!--End mc_embed_signup-->
+		<?php
+		$sNotice = ob_get_contents();
+		ob_end_clean();
+		return $sNotice;
+	}
+
 	protected function getAdminNoticeHtml_OptionsUpdated() {
 		$sAdminFeedbackNotice = $this->m_oPluginMainOptions->getOpt( 'feedback_admin_notice' );
 		if ( !empty( $sAdminFeedbackNotice ) ) {
@@ -867,6 +915,18 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 */
 	protected function getShowAdminNotices() {
 		return $this->m_oPluginMainOptions->getOpt('enable_upgrade_admin_notice') == 'Y';
+	}
+
+	/**
+	 * @return int
+	 */
+	protected function getInstallationDays() {
+		$this->loadOptionsHandler( 'PluginMain' );
+		$nTimeInstalled = $this->m_oPluginMainOptions->getOpt( 'installation_time' );
+		if ( empty($nTimeInstalled) ) {
+			return 0;
+		}
+		return round( ( time() - $nTimeInstalled ) / DAY_IN_SECONDS );
 	}
 }
 
