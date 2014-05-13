@@ -146,8 +146,8 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 	}
 	
-	public function setLogging() {
-		parent::setLogging( $this->m_aOptions[ 'enable_login_protect_log' ] == 'Y' );
+	public function setLogging( $infEnableLogging = true ) {
+		parent::setLogging( $this->getOption('enable_login_protect_log') == 'Y' );
 	}
 
 	/**

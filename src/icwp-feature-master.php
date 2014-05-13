@@ -206,7 +206,8 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 			$this->{$sProcessorVarName} = $oTemp;
 		}
 		if ( $this->loadOptionsHandler( $insProcessorName ) ) {
-			$this->{$sProcessorVarName}->setOptions( $this->{$sOptionsHandlerVarName}->getPluginOptionsValues() );
+			$aOptionsValues = $this->{$sOptionsHandlerVarName}->getPluginOptionsValues();
+			$this->{$sProcessorVarName}->setOptions( $aOptionsValues );
 		}
 		return $this->{$sProcessorVarName};
 	}

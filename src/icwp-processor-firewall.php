@@ -96,11 +96,11 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		);
 		$this->m_aBlockSettings = array();
 		foreach( $aSettingSlugs as $sSettingKey ) {
-			$this->m_aBlockSettings[ $sSettingKey ] = $this->m_aOptions[$sSettingKey] == 'Y';
+			$this->m_aBlockSettings[ $sSettingKey ] = $this->getOption( $sSettingKey ) == 'Y';
 		}
 
 		$this->m_aCustomWhitelistPageParams = is_array( $this->m_aOptions[ 'page_params_whitelist' ] )? $this->m_aOptions[ 'page_params_whitelist' ] : array();
-		$this->setLogging( $this->m_aOptions[ 'enable_firewall_log' ] == 'Y' );
+		$this->setLogging( $this->getOption('enable_firewall_log') == 'Y' );
 	}
 
 	/**
@@ -148,7 +148,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 */
 	public function doFirewallCheck() {
 		
-		if ( $this->m_aOptions[ 'whitelist_admins' ] == 'Y' && is_super_admin() ) {
+		if ( $this->getOption('whitelist_admins') == 'Y' && is_super_admin() ) {
 			$this->logInfo( _wpsf__('Logged-in administrators currently by-pass all firewall checking.') );
 			return true;
 		}
