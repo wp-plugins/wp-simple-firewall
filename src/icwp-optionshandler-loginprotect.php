@@ -57,7 +57,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Enable Login Protect' ),
 					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
 					_wpsf__( 'Regardless of any other settings, this option will turn off the Login Protect feature, or enable your selected Login Protect options' ),
-					'<a href="http://icwp.io/3y" target="_blank">'._wpsf__( 'more info' ).'</a>'
+					'<a href="http://icwp.io/51" target="_blank">'._wpsf__( 'more info' ).'</a>'
+					.' | <a href="http://icwp.io/50" target="_blank">'._wpsf__( 'blog' ).'</a>'
 				)
 			),
 		);
@@ -71,7 +72,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'ip_addresses',
 					_wpsf__( 'Whitelist IP Addresses' ),
 					_wpsf__( 'Specify IP Addresses that by-pass all Login Protect rules' ),
-					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
+					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' ),
+					'<a href="http://icwp.io/52" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
 		);
@@ -238,8 +240,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 		$this->m_aOptions = array(
 			$aOptionsBase,
 			$aWhitelist,
-			$aTwoFactorAuth,
 			$aLoginProtect,
+			$aTwoFactorAuth,
 			$aYubikeyProtect,
 			$aLoggingSection
 		);

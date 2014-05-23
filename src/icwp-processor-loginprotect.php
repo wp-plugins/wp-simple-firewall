@@ -125,15 +125,15 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 	/**
-	 * @param string $insType		can be either 'ip' or 'cookie'. If empty, both are checked looking for either.
+	 * @param string $sType		can be either 'ip' or 'cookie'. If empty, both are checked looking for either.
 	 * @return bool
 	 */
-	public function getIsTwoFactorAuthOn( $insType = '' ) {
+	protected function getIsTwoFactorAuthOn( $sType = '' ) {
 
-		$fIp = isset( $this->m_aOptions['enable_two_factor_auth_by_ip'] ) && ($this->m_aOptions['enable_two_factor_auth_by_ip'] == 'Y');
-		$fCookie = isset( $this->m_aOptions['enable_two_factor_auth_by_cookie'] ) && ($this->m_aOptions['enable_two_factor_auth_by_cookie'] == 'Y');
+		$fIp = $this->getOption( 'enable_two_factor_auth_by_ip', 'N' ) == 'Y';
+		$fCookie = $this->getOption( 'enable_two_factor_auth_by_cookie', 'N' ) == 'Y';
 
-		switch( $insType ) {
+		switch( $sType ) {
 			case 'ip':
 				return $fIp;
 				break;
@@ -192,12 +192,13 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		if ( $this->getIsTwoFactorAuthOn() ) {
 
 			// User has clicked a link in their email to validate their IP address for login.
-			if ( isset( $_GET['wpsf-action'] ) && $_GET['wpsf-action'] == 'linkauth' ) {
+			$sWpsfAction = ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-action' );
+			if ( $sWpsfAction == 'linkauth' ) {
 				$this->validateUserAuthLink();
 			}
 
 			// If their click was successful we give them a lovely message
-			if ( isset( $_GET['wpsfipverified']) ) {
+			if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsfuserverified' ) ) {
 				add_filter( 'login_message', array( $this, 'displayVerifiedUserMessage_Filter' ) );
 			}
 
@@ -306,22 +307,26 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * Checks the link details to ensure all is valid before authorizing the user.
 	 */
 	public function validateUserAuthLink() {
+		$this->loadDataProcessor();
 		// wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid
-	
-		if ( !isset( $_GET['wpsfkey'] ) || $_GET['wpsfkey'] !== $this->m_sSecretKey ) {
+
+		if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsfkey' ) !== $this->m_sSecretKey ) {
 			return false;
 		}
-		if ( empty( $_GET['username'] ) || empty( $_GET['uniqueid'] ) ) {
+
+		$sUsername = ICWP_WPSF_DataProcessor::FetchGet( 'username' );
+		$sUniqueId = ICWP_WPSF_DataProcessor::FetchGet( 'uniqueid' );
+		if ( empty( $sUsername ) || empty( $sUniqueId ) ) {
 			return false;
 		}
 	
 		$aWhere = array(
-			'unique_id'		=> $_GET['uniqueid'],
-			'wp_username'	=> $_GET['username']
+			'unique_id'		=> $sUniqueId,
+			'wp_username'	=> $sUsername
 		);
 	
-		if ( $this->loginAuthMakeActive( $aWhere ) ) {
-			$this->redirectToLogin( '?wpsfipverified=1' );
+		if ( $this->doMakePendingLoginAuthActive( $aWhere ) ) {
+			$this->redirectToLogin( '?wpsfuserverified=1' );
 		}
 		else {
 			header( "Location: ".home_url() );
@@ -573,13 +578,12 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 				return $inoUser;
 			}
 
-			$aData = array( 'wp_username' => $insUsername );
-			if ( $this->isUserVerified( $aData ) ) {
+			if ( $this->isUserVerified( $insUsername ) ) {
 				return $inoUser;
 			}
 			else {
 				// Create a new 2-factor auth pending entry
-				$aNewAuthData = $this->loginAuthAddPending( array( 'wp_username' => $inoUser->user_login ) );
+				$aNewAuthData = $this->addNewPendingLoginAuth( $inoUser->user_login );
 	
 				// Now send email with authentication link for user.
 				if ( is_array( $aNewAuthData ) ) {
@@ -587,7 +591,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 					
 					// Failure to send email - log them in.
 					if ( !$fEmailSuccess && $this->getTwoFactorByPassOnFail() ) {
-						$this->loginAuthMakeActive( $aNewAuthData );
+						$this->doMakePendingLoginAuthActive( $aNewAuthData );
 						return $inoUser;
 					}
 				}
@@ -721,13 +725,12 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 	
 	/**
-	 * @param array $inaData
+	 * @param string $sUsername
 	 * @return boolean
 	 */
-	public function loginAuthAddPending( $inaData ) {
+	public function addNewPendingLoginAuth( $sUsername ) {
 		
-		$aChecks = array( 'wp_username' );
-		if ( !$this->validateParameters( $inaData, $aChecks) ) {
+		if ( empty( $sUsername ) ) {
 			return false;
 		}
 		
@@ -741,23 +744,25 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$aOldWhere = array(
 			'pending'		=> 1,
 			'deleted_at'	=> 0,
-			'wp_username'	=> $inaData[ 'wp_username' ]
+			'wp_username'	=> $sUsername
 		);
 		$this->updateRowsFromTable( $aOldData, $aOldWhere );
 
 		// Now add new pending entry
-		$inaData[ 'unique_id' ]		= uniqid();
-		$inaData[ 'ip_long' ]		= $this->m_nRequestIp;
-		$inaData[ 'ip' ]			= long2ip( $this->m_nRequestIp );
-		$inaData[ 'pending' ]		= 1;
-		$inaData[ 'created_at' ]	= time();
+		$aNewData = array();
+		$aNewData[ 'unique_id' ]	= uniqid();
+		$aNewData[ 'ip_long' ]		= $this->m_nRequestIp;
+		$aNewData[ 'ip' ]			= long2ip( $this->m_nRequestIp );
+		$aNewData[ 'wp_username' ]	= $sUsername;
+		$aNewData[ 'pending' ]		= 1;
+		$aNewData[ 'created_at' ]	= time();
 
-		$mResult = $this->insertIntoTable( $inaData );
+		$mResult = $this->insertIntoTable( $aNewData );
 		if ( $mResult ) {
 			$this->logInfo(
-				sprintf( _wpsf__('User "%s" created a pending Two-Factor Authentication for IP Address "%s".'), $inaData[ 'wp_username' ], $inaData[ 'ip' ] )
+				sprintf( _wpsf__('User "%s" created a pending Two-Factor Authentication for IP Address "%s".'), $sUsername, $aNewData[ 'ip' ] )
 			);
-			$mResult = $inaData;
+			$mResult = $aNewData;
 		}
 		return $mResult;
 	}
@@ -768,16 +773,41 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * @param array $inaWhere - unique_id, wp_username
 	 * @return boolean
 	 */
-	public function loginAuthMakeActive( $inaWhere ) {
+	public function doMakePendingLoginAuthActive( $inaWhere ) {
 		
 		$aChecks = array( 'unique_id', 'wp_username' );
 		if ( !$this->validateParameters( $inaWhere, $aChecks ) ) {
 			return false;
 		}
 		
+		// First set any active, non-pending entries for the given user to be deleted
+		$this->terminateActiveLoginForUser( $inaWhere['wp_username'] );
+
+		// Now activate the new one.
+
+		// Updates the database
+		$inaWhere['pending']	= 1;
+		$inaWhere['deleted_at']	= 0;
+		$mResult = $this->updateRowsFromTable( array( 'pending' => 0 ), $inaWhere );
+
+			// Set the necessary cookie
+		$this->setAuthActiveCookie( $inaWhere['unique_id'] );
+
+		if ( $mResult ) {
+			$this->logInfo(
+				sprintf( _wpsf__('User "%s" verified their identity using Two-Factor Authentication.'), $inaWhere[ 'wp_username' ] )
+			);
+		}
+		return $mResult;
+	}
+
+	/**
+	 * Given a username will soft-delete any currently active two-factor authentication.
+	 *
+	 * @param $sUsername
+	 */
+	protected function terminateActiveLoginForUser( $sUsername ) {
 		$sNow = time();
-		
-		// First set any active, non-pending entries for the given user to be deleted.
 		$sQuery = "
 			UPDATE `%s`
 			SET `deleted_at`	= '%s',
@@ -791,25 +821,9 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			$this->m_sTableName,
 			$sNow,
 			$sNow,
-			esc_sql( $inaWhere['wp_username'] )
+			esc_sql( $sUsername )
 		);
 		$this->doSql( $sQuery );
-
-		// Now activate the new one.
-
-		// Set the necessary cookie
-		$this->setAuthActiveCookie( $inaWhere['unique_id'] );
-
-		// Updates the database
-		$inaWhere['pending']	= 1;
-		$inaWhere['deleted_at']	= 0;
-		$mResult = $this->updateRowsFromTable( array( 'pending' => 0 ), $inaWhere );
-		if ( $mResult ) {
-			$this->logInfo(
-				sprintf( _wpsf__('User "%s" verified their identity using Two-Factor Authentication.'), $inaWhere[ 'wp_username' ] )
-			);
-		}
-		return $mResult;
 	}
 
 	/**
@@ -823,16 +837,11 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	/**
 	 * Checks whether a given user is authenticated.
 	 * 
-	 * @param array $inaWhere
+	 * @param string $sUsername
 	 * @return boolean
 	 */
-	public function isUserVerified( $inaWhere ) {
-		
-		$aChecks = array( 'wp_username' );
-		if ( !$this->validateParameters( $inaWhere, $aChecks ) ) {
-			return false;
-		}
-		
+	public function isUserVerified( $sUsername ) {
+
 		$sQuery = "
 			SELECT *
 			FROM `%s`
@@ -842,15 +851,13 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 				AND `deleted_at`	= '0'
 				AND `expired_at`	= '0'
 		";
-//				AND `ip_long`		= '%s'
+
 		$sQuery = sprintf( $sQuery,
 			$this->m_sTableName,
-			$inaWhere['wp_username']
+			$sUsername
 		);
-//			$this->m_nRequestIp
 
 		$mResult = $this->selectCustomFromTable( $sQuery );
-
 
 		if ( is_array( $mResult ) && count( $mResult ) == 1 ) {
 			// Now we test based on which types of 2-factor auth is enabled
@@ -866,22 +873,29 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 		else {
 			$this->logWarning(
-				sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address "%s"'), $inaWhere[ 'wp_username' ], long2ip( $this->m_nRequestIp ) )
+				sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address "%s"'), $sUsername, long2ip( $this->m_nRequestIp ) )
 			);
 			return false;
 		}
 	}
 
-	public function isAuthCookieValid( $insUniqueId ) {
-		return isset( $_COOKIE[self::AuthActiveCookie] ) && $_COOKIE[self::AuthActiveCookie] == $insUniqueId;
+	/**
+	 * @param $sUniqueId
+	 * @return bool
+	 */
+	protected function isAuthCookieValid( $sUniqueId ) {
+		$this->loadDataProcessor();
+		return ICWP_WPSF_DataProcessor::FetchCookie( self::AuthActiveCookie ) == $sUniqueId;
 	}
-	
+
+	/**
+	 * If it cannot verify current user, will forcefully log them out and redirect to login
+	 */
 	public function verifyCurrentUser() {
 		$oUser = wp_get_current_user();
 		if ( is_object( $oUser ) && $oUser instanceof WP_User ) {
 			
-			$aData = array( 'wp_username' => $oUser->user_login );
-			if ( $this->getIsUserLevelSubjectToTwoFactorAuth( $oUser->user_level ) && !$this->isUserVerified( $aData ) ) {
+			if ( $this->getIsUserLevelSubjectToTwoFactorAuth( $oUser->user_level ) && !$this->isUserVerified( $oUser->user_login ) ) {
 				$this->logWarning(
 					sprintf( _wpsf__('User "%s" was forcefully logged out as they are not verified.'), $oUser->user_login )
 				);
@@ -894,15 +908,14 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	/**
 	 * Given the necessary components, creates the 2-factor verification link for giving to the user.
 	 * 
-	 * @param string $insKey
-	 * @param string $insUser
-	 * @param string $insUniqueId
+	 * @param string $sUser
+	 * @param string $sUniqueId
 	 * @return string
 	 */
-	public function getTwoFactorVerifyLink( $insKey, $insUser, $insUniqueId ) {
+	protected function generateTwoFactorVerifyLink( $sUser, $sUniqueId ) {
 		$sSiteUrl = home_url() . '?wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid=%s';
 		$sAction = 'linkauth';
-		return sprintf( $sSiteUrl, $insKey, $sAction, $insUser, $insUniqueId ); 
+		return sprintf( $sSiteUrl, $this->m_sSecretKey, $sAction, $sUser, $sUniqueId );
 	}
 
 	/**
@@ -914,7 +927,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	public function sendEmailTwoFactorVerify( WP_User $inoUser, $insIpAddress, $insUniqueId ) {
 	
 		$sEmail = $inoUser->user_email;
-		$sAuthLink = $this->getTwoFactorVerifyLink( $this->m_sSecretKey, $inoUser->user_login, $insUniqueId );
+		$sAuthLink = $this->generateTwoFactorVerifyLink( $inoUser->user_login, $insUniqueId );
 		
 		$aMessage = array(
 			_wpsf__('You, or someone pretending to be you, just attempted to login into your WordPress site.'),

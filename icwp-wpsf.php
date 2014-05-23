@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.5.9
+ * Version: 2.5.10
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.5.9';
+	const PluginVersion					= '2.5.10';
 	/**
 	 * @var string
 	 */
@@ -837,8 +837,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	
 	protected function getAdminNoticeHtml_VersionUpgrade() {
 
-		// for now just showing this for the first 24hrs of installation.
-		if ( $this->getInstallationDays() < 1 ) {
+		// for now just showing this for the first 3 days of installation.
+		if ( $this->getInstallationDays() < 3 ) {
 			return '';
 		}
 
@@ -869,21 +869,22 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 */
 	protected function getAdminNoticeHtml_MailingListSignup() {
 
-		if ( $this->getInstallationDays() > 3 ) {
+		$nDays = $this->getInstallationDays();
+		if ( $nDays > 1 ) {
 			return '';
 		}
 
 		$sMetaFlag = self::$sOptionPrefix.'hide_mailing_list_signup';
 
-		$sRedirectPage = 'admin.php?page=icwp-wpsf';
 		ob_start(); ?>
 		<!-- Begin MailChimp Signup Form -->
 		<div id="mc_embed_signup">
 			<form class="form form-inline" action="http://hostliketoast.us2.list-manage1.com/subscribe/post?u=e736870223389e44fb8915c9a&amp;id=0e1d527259" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
 				<p>The WordPress Simple Firewall team has launched a education initiative to raise awareness of WordPress security and to provide further help with the WordPress Simple Firewall plugin. Get Involved here:</p>
-				<input type="text" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Your Email">
-				<input type="text" value="" name="FNAME" class="" id="mce-FNAME" placeholder="Your Name">
-				<input type="submit" value="Get The News" name="subscribe" id="mc-embedded-subscribe" class="button">
+				<input type="text" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Your Email" />
+				<input type="text" value="" name="FNAME" class="" id="mce-FNAME" placeholder="Your Name" />
+				<input type="hidden" value="" name="DAYS" class="" id="mce-DAYS" value="<?php echo $nDays; ?>" />
+				<input type="submit" value="Get The News" name="subscribe" id="mc-embedded-subscribe" class="button" />
 				<a href="<?php echo network_admin_url('admin.php?page=icwp-wpsf').'&'.$sMetaFlag.'=1';?>">Dismiss</a>
 				<div id="mce-responses" class="clear">
 					<div class="response" id="mce-error-response" style="display:none"></div>

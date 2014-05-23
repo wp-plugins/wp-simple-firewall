@@ -239,6 +239,11 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
+= 2.5.10 =
+
+*	FIX:        For PHP warning while in php strict mode.
+*	CLEAN:      some cleaning up of code.
+
 = 2.5.9 =
 
 *	FEATURE:    Added option to try and exclude search engine bots from firewall checking option - OFF by default.

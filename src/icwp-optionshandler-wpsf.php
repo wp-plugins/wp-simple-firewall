@@ -57,7 +57,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 						_wpsf__( 'Enforce Admin Access Restriction' ),
 						_wpsf__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.' ),
 						'<a href="http://icwp.io/40" target="_blank">'._wpsf__( 'more info' ).'</a>'
-						.' | <a href="http://icwp.io/45" target="_blank">'._wpsf__( 'blog' ).'</a>'
+						.' | <a href="http://icwp.io/4z" target="_blank">'._wpsf__( 'blog' ).'</a>'
 					),
 					array(
 						'admin_access_timeout',
