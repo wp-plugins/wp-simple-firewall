@@ -239,10 +239,15 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
-= 2.5.10 =
+= 2.6.0 =
 
-*	FIX:        For PHP warning while in php strict mode.
-*	CLEAN:      some cleaning up of code.
+**Major Features Release: Please review SPAM comments filtering options to determine where SPAM goes**
+
+*	FEATURE:    Added Human SPAM comments filtering - replacement for Akismet that doesn't use or send any data to 3rd party services.
+*	ENHANCED:   Two-Factor Login now automatically logs in the user to the admin area without them having to re-login again.
+*	ENHANCED:   Spam filter/scanning adds an explanation to the SPAM content to show why a message was filtered.
+*	FIXES:      For PHP warnings while in php strict mode.
+*	CLEAN:      Much cleaning up of code.
 
 = 2.5.9 =
 

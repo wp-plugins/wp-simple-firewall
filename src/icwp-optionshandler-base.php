@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  * 
  * Version: 2013-11-15-V1

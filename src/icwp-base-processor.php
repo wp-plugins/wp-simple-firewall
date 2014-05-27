@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  * 
  * Version: 2013-08-27-B
@@ -154,6 +154,17 @@ class ICWP_BaseProcessor_V2 {
 	 */
 	public function getOption( $insKey, $inmDefault = false ) {
 		return isset( $this->m_aOptions[$insKey] )? $this->m_aOptions[$insKey] : $inmDefault;
+	}
+
+	/**
+	 * @param $sKey
+	 * @param mixed $mValueToTest
+	 * @param boolean $fStrict
+	 * @return bool
+	 */
+	public function getIsOption( $sKey, $mValueToTest, $fStrict = false ) {
+		$mOptionValue = $this->getOption($sKey);
+		return $fStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
 	}
 
 	/**
@@ -353,6 +364,22 @@ class ICWP_BaseProcessor_V2 {
 	 */
 	protected function loadDataProcessor() {
 		require_once( dirname(__FILE__) . '/icwp-data-processor.php' );
+	}
+
+	/**
+	 * @return ICWP_WpFilesystem_V1
+	 */
+	protected function loadFileSystemProcessor() {
+		require_once( dirname(__FILE__) . '/icwp-wpfilesystem.php' );
+		return ICWP_WpFilesystem_V1::GetInstance();
+	}
+
+	/**
+	 * @return ICWP_WpFunctions_V2
+	 */
+	protected function loadWpFunctionsProcessor() {
+		require_once( dirname(__FILE__) . '/icwp-wpfunctions.php' );
+		return ICWP_WpFunctions_V2::GetInstance();
 	}
 }
 

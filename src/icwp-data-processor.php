@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  * 
  * Version: 2013-08-27-A
@@ -27,8 +27,9 @@ class ICWP_DataProcessor_V1 {
 	
 	/**
 	 * Cloudflare compatible.
-	 * 
-	 * @return number - visitor IP Address as IP2Long
+	 *
+	 * @param boolean $infAsLong
+	 * @return bool|integer - visitor IP Address as IP2Long
 	 */
 	public static function GetVisitorIpAddress( $infAsLong = true ) {
 	

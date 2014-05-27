@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
  * This is
@@ -276,15 +276,16 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 
 	/**
 	 * 
-	 * @param type $insProcessorName
-	 * @param type $infLoad
+	 * @param string $insProcessorName
+	 * @param bool $infLoad
 	 * @return null|ICWP_WPSF_BaseProcessor
 	 */
 	protected function getProcessorVar( $insProcessorName, $infLoad = false ) {
 		if ( !$this->getIsFeature( $insProcessorName ) ) {
 			return null;
 		}
-		if ( $infLoad ) {
+		$sProcessorVariable = 'm_o'.$insProcessorName.'Processor';
+		if ( $infLoad || !isset( $this->{$sProcessorVariable} ) ) {
 			$this->loadProcessor( $insProcessorName );
 		}
 		$sProcessorVariable = 'm_o'.$insProcessorName.'Processor';

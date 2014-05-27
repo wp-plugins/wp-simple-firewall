@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -17,11 +17,13 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_CommentsFilterProcessor_V1') ):
+if ( !class_exists('ICWP_CommentsFilterProcessor_V2') ):
 
-class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 
 	const Slug = 'comments_filter';
+
+	const Spam_Blacklist_Source = 'https://raw.githubusercontent.com/splorp/wordpress-comment-blacklist/master/blacklist.txt';
 	
 	/**
 	 * @var string
@@ -59,7 +61,15 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * @var string
 	 */
 	protected $m_sGaspKey;
-	
+	/**
+	 * @var string
+	 */
+	protected $sCommentStatus;
+	/**
+	 * @var string
+	 */
+	protected $sCommentStatusExplanation;
+
 	/**
 	 * Flag as to whether Two Factor Authentication will be by-passed when sending the verification
 	 * email fails.
@@ -80,21 +90,197 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	public function reset() {
 		parent::reset();
 		$this->m_sUniqueToken = '';
-		$this->m_sCommentStatus = '';
+		$this->sCommentStatus = '';
+		$this->sCommentStatusExplanation = '';
 	}
 	
 	/**
 	 */
 	public function run() {
 		parent::run();
-		
+
+		$fDoSetCommentStatus = false;
+
 		// Add GASP checking to the comment form.
-		if ( $this->m_aOptions[ 'enable_comments_gasp_protection' ] == 'Y' ) {
+		if ( $this->getIsOption('enable_comments_gasp_protection', 'Y') ) {
 			add_action(	'comment_form',					array( $this, 'printGaspFormHook_Action' ), 1 );
 			add_action(	'comment_form',					array( $this, 'printGaspFormParts_Action' ), 2 );
-			add_filter( 'preprocess_comment',			array( $this, 'doGaspCommentCheck_Filter' ), 1, 1 );
-			add_filter( 'pre_comment_approved',			array( $this, 'doGaspStatusSet_Filter' ), 1, 1 );
 		}
+
+		add_filter( 'preprocess_comment',			array( $this, 'doCommentPreProcess_Filter' ), 1, 1 );
+		add_filter( 'pre_comment_approved',			array( $this, 'doSetCommentStatus_Filter' ), 1 );
+	}
+
+	/**
+	 * @param array $aCommentData
+	 * @return array
+	 */
+	public function doCommentPreProcess_Filter( $aCommentData ) {
+
+		if ( !$this->getIfDoCommentsCheck() ) {
+			return $aCommentData;
+		}
+
+		$this->doGaspCommentCheck( $aCommentData['comment_post_ID'] );
+		$this->doBlacklistSpamCheck( $aCommentData );
+
+		// If either spam filtering left an explanation, we add it here
+		if ( !empty( $this->sCommentStatusExplanation ) ) {
+			$aCommentData['comment_content'] = $this->sCommentStatusExplanation.$aCommentData['comment_content'];
+		}
+
+		return $aCommentData;
+	}
+
+	/**
+	 * Performs the actual GASP comment checking
+	 *
+	 * @param $nPostId
+	 */
+	protected function doGaspCommentCheck( $nPostId ) {
+
+		//Check that we haven't already marked the comment through another scan
+		if ( !empty( $this->sCommentStatus ) || !$this->getIsOption('enable_comments_gasp_protection', 'Y') ) {
+			return;
+		}
+
+		$fIsSpam = true;
+		$sExplanation = '';
+
+		// we have the cb name, is it set?
+		if( !isset( $_POST['cb_nombre'] ) || !isset( $_POST[ $_POST['cb_nombre'] ] ) ) {
+			$sExplanation = _wpsf__('Failed GASP Bot Filter Test (checkbox)' );
+		}
+		// honeypot check
+		else if ( isset( $_POST['sugar_sweet_email'] ) && $_POST['sugar_sweet_email'] !== '' ) {
+			$sExplanation = _wpsf__('Failed GASP Bot Filter Test (honeypot)' );
+		}
+		// check the unique comment token is present
+		else if ( !isset( $_POST['comment_token'] ) || !$this->checkCommentToken( $_POST['comment_token'], $nPostId ) ) {
+			$sExplanation = _wpsf__('Failed GASP Bot Filter Test (comment token failure)' );
+		}
+		else {
+			$fIsSpam = false;
+		}
+
+		if ( $fIsSpam ) {
+			$this->sCommentStatus = $this->getOption('comments_default_action_spam_bot');
+			$this->setCommentStatusExplanation( $sExplanation );
+		}
+	}
+
+	/**
+	 * @param $aCommentData
+	 */
+	protected function doBlacklistSpamCheck( $aCommentData ) {
+		$this->loadDataProcessor();
+		$this->doBlacklistSpamCheck_Action(
+			$aCommentData['comment_author'],
+			$aCommentData['comment_author_email'],
+			$aCommentData['comment_author_url'],
+			$aCommentData['comment_content'],
+			ICWP_WPSF_DataProcessor::GetVisitorIpAddress( false ),
+			isset( $_SERVER['HTTP_USER_AGENT'] ) ? substr( $_SERVER['HTTP_USER_AGENT'], 0, 254 ) : ''
+		);
+	}
+
+	/**
+	 * Does the same as the WordPress blacklist filter, but more intelligently and with a nod towards much higher performance.
+	 *
+	 * It also uses defined options for which fields are checked for SPAM instead of just checking EVERYTHING!
+	 *
+	 * @param string $sAuthor
+	 * @param string $sEmail
+	 * @param string $sUrl
+	 * @param string $sComment
+	 * @param string $sUserIp
+	 * @param string $sUserAgent
+	 */
+	public function doBlacklistSpamCheck_Action( $sAuthor, $sEmail, $sUrl, $sComment, $sUserIp, $sUserAgent ) {
+
+		// Check that we haven't already marked the comment through another scan, say GASP
+		if ( !empty( $this->sCommentStatus ) || !$this->getIsOption('enable_comments_human_spam_filter', 'Y') ) {
+			return;
+		}
+
+		// read the file of spam words
+		$sSpamWords = $this->getSpamBlacklist();
+		if ( empty($sSpamWords) ) {
+			return;
+		}
+		$aWords = explode( "\n", $sSpamWords );
+
+		$aItemsMap = array(
+			'author_name'		=> $sAuthor,
+			'author_email'		=> $sEmail,
+			'comment_content'	=> $sComment,
+			'url'				=> $sUrl,
+			'ip_address'		=> $sUserIp,
+			'user_agent'		=> $sUserAgent
+		);
+		$aDesiredItemsToCheck = $this->getOption('enable_comments_human_spam_filter_items');
+		$aItemsToCheck = array();
+		foreach( $aDesiredItemsToCheck as $sKey ) {
+			$aItemsToCheck[] = $aItemsMap[$sKey];
+		}
+
+		foreach ( $aWords as $sWord ) {
+			foreach( $aItemsToCheck as $sItem ) {
+				if ( stripos( $sItem, $sWord ) !== false ) {
+					//mark as spam and exit;
+					$this->sCommentStatus = $this->getOption('comments_default_action_human_spam');
+					$this->setCommentStatusExplanation( sprintf( _wpsf__('Human SPAM filter found "%s"' ), $sWord ) );
+					break 2;
+				}
+			}
+		}
+	}
+
+	/**
+	 * @return null|string
+	 */
+	protected function getSpamBlacklist() {
+		$sListFile = dirname(__FILE__).ICWP_DS.'..'.ICWP_DS.'resources'.ICWP_DS.'spamblacklist.txt';
+		$this->doSpamBlacklistImport( $sListFile );
+		$oFs = $this->loadFileSystemProcessor();
+		$sList = $oFs->getFileContent( $sListFile );
+		return $sList;
+	}
+
+	/**
+	 * @param string $sListFile - the location of the file containing or to contain the spam content list
+	 */
+	protected function doSpamBlacklistImport( $sListFile ) {
+		$oFs = $this->loadFileSystemProcessor();
+		if ( !$oFs->exists( $sListFile ) ) {
+			$sRawList = $this->doSpamBlacklistDownload();
+
+			if ( empty($sRawList) ) {
+				$sList = '';
+			}
+			else {
+				// filter out empty lines
+				$aWords = explode( "\n", $sRawList );
+				foreach ( $aWords as $nIndex => $sWord ) {
+					$sWord = trim($sWord);
+					if ( empty($sWord) ) {
+						unset( $aWords[$nIndex] );
+					}
+				}
+				$sList = implode( "\n", $aWords );
+			}
+
+			// save the list for the future.
+			$oFs->putFileContent( $sListFile, $sList );
+		}
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function doSpamBlacklistDownload() {
+		$oFs = $this->loadFileSystemProcessor();
+		return $oFs->getUrlContent( self::Spam_Blacklist_Source );
 	}
 	
 	/**
@@ -102,9 +288,10 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function printGaspFormHook_Action() {
 		
-		if ( !$this->getDoCommentsCheck() ) {
+		if ( !$this->getIfDoCommentsCheck() ) {
 			return;
 		}
+
 		global $post;
 		if ( !isset( $post ) || $post->comment_status != 'open' ) {
 			return;
@@ -123,11 +310,11 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * 
 	 * @return boolean
 	 */
-	protected function getDoCommentsCheck() {
+	protected function getIfDoCommentsCheck() {
 		if ( !is_user_logged_in() ) {
 			return true;
 		}
-		else if ( $this->m_aOptions[ 'enable_comments_gasp_protection_for_logged_in' ] == 'Y' ) {
+		else if ( $this->getIsOption('enable_comments_gasp_protection_for_logged_in', 'Y') ) {
 			return true;
 		}
 		return false;
@@ -137,7 +324,7 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * @return void
 	 */
 	public function printGaspFormParts_Action() {
-		if ( $this->getDoCommentsCheck() ) {
+		if ( $this->getIfDoCommentsCheck() ) {
 			echo $this->getGaspCommentsHtml();
 		}
 	}
@@ -145,7 +332,7 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	/**
 	 * @return string
 	 */
-	public function getGaspCommentsHookHtml() {
+	protected function getGaspCommentsHookHtml() {
 		$sId = $this->m_sUniqueFormId;
 		$sReturn = '<p id="'.$sId.'"></p>'; // we use this unique <p> to hook onto using javascript
 		$sReturn .= '<input type="hidden" id="_sugar_sweet_email" name="sugar_sweet_email" value="" />';
@@ -153,24 +340,24 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		return $sReturn;
 	}
 	
-	public function getGaspCommentsHtml() {
+	protected function getGaspCommentsHtml() {
 
 		$sId			= $this->m_sUniqueFormId;
-		$sConfirm		= stripslashes( $this->m_aOptions[ 'custom_message_checkbox' ] );
-		$sAlert			= stripslashes( $this->m_aOptions[ 'custom_message_alert' ] );
-		$sCommentWait	= stripslashes( $this->m_aOptions[ 'custom_message_comment_wait' ] );
-		$nCooldown		= $this->m_aOptions[ 'comments_cooldown_interval' ];
-		$nExpire		= $this->m_aOptions[ 'comments_token_expire_interval' ];
-		
+		$sConfirm		= stripslashes( $this->getOption('custom_message_checkbox') );
+		$sAlert			= stripslashes( $this->getOption('custom_message_alert') );
+		$sCommentWait	= stripslashes( $this->getOption('custom_message_comment_wait') );
+		$nCooldown		= $this->getOption('comments_cooldown_interval');
+		$nExpire		= $this->getOption('comments_token_expire_interval');
+
 		if ( strpos( $sCommentWait, '%s' ) !== false ) {
 			$sCommentWait = sprintf( $sCommentWait, $nCooldown );
-			$sJsCommentWait = str_replace( '%s', '"+nRemaining+"', $this->m_aOptions[ 'custom_message_comment_wait' ] );
+			$sJsCommentWait = str_replace( '%s', '"+nRemaining+"', $this->getOption('custom_message_comment_wait') );
 			$sJsCommentWait = '"'.$sJsCommentWait.'"';
 		}
 		else {
-			$sJsCommentWait = '"'. $this->m_aOptions[ 'custom_message_comment_wait' ].'"';
+			$sJsCommentWait = '"'. $this->getOption('custom_message_comment_wait').'"';
 		}
-		$sCommentReload = $this->m_aOptions[ 'custom_message_comment_reload' ];
+		$sCommentReload = $this->getOption('custom_message_comment_reload');
 
 		$sReturn = "
 			<script type='text/javascript'>
@@ -253,40 +440,15 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		";
 		return $sReturn;
 	}
-	
+
 	/**
-	 * @param array $inaCommentData
-	 * @return unknown|string
+	 * @param $sCommentToken
+	 * @param $sPostId
+	 * @return bool
 	 */
-	public function doGaspCommentCheck_Filter( $inaCommentData ) {
-		
-		if ( !$this->getDoCommentsCheck() ) {
-			return $inaCommentData;
-		}
-		if( !isset( $_POST['cb_nombre'] ) ) {
-			$this->m_sCommentStatus = 'spam';
-		}
-		// we have the cb name, is it set?
-		else if ( !isset( $_POST[ $_POST['cb_nombre'] ] ) ) {
-			$this->m_sCommentStatus = 'spam';
-		}
-		// honeypot check
-		else if ( isset( $_POST['sugar_sweet_email'] ) && $_POST['sugar_sweet_email'] !== '' ) {
-			$this->m_sCommentStatus = 'spam';
-		}
-		// check the unique comment token is present
-		else if ( !isset( $_POST['comment_token'] ) || !$this->checkCommentToken( $_POST['comment_token'], $inaCommentData['comment_post_ID'] ) ) {
-			$this->m_sCommentStatus = 'spam';
-		}
-		if ( false && $this->m_sCommentStatus = 'spam' ) { //add option to die later
-			wp_die( "Ding! Dong! The witch is dead." );
-		}
-		return $inaCommentData;
-	}
-	
-	protected function checkCommentToken( $insCommentToken, $insPostId ) {
-		
-		$sToken = esc_sql( $insCommentToken ); //just incase someone try to get funky.
+	protected function checkCommentToken( $sCommentToken, $sPostId ) {
+
+		$sToken = esc_sql( $sCommentToken ); //just in-case someones tries to get all funky up in it
 		
 		// Try to get the database entry that corresponds to this set of data. If we get nothing, fail.
 		$sQuery = "
@@ -301,7 +463,7 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$sQuery = sprintf( $sQuery,
 			$this->m_sTableName,
 			$sToken,
-			$insPostId,
+			$sPostId,
 			$this->m_nRequestIp
 		);
 		$mResult = $this->selectCustomFromTable( $sQuery );
@@ -311,30 +473,48 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 		else {
 			// Only 1 chance is given per token, so we delete it
-			$this->deleteUniquePostCommentToken( $sToken, $insPostId );
+			$this->deleteUniquePostCommentToken( $sToken, $sPostId );
 			
-			// Did suficient time pass, or has it expired?
+			// Did sufficient time pass, or has it expired?
 			$nNow = time();
 			$aRecord = $mResult[0];
 			$nInterval = $nNow - $aRecord['created_at'];
 			if ( $nInterval < $this->m_aOptions[ 'comments_cooldown_interval' ]
-					|| ( $this->m_aOptions[ 'comments_token_expire_interval' ] > 0 && $nInterval > $this->m_aOptions[ 'comments_token_expire_interval' ] )
+					|| ( $this->getOption( 'comments_token_expire_interval' ) > 0 && $nInterval > $this->getOption('comments_token_expire_interval') )
 				) {
 				return false;
 			}
 			return true;
 		}
 	}
-	
-	public function doGaspStatusSet_Filter( $sApprovalStatus ) {
-		if( !empty( $this->m_sCommentStatus ) ){
-			$sApprovalStatus = $this->m_sCommentStatus;
+
+	/**
+	 * We set the final approval status of the comments if we've set it in our scans, and empties the notification email
+	 * in case we "trash" it (since WP sends out a notification email if it's anything but SPAM)
+	 *
+	 * @param $sApprovalStatus
+	 * @return string
+	 */
+	public function doSetCommentStatus_Filter( $sApprovalStatus ) {
+		add_filter( 'comment_notification_recipients', array( $this, 'doClearCommentNotificationEmail_Filter' ), 100, 1 );
+		return empty( $this->sCommentStatus )? $sApprovalStatus : $this->sCommentStatus;
+	}
+
+	/**
+	 * When you set a new comment as anything but 'spam' a notification email is sent to the post author.
+	 * We suppress this for when we mark as trash by emptying the email notifications list.
+	 *
+	 * @param $aEmails
+	 * @return array
+	 */
+	public function doClearCommentNotificationEmail_Filter( $aEmails ) {
+		if ( $this->sCommentStatus == 'trash' ) {
+			$aEmails = array();
 		}
-		return $sApprovalStatus;
+		return $aEmails;
 	}
 	
 	public function createTable() {
-
 		// Set up comments ID table
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
 			`id` int(11) NOT NULL AUTO_INCREMENT,
@@ -346,7 +526,7 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 		$sSqlTables = sprintf( $sSqlTables, $this->m_sTableName );
-		$mResult = $this->doSql( $sSqlTables );
+		return $this->doSql( $sSqlTables );
 	}
 
 	/**
@@ -431,6 +611,17 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$sToken = uniqid( $this->m_nRequestIp.$insPostId );
 		return md5( $sToken );
 	}
+
+	/**
+	 * @param $sExplanation
+	 */
+	protected function setCommentStatusExplanation( $sExplanation ) {
+		$this->sCommentStatusExplanation =
+			'[* '.sprintf( _wpsf__('WordPress Simple Firewall plugin marked this comment as "%s" because: %s.'),
+				$this->sCommentStatus,
+				$sExplanation
+			)." *]\n";
+	}
 	
 	/**
 	 * This is hooked into a cron in the base class and overrides the parent method.
@@ -445,9 +636,8 @@ class ICWP_CommentsFilterProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$this->deleteAllRowsOlderThan( $nTimeStamp );
 	}
 }
-
 endif;
 
 if ( !class_exists('ICWP_WPSF_CommentsFilterProcessor') ):
-	class ICWP_WPSF_CommentsFilterProcessor extends ICWP_CommentsFilterProcessor_V1 { }
+	class ICWP_WPSF_CommentsFilterProcessor extends ICWP_CommentsFilterProcessor_V2 { }
 endif;

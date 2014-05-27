@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  * 
  * Version: 2013-08-14_A
@@ -17,9 +17,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_WpFunctions_V1') ):
+if ( !class_exists('ICWP_WpFunctions_V2') ):
 
-class ICWP_WpFunctions_V1 {
+class ICWP_WpFunctions_V2 {
+
+	/**
+	 * @var ICWP_WpFunctions_V2
+	 */
+	protected static $oInstance = NULL;
+
+	/**
+	 * @return ICWP_WpFunctions_V2
+	 */
+	public static function GetInstance() {
+		if ( is_null( self::$oInstance ) ) {
+			self::$oInstance = new self();
+		}
+		return self::$oInstance;
+	}
 
 	/**
 	 * @var string
@@ -82,7 +97,7 @@ class ICWP_WpFunctions_V1 {
 	
 		// TODO: Handle multisite
 	
-		if ( version_compare( $this->getWordPressVersion(), '2.7.9', '<=' ) ) {
+		if ( version_compare( $this->getWordpressVersion(), '2.7.9', '<=' ) ) {
 			return get_option( $insKey );
 		}
 	
@@ -90,7 +105,7 @@ class ICWP_WpFunctions_V1 {
 			return get_site_transient( $insKey );
 		}
 	
-		if ( version_compare( $this->getWordPressVersion(), '2.9.9', '<=' ) ) {
+		if ( version_compare( $this->getWordpressVersion(), '2.9.9', '<=' ) ) {
 			return apply_filters( 'transient_'.$insKey, get_option( '_transient_'.$insKey ) );
 		}
 	
@@ -100,7 +115,7 @@ class ICWP_WpFunctions_V1 {
 	/**
 	 * @return string
 	 */
-	public function getWordPressVersion() {
+	public function getWordpressVersion() {
 		global $wp_version;
 		
 		if ( empty( $this->m_sWpVersion ) ) {
@@ -111,7 +126,7 @@ class ICWP_WpFunctions_V1 {
 				$this->m_sWpVersion = $aMatches[1];
 			}
 		}
-		return $this->m_sWpVersion;
+		return empty( $this->m_sWpVersion )? $wp_version : $this->m_sWpVersion;
 	}
 }
 

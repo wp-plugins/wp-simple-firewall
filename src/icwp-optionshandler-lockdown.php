@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -49,7 +49,7 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 	public function defineOptions() {
 
 		$aBase = array(
-			'section_title' => _wpsf__( 'Enable Lockdown Feature' ),
+			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('WordPress Lockdown') ),
 			'section_options' => array(
 				array(
 					'enable_lockdown',
@@ -58,7 +58,7 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					_wpsf__( 'Enable Lockdown' ),
 					_wpsf__( 'Enable (or Disable) The Lockdown Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Lockdown feature, or enable your selected Lockdown options' ),
+					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('WordPress Lockdown') ),
 					'<a href="http://icwp.io/4r" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)

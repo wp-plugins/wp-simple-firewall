@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  * 
  * Version: 2013-11-19
@@ -52,10 +52,11 @@ class ICWP_WpFilesystem_V1 {
 	}
 	
 	/**
+	 * @param $sPath
 	 * @return boolean	true/false whether file/directory exists
 	 */
-	public function exists( $insPath ) {
-		return $this->fileAction( 'file_exists', $insPath );
+	public function exists( $sPath ) {
+		return $this->fileAction( 'file_exists', $sPath );
 	}
 	
 	protected function setWpConfigPath() {
@@ -197,6 +198,7 @@ class ICWP_WpFilesystem_V1 {
 	}
 
 	/**
+	 * @param $insFilePath
 	 * @return boolean
 	 */
 	public function deleteFile( $insFilePath ) {

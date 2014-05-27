@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_LoginProtectProcessor_V1') ):
+if ( !class_exists('ICWP_LoginProtectProcessor_V2') ):
 
-class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	
 	const Slug = 'login_protect';
 	const TableName = 'login_auth';
@@ -160,25 +160,25 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$sRequestMethod = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'REQUEST_METHOD' );
 		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
 
-		$aWhitelist = $this->m_aOptions['ips_whitelist'];
+		$aWhitelist = $this->getOption( 'ips_whitelist', array() );
 		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::GetVisitorIpAddress() ) ) {
 			return true;
 		}
 
 		// check for remote posting before anything else.
-		if ( $fIsPost && $this->m_aOptions['enable_prevent_remote_post'] == 'Y' ) {
+		if ( $fIsPost && $this->getIsOption('enable_prevent_remote_post', 'Y') ) {
 			add_filter( 'authenticate',			array( $this, 'checkRemotePostLogin_Filter' ), 9, 3);
 		}
 
 		// Add GASP checking to the login form.
-		if ( $this->m_aOptions['enable_login_gasp_check'] == 'Y' ) {
+		if ( $this->getIsOption('enable_login_gasp_check', 'Y') ) {
 			add_action( 'login_form',			array( $this, 'printGaspLoginCheck_Action' ) );
 			add_filter( 'login_form_middle',	array( $this, 'printGaspLoginCheck_Filter' ) );
 			add_filter( 'authenticate',			array( $this, 'checkLoginForGasp_Filter' ), 22, 3);
 		}
 
 		// Do GASP checking if it's a form submit.
-		if ( $fIsPost && $this->m_aOptions['login_limit_interval'] > 0 ) {
+		if ( $fIsPost && $this->getOption( 'login_limit_interval' ) > 0 ) {
 			// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
 			add_filter( 'authenticate', array( $this, 'checkLoginInterval_Filter' ), 10, 3);
 		}
@@ -190,12 +190,6 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 
 		if ( $this->getIsTwoFactorAuthOn() ) {
-
-			// User has clicked a link in their email to validate their IP address for login.
-			$sWpsfAction = ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-action' );
-			if ( $sWpsfAction == 'linkauth' ) {
-				$this->validateUserAuthLink();
-			}
 
 			// If their click was successful we give them a lovely message
 			if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsfuserverified' ) ) {
@@ -272,6 +266,12 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * Should be hooked to 'init' so we have is_user_logged_in()
 	 */
 	public function checkCurrentUserAuth_Action() {
+
+		// User has clicked a link in their email to validate their IP address for login.
+		if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-action' ) == 'linkauth' ) {
+			$this->validateUserAuthLink();
+		}
+
 		if ( is_user_logged_in() ) {
 			$this->verifyCurrentUser();
 		}
@@ -324,9 +324,13 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			'unique_id'		=> $sUniqueId,
 			'wp_username'	=> $sUsername
 		);
-	
+
 		if ( $this->doMakePendingLoginAuthActive( $aWhere ) ) {
-			$this->redirectToLogin( '?wpsfuserverified=1' );
+			$this->logInfo(
+				sprintf( _wpsf__('User "%s" verified their identity using Two-Factor Authentication.'), $sUsername )
+			);
+			$this->setUserLoggedIn( $sUsername );
+			$this->redirectToAdmin();
 		}
 		else {
 			header( "Location: ".home_url() );
@@ -338,6 +342,13 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function redirectToLogin( $sParams = '' ) {
 		header( "Location: ".site_url().'/wp-login.php'.$sParams );
+		exit();
+	}
+	/**
+	 */
+	public function redirectToAdmin() {
+		wp_safe_redirect( is_multisite()? get_admin_url() : admin_url() );
+		exit();
 	}
 	
 	// WordPress Hooks and Filters:
@@ -709,7 +720,7 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 	
 	public function setTwoFactorByPassOnFail() {
-		$this->m_fAllowTwoFactorByPass = $this->m_aOptions[ 'enable_two_factor_bypass_on_email_fail' ] == 'Y';
+		$this->m_fAllowTwoFactorByPass = $this->getIsOption( 'enable_two_factor_bypass_on_email_fail', 'Y' );
 	}
 	
 	public function getTwoFactorByPassOnFail() {
@@ -718,9 +729,11 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 		return $this->m_fAllowTwoFactorByPass;
 	}
-	
+
+	/**
+	 */
 	public function setLoginCooldownInterval() {
-		$nInterval = intval( $this->m_aOptions[ 'login_limit_interval' ] );
+		$nInterval = intval( $this->getOption('login_limit_interval', 0) );
 		$this->m_nRequiredLoginInterval = ( $nInterval < 0 )? 0 : $nInterval;
 	}
 	
@@ -790,15 +803,30 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$inaWhere['deleted_at']	= 0;
 		$mResult = $this->updateRowsFromTable( array( 'pending' => 0 ), $inaWhere );
 
-			// Set the necessary cookie
+		// Set the necessary cookie
 		$this->setAuthActiveCookie( $inaWhere['unique_id'] );
-
-		if ( $mResult ) {
-			$this->logInfo(
-				sprintf( _wpsf__('User "%s" verified their identity using Two-Factor Authentication.'), $inaWhere[ 'wp_username' ] )
-			);
-		}
 		return $mResult;
+	}
+
+	/**
+	 * Invalidates all currently active two-factor logins and redirects to admin (->login)
+	 */
+	public function doTerminateAllVerifiedLogins() {
+		$this->terminateAllVerifiedLogins();
+		$this->redirectToAdmin();
+	}
+
+	/**
+	 * @param $sUsername
+	 */
+	protected function setUserLoggedIn( $sUsername ) {
+		$oWp = $this->loadWpFunctionsProcessor();
+		$oUser = version_compare( $oWp->getWordpressVersion(), '3.2.2', '<=' )? get_userdatabylogin( $sUsername ) : get_user_by( 'login', $sUsername );
+
+		wp_clear_auth_cookie();
+		wp_set_current_user ( $oUser->ID, $oUser->user_login );
+		wp_set_auth_cookie  ( $oUser->ID, true );
+		do_action( 'wp_login', $oUser->user_login );
 	}
 
 	/**
@@ -822,6 +850,27 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			$sNow,
 			$sNow,
 			esc_sql( $sUsername )
+		);
+		$this->doSql( $sQuery );
+	}
+
+	/**
+	 *
+	 */
+	protected function terminateAllVerifiedLogins() {
+		$sNow = time();
+		$sQuery = "
+			UPDATE `%s`
+			SET `deleted_at`	= '%s',
+				`expired_at`	= '%s'
+			WHERE
+				`deleted_at`	= '0'
+				AND `pending`	= '0'
+		";
+		$sQuery = sprintf( $sQuery,
+			$this->m_sTableName,
+			$sNow,
+			$sNow
 		);
 		$this->doSql( $sQuery );
 	}
@@ -937,7 +986,10 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			sprintf( _wpsf__('Authentication Link: %s'), $sAuthLink ),
 		);
 		$sEmailSubject = sprintf( _wpsf__('Two-Factor Login Verification for: %s'), home_url() );
-		
+
+		// add filters to email sending (for now only Mandrill)
+		add_filter( 'mandrill_payload', array($this, 'customiseMandrill') );
+
 		$fResult = $this->sendEmailTo( $sEmail, $sEmailSubject, $aMessage );
 		if ( $fResult ) {
 			$this->logInfo(
@@ -950,6 +1002,16 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			);
 		}
 		return $fResult;
+	}
+
+	/**
+	 *
+	 */
+	public function customiseMandrill( $aMessage ) {
+		if ( empty( $aMessage['text'] ) ) {
+			$aMessage['text'] = $aMessage['html'];
+		}
+		return $aMessage;
 	}
 	
 	public function createTable() {
@@ -1015,9 +1077,8 @@ class ICWP_LoginProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 }
-
 endif;
 
 if ( !class_exists('ICWP_WPSF_LoginProtectProcessor') ):
-	class ICWP_WPSF_LoginProtectProcessor extends ICWP_LoginProtectProcessor_V1 { }
+	class ICWP_WPSF_LoginProtectProcessor extends ICWP_LoginProtectProcessor_V2 { }
 endif;

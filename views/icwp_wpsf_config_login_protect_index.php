@@ -18,6 +18,7 @@ include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 					<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
 					<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
 					<button type="submit" class="btn btn-primary" name="submit"><?php _wpsf_e( 'Save All Settings' ); ?></button>
+					<button type="submit" class="btn btn-warning" name="terminate-all-logins" value="1" style="margin-left: 15px"><?php _wpsf_e( 'Clear All Verified Logins' ); ?></button>
 					</div>
 				</form>
 				

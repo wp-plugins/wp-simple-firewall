@@ -3,14 +3,14 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.5.10
+ * Version: 2.6.0
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
  */
 
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
  * "WordPress Simple Firewall" is
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.5.10';
+	const PluginVersion					= '2.6.0';
 	/**
 	 * @var string
 	 */
@@ -576,6 +576,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		//Ensures we're actually getting this request from WP.
 		check_admin_referer( $this->getSubmenuId('login_protect' ) );
 
+		if ( $this->fetchPost( 'terminate-all-logins' ) ) {
+			$oProc = $this->getProcessorVar('LoginProtect');
+			$oProc->doTerminateAllVerifiedLogins();
+			return;
+		}
+
 		if ( !isset($_POST[self::$sOptionPrefix.'all_options_input']) ) {
 			return;
 		}
@@ -808,7 +814,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	
 	protected function getAdminNoticeHtml_Translations() {
 
-		if ( $this->getInstallationDays() > 7 ) {
+		if ( $this->getInstallationDays() < 7 ) {
 			return '';
 		}
 
@@ -838,7 +844,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	protected function getAdminNoticeHtml_VersionUpgrade() {
 
 		// for now just showing this for the first 3 days of installation.
-		if ( $this->getInstallationDays() < 3 ) {
+		if ( $this->getInstallationDays() > 7 ) {
 			return '';
 		}
 
@@ -870,7 +876,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	protected function getAdminNoticeHtml_MailingListSignup() {
 
 		$nDays = $this->getInstallationDays();
-		if ( $nDays > 1 ) {
+		if ( $nDays < 2 ) {
 			return '';
 		}
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -47,7 +47,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	public function defineOptions() {
 
 		$aOptionsBase = array(
-			'section_title' => _wpsf__( 'Enable Login Protection' ),
+			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Login Protection') ),
 			'section_options' => array(
 				array(
 					'enable_login_protect',
@@ -56,7 +56,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					_wpsf__( 'Enable Login Protect' ),
 					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Login Protect feature, or enable your selected Login Protect options' ),
+					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('Login Protection') ),
 					'<a href="http://icwp.io/51" target="_blank">'._wpsf__( 'more info' ).'</a>'
 					.' | <a href="http://icwp.io/50" target="_blank">'._wpsf__( 'blog' ).'</a>'
 				)
@@ -265,10 +265,10 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
-	 * @param boolean $fAsDefaultLevels
+	 * @param boolean $fAsDefaults
 	 * @return array
 	 */
-	protected function getTwoFactorUserAuthRoles( $fAsDefaultLevels = false ) {
+	protected function getTwoFactorUserAuthRoles( $fAsDefaults = false ) {
 		$aTwoAuthRoles = array( 'type' => 'multiple_select',
 			0	=> _wpsf__('Subscribers'),
 			1	=> _wpsf__('Contributors'),
@@ -276,7 +276,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			3	=> _wpsf__('Editors'),
 			8	=> _wpsf__('Administrators')
 		);
-		if ( $fAsDefaultLevels ) {
+		if ( $fAsDefaults ) {
 			unset($aTwoAuthRoles['type']);
 			unset($aTwoAuthRoles[0]);
 			return array_keys($aTwoAuthRoles);

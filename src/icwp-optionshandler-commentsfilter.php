@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -36,7 +36,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 	public function defineOptions() {
 
 		$aBase = array(
-			'section_title' => _wpsf__( 'Enable Comments Filter' ),
+			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('SPAM Comments Protection Filter') ),
 			'section_options' => array(
 				array(
 					'enable_comments_filter',
@@ -44,14 +44,55 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					'N',
 					'checkbox',
 					_wpsf__( 'Enable Comments Filter' ),
-					_wpsf__( 'Enable (or Disable) The SPAM Comments Filter Feature.' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Comments Filter feature, or enable your chosen Comments Filter options.' ),
+					_wpsf__( 'Enable (or Disable) The SPAM Comments Protection Filter Feature' ),
+					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('SPAM Comments Protection Filter') ),
 					'<a href="http://icwp.io/3z" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			),
 		);
+
+		$aHumanSpam = array(
+			'section_title' => sprintf( _wpsf__( '%s Comment SPAM Protection Filter' ), _wpsf__('Human') ),
+			'section_options' => array(
+				array(
+					'enable_comments_human_spam_filter',
+					'',
+					'N',
+					'checkbox',
+					_wpsf__( 'Human SPAM Filter' ),
+					_wpsf__( 'Enable (or Disable) The Human SPAM Filter Feature.' ),
+					_wpsf__( 'Scans the content of WordPress comments for keywords that are indicative of SPAM and marks the comment according to your prefer setting below.' ),
+					'<a href="http://icwp.io/57" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				),
+				array(
+					'enable_comments_human_spam_filter_items',
+					'',
+					$this->getHumanSpamFilterItems( true ),
+					$this->getHumanSpamFilterItems(),
+					_wpsf__( 'Comment Filter Items' ),
+					_wpsf__( 'Select The Items To Scan For SPAM' ),
+					_wpsf__( 'When a user submits a comment, only the selected parts of the comment data will be scanned for SPAM content.' ).' '.sprintf( _wpsf__('Recommended: %s'), _wpsf__('All') ),
+					'<a href="http://icwp.io/58" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				),
+				array(
+					'comments_default_action_human_spam',
+					'',
+					'spam',
+					array( 'select',
+						array( 0, 				'Mark As Pending Moderation' ),
+						array( 'spam', 			'Mark As SPAM' ),
+						array( 'trash', 		'Move To Trash' ),
+					),
+					_wpsf__( 'Default SPAM Action' ),
+					_wpsf__( 'How To Categorise Comments When Identified To Be SPAM' ),
+					sprintf( _wpsf__( 'When a comment is detected as being SPAM from %s, the comment will be categorised based on this setting.' ), '<span style"text-decoration:underline;">'._wpsf__('a human commenter').'</span>' ),
+					'<a href="http://icwp.io/59" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				)
+			),
+		);
+
 		$aGasp = array(
-			'section_title' => _wpsf__( 'G.A.S.P. Comment SPAM Protection' ),
+			'section_title' => sprintf( _wpsf__( '%s Comment SPAM Protection Filter' ), _wpsf__('Automatic Bot') ),
 			'section_options' => array(
 				array(
 					'enable_comments_gasp_protection',
@@ -60,9 +101,23 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					_wpsf__( 'GASP Protection' ),
 					_wpsf__( 'Add Growmap Anti Spambot Protection to your comments' ),
-					_wpsf__( 'Taking the lead from the original GASP plugin for WordPress, we have extended it to include further protection.' ),
+					_wpsf__( 'Taking the lead from the original GASP plugin for WordPress, we have extended it to include advanced spam-bot protection.' ),
 					'<a href="http://icwp.io/3n" target="_blank">'._wpsf__( 'more info' ).'</a>'
 						.' | <a href="http://icwp.io/2n" target="_blank">'._wpsf__( 'blog' ).'</a>'
+				),
+				array(
+					'comments_default_action_spam_bot',
+					'',
+					'trash',
+					array( 'select',
+						array( 0, 				'Mark As Pending Moderation' ),
+						array( 'spam', 			'Mark As SPAM' ),
+						array( 'trash', 		'Move To Trash' )
+					),
+					_wpsf__( 'Default SPAM Action' ),
+					_wpsf__( 'How To Categorise Comments When Identified To Be SPAM' ),
+					sprintf( _wpsf__( 'When a comment is detected as being SPAM from %s, the comment will be categorised based on this setting.' ), '<span style"text-decoration:underline;">'._wpsf__('an automatic bot').'</span>' ),
+					'<a href="http://icwp.io/59" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
 					'enable_comments_gasp_protection_for_logged_in',
@@ -143,6 +198,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 
 		$this->m_aOptions = array(
 			$aBase,
+			$aHumanSpam,
 			$aGasp
 		);
 	}
@@ -168,6 +224,30 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 		}
 		$this->setOpt( 'comments_cooldown_interval', $nCommentCooldown );
 		$this->setOpt( 'comments_token_expire_interval', $nCommentTokenExpire );
+
+		$aCommentsFilters = $this->getOpt( 'enable_comments_human_spam_filter_items' );
+		if ( empty($aCommentsFilters) || !is_array( $aCommentsFilters ) ) {
+			$this->setOpt( 'enable_comments_human_spam_filter_items', $this->getHumanSpamFilterItems( true ) );
+		}
+	}
+
+	/**
+	 *
+	 */
+	protected function getHumanSpamFilterItems( $fAsDefaults = false ) {
+		$aFilterItems = array( 'type' => 'multiple_select',
+			'author_name'		=> _wpsf__('Author Name'),
+			'author_email'		=> _wpsf__('Author Email'),
+			'comment_content'	=> _wpsf__('Comment Content'),
+			'url'				=> _wpsf__('URL'),
+			'ip_address'		=> _wpsf__('IP Address'),
+			'user_agent'		=> _wpsf__('Browser User Agent')
+		);
+		if ( $fAsDefaults ) {
+			unset($aFilterItems['type']);
+			return array_keys($aFilterItems);
+		}
+		return $aFilterItems;
 	}
 	
 	public function updateHandler() {

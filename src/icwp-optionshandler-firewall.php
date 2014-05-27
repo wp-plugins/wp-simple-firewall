@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2013 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -63,7 +63,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 	 */
 	public function defineOptions() {
 		$aFirewallBase = 	array(
-			'section_title' => _wpsf__( 'Enable WordPress Firewall' ),
+			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('WordPress Firewall') ),
 			'section_options' => array(
 				array(
 					'enable_firewall',
@@ -72,7 +72,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					_wpsf__( 'Enable Firewall' ),
 					_wpsf__( 'Enable (or Disable) The WordPress Firewall Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Firewall feature, or enable your selected Firewall options' ),
+					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('WordPress Firewall') ),
 					'<a href="http://icwp.io/43" target="_blank">'._wpsf__( 'more info' ).'</a>'
 					.' | <a href="http://icwp.io/56" target="_blank">'._wpsf__( 'blog' ).'</a>'
 				)
