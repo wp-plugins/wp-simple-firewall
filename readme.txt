@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.5.9
+Stable tag: 2.6.0
 
 Complete and Simple WordPress Security. Unrestricted, with no premium features.
 
@@ -245,6 +245,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *	FEATURE:    Added Human SPAM comments filtering - replacement for Akismet that doesn't use or send any data to 3rd party services.
 *	ENHANCED:   Two-Factor Login now automatically logs in the user to the admin area without them having to re-login again.
+*	ENHANCED:   Added ability to terminate all currently (two-factor) verified logins.
 *	ENHANCED:   Spam filter/scanning adds an explanation to the SPAM content to show why a message was filtered.
 *	FIXES:      For PHP warnings while in php strict mode.
 *	CLEAN:      Much cleaning up of code.
