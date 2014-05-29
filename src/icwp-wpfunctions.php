@@ -17,17 +17,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_WpFunctions_V2') ):
+if ( !class_exists('ICWP_WpFunctions_V3') ):
 
-class ICWP_WpFunctions_V2 {
+class ICWP_WpFunctions_V3 {
 
 	/**
-	 * @var ICWP_WpFunctions_V2
+	 * @var ICWP_WpFunctions_V3
 	 */
 	protected static $oInstance = NULL;
 
 	/**
-	 * @return ICWP_WpFunctions_V2
+	 * @return ICWP_WpFunctions_V3
 	 */
 	public static function GetInstance() {
 		if ( is_null( self::$oInstance ) ) {
@@ -128,6 +128,43 @@ class ICWP_WpFunctions_V2 {
 		}
 		return empty( $this->m_sWpVersion )? $wp_version : $this->m_sWpVersion;
 	}
-}
 
+	/**
+	 * @param string $sParams
+	 */
+	public function redirectToLogin( $sParams = '' ) {
+		header( "Location: ".site_url().'/wp-login.php'.$sParams );
+		exit();
+	}
+	/**
+	 */
+	public function redirectToAdmin() {
+		$this->doRedirect( is_multisite()? get_admin_url() : admin_url() );
+	}
+	/**
+	 */
+	public function redirectToHome() {
+		$this->doRedirect( home_url() );
+	}
+
+	public function doRedirect( $sUrl ) {
+		wp_safe_redirect( $sUrl );
+		exit();
+	}
+}
+endif;
+
+if ( !class_exists('ICWP_WpFunctions_WPSF') ):
+
+	class ICWP_WpFunctions_WPSF extends ICWP_WpFunctions_V3 {
+		/**
+		 * @return ICWP_WpFunctions_WPSF
+		 */
+		public static function GetInstance() {
+			if ( is_null( self::$oInstance ) ) {
+				self::$oInstance = new self();
+			}
+			return self::$oInstance;
+		}
+	}
 endif;

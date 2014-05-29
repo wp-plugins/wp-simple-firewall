@@ -289,15 +289,15 @@ endif;
 
 if ( !class_exists('ICWP_WpFilesystem_WPSF') ):
 
-class ICWP_WpFilesystem_WPSF extends ICWP_WpFilesystem_V2 {
-	/**
-	 * @return ICWP_WpFilesystem_WPSF
-	 */
-	public static function GetInstance() {
-		if ( is_null( self::$oInstance ) ) {
-			self::$oInstance = new self();
+	class ICWP_WpFilesystem_WPSF extends ICWP_WpFilesystem_V2 {
+		/**
+		 * @return ICWP_WpFilesystem_WPSF
+		 */
+		public static function GetInstance() {
+			if ( is_null( self::$oInstance ) ) {
+				self::$oInstance = new self();
+			}
+			return self::$oInstance;
 		}
-		return self::$oInstance;
 	}
-}
 endif;

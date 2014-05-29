@@ -325,32 +325,19 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			'wp_username'	=> $sUsername
 		);
 
+		$oWp = $this->loadWpFunctionsProcessor();
 		if ( $this->doMakePendingLoginAuthActive( $aWhere ) ) {
 			$this->logInfo(
 				sprintf( _wpsf__('User "%s" verified their identity using Two-Factor Authentication.'), $sUsername )
 			);
 			$this->setUserLoggedIn( $sUsername );
-			$this->redirectToAdmin();
+			$oWp->redirectToAdmin();
 		}
 		else {
-			header( "Location: ".home_url() );
+			$oWp->redirectToHome();
 		}
 	}
 
-	/**
-	 * @param string $sParams
-	 */
-	public function redirectToLogin( $sParams = '' ) {
-		header( "Location: ".site_url().'/wp-login.php'.$sParams );
-		exit();
-	}
-	/**
-	 */
-	public function redirectToAdmin() {
-		wp_safe_redirect( is_multisite()? get_admin_url() : admin_url() );
-		exit();
-	}
-	
 	// WordPress Hooks and Filters:
 
 	/**
@@ -812,7 +799,8 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function doTerminateAllVerifiedLogins() {
 		$this->terminateAllVerifiedLogins();
-		$this->redirectToAdmin();
+		$oWp = $this->loadWpFunctionsProcessor();
+		$oWp->redirectToAdmin();
 	}
 
 	/**
@@ -948,7 +936,8 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 					sprintf( _wpsf__('User "%s" was forcefully logged out as they are not verified.'), $oUser->user_login )
 				);
 				wp_logout();
-				$this->redirectToLogin();
+				$oWp = $this->loadWpFunctionsProcessor();
+				$oWp->redirectToLogin();
 			}
 		}
 	}

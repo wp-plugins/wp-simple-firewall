@@ -100,7 +100,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	protected $m_fAutoPluginUpgrade = false;
 	
 	/**
-	 * @var ICWP_WpFunctions_V2;
+	 * @var ICWP_WpFunctions_WPSF;
 	 */
 	protected $m_oWpFunctions;
 	
@@ -833,7 +833,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	
 	protected function loadWpFunctions() {
 		if ( !isset( $this->m_oWpFunctions ) ) {
-			$this->m_oWpFunctions = ICWP_WpFunctions_V2::GetInstance();
+			$this->m_oWpFunctions = ICWP_WpFunctions_WPSF::GetInstance();
 		}
 	}
 

@@ -115,6 +115,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 		}
 
 		add_filter( 'preprocess_comment',			array( $this, 'doCommentPreProcess_Filter' ), 1, 1 );
+		add_filter( 'pre_comment_content',			array( $this, 'doCommentContentPreProcess_Filter' ), 1, 1 );
 		add_filter( 'pre_comment_approved',			array( $this, 'doSetCommentStatus_Filter' ), 1 );
 	}
 
@@ -131,12 +132,25 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 		$this->doGaspCommentCheck( $aCommentData['comment_post_ID'] );
 		$this->doBlacklistSpamCheck( $aCommentData );
 
-		// If either spam filtering left an explanation, we add it here
-		if ( !empty( $this->sCommentStatusExplanation ) ) {
-			$aCommentData['comment_content'] = $this->sCommentStatusExplanation.$aCommentData['comment_content'];
+		// Now we check whether comment status is to completely reject and then we simply redirect to "home"
+		if ( $this->sCommentStatus == 'reject' ) {
+			$oWpFunctions = $this->loadWpFunctionsProcessor();
+			$oWpFunctions->redirectToHome();
 		}
 
 		return $aCommentData;
+	}
+
+	/**
+	 * @param string $sCommentContent
+	 * @return string
+	 */
+	public function doCommentContentPreProcess_Filter( $sCommentContent ) {
+		// If either spam filtering process left an explanation, we add it here
+		if ( !empty( $this->sCommentStatusExplanation ) ) {
+			$sCommentContent = $this->sCommentStatusExplanation.$sCommentContent;
+		}
+		return $sCommentContent;
 	}
 
 	/**

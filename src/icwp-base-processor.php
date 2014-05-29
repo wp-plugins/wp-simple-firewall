@@ -375,11 +375,11 @@ class ICWP_BaseProcessor_V2 {
 	}
 
 	/**
-	 * @return ICWP_WpFunctions_V2
+	 * @return ICWP_WpFunctions_WPSF
 	 */
 	protected function loadWpFunctionsProcessor() {
 		require_once( dirname(__FILE__) . '/icwp-wpfunctions.php' );
-		return ICWP_WpFunctions_V2::GetInstance();
+		return ICWP_WpFunctions_WPSF::GetInstance();
 	}
 }
 

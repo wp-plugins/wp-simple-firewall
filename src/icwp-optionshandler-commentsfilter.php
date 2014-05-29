@@ -78,11 +78,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					'comments_default_action_human_spam',
 					'',
 					'spam',
-					array( 'select',
-						array( 0, 				'Mark As Pending Moderation' ),
-						array( 'spam', 			'Mark As SPAM' ),
-						array( 'trash', 		'Move To Trash' ),
-					),
+					$this->getSpamHandlingResponses(),
 					_wpsf__( 'Default SPAM Action' ),
 					_wpsf__( 'How To Categorise Comments When Identified To Be SPAM' ),
 					sprintf( _wpsf__( 'When a comment is detected as being SPAM from %s, the comment will be categorised based on this setting.' ), '<span style"text-decoration:underline;">'._wpsf__('a human commenter').'</span>' ),
@@ -109,11 +105,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					'comments_default_action_spam_bot',
 					'',
 					'trash',
-					array( 'select',
-						array( 0, 				'Mark As Pending Moderation' ),
-						array( 'spam', 			'Mark As SPAM' ),
-						array( 'trash', 		'Move To Trash' )
-					),
+					$this->getSpamHandlingResponses(),
 					_wpsf__( 'Default SPAM Action' ),
 					_wpsf__( 'How To Categorise Comments When Identified To Be SPAM' ),
 					sprintf( _wpsf__( 'When a comment is detected as being SPAM from %s, the comment will be categorised based on this setting.' ), '<span style"text-decoration:underline;">'._wpsf__('an automatic bot').'</span>' ),
@@ -229,6 +221,18 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 		if ( empty($aCommentsFilters) || !is_array( $aCommentsFilters ) ) {
 			$this->setOpt( 'enable_comments_human_spam_filter_items', $this->getHumanSpamFilterItems( true ) );
 		}
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getSpamHandlingResponses() {
+		return array( 'select',
+			array( 0, 				_wpsf__( 'Mark As Pending Moderation' ) ),
+			array( 'spam', 			_wpsf__( 'Mark As SPAM' ) ),
+			array( 'trash', 		_wpsf__( 'Move To Trash' ) ),
+			array( 'reject', 		_wpsf__( 'Reject And Redirect' ) )
+		);
 	}
 
 	/**
