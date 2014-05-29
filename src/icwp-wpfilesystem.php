@@ -17,12 +17,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_WpFilesystem_V1') ):
+if ( !class_exists('ICWP_WpFilesystem_V2') ):
 
-class ICWP_WpFilesystem_V1 {
+class ICWP_WpFilesystem_V2 {
 
 	/**
-	 * @var ICWP_WpFilesystem_V1
+	 * @var ICWP_WpFilesystem_V2
 	 */
 	protected static $oInstance = NULL;
 
@@ -37,7 +37,7 @@ class ICWP_WpFilesystem_V1 {
 	protected $m_sWpConfigPath = null;
 	
 	/**
-	 * @return ICWP_WpFilesystem_V1
+	 * @return ICWP_WpFilesystem_V2
 	 */
 	public static function GetInstance() {
 		if ( is_null( self::$oInstance ) ) {
@@ -146,7 +146,50 @@ class ICWP_WpFilesystem_V1 {
 		}
 		return false;
 	}
-	
+
+	/**
+	 * @param $sFilePath
+	 * @return int|null
+	 */
+	public function getModifiedTime( $sFilePath ) {
+		return $this->getTime($sFilePath, 'modified');
+	}
+
+	/**
+	 * @param $sFilePath
+	 * @return int|null
+	 */
+	public function getAccessedTime( $sFilePath ) {
+		return $this->getTime($sFilePath, 'accessed');
+	}
+
+	/**
+	 * @param $sFilePath
+	 * @param string $sProperty
+	 * @return int|null
+	 */
+	public function getTime( $sFilePath, $sProperty = 'modified' ) {
+
+		if ( !$this->exists($sFilePath) ) {
+			return null;
+		}
+
+		$fUseWp = $this->m_oWpFilesystem ? true : false;
+
+		switch ( $sProperty ) {
+
+			case 'modified' :
+				return $fUseWp? $this->m_oWpFilesystem->mtime( $sFilePath ) : filemtime( $sFilePath );
+				break;
+			case 'accessed' :
+				return $fUseWp? $this->m_oWpFilesystem->atime( $sFilePath ) : fileatime( $sFilePath );
+				break;
+			default:
+				return null;
+				break;
+		}
+	}
+
 	/**
 	 * @param string $insFilePath
 	 * @return NULL|boolean
@@ -169,29 +212,32 @@ class ICWP_WpFilesystem_V1 {
 	}
 	
 	/**
+	 * @param string $sFilePath
 	 * @return string|null
 	 */
-	public function getFileContent( $insFilePath ) {
-		if ( !$this->exists( $insFilePath ) ) {
+	public function getFileContent( $sFilePath ) {
+		if ( !$this->exists( $sFilePath ) ) {
 			return null;
 		}
 		if ( $this->m_oWpFilesystem ) {
-			return $this->m_oWpFilesystem->get_contents( $insFilePath );
+			return $this->m_oWpFilesystem->get_contents( $sFilePath );
 		}
 		else if ( function_exists('file_get_contents') ) {
-			return file_get_contents( $insFilePath );
+			return file_get_contents( $sFilePath );
 		}
 		return null;
 	}
 	
 	/**
+	 * @param string $sFilePath
+	 * @param string $sContents
 	 * @return boolean
 	 */
-	public function putFileContent( $insFilePath, $insContents ) {
+	public function putFileContent( $sFilePath, $sContents ) {
 		if ( $this->m_oWpFilesystem ) {
-			return $this->m_oWpFilesystem->put_contents( $insFilePath, $insContents, FS_CHMOD_FILE );
+			return $this->m_oWpFilesystem->put_contents( $sFilePath, $sContents, FS_CHMOD_FILE );
 		}
-		else if ( file_put_contents( $insFilePath, $insContents ) === false ) {
+		else if ( file_put_contents( $sFilePath, $sContents ) === false ) {
 			return false;
 		}
 		return true;
@@ -202,7 +248,7 @@ class ICWP_WpFilesystem_V1 {
 	 * @return boolean
 	 */
 	public function deleteFile( $insFilePath ) {
-		if ( !file_exists( $insFilePath ) ) {
+		if ( !$this->exists( $insFilePath ) ) {
 			return null;
 		}
 		if ( $this->m_oWpFilesystem ) {
@@ -239,5 +285,19 @@ class ICWP_WpFilesystem_V1 {
 		return $sResult;
 	}
 }
+endif;
 
+if ( !class_exists('ICWP_WpFilesystem_WPSF') ):
+
+class ICWP_WpFilesystem_WPSF extends ICWP_WpFilesystem_V2 {
+	/**
+	 * @return ICWP_WpFilesystem_WPSF
+	 */
+	public static function GetInstance() {
+		if ( is_null( self::$oInstance ) ) {
+			self::$oInstance = new self();
+		}
+		return self::$oInstance;
+	}
+}
 endif;

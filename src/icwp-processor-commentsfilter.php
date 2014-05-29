@@ -22,9 +22,15 @@ if ( !class_exists('ICWP_CommentsFilterProcessor_V2') ):
 class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 
 	const Slug = 'comments_filter';
-
 	const Spam_Blacklist_Source = 'https://raw.githubusercontent.com/splorp/wordpress-comment-blacklist/master/blacklist.txt';
-	
+
+	const TWODAYS = 172800;
+
+	/**
+	 * @var string
+	 */
+	static protected $sSpamBlacklistFile;
+
 	/**
 	 * @var string
 	 */
@@ -92,6 +98,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 		$this->m_sUniqueToken = '';
 		$this->sCommentStatus = '';
 		$this->sCommentStatusExplanation = '';
+		self::$sSpamBlacklistFile = dirname(__FILE__).ICWP_DS.'..'.ICWP_DS.'resources'.ICWP_DS.'spamblacklist.txt';
 	}
 	
 	/**
@@ -211,25 +218,25 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 		$aWords = explode( "\n", $sSpamWords );
 
 		$aItemsMap = array(
-			'author_name'		=> $sAuthor,
-			'author_email'		=> $sEmail,
 			'comment_content'	=> $sComment,
 			'url'				=> $sUrl,
+			'author_name'		=> $sAuthor,
+			'author_email'		=> $sEmail,
 			'ip_address'		=> $sUserIp,
 			'user_agent'		=> $sUserAgent
 		);
 		$aDesiredItemsToCheck = $this->getOption('enable_comments_human_spam_filter_items');
 		$aItemsToCheck = array();
 		foreach( $aDesiredItemsToCheck as $sKey ) {
-			$aItemsToCheck[] = $aItemsMap[$sKey];
+			$aItemsToCheck[$sKey] = $aItemsMap[$sKey];
 		}
 
-		foreach ( $aWords as $sWord ) {
-			foreach( $aItemsToCheck as $sItem ) {
+		foreach( $aItemsToCheck as $sKey => $sItem ) {
+			foreach ( $aWords as $sWord ) {
 				if ( stripos( $sItem, $sWord ) !== false ) {
 					//mark as spam and exit;
 					$this->sCommentStatus = $this->getOption('comments_default_action_human_spam');
-					$this->setCommentStatusExplanation( sprintf( _wpsf__('Human SPAM filter found "%s"' ), $sWord ) );
+					$this->setCommentStatusExplanation( sprintf( _wpsf__('Human SPAM filter found "%s" in "%s"' ), $sWord, $sKey ) );
 					break 2;
 				}
 			}
@@ -240,19 +247,35 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 * @return null|string
 	 */
 	protected function getSpamBlacklist() {
-		$sListFile = dirname(__FILE__).ICWP_DS.'..'.ICWP_DS.'resources'.ICWP_DS.'spamblacklist.txt';
-		$this->doSpamBlacklistImport( $sListFile );
 		$oFs = $this->loadFileSystemProcessor();
-		$sList = $oFs->getFileContent( $sListFile );
-		return $sList;
+
+		// first, does the file exist? If not import
+		if ( !$oFs->exists( self::$sSpamBlacklistFile ) ) {
+			$this->doSpamBlacklistImport();
+		}
+		// second, if it exists and it's older than 48hrs, update
+		else if ( time() - $oFs->getModifiedTime( self::$sSpamBlacklistFile ) > self::TWODAYS ) {
+			$this->doSpamBlacklistUpdate();
+		}
+
+		$sList = $oFs->getFileContent( self::$sSpamBlacklistFile );
+		return empty($sList)? '' : $sList;
 	}
 
 	/**
-	 * @param string $sListFile - the location of the file containing or to contain the spam content list
 	 */
-	protected function doSpamBlacklistImport( $sListFile ) {
+	protected function doSpamBlacklistUpdate() {
 		$oFs = $this->loadFileSystemProcessor();
-		if ( !$oFs->exists( $sListFile ) ) {
+		$oFs->deleteFile( self::$sSpamBlacklistFile );
+		$this->doSpamBlacklistImport();
+	}
+
+	/**
+	 */
+	protected function doSpamBlacklistImport() {
+		$oFs = $this->loadFileSystemProcessor();
+		if ( !$oFs->exists( self::$sSpamBlacklistFile ) ) {
+
 			$sRawList = $this->doSpamBlacklistDownload();
 
 			if ( empty($sRawList) ) {
@@ -270,8 +293,8 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 				$sList = implode( "\n", $aWords );
 			}
 
-			// save the list for the future.
-			$oFs->putFileContent( $sListFile, $sList );
+			// save the list to disk for the future.
+			$oFs->putFileContent( self::$sSpamBlacklistFile, $sList );
 		}
 	}
 

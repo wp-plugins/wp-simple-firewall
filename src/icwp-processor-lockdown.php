@@ -92,9 +92,7 @@ class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 * 
 	 */
 	public function resetAuthKeysSalts() {
-		
-		require_once( dirname(__FILE__).'/icwp-wpfilesystem.php' );
-		$oWpFs = ICWP_WpFilesystem_V1::GetInstance();
+		$oWpFs = $this->loadFileSystemProcessor();
 		
 		// Get the new Salts
 		$sSaltsUrl = 'https://api.wordpress.org/secret-key/1.1/salt/';

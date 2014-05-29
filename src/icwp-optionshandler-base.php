@@ -650,6 +650,14 @@ class ICWP_OptionsHandler_Base_V2 {
 			require_once( dirname(__FILE__).'/icwp-data-processor.php' );
 		}
 	}
+
+	/**
+	 * @return ICWP_WpFilesystem_WPSF
+	 */
+	protected function loadFileSystemProcessor() {
+		require_once( dirname(__FILE__) . '/icwp-wpfilesystem.php' );
+		return ICWP_WpFilesystem_WPSF::GetInstance();
+	}
 }
 
 endif;

@@ -220,8 +220,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 			$fCanDiskWrite = $this->getOpt( 'capability_can_disk_write' );
 			
 			if ( $fCanDiskWrite === false || $fCanRemoteGet === false ) {
-				require_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
-				$oWpFs = new ICWP_WpFilesystem_V1();
+				$oWpFs = $this->loadFileSystemProcessor();
 				
 				$fCanRemoteGet = $oWpFs->getCanWpRemoteGet();
 				$this->setOpt( 'capability_can_remote_get', $fCanRemoteGet? 'Y' : 'N' );

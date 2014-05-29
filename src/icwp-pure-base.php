@@ -105,7 +105,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	protected $m_oWpFunctions;
 	
 	/**
-	 * @var ICWP_WpFilesystem_V1;
+	 * @var ICWP_WpFilesystem_WPSF;
 	 */
 	protected $m_oWpFs;
 
@@ -126,7 +126,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 		add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 
 		$this->m_fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
-		$this->m_oWpFs = ICWP_WpFilesystem_V1::GetInstance();
+		$this->m_oWpFs = ICWP_WpFilesystem_WPSF::GetInstance();
 		$this->setPaths();
 		$this->registerActivationHooks();
 	}

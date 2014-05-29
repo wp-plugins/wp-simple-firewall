@@ -330,18 +330,18 @@ class ICWP_BaseProcessor_V2 {
 	/**
 	 * Checks the $inaData contains valid key values as laid out in $inaChecks
 	 *
-	 * @param array $inaData
+	 * @param array $aData
 	 * @param array $inaChecks
 	 * @return boolean
 	 */
-	protected function validateParameters( $inaData, $inaChecks ) {
+	protected function validateParameters( $aData, $inaChecks ) {
 	
-		if ( !is_array( $inaData ) ) {
+		if ( !is_array( $aData ) ) {
 			return false;
 		}
 	
 		foreach( $inaChecks as $sCheck ) {
-			if ( !array_key_exists( $sCheck, $inaData ) || empty( $inaData[ $sCheck ] ) ) {
+			if ( !array_key_exists( $sCheck, $aData ) || empty( $aData[ $sCheck ] ) ) {
 				return false;
 			}
 		}
@@ -367,11 +367,11 @@ class ICWP_BaseProcessor_V2 {
 	}
 
 	/**
-	 * @return ICWP_WpFilesystem_V1
+	 * @return ICWP_WpFilesystem_WPSF
 	 */
 	protected function loadFileSystemProcessor() {
 		require_once( dirname(__FILE__) . '/icwp-wpfilesystem.php' );
-		return ICWP_WpFilesystem_V1::GetInstance();
+		return ICWP_WpFilesystem_WPSF::GetInstance();
 	}
 
 	/**

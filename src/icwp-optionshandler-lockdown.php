@@ -144,8 +144,7 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 	
 	protected function getCanDoAuthSalts() {
-		require_once( dirname(__FILE__).'/icwp-wpfilesystem.php' );
-		$oWpFs = ICWP_WpFilesystem_V1::GetInstance();
+		$oWpFs = $this->loadFileSystemProcessor();
 		
 		if ( !$oWpFs->getCanWpRemoteGet() ) {
 			return false;

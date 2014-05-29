@@ -406,7 +406,7 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 * @return int
 	 */
 	protected function getLastLoginTime() {
-		$oWpFs = ICWP_WpFilesystem_V1::GetInstance();
+		$oWpFs = $this->loadFileSystemProcessor();
 		// Check that there is a login throttle file. If it exists and its modified time is greater than the 
 		// current $this->m_nLastLoginTime it suggests another process has touched the file and updated it
 		// concurrently. So, we update our $this->m_nEmailThrottleTime accordingly.
@@ -424,7 +424,7 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 * @param $innLastLoginTime
 	 */
 	public function updateLastLoginThrottleTime( $innLastLoginTime ) {
-		$oWpFs = ICWP_WpFilesystem_V1::GetInstance();
+		$oWpFs = $this->loadFileSystemProcessor();
 		$this->m_nLastLoginTime = $innLastLoginTime;
 		$oWpFs->fileAction( 'touch', array(self::$sModeFile_LoginThrottled, $innLastLoginTime) );
 		$this->setNeedSave();
@@ -494,8 +494,7 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			return $oError;
 		}
 
-		require_once( 'icwp-wpfilesystem.php' );
-		$oFs = new ICWP_WpFilesystem_V1();
+		$oFs = $this->loadFileSystemProcessor();
 
 		$sNonce = md5( uniqid( rand() ) );
 		$sUrl = sprintf( self::YubikeyVerifyApiUrl, $sAppId, $sOneTimePassword, $sNonce );
