@@ -105,6 +105,7 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 		}
 		
 		// does the actual updating
+		$this->doStatIncrement( 'autoupdates.forcerun' );
 		wp_maybe_auto_update();
 		
 		if ( !empty( $insRedirect ) ) {
@@ -123,9 +124,11 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	 */
 	public function autoupdate_core_major( $infUpdate ) {
 		if ( $this->m_aOptions['autoupdate_core'] == 'core_never' ) {
+			$this->doStatIncrement( 'autoupdates.core.major.blocked' );
 			return false;
 		}
 		else if ( $this->m_aOptions['autoupdate_core'] == 'core_major' ) {
+			$this->doStatIncrement( 'autoupdates.core.major.allowed' );
 			return true;
 		}
 		return $infUpdate;
@@ -140,9 +143,11 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	 */
 	public function autoupdate_core_minor( $infUpdate ) {
 		if ( $this->m_aOptions['autoupdate_core'] == 'core_never' ) {
+			$this->doStatIncrement( 'autoupdates.core.minor.blocked' );
 			return false;
 		}
 		else if ( $this->m_aOptions['autoupdate_core'] == 'core_minor' ) {
+			$this->doStatIncrement( 'autoupdates.core.minor.allowed' );
 			return true;
 		}
 		return $infUpdate;
@@ -175,6 +180,7 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 
 		// first, is global auto updates for plugins set
 		if ( $this->getOption('enable_autoupdate_plugins') == 'Y' ) {
+			$this->doStatIncrement( 'autoupdates.plugins.all' );
 			return true;
 		}
 
@@ -190,6 +196,7 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 		}
 
 		if ( $sItemFile === $this->m_sPluginFile ) {
+			$this->doStatIncrement( 'autoupdates.plugins.self' );
 			return $this->getOption('autoupdate_plugin_self') == 'Y';
 		}
 
@@ -217,6 +224,7 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 
 		// first, is global auto updates for themes set
 		if ( $this->getOption('enable_autoupdate_themes') == 'Y' ) {
+			$this->doStatIncrement( 'autoupdates.themes.all' );
 			return true;
 		}
 

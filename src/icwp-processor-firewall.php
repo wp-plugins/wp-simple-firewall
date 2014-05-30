@@ -188,6 +188,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 					empty( $this->m_sListItemLabel )? _wpsf__('No label.') : $this->m_sListItemLabel
 				)
 			);
+			$this->doStatIncrement( 'firewall.allowed.whitelist' );
 			return true;
 		}
 		
@@ -199,6 +200,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 					empty( $this->m_sListItemLabel )? _wpsf__('No label.') : $this->m_sListItemLabel
 				)
 			);
+			$this->doStatIncrement( 'firewall.blocked.blacklist' );
 			return false;
 		}
 		
@@ -211,6 +213,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 			$this->logWarning(
 				_wpsf__('All page request parameters were white-listed.' )
 			);
+			$this->doStatIncrement( 'firewall.allowed.pagewhitelist' );
 			return true;
 		}
 		
@@ -248,6 +251,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms );
 		if ( !$fPass ) {
 			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('Directory Traversal') ) );
+			$this->doStatIncrement( 'firewall.blocked.dirtraversal' );
 		}
 		return $fPass;
 	}
@@ -261,6 +265,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('SQL Queries') ) );
+			$this->doStatIncrement( 'firewall.blocked.sqlqueries' );
 		}
 		return $fPass;
 	}
@@ -277,6 +282,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('WordPress Terms') ) );
+			$this->doStatIncrement( 'firewall.blocked.wpterms' );
 		}
 		return $fPass;
 	}
@@ -289,6 +295,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('Field Truncation') ) );
+			$this->doStatIncrement( 'firewall.blocked.fieldtruncation' );
 		}
 		return $fPass;
 	}
@@ -300,6 +307,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('PHP Code') ) );
+			$this->doStatIncrement( 'firewall.blocked.phpcode' );
 		}
 		return $fPass;
 	}
@@ -320,6 +328,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 			$fPass = $this->doPassCheck( $aFileNames, $aTerms, true );
 			if ( !$fPass ) {
 				$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('EXE File Uploads') ) );
+				$this->doStatIncrement( 'firewall.blocked.exefile' );
 			}
 			return $fPass;
 		}
@@ -333,6 +342,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$this->logWarning( sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('Leading Schema') ) );
+			$this->doStatIncrement( 'firewall.blocked.schema' );
 		}
 		return $fPass;
 	}

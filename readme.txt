@@ -242,6 +242,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 = 2.6.2 =
 
 *   ENHANCED:   Added option to completely reject a SPAM comment and redirect to the home page (so it doesn't fill up your database with rubbish)
+*   ADDED:      Plugin now has an internal stats counter for spam and other significant plugin actions.
 
 = 2.6.1 =
 

@@ -232,10 +232,14 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			$this->logWarning(
 				sprintf( _wpsf__('User "%s" attempted to login but the HTTP REFERER was either empty or it was a remote login attempt. Bot Perhaps? HTTP REFERER: "%s".'), $insUsername, $sHttpRef )
 			);
+			$this->doStatIncrement( 'login.remotepost.fail' );
 			wp_die(
 				_wpsf__( 'Sorry, you must login directly from within the site.' )
 					.'<br /><a href="http://icwp.io/4n" target="_blank">&rarr;'._wpsf__('More Info').'</a>'
 			);
+		}
+		else {
+			$this->doStatIncrement( 'login.remotepost.success' );
 		}
 		return $inoUser;
 	}
@@ -331,6 +335,7 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 				sprintf( _wpsf__('User "%s" verified their identity using Two-Factor Authentication.'), $sUsername )
 			);
 			$this->setUserLoggedIn( $sUsername );
+			$this->doStatIncrement( 'login.twofactor.verified' );
 			$oWp->redirectToAdmin();
 		}
 		else {
@@ -375,12 +380,14 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 		$nLoginInterval = $sNow - $this->m_nLastLoginTime;
 		if ( $nLoginInterval > $nRequiredLoginInterval ) {
 			$this->updateLastLoginThrottleTime( $sNow );
+			$this->doStatIncrement( 'login.cooldown.success' );
 			return $inoUser;
 		}
 
 		// At this point someone has attempted to login within the previous login wait interval
 		// So we remove WordPress's authentication filter and our own user check authentication
 		// And finally return a WP_Error which will be reflected back to the user.
+		$this->doStatIncrement( 'login.cooldown.fail' );
 		remove_filter( 'authenticate', 'wp_authenticate_username_password', 20, 3 );  // wp-includes/user.php
 		remove_filter( 'authenticate', array( $this, 'checkUserAuthLogin_Filter' ), 30, 3);
 	
@@ -584,6 +591,7 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	
 				// Now send email with authentication link for user.
 				if ( is_array( $aNewAuthData ) ) {
+					$this->doStatIncrement( 'login.twofactor.started' );
 					$fEmailSuccess = $this->sendEmailTwoFactorVerify( $inoUser, $aNewAuthData['ip'], $aNewAuthData['unique_id'] );
 					
 					// Failure to send email - log them in.
@@ -692,6 +700,7 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			$this->logWarning(
 				sprintf( _wpsf__('User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip($this->m_nRequestIp) )
 			);
+			$this->doStatIncrement( 'login.gasp.checkbox.fail' );
 			wp_die( "You must check that box to say you're not a bot." );
 			return false;
 		}
@@ -699,6 +708,7 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			$this->logWarning(
 				sprintf( _wpsf__('User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip($this->m_nRequestIp) )
 			);
+			$this->doStatIncrement( 'login.gasp.honeypot.fail' );
 			wp_die( _wpsf__('You appear to be a bot - terminating login attempt.') );
 			return false;
 		}
@@ -935,6 +945,7 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 				$this->logWarning(
 					sprintf( _wpsf__('User "%s" was forcefully logged out as they are not verified.'), $oUser->user_login )
 				);
+				$this->doStatIncrement( 'login.userverify.fail' );
 				wp_logout();
 				$oWp = $this->loadWpFunctionsProcessor();
 				$oWp->redirectToLogin();

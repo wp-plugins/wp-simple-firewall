@@ -381,6 +381,21 @@ class ICWP_BaseProcessor_V2 {
 		require_once( dirname(__FILE__) . '/icwp-wpfunctions.php' );
 		return ICWP_WpFunctions_WPSF::GetInstance();
 	}
+
+	/**
+	 * @return ICWP_WpFunctions_WPSF
+	 */
+	protected function loadWpsfStatsProcessor() {
+		require_once( dirname(__FILE__) . '/icwp-wpsf-stats.php' );
+	}
+
+	/**
+	 * @param $sStatKey
+	 */
+	protected function doStatIncrement( $sStatKey ) {
+		$this->loadWpsfStatsProcessor();
+		ICWP_Stats_WPSF::DoStatIncrement( $sStatKey );
+	}
 }
 
 endif;

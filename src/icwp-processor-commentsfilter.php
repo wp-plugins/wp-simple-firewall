@@ -170,21 +170,25 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 
 		// we have the cb name, is it set?
 		if( !isset( $_POST['cb_nombre'] ) || !isset( $_POST[ $_POST['cb_nombre'] ] ) ) {
-			$sExplanation = _wpsf__('Failed GASP Bot Filter Test (checkbox)' );
+			$sExplanation = sprintf( _wpsf__('Failed GASP Bot Filter Test (%s)' ), _wpsf__('checkbox') );
+			$sStatKey = 'checkbox';
 		}
 		// honeypot check
 		else if ( isset( $_POST['sugar_sweet_email'] ) && $_POST['sugar_sweet_email'] !== '' ) {
-			$sExplanation = _wpsf__('Failed GASP Bot Filter Test (honeypot)' );
+			$sExplanation = sprintf( _wpsf__('Failed GASP Bot Filter Test (%s)' ), _wpsf__('honeypot') );
+			$sStatKey = 'honeypot';
 		}
 		// check the unique comment token is present
 		else if ( !isset( $_POST['comment_token'] ) || !$this->checkCommentToken( $_POST['comment_token'], $nPostId ) ) {
-			$sExplanation = _wpsf__('Failed GASP Bot Filter Test (comment token failure)' );
+			$sExplanation = sprintf( _wpsf__('Failed GASP Bot Filter Test (%s)' ), _wpsf__('comment token failure') );
+			$sStatKey = 'token';
 		}
 		else {
 			$fIsSpam = false;
 		}
 
 		if ( $fIsSpam ) {
+			$this->doStatIncrement( sprintf( 'spam.gasp.%s', $sStatKey ) );
 			$this->sCommentStatus = $this->getOption('comments_default_action_spam_bot');
 			$this->setCommentStatusExplanation( $sExplanation );
 		}
@@ -249,11 +253,23 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			foreach ( $aWords as $sWord ) {
 				if ( stripos( $sItem, $sWord ) !== false ) {
 					//mark as spam and exit;
+					$this->doStatIncrement( sprintf( 'spam.human.%s', $sKey ) );
+					$this->doStatHumanSpamWords( $sWord );
 					$this->sCommentStatus = $this->getOption('comments_default_action_human_spam');
 					$this->setCommentStatusExplanation( sprintf( _wpsf__('Human SPAM filter found "%s" in "%s"' ), $sWord, $sKey ) );
 					break 2;
 				}
 			}
+		}
+	}
+
+	/**
+	 * @param $sStatWord
+	 */
+	protected function doStatHumanSpamWords( $sStatWord = '' ) {
+		$this->loadWpsfStatsProcessor();
+		if ( !empty($sStatWord) ) {
+			ICWP_Stats_WPSF::DoStatIncrementKeyValue( 'spam.human.words', base64_encode( $sStatWord ) );
 		}
 	}
 
