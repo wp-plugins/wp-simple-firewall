@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.6.1
+Stable tag: 2.6.2
 
 Complete and Simple WordPress Security. Unrestricted, with no premium features.
 
@@ -242,7 +242,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 = 2.6.2 =
 
 *   ENHANCED:   Added option to completely reject a SPAM comment and redirect to the home page (so it doesn't fill up your database with rubbish)
-*   ADDED:      Plugin now has an internal stats counter for spam and other significant plugin actions.
+*   ADDED:      Plugin now has an internal stats counter for spam and other significant plugin events.
 
 = 2.6.1 =
 
