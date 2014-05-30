@@ -78,11 +78,11 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 		add_filter( 'auto_update_plugin',		array( $this, 'autoupdate_plugins' ), self::FilterPriority, 2 );
 		add_filter( 'auto_update_theme',		array( $this, 'autoupdate_themes' ), self::FilterPriority, 2 );
 
-		if ( $this->m_aOptions['enable_autoupdate_ignore_vcs'] == 'Y' ) {
+		if ( $this->getIsOption('enable_autoupdate_ignore_vcs', 'Y') ) {
 			add_filter( 'automatic_updates_is_vcs_checkout', array( $this, 'disable_for_vcs' ), 10, 2 );
 		}
 
-		if ( $this->m_aOptions['enable_autoupdate_disable_all'] == 'Y' ) {
+		if ( $this->getIsOption('enable_autoupdate_disable_all', 'Y') ) {
 			add_filter( 'automatic_updater_disabled', '__return_true', self::FilterPriority );
 		}
 		
@@ -123,11 +123,11 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	 * @return boolean
 	 */
 	public function autoupdate_core_major( $infUpdate ) {
-		if ( $this->m_aOptions['autoupdate_core'] == 'core_never' ) {
+		if ( $this->getIsOption('autoupdate_core', 'core_never') ) {
 			$this->doStatIncrement( 'autoupdates.core.major.blocked' );
 			return false;
 		}
-		else if ( $this->m_aOptions['autoupdate_core'] == 'core_major' ) {
+		else if ( $this->getIsOption('autoupdate_core', 'core_major') ) {
 			$this->doStatIncrement( 'autoupdates.core.major.allowed' );
 			return true;
 		}
@@ -142,11 +142,11 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	 * @return boolean
 	 */
 	public function autoupdate_core_minor( $infUpdate ) {
-		if ( $this->m_aOptions['autoupdate_core'] == 'core_never' ) {
+		if ( $this->getIsOption('autoupdate_core', 'core_never') ) {
 			$this->doStatIncrement( 'autoupdates.core.minor.blocked' );
 			return false;
 		}
-		else if ( $this->m_aOptions['autoupdate_core'] == 'core_minor' ) {
+		else if ( $this->getIsOption('autoupdate_core', 'core_minor') ) {
 			$this->doStatIncrement( 'autoupdates.core.minor.allowed' );
 			return true;
 		}
@@ -162,7 +162,7 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	 * @return boolean
 	 */
 	public function autoupdate_translations( $infUpdate, $insSlug ) {
-		if ( $this->m_aOptions['enable_autoupdate_translations'] == 'Y' ) {
+		if ( $this->getIsOption('enable_autoupdate_translations', 'Y') ) {
 			return true;
 		}
 		return $infUpdate;
@@ -179,7 +179,7 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	public function autoupdate_plugins( $infUpdate, $mItem ) {
 
 		// first, is global auto updates for plugins set
-		if ( $this->getOption('enable_autoupdate_plugins') == 'Y' ) {
+		if ( $this->getIsOption('enable_autoupdate_plugins', 'Y') ) {
 			$this->doStatIncrement( 'autoupdates.plugins.all' );
 			return true;
 		}
@@ -196,8 +196,11 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 		}
 
 		if ( $sItemFile === $this->m_sPluginFile ) {
-			$this->doStatIncrement( 'autoupdates.plugins.self' );
-			return $this->getOption('autoupdate_plugin_self') == 'Y';
+			if ( $this->getIsOption('autoupdate_plugin_self', 'Y') ) {
+				$this->doStatIncrement( 'autoupdates.plugins.self' );
+				return true;
+			}
+			return false;
 		}
 
 		$aAutoUpdatePluginFiles = apply_filters( 'icwp_wpsf_autoupdate_plugins', array() );
@@ -223,7 +226,7 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	public function autoupdate_themes( $infUpdate, $mItem ) {
 
 		// first, is global auto updates for themes set
-		if ( $this->getOption('enable_autoupdate_themes') == 'Y' ) {
+		if ( $this->getIsOption('enable_autoupdate_themes', 'Y') ) {
 			$this->doStatIncrement( 'autoupdates.themes.all' );
 			return true;
 		}
@@ -269,20 +272,20 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	 * @return boolean
 	 */
 	public function autoupdate_send_email( $infSendEmail ) {
-		return $this->m_aOptions['enable_upgrade_notification_email'] == 'Y';
+		return $this->getIsOption('enable_upgrade_notification_email', 'Y');
 	}
 	
 	/**
 	 * A filter on the target email address to which to send upgrade notification emails.
 	 * 
-	 * @param array $inaEmailParams
+	 * @param array $aEmailParams
 	 * @return array
 	 */
-	public function autoupdate_email_override( $inaEmailParams ) {
+	public function autoupdate_email_override( $aEmailParams ) {
 		if ( !empty( $this->m_aOptions['override_email_address'] ) ) {
-			$inaEmailParams['to'] = $this->m_aOptions['override_email_address'];
+			$aEmailParams['to'] = $this->m_aOptions['override_email_address'];
 		}
-		return $inaEmailParams;
+		return $aEmailParams;
 	}
 }
 
