@@ -41,6 +41,8 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 	 */
 	protected $m_oPluginMainOptions;
 
+	protected $fHasFtpOverride = false;
+
 	public function __construct( $inaFeatures, $inaOptions ) {
 		parent::__construct();
 		$this->m_aFeatures = $inaFeatures;
@@ -48,7 +50,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 	}
 	
 	/**
-	 * Based on the existance of files placed within the plugin directory, will enable or disable
+	 * Based on the existence of files placed within the plugin directory, will enable or disable
 	 * all registered features and return the value of the override setting that was put in place.
 	 * 
 	 * @return string - override settings (empty string if none).
@@ -56,9 +58,11 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 	protected function override() {
 		
 		if ( $this->m_oWpFs->exists( path_join($this->m_sPluginDir, 'forceOff') ) ) {
+			$fHasFtpOverride = true;
 			$sSetting = 'N';
 		}
 		else if ( $this->m_oWpFs->exists( path_join($this->m_sPluginDir, 'forceOn') ) ) {
+			$fHasFtpOverride = true;
 			$sSetting = 'Y';
 		}
 		else {
@@ -119,8 +123,8 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 	/**
 	 * This is necessary because we store these values in several places and we need to always keep it in sync.
 	 * 
-	 * @param string $sFeature
-	 * @param boolean $infEnabled
+	 * @param string $insOption
+	 * @param mixed $inmValue
 	 * @return boolean
 	 */
 	public function setSharedOption( $insOption, $inmValue ) {

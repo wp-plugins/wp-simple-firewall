@@ -121,6 +121,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 			add_action(	'network_admin_menu',		array( $this, 'onWpNetworkAdminMenu' ) );
 			add_action( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 			add_action( 'deactivate_plugin',		array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
+			add_action( 'wp_before_admin_bar_render',		array( $this, 'onWpAdminBar' ), 1, 9999 );
 		}
 		add_action( 'in_plugin_update_message-'.$this->m_sPluginFile, array( $this, 'onWpPluginUpdateMessage' ) );
 		add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
@@ -357,7 +358,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 		}
 		
 		$sFullParentMenuId = $this->getFullParentMenuId();
-		add_menu_page( self::BaseTitle, $this->m_sPluginMenuTitle, self::BasePermissions, $sFullParentMenuId, array( $this, 'onDisplayAll' ), $this->getImageUrl( 'pluginlogo_16x16.png' ) );
+		add_menu_page( self::BaseTitle, $this->m_sPluginMenuTitle, self::BasePermissions, $sFullParentMenuId, array( $this, 'onDisplayAll' ), $this->getPluginLogoUrl16() );
 		//Create and Add the submenu items
 		$this->createPluginSubMenuItems();
 		if ( !empty($this->m_aPluginMenu) ) {
@@ -921,6 +922,41 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 		wp_die( $insText );
 		exit();
 	}
+
+	public function onWpAdminBar() {
+		$aNodes = $this->getAdminBarNodes();
+		foreach( $aNodes as $aNode )  {
+			$this->addAdminBarNode( $aNode );
+		}
+	}
+
+	protected function getAdminBarNodes() {	}
+
+	protected function addAdminBarNode( $aNode ) {
+		global $wp_admin_bar;
+
+		if ( isset( $aNode['children'] ) ) {
+			$aChildren = $aNode['children'];
+			unset( $aNode['children'] );
+		}
+		$wp_admin_bar->add_node( $aNode );
+
+		if ( !empty($aChildren) ) {
+			foreach( $aChildren as $aChild ) {
+				$aChild['parent'] = $aNode['id'];
+				$this->addAdminBarNode( $aChild );
+			}
+		}
+	}
+
+	protected function getPluginLogoUrl16() {
+		return $this->getImageUrl( 'pluginlogo_16x16.png' );
+	}
+
+	protected function getPluginLogoUrl32() {
+		return $this->getImageUrl( 'pluginlogo_32x32.png' );
+	}
+
 
 }//CLASS
 

@@ -239,6 +239,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
+= 2.6.3 =
+
+*   ENHANCED:   [Admin Access Protection](http://icwp.io/5b) is further enhanced in 2 ways: [1] more robust cookie values (md5s); [2] Blocks plugin options updating right at the point of WordPress options update.
+
 = 2.6.2 =
 
 *   ENHANCED:   Added option to completely reject a SPAM comment and redirect to the home page (so it doesn't fill up your database with rubbish)

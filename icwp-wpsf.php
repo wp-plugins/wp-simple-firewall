@@ -189,6 +189,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		if ( isset( $_GET['turnoffperm'] ) ) {
 			$this->setPermissionToSubmit( false );
 		}
+
+		add_filter( 'pre_update_option', array($this, 'blockOptionsSaves'), 1, 3 );
 	}
 
 	/**
@@ -485,9 +487,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	
 	protected function setPermissionToSubmit( $infPermission = false ) {
 		if ( $infPermission ) {
-			$sValue = $this->m_oPluginMainOptions->getOpt( 'admin_access_key' );
+			$sValue = md5( $this->m_oPluginMainOptions->getOpt( 'admin_access_key' ) );
 			$sTimeout = $this->m_oPluginMainOptions->getOpt( 'admin_access_timeout' ) * 60;
-			$_COOKIE[ self::AdminAccessKeyCookieName ] = 1;
+			$_COOKIE[ self::AdminAccessKeyCookieName ] = $sValue;
 			setcookie( self::AdminAccessKeyCookieName, $sValue, time()+$sTimeout, COOKIEPATH, COOKIE_DOMAIN, false );
 		}
 		else {
@@ -507,10 +509,26 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		if ( $this->m_oPluginMainOptions->getOpt( 'enable_admin_access_restriction' ) == 'Y' ) {
 			$sAccessKey = $this->m_oPluginMainOptions->getOpt( 'admin_access_key' );
 			if ( !empty( $sAccessKey ) ) {
-				return isset( $_COOKIE[ self::AdminAccessKeyCookieName ] );
+				return isset( $_COOKIE[ self::AdminAccessKeyCookieName ] ) && ( md5($sAccessKey) == $_COOKIE[ self::AdminAccessKeyCookieName ] ) ;
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Right before a plugin option is due to update it will check that we have permissions to do so and if not, will
+	 * revert the option to save to the previous one.
+	 *
+	 * @param $mValue
+	 * @param $sOption
+	 * @param $mOldValue
+	 * @return mixed
+	 */
+	public function blockOptionsSaves( $mValue, $sOption, $mOldValue ) {
+		if ( !preg_match( '/^'.self::$sOptionPrefix.'.*_options$/', $sOption ) || $this->fHasFtpOverride ) {
+			return $mValue;
+		}
+		return $this->hasPermissionToSubmit()? $mValue : $mOldValue;
 	}
 	
 	protected function handleSubmit_AccessKeyRequest() {
@@ -935,6 +953,16 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			return 0;
 		}
 		return round( ( time() - $nTimeInstalled ) / DAY_IN_SECONDS );
+	}
+
+	protected function getAdminBarNodes() {
+		return array(); //disabled for now
+		$aMenu = array(
+			'id'	=> self::$sOptionPrefix.'admin_menu',
+			'title'	=> '<span class="pluginlogo_16">&nbsp;</span>'._wpsf__('Firewall').'',
+			'href'	=> 'bob',
+		);
+		return array( $aMenu );
 	}
 }
 
