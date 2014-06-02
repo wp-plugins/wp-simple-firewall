@@ -47,8 +47,9 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Enable (or Disable) The SPAM Comments Protection Filter Feature' ),
 					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('SPAM Comments Protection Filter') ),
 					'<a href="http://icwp.io/3z" target="_blank">'._wpsf__( 'more info' ).'</a>'
+					.' | <a href="http://icwp.io/wpsf04" target="_blank">'._wpsf__( 'blog' ).'</a>'
 				)
-			),
+			)
 		);
 
 		$aHumanSpam = array(
@@ -61,7 +62,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					_wpsf__( 'Human SPAM Filter' ),
 					_wpsf__( 'Enable (or Disable) The Human SPAM Filter Feature.' ),
-					_wpsf__( 'Scans the content of WordPress comments for keywords that are indicative of SPAM and marks the comment according to your prefer setting below.' ),
+					_wpsf__( 'Scans the content of WordPress comments for keywords that are indicative of SPAM and marks the comment according to your preferred setting below.' ),
 					'<a href="http://icwp.io/57" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				),
 				array(
@@ -140,7 +141,13 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( "Default: 600 seconds (10 minutes). Each visitor is given a unique 'Token' so they can comment. This restricts spambots, but we need to force these tokens to expire and at the same time not bother the visitors." ),
 					'<a href="http://icwp.io/3o" target="_blank">'._wpsf__( 'more info' ).'</a>'
 
-				),
+				)
+			)
+		);
+
+		$aCustomMessages = array(
+			'section_title' => sprintf( _wpsf__( 'Customize Messages Shown To User' ), _wpsf__('Automatic Bot') ),
+			'section_options' => array(
 				array(
 					'custom_message_checkbox',
 					'',
@@ -191,7 +198,8 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 		$this->m_aOptions = array(
 			$aBase,
 			$aHumanSpam,
-			$aGasp
+			$aGasp,
+			$aCustomMessages
 		);
 	}
 

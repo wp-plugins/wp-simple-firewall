@@ -58,7 +58,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
 					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('Login Protection') ),
 					'<a href="http://icwp.io/51" target="_blank">'._wpsf__( 'more info' ).'</a>'
-					.' | <a href="http://icwp.io/50" target="_blank">'._wpsf__( 'blog' ).'</a>'
+					.' | <a href="http://icwp.io/wpsf03" target="_blank">'._wpsf__( 'blog' ).'</a>'
 				)
 			),
 		);

@@ -16,7 +16,6 @@
  */
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
-require_once( dirname(__FILE__).'/icwp-optionshandler-lockdown.php' );
 
 if ( !class_exists('ICWP_OptionsHandler_Lockdown') ):
 

@@ -57,7 +57,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 						_wpsf__( 'Enforce Admin Access Restriction' ),
 						_wpsf__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.' ),
 						'<a href="http://icwp.io/40" target="_blank">'._wpsf__( 'more info' ).'</a>'
-						.' | <a href="http://icwp.io/4z" target="_blank">'._wpsf__( 'blog' ).'</a>'
+						.' | <a href="http://icwp.io/wpsf02" target="_blank">'._wpsf__( 'blog' ).'</a>'
 					),
 					array(
 						'admin_access_timeout',
@@ -77,7 +77,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 						_wpsf__( 'Admin Access Key' ),
 						_wpsf__( 'Specify Your Plugin Access Key' ),
 						_wpsf__( 'If you forget this, you could potentially lock yourself out from using this plugin.' )
-							.'<strong>'._wpsf__( 'Leave it blank to not update it' ).'</strong>',
+							.' <strong>'._wpsf__( 'Leave it blank to not update it' ).'</strong>',
 						'<a href="http://icwp.io/42" target="_blank">'._wpsf__( 'more info' ).'</a>'
 					)
 				)
@@ -86,6 +86,30 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 		
 		$aGeneral = array(
 			'section_title' => _wpsf__( 'General Plugin Options' ),
+			'section_options' => array(
+				array(
+					'enable_upgrade_admin_notice',
+					'',
+					'Y',
+					'checkbox',
+					_wpsf__( 'Plugin Notices' ),
+					_wpsf__( 'Display Notices For Updates' ),
+					_wpsf__( 'Disable this option to hide certain plugin admin notices about available updates and post-update notices' )
+				),
+				array(
+					'delete_on_deactivate',
+					'',
+					'N',
+					'checkbox',
+					_wpsf__( 'Delete Plugin Settings' ),
+					_wpsf__( 'Delete All Plugin Settings Upon Plugin Deactivation' ),
+					_wpsf__( 'Careful: Removes all plugin options when you deactivate the plugin' )
+				)
+			)
+		);
+
+		$aGlobal = array(
+			'section_title' => _wpsf__( 'Global Plugin Features' ),
 			'section_options' => array(
 				array(
 					'enable_firewall',
@@ -140,30 +164,13 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Enable Auto Updates' ),
 					_wpsf__( 'Enable (or Disable) The Auto Updates Feature' ),
 					_wpsf__( 'Regardless of any other settings, this option will turn off the Auto Updates feature, or enable your selected Auto Updates options' )
-				),
-				array(
-					'enable_upgrade_admin_notice',
-					'',
-					'Y',
-					'checkbox',
-					_wpsf__( 'Plugin Notices' ),
-					_wpsf__( 'Display Notices For Updates' ),
-					_wpsf__( 'Disable this option to hide certain plugin admin notices about available updates and post-update notices' )
-				),
-				array(
-					'delete_on_deactivate',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'Delete Plugin Settings' ),
-					_wpsf__( 'Delete All Plugin Settings Upon Plugin Deactivation' ),
-					_wpsf__( 'Careful: Removes all plugin options when you deactivate the plugin' )
 				)
 			)
 		);
 
 		$this->m_aOptions = array(
-			$aGeneral
+			$aGeneral,
+			$aGlobal
 		);
 		if ( isset( $aAccessKey ) ) {
 			array_unshift( $this->m_aOptions, $aAccessKey );

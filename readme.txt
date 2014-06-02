@@ -3,46 +3,28 @@ Contributors: paultgoodchild, dlgoodchild
 Donate link: http://icwp.io/q
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
-Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates
+Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack, login
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.6.2
+Stable tag: 2.6.3
 
-Complete and Simple WordPress Security. Unrestricted, with no premium features.
+Complete and Simple WordPress Security. Unrestricted, Easy, No Premium Features.
 
 == Description ==
 
-The WordPress Simple Firewall is the only WordPress security plugin that *protects itself* - it
-will prevent access to its own settings so that unauthorized users can't deactivate or screw with your security settings.
+The WordPress Simple Firewall is [all you need to secure your WordPress](http://icwp.io/wpsf09) sites in 6 Key Areas:
+
+* [Plugin Admin Protection](http://icwp.io/wpsf05) - The **only** WordPress security plugin with a WordPress-independent security key to protects itself
+* [Firewall](http://icwp.io/wpsf06) - Blocks all web requests to the site that break the firewall rules (easy setup!)
+* [Login](http://icwp.io/wpsf07) - Provides Brute Force Hacking Protection and Two-Factor Authentication login.
+* [Comment SPAM](http://icwp.io/wpsf08) - Blocks **ALL** automatic Bot-SPAM and filters Human Comments for SPAM.
+* Lock Down - Prevent editing of any files from within the WordPress admin dashboard
+* Automatic Updates - Fully manage the WordPress Automatic/Background Updates system
 
 An intro to the features and why you should use the Simple Firewall before getting all complicated with bulky
 security plugins.
 
 [youtube http://www.youtube.com/watch?v=r307fu3Eqbo]
-
-Protects your WordPress site in 5 main ways:
-
-= Plugin Self-Protection =
-
-This plugins locks itself down - you can add access restriction to the plugin itself!
-
-= A Simple, Effective Firewall =
-
-Builds upon the simplicity and effectiveness of the WordPress Firewall 2 plugin.
-
-= WordPress Login Protection =
-
-Adds several layers of protection to the WordPress login screen through identity verification and Brute Force Login hacking prevention.
-
-= Comments and SPAM Protection =
-
-Uses and builds upon tried and tested SPAM prevention and filtering techniques with some unique approaches found only in this plugin.
-
-= WordPress Lockdown =
-
-Provides options for locking down your WordPress site from both legitimate users and people who may have gained unauthorized access.
-
-Read more on each section below...
 
 = A Simple Firewall =
 
@@ -241,7 +223,12 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 = 2.6.3 =
 
-*   ENHANCED:   [Admin Access Protection](http://icwp.io/5b) is further enhanced in 2 ways: [1] more robust cookie values (md5s); [2] Blocks plugin options updating right at the point of WordPress options update.
+*   ADDED:      More in-line plugin links to help/blog resources
+*   ENHANCED:   [Admin Access Protection](http://icwp.io/5b) is further enhanced in 3 ways:
+
+1.  More robust cookie values using MD5s
+1.  Blocks plugin options updating right at the point of WordPress options update so nothing can rewrite the actual plugin options.
+1.  Locks the current Admin Access session to your IP address - effectively only 1 Simple Firewall admin allowed at a time.
 
 = 2.6.2 =
 

@@ -95,7 +95,7 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 	
 	protected $m_sPluginSlug;
 	
-	protected $m_fShowMarketing = '';
+	protected $fShowMarketing;
 	
 	protected $m_fAutoPluginUpgrade = false;
 	
@@ -416,30 +416,28 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 			'form_action'		=> 'admin.php?page='.$this->getSubmenuId( $insSubmenuId )
 		);
 	}
-	
+
+	/**
+	 * @return bool
+	 */
 	protected function isShowMarketing() {
 
-		if ( $this->m_fShowMarketing == 'Y' ) {
-			return true;
+		if ( isset($this->fShowMarketing) ) {
+			return $this->fShowMarketing;
 		}
-		elseif ( $this->m_fShowMarketing == 'N' ) {
-			return false;
-		}
-
-		$sServiceClassName = 'Worpit_Plugin';
-		$this->m_fShowMarketing = 'Y';
+		$this->fShowMarketing = true;
 		if ( class_exists( 'Worpit_Plugin' ) ) {
 			if ( method_exists( 'Worpit_Plugin', 'IsLinked' ) ) {
-				$this->m_fShowMarketing = Worpit_Plugin::IsLinked() ? 'N' : 'Y';
+				$this->fShowMarketing = !Worpit_Plugin::IsLinked();
 			}
-			elseif ( function_exists( 'get_option' )
+			else if ( function_exists( 'get_option' )
 					&& get_option( Worpit_Plugin::$VariablePrefix.'assigned' ) == 'Y'
 					&& get_option( Worpit_Plugin::$VariablePrefix.'assigned_to' ) != '' ) {
 		
-				$this->m_fShowMarketing = 'N';
+				$this->fShowMarketing = false;
 			}
 		}
-		return $this->m_fShowMarketing === 'N' ? false : true;
+		return $this->fShowMarketing ;
 	}
 	
 	/**
@@ -957,6 +955,11 @@ class ICWP_Pure_Base_V4 extends ICWP_WPSF_Once {
 		return $this->getImageUrl( 'pluginlogo_32x32.png' );
 	}
 
+	/**
+	 */
+	protected function loadDataProcessor() {
+		require_once( dirname(__FILE__) . '/icwp-data-processor.php' );
+	}
 
 }//CLASS
 

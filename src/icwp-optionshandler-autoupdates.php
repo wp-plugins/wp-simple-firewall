@@ -41,7 +41,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					_wpsf__( 'Enable Auto Updates' ),
 					_wpsf__( 'Enable (or Disable) The Simple Firewall Automatic Updates Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Auto Updates feature, or enable your selected Auto Updates options.' ),
+					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('Automatic Updates') ),
 					'<a href="http://icwp.io/3w" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)

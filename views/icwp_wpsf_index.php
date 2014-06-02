@@ -17,7 +17,14 @@ $sOff = _wpsf__( 'Off' );
 	<div class="bootstrap-wpadmin">
 		<?php echo printOptionsPageHeader( 'Dashboard' ); ?>
 
-		<?php include_once( dirname(__FILE__).'/widgets/icwp_common_widgets.php' ); ?>
+		<?php if ( $icwp_fShowAds ) : ?>
+			<div class="row" id="worpit_promo">
+				<div class="span12">
+					<?php echo getWidgetIframeHtml( 'dashboard-widget-worpit-wtb' ); ?>
+				</div>
+			</div><!-- / row -->
+
+		<?php endif; ?>
 		
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
@@ -43,19 +50,14 @@ $sOff = _wpsf__( 'Off' );
 			<?php endif; ?>
 		</div><!-- / row -->
 
-		<?php if ( $icwp_fShowAds ) : ?>
-		<div class="row" id="worpit_promo">
-		  <div class="span12">
-		  	<?php echo getWidgetIframeHtml( 'dashboard-widget-worpit-wtb' ); ?>
-		  </div>
-		</div><!-- / row -->
+		<?php include_once( dirname(__FILE__).'/widgets/icwp_common_widgets.php' ); ?>
 
-		<div class="row" id="developer_channel_promo">
-		  <div class="span12">
-		  	<?php echo getWidgetIframeHtml('dashboard-widget-developerchannel-wtb'); ?>
-		  </div>
-		</div><!-- / row -->
-		
+		<?php if ( $icwp_fShowAds ) : ?>
+			<div class="row" id="developer_channel_promo">
+				<div class="span12">
+					<?php echo getWidgetIframeHtml('dashboard-widget-developerchannel-wtb'); ?>
+				</div>
+			</div><!-- / row -->
 		<?php endif; ?>
 		
 		<div class="row" id="tbs_docs">

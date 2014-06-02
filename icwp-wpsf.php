@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.6.2
+ * Version: 2.6.3
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.6.2';
+	const PluginVersion					= '2.6.3';
 	
 	/**
 	 * @var string
@@ -487,7 +487,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	
 	protected function setPermissionToSubmit( $infPermission = false ) {
 		if ( $infPermission ) {
-			$sValue = md5( $this->m_oPluginMainOptions->getOpt( 'admin_access_key' ) );
+			$this->loadDataProcessor();
+			$sValue = md5( $this->m_oPluginMainOptions->getOpt( 'admin_access_key' ).ICWP_WPSF_DataProcessor::GetVisitorIpAddress() );
 			$sTimeout = $this->m_oPluginMainOptions->getOpt( 'admin_access_timeout' ) * 60;
 			$_COOKIE[ self::AdminAccessKeyCookieName ] = $sValue;
 			setcookie( self::AdminAccessKeyCookieName, $sValue, time()+$sTimeout, COOKIEPATH, COOKIE_DOMAIN, false );
@@ -509,7 +510,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		if ( $this->m_oPluginMainOptions->getOpt( 'enable_admin_access_restriction' ) == 'Y' ) {
 			$sAccessKey = $this->m_oPluginMainOptions->getOpt( 'admin_access_key' );
 			if ( !empty( $sAccessKey ) ) {
-				return isset( $_COOKIE[ self::AdminAccessKeyCookieName ] ) && ( md5($sAccessKey) == $_COOKIE[ self::AdminAccessKeyCookieName ] ) ;
+				$this->loadDataProcessor();
+				$sHash = md5( $sAccessKey.ICWP_WPSF_DataProcessor::GetVisitorIpAddress() );
+				return isset( $_COOKIE[ self::AdminAccessKeyCookieName ] ) && ( $sHash == $_COOKIE[ self::AdminAccessKeyCookieName ] ) ;
 			}
 		}
 		return true;
@@ -785,6 +788,17 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 				$this->updateMailingListSignupShownUserMeta();
 			}
 		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function isShowMarketing() {
+		// don't show marketing on the first 24hrs.
+		if ( $this->getInstallationDays() < 1 ) {
+			return false;
+		}
+		return parent::isShowMarketing();
 	}
 
 	/**
