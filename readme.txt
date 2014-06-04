@@ -221,6 +221,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
+= 2.6.4 =
+
+*   ENHANCED:   WordPress Lock Down options now also set the corresponding WordPress defines if they're not already.
+
 = 2.6.3 =
 
 *   ADDED:      More in-line plugin links to help/blog resources

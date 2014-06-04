@@ -26,19 +26,15 @@ class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	public function __construct( $insOptionPrefix = '' ) {
 		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ) );
 	}
-	
-	/**
-	 * Resets the object values to be re-used anew
-	 */
-	public function reset() {
-		parent::reset();
-	}
-	
+
 	/**
 	 */
 	public function run() {
 		
-		if ( $this->getOption('disable_file_editing') == 'Y' ) {
+		if ( $this->getIsOption( 'disable_file_editing', 'Y' ) ) {
+			if ( !defined('DISALLOW_FILE_EDIT') ) {
+				define( 'DISALLOW_FILE_EDIT', true );
+			}
 			add_filter( 'user_has_cap', array( $this, 'disableFileEditing' ), 0, 3 );
 		}
 
@@ -54,11 +50,17 @@ class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 			add_action( 'init', array( $this, 'resetAuthKeysSalts' ), 1 );
 		}
 
-		if ( $this->getOption( 'force_ssl_login' ) == 'Y' && function_exists('force_ssl_login') ) {
+		if ( $this->getIsOption( 'force_ssl_login', 'Y' ) && function_exists('force_ssl_login') ) {
+			if ( !defined('FORCE_SSL_LOGIN') ) {
+				define( 'FORCE_SSL_LOGIN', true );
+			}
 			force_ssl_login( true );
 		}
 
-		if ( $this->getOption( 'force_ssl_admin' ) == 'Y' && function_exists('force_ssl_admin') ) {
+		if ( $this->getIsOption( 'force_ssl_admin', 'Y' ) && function_exists('force_ssl_admin') ) {
+			if ( !defined('FORCE_SSL_ADMIN') ) {
+				define( 'FORCE_SSL_ADMIN', true );
+			}
 			force_ssl_admin( true );
 		}
 	}
@@ -66,16 +68,16 @@ class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	/**
 	 * @return array
 	 */
-	public function disableFileEditing( $inaAllCaps, $cap, $inaArgs ) {
+	public function disableFileEditing( $aAllCaps, $cap, $aArgs ) {
 		
 		$aEditCapabilities = array( 'edit_themes', 'edit_plugins', 'edit_files' );
-		$sRequestedCapability = $inaArgs[0];
+		$sRequestedCapability = $aArgs[0];
 		
 		if ( !in_array( $sRequestedCapability, $aEditCapabilities ) ) {
-			return $inaAllCaps;
+			return $aAllCaps;
 		}
-		$inaAllCaps[ $sRequestedCapability ] = false;
-		return $inaAllCaps;
+		$aAllCaps[ $sRequestedCapability ] = false;
+		return $aAllCaps;
 	}
 	
 	/**
