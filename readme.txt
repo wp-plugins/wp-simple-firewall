@@ -15,7 +15,7 @@ Complete and Simple WordPress Security. Unrestricted, Easy, No Premium Features.
 The WordPress Simple Firewall is [all you need to secure your WordPress](http://icwp.io/wpsf09) sites in 6 Key Areas:
 
 = Plugin Admin Access Protection =
-The **only** WordPress security plugin with a WordPress-independent security key to protects itself. [more info]http://icwp.io/wpsf05
+The **only** WordPress security plugin with a WordPress-independent security key to protects itself. [more info](http://icwp.io/wpsf05)
 
 = Firewall Protection =
 Blocks all web requests to the site that violate the firewall rules with easy setup! [more info](http://icwp.io/wpsf06)
