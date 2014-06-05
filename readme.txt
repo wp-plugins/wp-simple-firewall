@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack, login
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.6.3
+Stable tag: 2.6.4
 
 Complete and Simple WordPress Security. Unrestricted, Easy, No Premium Features.
 
@@ -14,19 +14,27 @@ Complete and Simple WordPress Security. Unrestricted, Easy, No Premium Features.
 
 The WordPress Simple Firewall is [all you need to secure your WordPress](http://icwp.io/wpsf09) sites in 6 Key Areas:
 
-* [Plugin Admin Protection](http://icwp.io/wpsf05) - The **only** WordPress security plugin with a WordPress-independent security key to protects itself
-* [Firewall](http://icwp.io/wpsf06) - Blocks all web requests to the site that break the firewall rules (easy setup!)
-* [Login](http://icwp.io/wpsf07) - Provides Brute Force Hacking Protection and Two-Factor Authentication login.
-* [Comment SPAM](http://icwp.io/wpsf08) - Blocks **ALL** automatic Bot-SPAM and filters Human Comments for SPAM.
-* Lock Down - Prevent editing of any files from within the WordPress admin dashboard
-* Automatic Updates - Fully manage the WordPress Automatic/Background Updates system
+= Plugin Admin Access Protection =
+The **only** WordPress security plugin with a WordPress-independent security key to protects itself. [more info]http://icwp.io/wpsf05
 
-An intro to the features and why you should use the Simple Firewall before getting all complicated with bulky
-security plugins.
+= Firewall Protection =
+Blocks all web requests to the site that violate the firewall rules with easy setup! [more info](http://icwp.io/wpsf06)
+
+= Brute Force Login Protection and Two-Factor Authentication =
+Provides highly effective Brute Force Hacking Protection and email based Two-Factor Authenticated login. [more info](http://icwp.io/wpsf07)
+
+= Comment SPAM (Full replacement and upgrade from Akismet) =
+Blocks **ALL** automatic Bot-SPAM, and catches Human Comments SPAM without sending data to 3rd parties or charging subscription fees. [more info](http://icwp.io/wpsf08)
+
+= WordPress Lock Down =
+Numerous mechanisms to lock down your WordPress admin area, such as blocking file edits and enforcing SSL.
+
+= Automatic Updates =
+Take back control of your WordPress Automatic Updates.
 
 [youtube http://www.youtube.com/watch?v=r307fu3Eqbo]
 
-= A Simple Firewall =
+= A Simple Firewall Explained =
 
 The WordPress Simple Firewall is built to be reliable, and easy to use by **anyone**.  Seriously, the interface is simple! :)
 
@@ -223,6 +231,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 = 2.6.4 =
 
+*   ENHANCED:   Dashboard now shows a more visual summary of settings and removes duplicate options settings with links to sections.
 *   ENHANCED:   WordPress Lock Down options now also set the corresponding WordPress defines if they're not already.
 
 = 2.6.3 =

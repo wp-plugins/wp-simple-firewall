@@ -347,7 +347,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 
 		$aData['aMainOptions'] = $this->m_oPluginMainOptions->getPluginOptionsValues();
-		
+		$aData['aSummaryData'] = $this->getDashboardSummaryDisplayData();
+
 		if ( $this->getIsMainFeatureEnabled('firewall') ) {
 			$this->loadOptionsHandler( 'Firewall' );
 			$aData['aFirewallOptions'] = $this->m_oFirewallOptions->getPluginOptionsValues();
@@ -369,6 +370,48 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			$aData['aAutoUpdatesOptions'] = $this->m_oAutoUpdatesOptions->getPluginOptionsValues();
 		}
 		$this->display( 'icwp_'.$this->m_sParentMenuIdSuffix.'_index', $aData );
+	}
+
+	protected function getDashboardSummaryDisplayData() {
+
+		$aSummaryData = array();
+		$aSummaryData[] = array(
+			$this->m_oPluginMainOptions->getOpt( 'enable_admin_access_restriction' ) == 'Y',
+			_wpsf__('Admin Access Protection'),
+			$this->getSubmenuId()
+		);
+
+		$aSummaryData[] = array(
+			$this->getIsMainFeatureEnabled('firewall'),
+			_wpsf__('Firewall'),
+			$this->getSubmenuId( 'firewall' )
+		);
+
+		$aSummaryData[] = array(
+			$this->getIsMainFeatureEnabled('login_protect'),
+			_wpsf__('Login Protection'),
+			$this->getSubmenuId( 'login_protect' )
+		);
+
+		$aSummaryData[] = array(
+			$this->getIsMainFeatureEnabled('comments_filter'),
+			_wpsf__('Comments Filter'),
+			$this->getSubmenuId( 'comments_filter' )
+		);
+
+		$aSummaryData[] = array(
+			$this->getIsMainFeatureEnabled('autoupdates'),
+			_wpsf__('Auto Updates'),
+			$this->getSubmenuId( 'autoupdates' )
+		);
+
+		$aSummaryData[] = array(
+			$this->getIsMainFeatureEnabled('lockdown'),
+			_wpsf__('Lock Down'),
+			$this->getSubmenuId( 'lockdown' )
+		);
+
+		return $aSummaryData;
 	}
 	
 	protected function onDisplayPrivacyProtectLog() {
@@ -912,7 +955,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		if ( $nDays < 2 ) {
 			return '';
 		}
-
 		$sMetaFlag = self::$sOptionPrefix.'hide_mailing_list_signup';
 
 		ob_start(); ?>
@@ -922,7 +964,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 				<p>The WordPress Simple Firewall team has launched a education initiative to raise awareness of WordPress security and to provide further help with the WordPress Simple Firewall plugin. Get Involved here:</p>
 				<input type="text" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Your Email" />
 				<input type="text" value="" name="FNAME" class="" id="mce-FNAME" placeholder="Your Name" />
-				<input type="hidden" value="" name="DAYS" class="" id="mce-DAYS" value="<?php echo $nDays; ?>" />
+				<input type="hidden" value="<?php echo $nDays; ?>" name="DAYS" class="" id="mce-DAYS" />
 				<input type="submit" value="Get The News" name="subscribe" id="mc-embedded-subscribe" class="button" />
 				<a href="<?php echo network_admin_url('admin.php?page=icwp-wpsf').'&'.$sMetaFlag.'=1';?>">Dismiss</a>
 				<div id="mce-responses" class="clear">

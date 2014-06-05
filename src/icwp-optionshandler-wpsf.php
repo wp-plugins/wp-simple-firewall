@@ -39,7 +39,12 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 			'feedback_admin_notice',
 			'update_success_tracker',
 			'capability_can_disk_write',
-			'capability_can_remote_get'
+			'capability_can_remote_get',
+			'enable_firewall',
+			'enable_login_protect',
+			'enable_comments_filter',
+			'enable_lockdown',
+			'enable_autoupdates'
 		);
 		$this->mergeNonUiOptions( $aNonUiOptions );
 		
@@ -170,7 +175,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 
 		$this->m_aOptions = array(
 			$aGeneral,
-			$aGlobal
+//			$aGlobal
 		);
 		if ( isset( $aAccessKey ) ) {
 			array_unshift( $this->m_aOptions, $aAccessKey );

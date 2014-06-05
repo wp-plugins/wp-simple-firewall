@@ -2,6 +2,7 @@
 include_once( dirname(__FILE__).ICWP_DS.'icwp_options_helper.php' );
 include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
 $sPluginName = 'WordPress Simple Firewall';
+$fAdminAccessOn = $icwp_aMainOptions['enable_admin_access_restriction'] == 'Y';
 $fFirewallOn = $icwp_aMainOptions['enable_firewall'] == 'Y';
 $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
@@ -25,10 +26,12 @@ $sOff = _wpsf__( 'Off' );
 			</div><!-- / row -->
 
 		<?php endif; ?>
-		
+
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
-			
+
+				<?php include_once( dirname(__FILE__).'/icwp_wpsf_state_summary.php' ); ?>
+
 				<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
 				<?php
 					wp_nonce_field( $icwp_nonce_field );
@@ -143,7 +146,7 @@ $sOff = _wpsf__( 'Off' );
 				<?php endif; ?>
 				<hr/>
 				<h4 style="margin-top:20px;">
-					<?php printf( _wpsf__('Login Protection is %s'), $fCommentsFilteringOn ? $sOn : $sOff ); ?>
+					<?php printf( _wpsf__('Comments Filtering is %s'), $fCommentsFilteringOn ? $sOn : $sOff ); ?>
 					[ <a href="admin.php?page=icwp-wpsf-comments_filter"><?php _wpsf_e('Configure Now'); ?></a> ]</h4>
 				<?php if ( $fCommentsFilteringOn ) : ?>
 					<ul>
