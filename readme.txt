@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack, login
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.6.4
+Stable tag: 2.6.5
 
 Complete and Simple WordPress Security. Unrestricted, Easy, No Premium Features.
 
@@ -15,7 +15,7 @@ Complete and Simple WordPress Security. Unrestricted, Easy, No Premium Features.
 The WordPress Simple Firewall is [all you need to secure your WordPress](http://icwp.io/wpsf09) sites in 6 Key Areas:
 
 = Plugin Admin Access Protection =
-The **only** WordPress security plugin with a WordPress-independent security key to protects itself. [more info]http://icwp.io/wpsf05
+The **only** WordPress security plugin with a WordPress-independent security key to protects itself. [more info](http://icwp.io/wpsf05)
 
 = Firewall Protection =
 Blocks all web requests to the site that violate the firewall rules with easy setup! [more info](http://icwp.io/wpsf06)
@@ -228,6 +228,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 = TODO =
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+
+= 2.6.5 =
+
+*	FIX:		Could not enable Admin Access Protection feature on new installs due to too aggressive testing on security.
 
 = 2.6.4 =
 

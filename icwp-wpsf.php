@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.6.4
+ * Version: 2.6.5
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -52,7 +52,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * Should be updated each new release.
 	 * @var string
 	 */
-	const PluginVersion					= '2.6.4';
+	const PluginVersion					= '2.6.5';
 	
 	/**
 	 * @var string
@@ -140,6 +140,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @var ICWP_EmailProcessor
 	 */
 	protected $m_oEmailProcessor;
+
+	/**
+	 * @var bool
+	 */
+	private $fAdminAccessPermSubmit = null;
 
 	/**
 	 */
@@ -546,19 +551,24 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @return boolean
 	 */
 	protected function hasPermissionToSubmit() {
-		if ( !parent::hasPermissionToSubmit() ) {
-			return false;
+
+		if ( !is_null( $this->fAdminAccessPermSubmit ) ) {
+			return $this->fAdminAccessPermSubmit;
 		}
-		
-		if ( $this->m_oPluginMainOptions->getOpt( 'enable_admin_access_restriction' ) == 'Y' ) {
+
+		$this->fAdminAccessPermSubmit = true;
+		if ( !parent::hasPermissionToSubmit() ) {
+			$this->fAdminAccessPermSubmit = false;
+		}
+		if ( $this->fAdminAccessPermSubmit && $this->m_oPluginMainOptions->getOpt( 'enable_admin_access_restriction' ) == 'Y' ) {
 			$sAccessKey = $this->m_oPluginMainOptions->getOpt( 'admin_access_key' );
 			if ( !empty( $sAccessKey ) ) {
 				$this->loadDataProcessor();
 				$sHash = md5( $sAccessKey.ICWP_WPSF_DataProcessor::GetVisitorIpAddress() );
-				return isset( $_COOKIE[ self::AdminAccessKeyCookieName ] ) && ( $sHash == $_COOKIE[ self::AdminAccessKeyCookieName ] ) ;
+				$this->fAdminAccessPermSubmit = isset( $_COOKIE[ self::AdminAccessKeyCookieName ] ) && ( $sHash == $_COOKIE[ self::AdminAccessKeyCookieName ] );
 			}
 		}
-		return true;
+		return $this->fAdminAccessPermSubmit;
 	}
 
 	/**
@@ -614,9 +624,16 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$this->setSharedOption( 'enable_lockdown',			$this->m_oPluginMainOptions->getOpt( 'enable_lockdown' ) );
 		$this->setSharedOption( 'enable_autoupdates',		$this->m_oPluginMainOptions->getOpt( 'enable_autoupdates' ) );
 		$this->setSharedOption( 'enable_privacy_protect',	$this->m_oPluginMainOptions->getOpt( 'enable_privacy_protect' ) );
-		
+
 		$this->saveOptions();
 		$this->clearCaches();
+
+		if ( !$this->fetchPost( self::$sOptionPrefix.'enable_admin_access_restriction' ) ) {
+			$this->setPermissionToSubmit( false );
+		}
+		else {
+			wp_safe_redirect( network_admin_url('admin.php?page=icwp-wpsf') );
+		}
 	}
 	
 	protected function handleSubmit_FirewallConfig() {
