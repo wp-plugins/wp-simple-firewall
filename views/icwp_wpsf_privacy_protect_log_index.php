@@ -1,6 +1,5 @@
 <?php
-include_once( dirname(__FILE__).ICWP_DS.'icwp_options_helper.php' );
-include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
+include_once( 'icwp_wpsf_config_header.php' );
 
 $icwp_fShowAds = false;
 ?>

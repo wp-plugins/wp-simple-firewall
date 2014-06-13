@@ -20,7 +20,11 @@
 if ( !class_exists('ICWP_OptionsHandler_Base_V2') ):
 
 class ICWP_OptionsHandler_Base_V2 {
-	
+
+	/**
+	 * @var string
+	 */
+	const PluginSlug = 'icwp-wpsf';
 	/**
 	 * @var string
 	 */
@@ -86,7 +90,20 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @var array
 	 */
 	protected $aOptionsKeys;
-	
+
+	/**
+	 * @var string
+	 */
+	protected $sFeatureName;
+	/**
+	 * @var string
+	 */
+	protected $sFeatureSlug;
+	/**
+	 * @var string
+	 */
+	protected $fShowFeatureMenuItem = true;
+
 	public function __construct( $insPrefix, $insStoreName, $insVersion ) {
 		$this->m_sOptionPrefix = $insPrefix;
 		$this->m_aOptionsStoreName = $insStoreName;
@@ -96,6 +113,24 @@ class ICWP_OptionsHandler_Base_V2 {
 		
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
 		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ), 1 );
+		add_action( 'icwp_wpsf_form_submit', array( $this, 'updatePluginOptionsFromSubmit' ) );
+		add_filter( 'icwp_wpsf_filter_plugin_submenu_items', array( $this, 'filter_addPluginSubMenuItem' ) );
+	}
+
+	/**
+	 * @param $aItems
+	 * @return mixed
+	 */
+	public function filter_addPluginSubMenuItem( $aItems ) {
+		if ( !$this->fShowFeatureMenuItem || empty($this->sFeatureName) ) {
+			return $aItems;
+		}
+		$aItems[ ICWP_Wordpress_Simple_Firewall::BaseTitle.' - '.$this->sFeatureName ] = array(
+			$this->sFeatureName,
+			self::PluginSlug .'-'.$this->sFeatureSlug,
+			'onDisplayAll'
+		);
+		return $aItems;
 	}
 	
 	/**

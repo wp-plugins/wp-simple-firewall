@@ -2,16 +2,6 @@
 if ( empty($icwp_aSummaryData) ) {
 	return;
 }
-$fAdminAccessOn = $icwp_aMainOptions['enable_admin_access_restriction'] == 'Y';
-$fFirewallOn = $icwp_aMainOptions['enable_firewall'] == 'Y';
-$fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
-$fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
-$fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
-$fAutoUpdatesOn = $icwp_aMainOptions['enable_autoupdates'] == 'Y';
-
-$sOn = _wpsf__( 'On' );
-$sOff = _wpsf__( 'Off' );
-
 $sInnerSpanSize = 'span4';
 
 function printFeatureSummaryBlock( $fOn, $sName, $sSettingsHref= '', $sInnerSpanSize = 4 ) {

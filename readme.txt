@@ -229,6 +229,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
+= 2.6.6 =
+
+*   ENHANCED:   Code refactoring preparation for v3.
+
 = 2.6.5 =
 
 *	FIX:		Could not enable Admin Access Protection feature on new installs due to too aggressive testing on security.

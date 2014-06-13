@@ -28,6 +28,9 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 	
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
+
+		$this->sFeatureName = _wpsf__('Comments Filter');
+		$this->sFeatureSlug = 'comments_filter';
 	}
 
 	/**

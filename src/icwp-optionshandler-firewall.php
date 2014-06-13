@@ -25,6 +25,9 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 	
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
+
+		$this->sFeatureName = _wpsf__('Firewall');
+		$this->sFeatureSlug = 'firewall';
 	}
 
 	/**

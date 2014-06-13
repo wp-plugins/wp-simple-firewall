@@ -20,13 +20,16 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 if ( !class_exists('ICWP_OptionsHandler_Lockdown') ):
 
 class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
-	
+
 	const StoreName = 'lockdown_options';
 	
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
+
+		$this->sFeatureName = _wpsf__('Lockdown');
+		$this->sFeatureSlug = 'lockdown';
 	}
-	
+
 	public function doPrePluginOptionsSave() {
 		
 		if ( $this->getOpt( 'action_reset_auth_salts' ) == 'Y' ) {

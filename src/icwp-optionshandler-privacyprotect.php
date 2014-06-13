@@ -25,6 +25,9 @@ class ICWP_OptionsHandler_PrivacyProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
+
+		$this->sFeatureName = _wpsf__('Privacy Protect');
+		$this->sFeatureSlug = 'privacy_protect';
 	}
 	
 	public function doPrePluginOptionsSave() { }

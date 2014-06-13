@@ -29,7 +29,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 	/**
 	 *@var array
 	 */
-	protected $m_aFeatures;
+	protected $aFeatures;
 	
 	/**
 	 *@var array
@@ -43,9 +43,9 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 
 	protected $fHasFtpOverride = false;
 
-	public function __construct( $inaFeatures, $inaOptions ) {
+	public function __construct( $aFeatures, $inaOptions ) {
 		parent::__construct();
-		$this->m_aFeatures = $inaFeatures;
+		$this->aFeatures = $aFeatures;
 		$this->m_aOptionsHandlers = $inaOptions;
 	}
 	
@@ -57,11 +57,11 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 	 */
 	protected function override() {
 		
-		if ( $this->m_oWpFs->exists( path_join($this->m_sPluginDir, 'forceOff') ) ) {
+		if ( $this->m_oWpFs->exists( path_join($this->sPluginRootDir, 'forceOff') ) ) {
 			$fHasFtpOverride = true;
 			$sSetting = 'N';
 		}
-		else if ( $this->m_oWpFs->exists( path_join($this->m_sPluginDir, 'forceOn') ) ) {
+		else if ( $this->m_oWpFs->exists( path_join($this->sPluginRootDir, 'forceOn') ) ) {
 			$fHasFtpOverride = true;
 			$sSetting = 'Y';
 		}
@@ -84,7 +84,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 	 * @return array
 	 */
 	protected function getFeaturesMap() {
-		return $this->m_aFeatures;
+		return $this->aFeatures;
 	}
 	
 	/**
@@ -103,10 +103,10 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 	 */
 	public function getIsMainFeatureEnabled( $insFeature ) {
 		
-		if ( $this->m_oWpFs->exists( $this->m_sPluginPath . 'forceOff' ) ) {
+		if ( $this->m_oWpFs->exists( $this->sPluginRootDir . 'forceOff' ) ) {
 			return false;
 		}
-		else if ( $this->m_oWpFs->exists( $this->m_sPluginPath . 'forceOn' ) ) {
+		else if ( $this->m_oWpFs->exists( $this->sPluginRootDir . 'forceOn' ) ) {
 			return true;
 		}
 		
@@ -161,8 +161,8 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 		
 		$sOptionsVarName = 'm_o'.$insOptionHandler.'Options'; // e.g. m_oPluginMainOptions
 		if ( $insOptionHandler == 'PluginMain' ) {
-			$sSourceFile = dirname(__FILE__).'/icwp-optionshandler-'.$this->m_sPluginSlug.'.php'; // e.g. icwp-optionshandler-wpsf.php
-			$sClassName = 'ICWP_OptionsHandler_'.ucfirst( $this->m_sPluginSlug ); // e.g. ICWP_OptionsHandler_Wpsf
+			$sSourceFile = dirname(__FILE__).'/icwp-optionshandler-'.$this->sPluginSlug.'.php'; // e.g. icwp-optionshandler-wpsf.php
+			$sClassName = 'ICWP_OptionsHandler_'.ucfirst( $this->sPluginSlug ); // e.g. ICWP_OptionsHandler_Wpsf
 		}
 		else {
 			$sSourceFile = dirname(__FILE__).'/icwp-optionshandler-'.strtolower($insOptionHandler).'.php'; // e.g. icwp-optionshandler-wpsf.php
@@ -194,7 +194,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 		}
 		$sProcessorVarName = 'm_o'.$insProcessorName.'Processor'; // e.g. m_oFirewallProcessor
 		$sSourceFile = dirname(__FILE__).'/icwp-processor-'.strtolower($insProcessorName).'.php'; // e.g. icwp-optionshandler-wpsf.php
-		$sClassName = 'ICWP_'.strtoupper( $this->m_sPluginSlug ).'_'.$insProcessorName.'Processor'; // e.g. ICWP_WPSF_FirewallProcessor
+		$sClassName = 'ICWP_'.strtoupper( $this->sPluginSlug ).'_'.$insProcessorName.'Processor'; // e.g. ICWP_WPSF_FirewallProcessor
 		$sStorageKey = array_search($insProcessorName, $aAllProcessors).'_processor'; // e.g. firewall_processor
 		$sOptionsHandlerVarName = 'm_o'.$insProcessorName.'Options'; // e.g. m_oFirewallOptions
 		

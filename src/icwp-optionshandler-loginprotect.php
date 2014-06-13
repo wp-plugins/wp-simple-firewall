@@ -25,6 +25,9 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	
 	public function __construct( $insPrefix, $insVersion ) {
 		parent::__construct( $insPrefix, self::StoreName, $insVersion );
+
+		$this->sFeatureName = _wpsf__('Login Protect');
+		$this->sFeatureSlug = 'login_protect';
 	}
 	
 	public function doPrePluginOptionsSave() {

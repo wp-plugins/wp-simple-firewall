@@ -219,7 +219,7 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	}
 	
 	private function setTableName( $insTableName ) {
-		return $this->m_sTableName = esc_sql( $this->m_oWpdb->base_prefix . self::DB_TABLE_PREFIX . $insTableName );
+		return $this->m_sTableName = esc_sql( $this->m_oWpdb->prefix . self::DB_TABLE_PREFIX . $insTableName );
 	}
 	
 	/**

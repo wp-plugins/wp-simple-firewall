@@ -1,12 +1,6 @@
-<?php 
-include_once( dirname(__FILE__).ICWP_DS.'icwp_options_helper.php' );
-include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
-$sPluginName = 'WordPress Simple Firewall';
-$fFirewallOn = $icwp_aMainOptions['enable_firewall'] == 'Y';
-$fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
-$fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
+<?php
+include_once( 'icwp_wpsf_config_header.php' );
 ?>
-
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
 		<?php echo printOptionsPageHeader( _wpsf__('Admin Access Restriction') ); ?>
