@@ -132,8 +132,8 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	 * @param string
 	 * @return string
 	 */
-	public function getFullPluginPrefix( $sJoiner = '-' ) {
-		return sprintf( '%s%s%s%s', self::$sParentSlug, $sJoiner, self::$sPluginSlug, $sJoiner );
+	public function getFullPluginPrefix( $sGlue = '-' ) {
+		return sprintf( '%s%s%s', self::$sParentSlug, $sGlue, self::$sPluginSlug );
 	}
 
 	/**

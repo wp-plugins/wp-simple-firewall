@@ -171,7 +171,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		
 		require_once( $sSourceFile );
 		if ( $infRecreate || !isset( $this->{$sOptionsVarName} ) ) {
-		 	$this->{$sOptionsVarName} = new $sClassName( $this->oPluginVo, self::$sOptionPrefix );
+		 	$this->{$sOptionsVarName} = new $sClassName( $this->oPluginVo );
 		}
 		if ( $infFullBuild ) {
 			$this->{$sOptionsVarName}->buildOptions();

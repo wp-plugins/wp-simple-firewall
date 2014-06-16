@@ -57,14 +57,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 */
 	protected static $sOptionPrefix = '';
 
-	/**
-	 * This will get set in whatever class inherits this base class.  It should be a combination
-	 * of the base slug and the plugin slug
-	 *
-	 * @var string
-	 */
-	protected static $sUniquePluginPrefix = '';
-
 	protected $aPluginMenu;
 	
 	protected $sPluginSlug;
@@ -90,9 +82,8 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		$this->sPluginRootFile			= $this->oPluginVo->getRootFile();
 		$this->fAutoPluginUpgrade		= $this->oPluginVo->getAutoUpgrade();
 		$this->sPluginSlug				= $this->oPluginVo->getPluginSlug();
-		self::$sUniquePluginPrefix		= $this->oPluginVo->getFullPluginPrefix( '_' );
-		self::$sOptionPrefix			= self::$sUniquePluginPrefix;
-		
+		self::$sOptionPrefix			= $this->oPluginVo->getFullPluginPrefix( '_' ).'_';
+
 		add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 		add_action( 'init',						array( $this, 'onWpInit' ), 0 );
 		if ( $this->isValidAdminArea() ) {
@@ -116,32 +107,28 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	/**
 	 * Returns this unique plugin prefix
 	 *
-	 * @param string $sJoiner
+	 * @param string $sGlue
 	 * @return string
 	 */
-	public function getPluginPrefix( $sJoiner = '-' ) {
-		//todo remove the rtrim because it's there to adapt to the new VO.
-		return rtrim( $this->oPluginVo->getFullPluginPrefix( $sJoiner ), $sJoiner );
+	public function getPluginPrefix( $sGlue = '-' ) {
+		return $this->oPluginVo->getFullPluginPrefix( $sGlue );
 	}
 
 	/**
 	 * Will prefix and return any string with the unique plugin prefix.
 	 *
 	 * @param string $sSuffix
-	 * @param string $sJoiner
+	 * @param string $sGlue
 	 * @return string
 	 */
-	public function doPluginPrefix( $sSuffix = '', $sJoiner = '-' ) {
-		$sPrefix = $this->getPluginPrefix( $sJoiner );
-		if ( $sSuffix == $sPrefix || strpos( $sSuffix, $sPrefix.$sJoiner ) === 0 ) { //it already has the prefix
+	public function doPluginPrefix( $sSuffix = '', $sGlue = '-' ) {
+		$sPrefix = $this->oPluginVo->getFullPluginPrefix( $sGlue );
+
+		if ( $sSuffix == $sPrefix || strpos( $sSuffix, $sPrefix.$sGlue ) === 0 ) { //it already has the prefix
 			return $sSuffix;
 		}
-		return sprintf( '%s%s%s',
-			$sPrefix,
-			empty($sSuffix)? '' : $sJoiner,
-			empty($sSuffix)? '' : $sSuffix
-		);
-//		return sprintf( '%s%s%s', $this->getPluginPrefix($sJoiner), empty($sSuffix)? '' : $sJoiner, empty($sSuffix)? '' : $sSuffix );
+
+		return sprintf( '%s%s%s', $sPrefix, empty($sSuffix)? '' : $sGlue, empty($sSuffix)? '' : $sSuffix );
 	}
 	
 	/**
@@ -150,18 +137,18 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * 
 	 * @return void
 	 */
-	protected function setupAutoUpdates() {
-		$sLibSource = $this->sPluginRootDir.'/src/lib/plugin-update-checker.php';
-		if ( !is_file($sLibSource) || empty( $this->m_sAutoUpdateUrl ) ) {
-			return;
-		}
-		require_once( $sLibSource );
-		$oUpdateChecker = new PluginUpdateChecker(
-			$this->m_sAutoUpdateUrl,
-			$this->sPluginRootFile,
-			$this->oPluginVo->getTextDomain()
-		);
-	}
+//	protected function setupAutoUpdates() {
+//		$sLibSource = $this->sPluginRootDir.'/src/lib/plugin-update-checker.php';
+//		if ( !is_file($sLibSource) || empty( $this->m_sAutoUpdateUrl ) ) {
+//			return;
+//		}
+//		require_once( $sLibSource );
+//		$oUpdateChecker = new PluginUpdateChecker(
+//			$this->m_sAutoUpdateUrl,
+//			$this->sPluginRootFile,
+//			$this->oPluginVo->getTextDomain()
+//		);
+//	}
 	
 	protected function isValidAdminArea() {
 		$this->loadWpFunctions();
@@ -209,12 +196,13 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	protected function hasPermissionToView() {
 		return $this->hasPermissionToSubmit();
 	}
+
 	/**
 	 * @return boolean
 	 */
 	protected function hasPermissionToSubmit() {
 		// first a basic admin check
-		return is_super_admin() && current_user_can( 'manage_options' );
+		return is_super_admin() && current_user_can( $this->oPluginVo->getBasePermissions() );
 	}
 	
 	public function doPluginUpdateCheck() {
@@ -251,7 +239,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * Hooked to 'plugins_loaded'
 	 */
 	public function onWpPluginsLoaded() {
-		$this->setupAutoUpdates();
 		if ( is_admin() ) {
 			//Handle plugin upgrades
 			$this->handlePluginUpgrade();
@@ -261,8 +248,8 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		if ( $this->isIcwpPluginFormSubmit() ) {
 			$this->handlePluginFormSubmit();
 		}
-		add_filter( 'all_plugins', array( $this, 'hidePluginFromTableList' ) );
-		add_filter( 'site_transient_update_plugins', array( $this, 'hidePluginUpdatesFromUI' ) );
+		add_filter( 'all_plugins', array( $this, 'filter_hidePluginFromTableList' ) );
+		add_filter( 'site_transient_update_plugins', array( $this, 'filter_hidePluginUpdatesFromUI' ) );
 		$this->removePluginConflicts(); // removes conflicts with other plugins
 	}
 
@@ -279,7 +266,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * @uses $this->m_fHeadless if the plugin is headless, it is hidden
 	 * @return array
 	 */
-	public function hidePluginFromTableList( $inaPlugins ) {
+	public function filter_hidePluginFromTableList( $inaPlugins ) {
 		
 		if ( !$this->fHeadless ) {
 			return $inaPlugins;
@@ -300,24 +287,25 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * In order to ensure that WordPress still checks for plugin updates it will not remove this plugin from
 	 * the list of plugins if DOING_CRON is set to true.
 	 * 
-	 * @uses $this->m_fHeadless if the plugin is headless, it is hidden
-	 * @return StdClass 
+	 * @uses $this->fHeadless if the plugin is headless, it is hidden
+	 * @param StdClass $oPlugins
+	 * @return StdClass
 	 */
-	public function hidePluginUpdatesFromUI( $inoPlugins ) {
+	public function filter_hidePluginUpdatesFromUI( $oPlugins ) {
 		
 		if ( ( defined( 'DOING_CRON' ) && DOING_CRON ) || !$this->fHeadless ) {
-			return $inoPlugins;
+			return $oPlugins;
 		}
 		
-		if ( !empty( $inoPlugins->response ) ) {
-			$aResponse = $inoPlugins->response;
+		if ( !empty( $oPlugins->response ) ) {
+			$aResponse = $oPlugins->response;
 			foreach ( $aResponse as $sPluginFile => $oData ) {
 				if ( $sPluginFile == $this->sPluginBaseFile ) {
-					unset( $inoPlugins->response[$sPluginFile] );
+					unset( $oPlugins->response[$sPluginFile] );
 				}
 			}
 		}
-		return $inoPlugins;
+		return $oPlugins;
 	}
 	
 	/**
@@ -396,7 +384,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 			'plugin_url'	=> $this->sPluginUrl,
 			'fShowAds'		=> $this->isShowMarketing()
 		);
-		$this->display( $this->oPluginVo->getFullPluginPrefix('_') .'index', $aData );
+		$this->display( $this->oPluginVo->getFullPluginPrefix('_') .'_index', $aData );
 	}
 
 	protected function getBaseDisplayData( $sSubmenu = '' ) {

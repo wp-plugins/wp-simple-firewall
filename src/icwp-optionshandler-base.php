@@ -129,7 +129,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		$sMenuPageTitle = $this->oPluginVo->getHumanName().' - '.$this->sFeatureName;
 		$aItems[ $sMenuPageTitle ] = array(
 			$this->sFeatureName,
-			$this->oPluginVo->getFullPluginPrefix().$this->sFeatureSlug,
+			$this->doPrefix( $this->sFeatureSlug ),
 			'onDisplayAll'
 		);
 		return $aItems;
@@ -603,11 +603,10 @@ class ICWP_OptionsHandler_Base_V2 {
 	//TODO: move this to wpfunctions.
 	/**
 	 * @param string $insKey		-	the POST key
-	 * @param string $insPrefix
 	 * @return Ambigous <null, string>
 	 */
-	protected function getFromPost( $insKey, $insPrefix = null ) {
-		$sKey = $this->prefixOptionKey( $insKey, $insPrefix );
+	protected function getFromPost( $insKey ) {
+		$sKey = $this->prefixOptionKey( $insKey );
 		return ( isset( $_POST[ $sKey ] )? $_POST[ $sKey ]: null );
 	}
 	public function getOption( $insKey ) {
@@ -631,12 +630,27 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * Prefixes an option key only if it's needed
 	 *
 	 * @param $sKey
-	 * @param $sCustomPrefix
 	 * @return string
 	 */
-	protected function prefixOptionKey( $sKey, $sCustomPrefix = null ) {
-		$sPrefix = is_null( $sCustomPrefix )? $this->oPluginVo->getFullPluginPrefix( '_' ) : $sCustomPrefix;
-		return ( strpos( $sKey, $sPrefix ) === 0 ) ? $sKey : $sPrefix.$sKey;
+	protected function prefixOptionKey( $sKey ) {
+		return $this->doPrefix( $sKey, '_' );
+	}
+
+	/**
+	 * Will prefix and return any string with the unique plugin prefix.
+	 *
+	 * @param string $sSuffix
+	 * @param string $sGlue
+	 * @return string
+	 */
+	public function doPrefix( $sSuffix = '', $sGlue = '-' ) {
+		$sPrefix = $this->oPluginVo->getFullPluginPrefix( $sGlue );
+
+		if ( $sSuffix == $sPrefix || strpos( $sSuffix, $sPrefix.$sGlue ) === 0 ) { //it already has the prefix
+			return $sSuffix;
+		}
+
+		return sprintf( '%s%s%s', $sPrefix, empty($sSuffix)? '' : $sGlue, empty($sSuffix)? '' : $sSuffix );
 	}
 	
 	/**
