@@ -23,8 +23,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	
 	const StoreName = 'loginprotect_options';
 	
-	public function __construct( $insPrefix, $insVersion ) {
-		parent::__construct( $insPrefix, self::StoreName, $insVersion );
+	public function __construct( $oPluginVo ) {
+		parent::__construct( $oPluginVo, self::StoreName );
 
 		$this->sFeatureName = _wpsf__('Login Protect');
 		$this->sFeatureSlug = 'login_protect';

@@ -26,8 +26,8 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 	const DefaultCommentCooldown	= 30; //seconds.
 	const DefaultCommentExpire		= 600; //seconds.
 	
-	public function __construct( $insPrefix, $insVersion ) {
-		parent::__construct( $insPrefix, self::StoreName, $insVersion );
+	public function __construct( $oPluginVo ) {
+		parent::__construct( $oPluginVo, self::StoreName );
 
 		$this->sFeatureName = _wpsf__('Comments Filter');
 		$this->sFeatureSlug = 'comments_filter';

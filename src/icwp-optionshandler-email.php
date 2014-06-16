@@ -23,8 +23,8 @@ class ICWP_OptionsHandler_Email extends ICWP_OptionsHandler_Base_Wpsf {
 
 	const StoreName = 'email_options';
 	
-	public function __construct( $insPrefix, $insVersion ) {
-		parent::__construct( $insPrefix, self::StoreName, $insVersion );
+	public function __construct( $oPluginVo ) {
+		parent::__construct( $oPluginVo, self::StoreName );
 
 		$this->sFeatureName = _wpsf__('Email');
 		$this->sFeatureSlug = 'email';

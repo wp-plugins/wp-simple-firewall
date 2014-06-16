@@ -17,17 +17,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_WpFunctions_V3') ):
+if ( !class_exists('ICWP_WpFunctions_V4') ):
 
-class ICWP_WpFunctions_V3 {
+class ICWP_WpFunctions_V4 {
 
 	/**
-	 * @var ICWP_WpFunctions_V3
+	 * @var ICWP_WpFunctions_V4
 	 */
 	protected static $oInstance = NULL;
 
 	/**
-	 * @return ICWP_WpFunctions_V3
+	 * @return ICWP_WpFunctions_V4
 	 */
 	public static function GetInstance() {
 		if ( is_null( self::$oInstance ) ) {
@@ -40,6 +40,11 @@ class ICWP_WpFunctions_V3 {
 	 * @var string
 	 */
 	protected $m_sWpVersion;
+
+	/**
+	 * @var boolean
+	 */
+	protected $fIsMultisite;
 	
 	public function __construct() {}
 
@@ -151,12 +156,22 @@ class ICWP_WpFunctions_V3 {
 		wp_safe_redirect( $sUrl );
 		exit();
 	}
+
+	/**
+	 * @return bool
+	 */
+	public function isMultisite() {
+		if ( !isset( $this->fIsMultisite ) ) {
+			$this->fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
+		}
+		return $this->fIsMultisite;
+	}
 }
 endif;
 
 if ( !class_exists('ICWP_WpFunctions_WPSF') ):
 
-	class ICWP_WpFunctions_WPSF extends ICWP_WpFunctions_V3 {
+	class ICWP_WpFunctions_WPSF extends ICWP_WpFunctions_V4 {
 		/**
 		 * @return ICWP_WpFunctions_WPSF
 		 */

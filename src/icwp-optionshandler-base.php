@@ -22,6 +22,11 @@ if ( !class_exists('ICWP_OptionsHandler_Base_V2') ):
 class ICWP_OptionsHandler_Base_V2 {
 
 	/**
+	 * @var ICWP_Wordpress_Simple_Firewall_Plugin
+	 */
+	protected $oPluginVo;
+
+	/**
 	 * @var string
 	 */
 	const PluginSlug = 'icwp-wpsf';
@@ -48,11 +53,6 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @var string
 	 */
 	protected $m_sOptionPrefix;
-	
-	/**
-	 * @var string
-	 */
-	protected $m_sVersion;
 
 	/**
 	 * @var array
@@ -67,7 +67,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	/**
 	 * @var boolean
 	 */
-	protected $m_fIsMultisite;
+	protected $fIsMultisite;
 
 	/**
 	 * These are options that need to be stored, but are never set by the UI.
@@ -104,12 +104,13 @@ class ICWP_OptionsHandler_Base_V2 {
 	 */
 	protected $fShowFeatureMenuItem = true;
 
-	public function __construct( $insPrefix, $insStoreName, $insVersion ) {
-		$this->m_sOptionPrefix = $insPrefix;
+	public function __construct( $oPluginVo, $insStoreName ) {
+		$this->oPluginVo = $oPluginVo;
+
 		$this->m_aOptionsStoreName = $insStoreName;
-		$this->m_sVersion = $insVersion;
-		
-		$this->m_fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
+
+		$oWpFunctions = $this->loadWpFunctions();
+		$this->fIsMultisite = $oWpFunctions->isMultisite();
 		
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
 		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ), 1 );
@@ -125,9 +126,10 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( !$this->fShowFeatureMenuItem || empty($this->sFeatureName) ) {
 			return $aItems;
 		}
-		$aItems[ ICWP_Wordpress_Simple_Firewall::BaseTitle.' - '.$this->sFeatureName ] = array(
+		$sMenuPageTitle = $this->oPluginVo->getHumanName().' - '.$this->sFeatureName;
+		$aItems[ $sMenuPageTitle ] = array(
 			$this->sFeatureName,
-			self::PluginSlug .'-'.$this->sFeatureSlug,
+			$this->oPluginVo->getFullPluginPrefix().$this->sFeatureSlug,
 			'onDisplayAll'
 		);
 		return $aItems;
@@ -151,10 +153,10 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( !current_user_can( 'manage_options' ) ) {
 			return false;
 		}
-		if ( $this->m_fIsMultisite && is_network_admin() ) {
+		if ( $this->fIsMultisite && is_network_admin() ) {
 			return true;
 		}
-		else if ( !$this->m_fIsMultisite && is_admin() ) {
+		else if ( !$this->fIsMultisite && is_admin() ) {
 			return true;
 		}
 		return false;
@@ -164,17 +166,10 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @return string
 	 */
 	public function getVersion() {
-		return $this->getOpt( self::PluginVersionKey );
+		$sVersion = $this->getOpt( self::PluginVersionKey );
+		return empty( $sVersion )? '0.0' : $sVersion;
 	}
 
-	/**
-	 * @param string
-	 * @return string
-	 */
-	public function setVersion( $insVersion ) {
-		return $this->setOpt( self::PluginVersionKey, $insVersion );
-	}
-	
 	/**
 	 * Gets the array of all possible options keys
 	 * 
@@ -447,20 +442,10 @@ class ICWP_OptionsHandler_Base_V2 {
 	protected function doPrePluginOptionsSave() { }
 
 	/**
-	 * Will return the 'current_plugin_version' if it is set, 0.0 otherwise.
-	 * 
-	 * @return string
-	 */
-	public function getPluginOptionsVersion() {
-		$sVersion = $this->getOpt( 'current_plugin_version' );
-		return empty( $sVersion )? '0.0' :$sVersion;
-	}
-	
-	/**
 	 * Updates the 'current_plugin_version' to the offical plugin version.
 	 */
 	protected function updateOptionsVersion() {
-		$this->setOpt( 'current_plugin_version', $this->m_sVersion );
+		$this->setOpt( 'current_plugin_version', $this->oPluginVo->getVersion() );
 	}
 	
 	/**
@@ -614,33 +599,45 @@ class ICWP_OptionsHandler_Base_V2 {
 		require_once( dirname(__FILE__).'/icwp-data-processor.php' );
 		return ICWP_WPSF_DataProcessor::GetVisitorIpAddress( $infAsLong );
 	}
-	
+
+	//TODO: move this to wpfunctions.
 	/**
 	 * @param string $insKey		-	the POST key
 	 * @param string $insPrefix
 	 * @return Ambigous <null, string>
 	 */
 	protected function getFromPost( $insKey, $insPrefix = null ) {
-		$sKey = ( is_null( $insPrefix )? $this->m_sOptionPrefix : $insPrefix ) . $insKey;
+		$sKey = $this->prefixOptionKey( $insKey, $insPrefix );
 		return ( isset( $_POST[ $sKey ] )? $_POST[ $sKey ]: null );
 	}
 	public function getOption( $insKey ) {
-		$sKey = $this->m_sOptionPrefix.$insKey;
-		return $this->m_fIsMultisite? get_site_option($sKey) : get_option($sKey);
+		$sKey = $this->prefixOptionKey( $insKey );
+		return $this->fIsMultisite? get_site_option($sKey) : get_option($sKey);
 	}
 	public function addOption( $insKey, $insValue ) {
-		$sKey = $this->m_sOptionPrefix.$insKey;
-		return $this->m_fIsMultisite? add_site_option($sKey, $insValue) : add_option($sKey, $insValue);
+		$sKey = $this->prefixOptionKey( $insKey );
+		return $this->fIsMultisite? add_site_option($sKey, $insValue) : add_option($sKey, $insValue);
 	}
 	public function updateOption( $insKey, $insValue ) {
-		$sKey = $this->m_sOptionPrefix.$insKey;
-		return $this->m_fIsMultisite? update_site_option($sKey, $insValue) : update_option($sKey, $insValue);
+		$sKey = $this->prefixOptionKey( $insKey );
+		return $this->fIsMultisite? update_site_option($sKey, $insValue) : update_option($sKey, $insValue);
 	}
 	public function deleteOption( $insKey ) {
-		$sKey = $this->m_sOptionPrefix.$insKey;
-		return $this->m_fIsMultisite? delete_site_option($sKey) : delete_option($sKey);
+		$sKey = $this->prefixOptionKey( $insKey );
+		return $this->fIsMultisite? delete_site_option($sKey) : delete_option($sKey);
 	}
 
+	/**
+	 * Prefixes an option key only if it's needed
+	 *
+	 * @param $sKey
+	 * @param $sCustomPrefix
+	 * @return string
+	 */
+	protected function prefixOptionKey( $sKey, $sCustomPrefix = null ) {
+		$sPrefix = is_null( $sCustomPrefix )? $this->oPluginVo->getFullPluginPrefix( '_' ) : $sCustomPrefix;
+		return ( strpos( $sKey, $sPrefix ) === 0 ) ? $sKey : $sPrefix.$sKey;
+	}
 	
 	/**
 	 * @param string $insExistingListKey
@@ -684,6 +681,13 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
 			require_once( dirname(__FILE__).'/icwp-data-processor.php' );
 		}
+	}
+
+	/**
+	 * @return ICWP_WpFunctions_WPSF
+	 */
+	protected function loadWpFunctions() {
+		return ICWP_WpFunctions_WPSF::GetInstance();
 	}
 
 	/**

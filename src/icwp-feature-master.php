@@ -24,7 +24,7 @@ require_once( dirname(__FILE__).'/icwp-pure-base.php' );
 
 if ( !class_exists('ICWP_Feature_Master') ):
 
-class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
+class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 	
 	/**
 	 *@var array
@@ -43,8 +43,8 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 
 	protected $fHasFtpOverride = false;
 
-	public function __construct( $aFeatures, $inaOptions ) {
-		parent::__construct();
+	public function __construct( ICWP_Wordpress_Simple_Firewall_Plugin $oPluginVo, $aFeatures, $inaOptions ) {
+		parent::__construct( $oPluginVo );
 		$this->aFeatures = $aFeatures;
 		$this->m_aOptionsHandlers = $inaOptions;
 	}
@@ -171,7 +171,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V4 {
 		
 		require_once( $sSourceFile );
 		if ( $infRecreate || !isset( $this->{$sOptionsVarName} ) ) {
-		 	$this->{$sOptionsVarName} = new $sClassName( self::$sOptionPrefix, $this->m_sVersion, $infFullBuild );
+		 	$this->{$sOptionsVarName} = new $sClassName( $this->oPluginVo, self::$sOptionPrefix );
 		}
 		if ( $infFullBuild ) {
 			$this->{$sOptionsVarName}->buildOptions();
