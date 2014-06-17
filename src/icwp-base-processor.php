@@ -175,10 +175,10 @@ class ICWP_BaseProcessor_V2 {
 	}
 	
 	/**
-	 * @param boolean $infEnableLogging
+	 * @param boolean $fEnableLogging
 	 */
-	public function setLogging( $infEnableLogging = true ) {
-		$this->m_fLoggingEnabled = $infEnableLogging;
+	public function setLogging( $fEnableLogging = true ) {
+		$this->m_fLoggingEnabled = $fEnableLogging;
 	}
 	
 	/**
