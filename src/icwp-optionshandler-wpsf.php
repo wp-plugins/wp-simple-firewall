@@ -191,11 +191,9 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	 */
 	protected function doPrePluginOptionsSave() {
 		
-		$nTimeout = $this->getOpt( 'admin_access_key_timeout');
-		if ( $nTimeout <= 0 ) {
-			$nTimeout = self::Default_AccessKeyTimeout;
+		if ( $this->getOpt( 'admin_access_key_timeout' ) <= 0 ) {
+			$this->setOpt( 'admin_access_key_timeout', self::Default_AccessKeyTimeout );
 		}
-		$this->setOpt( 'admin_access_key_timeout', $nTimeout );
 		
 		$sAccessKey = $this->getOpt( 'admin_access_key');
 		if ( empty( $sAccessKey ) ) {
