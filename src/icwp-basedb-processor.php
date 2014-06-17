@@ -44,8 +44,8 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 */
 	protected $m_aDataToWrite;
 	
-	public function __construct( $insStorageKey, $insTableName ) {
-		parent::__construct( $insStorageKey );
+	public function __construct( $oPluginVo, $sFeatureSlug, $insTableName ) {
+		parent::__construct( $oPluginVo, $sFeatureSlug );
 		$this->reset();
 		$this->setTableName( $insTableName );
 		$this->createCleanupCron();

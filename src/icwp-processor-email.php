@@ -51,8 +51,8 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 */
 	protected $m_fEmailIsThrottled;
 
-	public function __construct( $insOptionPrefix = '' ) {
-		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ) );
+	public function __construct( $oPluginVo ) {
+		parent::__construct( $oPluginVo, self::Slug );
 	}
 	
 	public function reset() {

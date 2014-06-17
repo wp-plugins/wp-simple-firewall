@@ -18,9 +18,14 @@
  *
  */
 
-if ( !class_exists('ICWP_BaseProcessor_V2') ):
+if ( !class_exists('ICWP_BaseProcessor_V3') ):
 
-class ICWP_BaseProcessor_V2 {
+class ICWP_BaseProcessor_V3 {
+
+	/**
+	 * @var ICWP_Wordpress_Simple_Firewall_Plugin
+	 */
+	protected $oPluginVo;
 	
 	const PcreDelimiter = '/';
 	const LOG_MESSAGE_LEVEL_INFO = 0;
@@ -75,8 +80,9 @@ class ICWP_BaseProcessor_V2 {
 	 */
 	protected $m_oOptionsHandler;
 
-	public function __construct( $insStorageKey ) {
-		$this->m_sStorageKey = $insStorageKey;
+	public function __construct( $oPluginVo, $sFeatureSlug ) {
+		$this->oPluginVo = $oPluginVo;
+		$this->m_sStorageKey = $this->constructStorageKey( $sFeatureSlug );
 		$this->m_fNeedSave = true;
 		$this->reset();
 	}
@@ -348,9 +354,12 @@ class ICWP_BaseProcessor_V2 {
 		return true;
 	}
 
-	protected function constructStorageKey( $insPrefix = '', $insSlug = '' ) {
-		$sTemplate = '%s%s_processor';
-		return sprintf($sTemplate, $insPrefix, $insSlug );
+	/**
+	 * @param string $sSlug
+	 * @return string
+	 */
+	protected function constructStorageKey( $sSlug = '' ) {
+		return sprintf( '%s%s_processor', $this->oPluginVo->getOptionStoragePrefix(), $sSlug );
 	}
 	
 	/**
@@ -401,5 +410,5 @@ class ICWP_BaseProcessor_V2 {
 endif;
 
 if ( !class_exists('ICWP_WPSF_BaseProcessor') ):
-	class ICWP_WPSF_BaseProcessor extends ICWP_BaseProcessor_V2 { }
+	class ICWP_WPSF_BaseProcessor extends ICWP_BaseProcessor_V3 { }
 endif;

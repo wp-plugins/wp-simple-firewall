@@ -27,8 +27,8 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 
 	protected $m_sRequestId;
 
-	public function __construct( $insOptionPrefix = '' ) {
-		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ), self::TableName );
+	public function __construct( $oPluginVo ) {
+		parent::__construct( $oPluginVo, self::Slug, self::TableName );
 		$this->createTable();
 	}
 

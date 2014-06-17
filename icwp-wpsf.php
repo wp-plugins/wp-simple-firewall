@@ -137,6 +137,14 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	}
 
 	/**
+	 * @param string
+	 * @return string
+	 */
+	public function getOptionStoragePrefix() {
+		return $this->getFullPluginPrefix( '_' ).'_';
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getHumanName() {

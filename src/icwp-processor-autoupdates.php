@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_AutoUpdatesProcessor_V4') ):
+if ( !class_exists('ICWP_AutoUpdatesProcessor_V5') ):
 
-class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
+class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 
 	const Slug = 'autoupdates';
 	
@@ -32,8 +32,8 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 	 */
 	protected $m_fDoForceRunAutoUpdates = false;
 	
-	public function __construct( $insOptionPrefix = '' ) {
-		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ) );
+	public function __construct( $oPluginVo ) {
+		parent::__construct( $oPluginVo, self::Slug );
 	}
 	
 	/**
@@ -292,5 +292,5 @@ class ICWP_AutoUpdatesProcessor_V4 extends ICWP_BaseProcessor_V2 {
 endif;
 
 if ( !class_exists('ICWP_WPSF_AutoUpdatesProcessor') ):
-	class ICWP_WPSF_AutoUpdatesProcessor extends ICWP_AutoUpdatesProcessor_V4 { }
+	class ICWP_WPSF_AutoUpdatesProcessor extends ICWP_AutoUpdatesProcessor_V5 { }
 endif;

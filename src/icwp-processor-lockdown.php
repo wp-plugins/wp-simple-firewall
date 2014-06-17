@@ -23,8 +23,8 @@ class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
 	const Slug = 'lockdown';
 
-	public function __construct( $insOptionPrefix = '' ) {
-		parent::__construct( $this->constructStorageKey( $insOptionPrefix, self::Slug ) );
+	public function __construct( $oPluginVo ) {
+		parent::__construct( $oPluginVo, self::Slug );
 	}
 
 	/**

@@ -205,7 +205,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 				$oTemp->reset();
 			}
 			else {
-				$oTemp = new $sClassName( self::$sOptionPrefix );
+				$oTemp = new $sClassName( $this->oPluginVo, self::$sOptionPrefix );
 			}
 			$this->{$sProcessorVarName} = $oTemp;
 		}
