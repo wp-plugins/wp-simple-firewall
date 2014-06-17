@@ -95,7 +95,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		$this->m_fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
 		
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
-		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ), 1 );
+		add_action( 'init', array( $this, 'onWpPluginsLoaded' ), 1 );
 	}
 	
 	/**

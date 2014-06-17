@@ -175,6 +175,7 @@ class ICWP_LoginProtectProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			add_action( 'login_form',			array( $this, 'printGaspLoginCheck_Action' ) );
 			add_filter( 'login_form_middle',	array( $this, 'printGaspLoginCheck_Filter' ) );
 			add_filter( 'authenticate',			array( $this, 'checkLoginForGasp_Filter' ), 22, 3);
+//			add_action( 'woocommerce_login_form',	array( $this, 'printGaspLoginCheck_Action' ) );
 		}
 
 		// Do GASP checking if it's a form submit.
