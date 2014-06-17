@@ -272,7 +272,7 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 	 * @return boolean
 	 */
 	public function autoupdate_send_email( $infSendEmail ) {
-		return $this->getIsOption('enable_upgrade_notification_email', 'Y');
+		return $this->getIsOption( 'enable_upgrade_notification_email', 'Y' );
 	}
 	
 	/**

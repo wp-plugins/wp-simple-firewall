@@ -49,22 +49,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 	/**
-	 * Should be updated each new release.
-	 * @var string
-	 */
-	const PluginVersion					= '2.6.5';
-
-	/**
-	 * @var string
-	 */
-	const PluginTextDomain				= 'wp-simple-firewall';
-
-	/**
-	 * @const string
-	 */
-	const PluginSlug					= 'wpsf';	//ALL database options use this as the prefix.
-
-	/**
 	 * @var string
 	 */
 	const AdminAccessKeyCookieName		= 'icwp_wpsf_aakcook';
@@ -380,7 +364,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			$this->loadOptionsHandler( 'AutoUpdates' );
 			$aData['aAutoUpdatesOptions'] = $this->m_oAutoUpdatesOptions->getPluginOptionsValues();
 		}
-		$this->display( 'icwp_'.self::PluginSlug.'_index', $aData );
+		$this->display( $this->doPluginPrefix( 'index', '_' ), $aData );
 	}
 
 	protected function getDashboardSummaryDisplayData() {
