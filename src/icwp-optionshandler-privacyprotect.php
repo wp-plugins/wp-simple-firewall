@@ -93,10 +93,6 @@ class ICWP_OptionsHandler_PrivacyProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			$aFurtherOptions
 		);
 	}
-
-	public function updateHandler() {
-		$sCurrentVersion = empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ];
-	}
 }
 
 endif;

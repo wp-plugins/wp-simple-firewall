@@ -29,10 +29,6 @@ class ICWP_OptionsHandler_Base_V2 {
 	/**
 	 * @var string
 	 */
-	const PluginSlug = 'icwp-wpsf';
-	/**
-	 * @var string
-	 */
 	const CollateSeparator = '--SEP--';
 	/**
 	 * @var string
@@ -45,25 +41,10 @@ class ICWP_OptionsHandler_Base_V2 {
 	protected $m_fNeedSave;
 	
 	/**
-	 * @var boolean
-	 */
-	protected $m_fFullInit;
-	
-	/**
-	 * @var string
-	 */
-	protected $m_sOptionPrefix;
-
-	/**
 	 * @var array
 	 */
 	protected $m_aOptions;
-	
-	/**
-	 * @var array
-	 */
-	protected $m_aDirectSaveOptions;
-	
+
 	/**
 	 * @var boolean
 	 */
@@ -84,7 +65,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	/**
 	 * @var array
 	 */
-	protected $m_aOptionsStoreName;
+	protected $sOptionsStoreKey;
 	
 	/**
 	 * @var array
@@ -107,15 +88,15 @@ class ICWP_OptionsHandler_Base_V2 {
 	public function __construct( $oPluginVo, $insStoreName ) {
 		$this->oPluginVo = $oPluginVo;
 
-		$this->m_aOptionsStoreName = $insStoreName;
+		$this->sOptionsStoreKey = $insStoreName;
 
 		$oWpFunctions = $this->loadWpFunctions();
 		$this->fIsMultisite = $oWpFunctions->isMultisite();
 		
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
-		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ), 1 );
-		add_action( 'icwp_wpsf_form_submit', array( $this, 'updatePluginOptionsFromSubmit' ) );
-		add_filter( 'icwp_wpsf_filter_plugin_submenu_items', array( $this, 'filter_addPluginSubMenuItem' ) );
+		add_action( 'init', array( $this, 'onWpInit' ), 1 );
+		add_action( $this->doPrefix( 'form_submit', '_' ), array( $this, 'updatePluginOptionsFromSubmit' ) );
+		add_filter( $this->doPrefix( 'filter_plugin_submenu_items', '_' ), array( $this, 'filter_addPluginSubMenuItem' ) );
 	}
 
 	/**
@@ -138,7 +119,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	/**
 	 * A action added to WordPress 'plugins_loaded' hook
 	 */
-	public function onWpPluginsLoaded() {
+	public function onWpInit() {
 		$this->doUpdates();
 	}
 	
@@ -276,7 +257,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( !$this->m_fNeedSave ) {
 			return true;
 		}
-		$this->updateOption( $this->m_aOptionsStoreName, $this->m_aOptionsValues );
+		$this->updateOption( $this->sOptionsStoreKey, $this->m_aOptionsValues );
 		$this->m_fNeedSave = false;
 	}
 	
@@ -317,7 +298,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	 */
 	protected function loadStoredOptionsValues() {
 		if ( empty( $this->m_aOptionsValues ) ) {
-			$this->m_aOptionsValues = $this->getOption( $this->m_aOptionsStoreName );
+			$this->m_aOptionsValues = $this->getOption( $this->sOptionsStoreKey );
 			if ( empty( $this->m_aOptionsValues ) ) {
 				$this->m_aOptionsValues = array();
 				$this->m_fNeedSave = true;
@@ -442,17 +423,16 @@ class ICWP_OptionsHandler_Base_V2 {
 	protected function doPrePluginOptionsSave() { }
 
 	/**
-	 * Updates the 'current_plugin_version' to the offical plugin version.
 	 */
 	protected function updateOptionsVersion() {
-		$this->setOpt( 'current_plugin_version', $this->oPluginVo->getVersion() );
+		$this->setOpt( self::PluginVersionKey, $this->oPluginVo->getVersion() );
 	}
 	
 	/**
 	 * Deletes all the options including direct save.
 	 */
 	public function deletePluginOptions() {
-		$this->deleteOption( $this->m_aOptionsStoreName );
+		$this->deleteOption( $this->sOptionsStoreKey );
 	}
 
 	protected function convertIpListForDisplay( $inaIpList = array() ) {
@@ -553,7 +533,9 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * 
 	 * Called upon construction and after plugin options are initialized.
 	 */
-	protected function updateHandler() { }
+	protected function updateHandler() {
+//		if ( version_compare( $sCurrentVersion, '2.3.0', '<=' ) ) { }
+	}
 	
 	/**
 	 * @param array $inaNewOptions

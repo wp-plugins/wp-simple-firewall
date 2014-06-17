@@ -82,7 +82,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		$this->sPluginRootFile			= $this->oPluginVo->getRootFile();
 		$this->fAutoPluginUpgrade		= $this->oPluginVo->getAutoUpgrade();
 		$this->sPluginSlug				= $this->oPluginVo->getPluginSlug();
-		self::$sOptionPrefix			= $this->oPluginVo->getFullPluginPrefix( '_' ).'_';
+		self::$sOptionPrefix			= $this->oPluginVo->getOptionStoragePrefix();
 
 		add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 		add_action( 'init',						array( $this, 'onWpInit' ), 0 );

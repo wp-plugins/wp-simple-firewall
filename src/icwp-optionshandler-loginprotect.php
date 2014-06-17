@@ -251,8 +251,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	public function updateHandler() {
+		$sCurrentVersion = $this->getVersion();
 
-		$sCurrentVersion = empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ];
 		if ( version_compare( $sCurrentVersion, '1.4.0', '<' ) ) {
 			$aSettingsKey = array(
 				'current_plugin_version',

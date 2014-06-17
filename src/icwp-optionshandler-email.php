@@ -83,12 +83,6 @@ class ICWP_OptionsHandler_Email extends ICWP_OptionsHandler_Base_Wpsf {
 		$this->setOpt( 'send_email_throttle_limit', $sLimit );
 	}
 	
-	protected function updateHandler() {
-		$sCurrentVersion = empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ];
-		if ( version_compare( $sCurrentVersion, '2.3.0', '<=' ) ) {
-		}
-	}
-
 }
 
 endif;

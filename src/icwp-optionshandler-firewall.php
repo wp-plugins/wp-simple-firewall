@@ -271,13 +271,6 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 		);
 	}
 
-	public function updateHandler() {
-
-		$sCurrentVersion = empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ];
-		if ( version_compare( $sCurrentVersion, '1.4.0', '<' ) ) {
-		}//v1.4.0
-	}
-
 	public function addRawIpsToFirewallList( $insListName, $inaNewIps ) {
 		if ( empty( $inaNewIps ) ) {
 			return;

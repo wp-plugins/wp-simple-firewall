@@ -168,13 +168,6 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 			$aAutoUpdateEmail
 		);
 	}
-
-	public function updateHandler() {
-
-		$sCurrentVersion = $this->getVersion();
-		$sCurrentVersion = empty( $sCurrentVersion )? '0.0' : $sCurrentVersion;
-		if ( version_compare( $sCurrentVersion, '1.9.0', '<' ) ) { }//v1.9.0
-	}
 }
 
 endif;

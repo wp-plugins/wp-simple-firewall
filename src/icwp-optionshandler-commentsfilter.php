@@ -264,10 +264,6 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 		}
 		return $aFilterItems;
 	}
-	
-	public function updateHandler() {
-		$sCurrentVersion = empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ];
-	}
 }
 
 endif;

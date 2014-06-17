@@ -211,11 +211,11 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 	
 	protected function updateHandler() {
+		$sCurrentVersion = $this->getVersion();
 
 		// the 'current_plugin_version' value moved from a direct save option to be
 		// included in the plugin options object, so we have to account for it being
 		// empty.
-		$sCurrentVersion = empty( $this->m_aOptionsValues[ 'current_plugin_version' ] )? '0.0' : $this->m_aOptionsValues[ 'current_plugin_version' ];
 		if ( version_compare( $sCurrentVersion, '1.4.0', '<' ) ) {
 			$aSettingsKey = array(
 				'current_plugin_version',

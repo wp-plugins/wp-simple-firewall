@@ -293,7 +293,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$sCurrent = str_replace( $sPrefix, '', current_filter() );
 
 		switch( $sCurrent ) {
-			case 'toplevel_page_'. $this->oPluginVo->getParentSlug() .'-'. $this->oPluginVo->getPluginSlug() : //todo: combine these slugs more intelligently
+			case 'toplevel_page_'. $this->oPluginVo->getFullPluginPrefix():
 				$this->onDisplayMainMenu();
 				break;
 			case 'privacy_protect_log' :
