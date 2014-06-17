@@ -83,6 +83,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		$this->fAutoPluginUpgrade		= $this->oPluginVo->getAutoUpgrade();
 		$this->sPluginSlug				= $this->oPluginVo->getPluginSlug();
 		self::$sOptionPrefix			= $this->oPluginVo->getOptionStoragePrefix();
+		$this->setPaths();
 
 		add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 		add_action( 'init',						array( $this, 'onWpInit' ), 0 );
@@ -96,11 +97,10 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 			add_action( 'deactivate_plugin',		array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
 			add_action( 'wp_before_admin_bar_render',		array( $this, 'onWpAdminBar' ), 1, 9999 );
 		}
-		add_action( 'in_plugin_update_message-'.$this->sPluginBaseFile, array( $this, 'onWpPluginUpdateMessage' ) );
+		add_action( 'in_plugin_update_message-'.$this->getPluginBaseFile(), array( $this, 'onWpPluginUpdateMessage' ) );
 		add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 
 		$this->m_oWpFs = ICWP_WpFilesystem_WPSF::GetInstance();
-		$this->setPaths();
 		$this->registerActivationHooks();
 	}
 
@@ -178,15 +178,20 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 			$this->sPluginRootFile = __FILE__;
 		}
 		$this->sPluginFileName	= basename( $this->sPluginRootFile );
-		$this->sPluginBaseFile	= plugin_basename( $this->sPluginRootFile );
+		$this->getPluginBaseFile();
 		$this->sPluginRootDir	= dirname( $this->sPluginRootFile ).ICWP_DS;
 		$this->sPluginUrl		= plugins_url( '/', $this->sPluginRootFile ) ; //this seems to use SSL more reliably than WP_PLUGIN_URL
 	}
 	
 	/**
+	 * This is the path to the main plugin file relative to the WordPress plugins directory.
+	 *
 	 * @return string
 	 */
 	public function getPluginBaseFile() {
+		if ( !isset( $this->sPluginBaseFile ) ) {
+			$this->sPluginBaseFile	= plugin_basename( $this->sPluginRootFile );
+		}
 		return $this->sPluginBaseFile;
 	}
 
@@ -266,18 +271,17 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * @uses $this->m_fHeadless if the plugin is headless, it is hidden
 	 * @return array
 	 */
-	public function filter_hidePluginFromTableList( $inaPlugins ) {
+	public function filter_hidePluginFromTableList( $aPlugins ) {
 		
 		if ( !$this->fHeadless ) {
-			return $inaPlugins;
+			return $aPlugins;
 		}
-		
-		foreach ( $inaPlugins as $sName => $aData ) {
-			if ( $this->sPluginBaseFile === $sName ) {
-				unset( $inaPlugins[$sName] );
-			}
+
+		$sPluginBaseFileName = $this->getPluginBaseFile();
+		if ( isset( $aPlugins[$sPluginBaseFileName] ) ) {
+			unset( $aPlugins[$sPluginBaseFileName] );
 		}
-		return $inaPlugins;
+		return $aPlugins;
 	}
 	
 	/**
@@ -296,15 +300,11 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		if ( ( defined( 'DOING_CRON' ) && DOING_CRON ) || !$this->fHeadless ) {
 			return $oPlugins;
 		}
-		
-		if ( !empty( $oPlugins->response ) ) {
-			$aResponse = $oPlugins->response;
-			foreach ( $aResponse as $sPluginFile => $oData ) {
-				if ( $sPluginFile == $this->sPluginBaseFile ) {
-					unset( $oPlugins->response[$sPluginFile] );
-				}
-			}
+
+		if ( !empty( $oPlugins->response[ $this->getPluginBaseFile() ] ) ) {
+			unset( $oPlugins->response[ $this->getPluginBaseFile() ] );
 		}
+
 		return $oPlugins;
 	}
 	
@@ -312,7 +312,8 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * Load the multilingual aspect of the plugin
 	 */
 	public function load_textdomain() {
-		load_plugin_textdomain( $this->oPluginVo->getTextDomain(), false, dirname($this->sPluginBaseFile) . '/languages/' );
+		//TODO: Can replace with $this->sPluginRootDir ?
+		load_plugin_textdomain( $this->oPluginVo->getTextDomain(), false, dirname( $this->getPluginBaseFile() ) . '/languages/' );
 	}
 
 	public function onWpInit() { }
@@ -421,6 +422,14 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	}
 
 	/**
+	 * @param string $sFeaturePage - leave empty to get the main dashboard
+	 * @return mixed
+	 */
+	protected function getUrl_PluginDashboard( $sFeaturePage = '' ) {
+		return network_admin_url( sprintf( 'admin.php?page=%s', $this->getSubmenuId( $sFeaturePage ) ) );
+	}
+
+	/**
 	 * @return bool
 	 */
 	protected function isShowMarketing() {
@@ -449,21 +458,22 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * 
 	 * @see ICWP_Pure_Base_V1::onWpPluginActionLinks()
 	 */
-	public function onWpPluginActionLinks( $inaActionLinks, $insFile ) {
+	public function onWpPluginActionLinks( $aActionLinks, $sPluginFile ) {
 		
-		if ( $insFile == $this->sPluginBaseFile ) {
+		if ( $sPluginFile == $this->getPluginBaseFile() ) {
 			if ( !$this->hasPermissionToSubmit() ) {
-				if ( array_key_exists( 'edit', $inaActionLinks ) ) {
-					unset( $inaActionLinks['edit'] );
+				if ( array_key_exists( 'edit', $aActionLinks ) ) {
+					unset( $aActionLinks['edit'] );
 				}
-				if ( array_key_exists( 'deactivate', $inaActionLinks ) ) {
-					unset( $inaActionLinks['deactivate'] );
+				if ( array_key_exists( 'deactivate', $aActionLinks ) ) {
+					unset( $aActionLinks['deactivate'] );
 				}
 			}
-			$sSettingsLink = '<a href="'.network_admin_url( "admin.php" ).'?page='.$this->getSubmenuId().'">' . 'Dashboard' . '</a>';
-			array_unshift( $inaActionLinks, $sSettingsLink );
+
+			$sSettingsLink = sprintf( '<a href="%s">%s</a>', $this->getUrl_PluginDashboard(), _wpsf__( 'Dashboard' ) ); ;
+			array_unshift( $aActionLinks, $sSettingsLink );
 		}
-		return $inaActionLinks;
+		return $aActionLinks;
 	}
 
 	/**
@@ -497,13 +507,9 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		if ( isset( $GLOBALS['pagenow'] ) && $GLOBALS['pagenow'] == 'update.php' ) {
 			return;
 		}
-		// We need to have the correct plugin file set before proceeding.
-		if ( !isset( $this->sPluginBaseFile ) ) {
-			return;
-		}
 
 		$this->loadWpFunctions();
-		$oUpdate = $this->m_oWpFunctions->getIsPluginUpdateAvailable( $this->sPluginBaseFile );
+		$oUpdate = $this->m_oWpFunctions->getIsPluginUpdateAvailable( $this->getPluginBaseFile() );
 		if ( !$oUpdate ) {
 			return;
 		}
@@ -566,7 +572,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * Override this to change the message for the particular plugin upgrade.
 	 */
 	protected function getAdminNoticeHtml_PluginUpgradeAvailable() {
-		$sUpgradeLink = $this->m_oWpFunctions->getPluginUpgradeLink( $this->sPluginBaseFile );
+		$sUpgradeLink = $this->m_oWpFunctions->getPluginUpgradeLink( $this->getPluginBaseFile() );
 		$sNotice = '<p>There is an update available for the %s plugin. <a href="%s">Click to update immediately</a>.</p>';
 		$sNotice = sprintf( $sNotice, $this->oPluginVo->getHumanName(), $sUpgradeLink );
 		return $sNotice;
@@ -601,7 +607,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 			return $sFullNotice;
 		}
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -699,7 +705,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		}
 		if ( $this->fAutoPluginUpgrade ) {
 			$this->loadWpFunctions();
-			$this->m_oWpFunctions->doPluginUpgrade( $this->sPluginBaseFile );
+			$this->m_oWpFunctions->doPluginUpgrade( $this->getPluginBaseFile() );
 		}
 	}
 
@@ -733,7 +739,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		wp_register_style( $sUnique, $this->getCssUrl('plugin.css'), array( $this->doPluginPrefix( 'bootstrap_wpadmin_css_fixes' ) ), $this->oPluginVo->getVersion() );
 		wp_enqueue_style( $sUnique );
 	}
-
 	protected function redirect( $insUrl, $innTimeout = 1 ) {
 		echo '
 			<script type="text/javascript">

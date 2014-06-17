@@ -166,6 +166,43 @@ class ICWP_WpFunctions_V4 {
 		}
 		return $this->fIsMultisite;
 	}
+
+	/**
+	 * @param string $sKey
+	 * @param $sValue
+	 * @return mixed
+	 */
+	public function addOption( $sKey, $sValue ) {
+		return $this->isMultisite() ? add_site_option( $sKey, $sValue ) : add_option( $sKey, $sValue );
+	}
+
+	/**
+	 * @param string $sKey
+	 * @param $sValue
+	 * @return mixed
+	 */
+	public function updateOption( $sKey, $sValue ) {
+		return $this->isMultisite() ? update_site_option( $sKey, $sValue ) : update_option( $sKey, $sValue );
+	}
+
+	/**
+	 * @param string $sKey
+	 * @param mixed $mDefault
+	 * @return mixed
+	 */
+	public function getOption( $sKey, $mDefault = false ) {
+		return $this->isMultisite() ? get_site_option( $sKey, $mDefault ) : get_option( $sKey, $mDefault );
+	}
+
+	/**
+	 * @param string $sKey
+	 * @return mixed
+	 */
+	public function deleteOption( $sKey ) {
+		return $this->isMultisite() ? delete_site_option( $sKey ) : delete_option( $sKey );
+	}
+
+
 }
 endif;
 

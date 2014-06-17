@@ -207,44 +207,6 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 			$this->setOpt( 'installation_time', time() );
 		}
 	}
-	
-	protected function updateHandler() {
-		$sCurrentVersion = $this->getVersion();
-
-		// the 'current_plugin_version' value moved from a direct save option to be
-		// included in the plugin options object, so we have to account for it being
-		// empty.
-		if ( version_compare( $sCurrentVersion, '1.4.0', '<' ) ) {
-			$aSettingsKey = array(
-				'current_plugin_version',
-				'enable_firewall',
-				'enable_login_protect',
-				'feedback_admin_notice',
-				'secret_key',
-				'block_send_email_address',
-				'send_email_throttle_limit',
-				'delete_on_deactivate'
-			);
-			$this->migrateOptions( $aSettingsKey );
-		}// '1.4.0', '<'
-		
-		if ( version_compare( $sCurrentVersion, '1.8.2', '<=' ) ) {
-			
-			$fCanRemoteGet = $this->getOpt( 'capability_can_remote_get' );
-			$fCanDiskWrite = $this->getOpt( 'capability_can_disk_write' );
-			
-			if ( $fCanDiskWrite === false || $fCanRemoteGet === false ) {
-				$oWpFs = $this->loadFileSystemProcessor();
-				
-				$fCanRemoteGet = $oWpFs->getCanWpRemoteGet();
-				$this->setOpt( 'capability_can_remote_get', $fCanRemoteGet? 'Y' : 'N' );
-				
-				$fCanDiskWrite = $oWpFs->getCanDiskWrite();
-				$this->setOpt( 'capability_can_disk_write', $fCanDiskWrite? 'Y' : 'N' );
-			}
-		}// '1.8.2', '<='
-	}
-
 }
 
 endif;

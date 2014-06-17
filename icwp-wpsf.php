@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 2.6.5
+ * Version: 2.6.6
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -37,7 +37,7 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	/**
 	 * @var string
 	 */
-	private static $sVersion	= '2.6.5';
+	private static $sVersion	= '2.6.6';
 
 	/**
 	 * @var string

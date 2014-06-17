@@ -229,6 +229,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
+= 3.0.0 =
+
+*   CHANGED:    Removed support for upgrading from versions < 2.0
+
 = 2.6.6 =
 
 *	FIX:		Improved compatibility with bbPress.

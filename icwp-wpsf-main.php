@@ -1,13 +1,4 @@
 <?php
-/*
- * Plugin Name: WordPress Simple Firewall
- * Plugin URI: http://icwp.io/2f
- * Description: A Simple WordPress Firewall
- * Version: 2.6.5
- * Text Domain: wp-simple-firewall
- * Author: iControlWP
- * Author URI: http://icwp.io/2e
- */
 
 /**
  * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
@@ -324,6 +315,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	public function onDisplayAccessKeyRequest() {
 		$aData = array(
 			'nonce_field'		=> $this->getPluginPrefix(),
+			'requested_page'	=> $this->getCurrentWpAdminPage()
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( 'icwp_wpsf_access_key_request_index', $aData );
@@ -590,7 +582,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 		if ( $sAccessKey === $sStoredAccessKey ) {
 			$this->setPermissionToSubmit( true );
-			header( 'Location: '.$this->getUrl_PluginDashboard() );
+			header( 'Location: '.$this->getUrl_PluginDashboard( sanitize_text_field( $this->fetchPost('icwp_wpsf_requested_page') ) ) );
 			exit();
 		}
 		return false;
@@ -610,14 +602,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			return $mValue;
 		}
 		return $this->hasPermissionToSubmit()? $mValue : $mOldValue;
-	}
-
-	/**
-	 * @param string $sFeature - leave empty to get the main dashboard
-	 * @return mixed
-	 */
-	protected function getUrl_PluginDashboard( $sFeature = '' ) {
-		return network_admin_url( sprintf( 'admin.php?page=%s', $this->getSubmenuId( $sFeature ) ) );
 	}
 
 	protected function handleSubmit_FirewallLog() {

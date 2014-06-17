@@ -25,7 +25,7 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 	
 	const FilterPriority = 1001;
 	
-	protected $m_sPluginFile;
+	protected $sPluginFile;
 	
 	/**
 	 * @var boolean
@@ -51,9 +51,9 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 	
 	/**
 	 */
-	public function run( $insPluginFile = '' ) {
+	public function run( $sPluginFile = '' ) {
 		
-		$this->m_sPluginFile = $insPluginFile;
+		$this->sPluginFile = $sPluginFile;
 		
 		// When we force run we only want our filters.
 		if ( $this->getForceRunAutoUpdates() ) {
@@ -195,7 +195,7 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 			return $infUpdate;
 		}
 
-		if ( $sItemFile === $this->m_sPluginFile ) {
+		if ( $sItemFile === $this->sPluginFile ) {
 			if ( $this->getIsOption('autoupdate_plugin_self', 'Y') ) {
 				$this->doStatIncrement( 'autoupdates.plugins.self' );
 				return true;

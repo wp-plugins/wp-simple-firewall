@@ -38,17 +38,12 @@ class ICWP_OptionsHandler_Base_V2 {
 	/**
 	 * @var boolean
 	 */
-	protected $m_fNeedSave;
+	protected $fNeedSave;
 	
 	/**
 	 * @var array
 	 */
 	protected $m_aOptions;
-
-	/**
-	 * @var boolean
-	 */
-	protected $fIsMultisite;
 
 	/**
 	 * These are options that need to be stored, but are never set by the UI.
@@ -63,7 +58,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	protected $m_aOptionsValues;
 	
 	/**
-	 * @var array
+	 * @var string
 	 */
 	protected $sOptionsStoreKey;
 	
@@ -85,14 +80,10 @@ class ICWP_OptionsHandler_Base_V2 {
 	 */
 	protected $fShowFeatureMenuItem = true;
 
-	public function __construct( $oPluginVo, $insStoreName ) {
+	public function __construct( $oPluginVo, $sOptionsStoreKey ) {
 		$this->oPluginVo = $oPluginVo;
+		$this->sOptionsStoreKey = $this->prefixOptionKey( $sOptionsStoreKey );
 
-		$this->sOptionsStoreKey = $insStoreName;
-
-		$oWpFunctions = $this->loadWpFunctions();
-		$this->fIsMultisite = $oWpFunctions->isMultisite();
-		
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
 		add_action( 'init', array( $this, 'onWpInit' ), 1 );
 		add_action( $this->doPrefix( 'form_submit', '_' ), array( $this, 'updatePluginOptionsFromSubmit' ) );
@@ -129,15 +120,20 @@ class ICWP_OptionsHandler_Base_V2 {
 			$this->updateHandler();
 		}
 	}
-	
+
+	/**
+	 * @return bool
+	 */
 	public function hasPluginManageRights() {
-		if ( !current_user_can( 'manage_options' ) ) {
+		if ( !current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
 			return false;
 		}
-		if ( $this->fIsMultisite && is_network_admin() ) {
+
+		$oWpFunc = $this->loadWpFunctions();
+		if ( is_admin() && !$oWpFunc->isMultisite() ) {
 			return true;
 		}
-		else if ( !$this->fIsMultisite && is_admin() ) {
+		else if ( is_network_admin() && $oWpFunc->isMultisite() ) {
 			return true;
 		}
 		return false;
@@ -172,7 +168,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 	
 	/**
-	 * Determines whether the given option key is a valid options
+	 * Determines whether the given option key is a valid option
 	 *
 	 * @param string
 	 * @return boolean
@@ -208,8 +204,8 @@ class ICWP_OptionsHandler_Base_V2 {
 		
 		$this->m_aOptionsValues[ $insKey ] = $inmValue;
 		
-		if ( !$this->m_fNeedSave ) {
-			$this->m_fNeedSave = true;
+		if ( !$this->fNeedSave ) {
+			$this->fNeedSave = true;
 		}
 		return true;
 	}
@@ -254,11 +250,13 @@ class ICWP_OptionsHandler_Base_V2 {
 		
 		$this->doPrePluginOptionsSave();
 		$this->updateOptionsVersion();
-		if ( !$this->m_fNeedSave ) {
+		if ( !$this->fNeedSave ) {
 			return true;
 		}
-		$this->updateOption( $this->sOptionsStoreKey, $this->m_aOptionsValues );
-		$this->m_fNeedSave = false;
+
+		$oWpFunc = $this->loadWpFunctions();
+		$oWpFunc->updateOption( $this->sOptionsStoreKey, $this->m_aOptionsValues );
+		$this->fNeedSave = false;
 	}
 	
 	public function collateAllFormInputsForAllOptions() {
@@ -298,10 +296,10 @@ class ICWP_OptionsHandler_Base_V2 {
 	 */
 	protected function loadStoredOptionsValues() {
 		if ( empty( $this->m_aOptionsValues ) ) {
-			$this->m_aOptionsValues = $this->getOption( $this->sOptionsStoreKey );
+			$oWpFunc = $this->loadWpFunctions();
+			$this->m_aOptionsValues = $oWpFunc->getOption( $this->sOptionsStoreKey, array() );
 			if ( empty( $this->m_aOptionsValues ) ) {
-				$this->m_aOptionsValues = array();
-				$this->m_fNeedSave = true;
+				$this->fNeedSave = true;
 			}
 		}
 	}
@@ -432,7 +430,8 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * Deletes all the options including direct save.
 	 */
 	public function deletePluginOptions() {
-		$this->deleteOption( $this->sOptionsStoreKey );
+		$oWpFunc = $this->loadWpFunctions();
+		$oWpFunc->deleteOption( $this->sOptionsStoreKey );
 	}
 
 	protected function convertIpListForDisplay( $inaIpList = array() ) {
@@ -466,14 +465,10 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @return void|boolean
 	 */
 	public function updatePluginOptionsFromSubmit( $sAllOptionsInput ) {
-		
-		require_once ( dirname(__FILE__).'/icwp-data-processor.php' );
-		$oProcessor = new ICWP_WPSF_DataProcessor();
-	
 		if ( empty( $sAllOptionsInput ) ) {
 			return;
 		}
-		
+		$this->loadDataProcessor();
 		$this->loadStoredOptionsValues();
 		
 		$aAllInputOptions = explode( self::CollateSeparator, $sAllOptionsInput );
@@ -485,7 +480,7 @@ class ICWP_OptionsHandler_Base_V2 {
 				continue;
 			}
 
-			$sOptionValue = $this->getFromPost( $sOptionKey );
+			$sOptionValue = ICWP_WPSF_DataProcessor::FetchPost( $this->prefixOptionKey( $sOptionKey ) );
 			if ( is_null($sOptionValue) ) {
 	
 				if ( $sOptionType == 'text' || $sOptionType == 'email' ) { //if it was a text box, and it's null, don't update anything
@@ -511,16 +506,16 @@ class ICWP_OptionsHandler_Base_V2 {
 					$sOptionValue = md5( $sTempValue );
 				}
 				else if ( $sOptionType == 'ip_addresses' ) { //ip addresses are textareas, where each is separated by newline
-					$sOptionValue = $oProcessor->ExtractIpAddresses( $sOptionValue );
+					$sOptionValue = ICWP_WPSF_DataProcessor::ExtractIpAddresses( $sOptionValue );
 				}
 				else if ( $sOptionType == 'yubikey_unique_keys' ) { //ip addresses are textareas, where each is separated by newline and are 12 chars long
-					$sOptionValue = $oProcessor->CleanYubikeyUniqueKeys( $sOptionValue );
+					$sOptionValue = ICWP_WPSF_DataProcessor::CleanYubikeyUniqueKeys( $sOptionValue );
 				}
 				else if ( $sOptionType == 'email' && function_exists( 'is_email' ) && !is_email( $sOptionValue ) ) {
 					$sOptionValue = '';
 				}
 				else if ( $sOptionType == 'comma_separated_lists' ) {
-					$sOptionValue = $oProcessor->ExtractCommaSeparatedList( $sOptionValue );
+					$sOptionValue = ICWP_WPSF_DataProcessor::ExtractCommaSeparatedList( $sOptionValue );
 				}
 			}
 			$this->setOpt( $sOptionKey, $sOptionValue );
@@ -549,25 +544,6 @@ class ICWP_OptionsHandler_Base_V2 {
 			$this->m_aNonUiOptions = $inaNewOptions;
 		}
 	}
-	
-	/**
-	 * Copies WordPress Options to the options array and optionally deletes the original.
-	 * 
-	 * @param array $inaOptions
-	 * @param boolean $fDeleteOld
-	 */
-	protected function migrateOptions( $inaOptions, $fDeleteOld = false ) {
-		foreach( $inaOptions as $sOptionKey ) {
-			$mCurrentValue = $this->getOption( $sOptionKey );
-			if ( $mCurrentValue === false ) {
-				continue;
-			}
-			$this->setOpt( $sOptionKey, $mCurrentValue );
-			if ( $fDeleteOld ) {
-				$this->deleteOption( $sOptionKey );
-			}
-		}
-	}
 
 	/**
 	 * @return boolean
@@ -578,34 +554,8 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 	
 	protected function getVisitorIpAddress( $infAsLong = true ) {
-		require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+		$this->loadDataProcessor();
 		return ICWP_WPSF_DataProcessor::GetVisitorIpAddress( $infAsLong );
-	}
-
-	//TODO: move this to wpfunctions.
-	/**
-	 * @param string $insKey		-	the POST key
-	 * @return Ambigous <null, string>
-	 */
-	protected function getFromPost( $insKey ) {
-		$sKey = $this->prefixOptionKey( $insKey );
-		return ( isset( $_POST[ $sKey ] )? $_POST[ $sKey ]: null );
-	}
-	public function getOption( $insKey ) {
-		$sKey = $this->prefixOptionKey( $insKey );
-		return $this->fIsMultisite? get_site_option($sKey) : get_option($sKey);
-	}
-	public function addOption( $insKey, $insValue ) {
-		$sKey = $this->prefixOptionKey( $insKey );
-		return $this->fIsMultisite? add_site_option($sKey, $insValue) : add_option($sKey, $insValue);
-	}
-	public function updateOption( $insKey, $insValue ) {
-		$sKey = $this->prefixOptionKey( $insKey );
-		return $this->fIsMultisite? update_site_option($sKey, $insValue) : update_option($sKey, $insValue);
-	}
-	public function deleteOption( $insKey ) {
-		$sKey = $this->prefixOptionKey( $insKey );
-		return $this->fIsMultisite? delete_site_option($sKey) : delete_option($sKey);
 	}
 
 	/**
@@ -690,7 +640,9 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @return ICWP_WpFilesystem_WPSF
 	 */
 	protected function loadFileSystemProcessor() {
-		require_once( dirname(__FILE__) . '/icwp-wpfilesystem.php' );
+		if ( !class_exists('ICWP_WpFilesystem_WPSF') ) {
+			require_once( dirname(__FILE__) . '/icwp-wpfilesystem.php' );
+		}
 		return ICWP_WpFilesystem_WPSF::GetInstance();
 	}
 }

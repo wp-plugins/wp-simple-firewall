@@ -250,23 +250,6 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 		);
 	}
 
-	public function updateHandler() {
-		$sCurrentVersion = $this->getVersion();
-
-		if ( version_compare( $sCurrentVersion, '1.4.0', '<' ) ) {
-			$aSettingsKey = array(
-				'current_plugin_version',
-				'enable_login_protect',
-				'enable_two_factor_auth_by_ip',
-				'enable_two_factor_bypass_on_email_fail',
-				'login_limit_interval',
-				'enable_login_gasp_check',
-				'enable_login_protect_log',
-			);
-			$this->migrateOptions( $aSettingsKey );
-		}//'1.4.0', '<'
-	}
-
 	/**
 	 * @param boolean $fAsDefaults
 	 * @return array
