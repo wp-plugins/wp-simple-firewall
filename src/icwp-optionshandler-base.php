@@ -86,8 +86,8 @@ class ICWP_OptionsHandler_Base_V2 {
 
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
 		add_action( 'init', array( $this, 'onWpInit' ), 1 );
-		add_action( $this->doPrefix( 'form_submit', '_' ), array( $this, 'updatePluginOptionsFromSubmit' ) );
-		add_filter( $this->doPrefix( 'filter_plugin_submenu_items', '_' ), array( $this, 'filter_addPluginSubMenuItem' ) );
+		add_action( $this->doPluginPrefix( 'form_submit', '_' ), array( $this, 'updatePluginOptionsFromSubmit' ) );
+		add_filter( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array( $this, 'filter_addPluginSubMenuItem' ) );
 	}
 
 	/**
@@ -101,8 +101,8 @@ class ICWP_OptionsHandler_Base_V2 {
 		$sMenuPageTitle = $this->oPluginVo->getHumanName().' - '.$this->sFeatureName;
 		$aItems[ $sMenuPageTitle ] = array(
 			$this->sFeatureName,
-			$this->doPrefix( $this->sFeatureSlug ),
-			'onDisplayAll'
+			$this->sFeatureSlug,
+			array( $this, 'displayFeatureConfigPage' )
 		);
 		return $aItems;
 	}
@@ -565,7 +565,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @return string
 	 */
 	protected function prefixOptionKey( $sKey ) {
-		return $this->doPrefix( $sKey, '_' );
+		return $this->doPluginPrefix( $sKey, '_' );
 	}
 
 	/**
@@ -575,7 +575,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @param string $sGlue
 	 * @return string
 	 */
-	public function doPrefix( $sSuffix = '', $sGlue = '-' ) {
+	public function doPluginPrefix( $sSuffix = '', $sGlue = '-' ) {
 		$sPrefix = $this->oPluginVo->getFullPluginPrefix( $sGlue );
 
 		if ( $sSuffix == $sPrefix || strpos( $sSuffix, $sPrefix.$sGlue ) === 0 ) { //it already has the prefix
@@ -621,6 +621,68 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( $nNewAddedCount > 0 ) {
 			$this->setOpt( $insExistingListKey, $aNewList );
 		}
+	}
+
+	/**
+	 */
+	public function displayFeatureConfigPage( ) {
+
+		if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), false ) ) {
+			$this->displayViewAccessRestrictedPage();
+			return;
+		}
+
+		$aData = array(
+			'aAllOptions'		=> $this->getOptions(),
+			'all_options_input'	=> $this->collateAllFormInputsForAllOptions()
+		);
+		$aData = array_merge( $this->getBaseDisplayData(), $aData );
+		$this->display( $this->doPluginPrefix( 'config_'.$this->sFeatureSlug.'_index', '_' ), $aData );
+	}
+
+	/**
+	 */
+	public function displayViewAccessRestrictedPage( ) {
+		$aData = array(
+			'requested_page'	=> $this->doPluginPrefix( $this->sFeatureSlug )
+		);
+		$this->display( $this->doPluginPrefix( 'view_access_restricted_index', '_' ), $aData );
+	}
+
+	protected function getBaseDisplayData() {
+		return array(
+			'var_prefix'		=> $this->oPluginVo->getOptionStoragePrefix(),
+			'sPluginName'		=> $this->oPluginVo->getHumanName(),
+			'fShowAds'			=> false && $this->isShowMarketing(),
+			'nonce_field'		=> $this->oPluginVo->getFullPluginPrefix(),
+			'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->sFeatureSlug )
+		);
+	}
+
+	/**
+	 * @param $sView
+	 * @param array $inaData
+	 * @return bool
+	 */
+	protected function display( $sView, $inaData = array() ) {
+		$sFile = $this->oPluginVo->getViewDir().$sView.'.php';
+
+		if ( !is_file( $sFile ) ) {
+			echo "View not found: ".$sFile;
+			return false;
+		}
+
+		if ( count( $inaData ) > 0 ) {
+			extract( $inaData, EXTR_PREFIX_ALL, $this->oPluginVo->getParentSlug() ); //slug being 'icwp'
+		}
+
+		ob_start();
+		include( $sFile );
+		$sContents = ob_get_contents();
+		ob_end_clean();
+
+		echo $sContents;
+		return true;
 	}
 	
 	protected function loadDataProcessor() {

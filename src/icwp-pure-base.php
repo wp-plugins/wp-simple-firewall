@@ -196,16 +196,17 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	}
 
 	/**
+	 * @param boolean $fHasPermission
 	 * @return boolean
 	 */
-	protected function hasPermissionToView() {
+	public function hasPermissionToView( $fHasPermission = false ) {
 		return $this->hasPermissionToSubmit();
 	}
 
 	/**
 	 * @return boolean
 	 */
-	protected function hasPermissionToSubmit() {
+	public function hasPermissionToSubmit() {
 		// first a basic admin check
 		return is_super_admin() && current_user_can( $this->oPluginVo->getBasePermissions() );
 	}
@@ -342,14 +343,40 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		$sFullParentMenuId = $this->getPluginPrefix();
 		add_menu_page( $this->oPluginVo->getHumanName(), $this->oPluginVo->getAdminMenuTitle(), $this->oPluginVo->getBasePermissions(), $sFullParentMenuId, array( $this, 'onDisplayAll' ), $this->getPluginLogoUrl16() );
 		//Create and Add the submenu items
-		$this->createPluginSubMenuItems();
-		if ( !empty($this->aPluginMenu) ) {
-			foreach ( $this->aPluginMenu as $sMenuTitle => $aMenu ) {
-				list( $sMenuItemText, $sMenuItemId, $sMenuCallBack ) = $aMenu;
-				add_submenu_page( $sFullParentMenuId, $sMenuTitle, $sMenuItemText, $this->oPluginVo->getBasePermissions(), $sMenuItemId, array( $this, $sMenuCallBack ) );
+//		$this->createPluginSubMenuItems();
+
+		// allow for any plugin menu items that don't come from filters
+		add_filter( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array( $this, 'filter_addExtraAdminMenuItems' ) );
+
+		$aPluginMenuItems = apply_filters( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array() );
+		if ( !empty( $aPluginMenuItems ) ) {
+			foreach ( $aPluginMenuItems as $sMenuTitle => $aMenu ) {
+				list( $sMenuItemText, $sMenuItemId, $aMenuCallBack ) = $aMenu;
+				add_submenu_page(
+					$sFullParentMenuId,
+					$sMenuTitle,
+					$sMenuItemText,
+					$this->oPluginVo->getBasePermissions(),
+					$this->doPluginPrefix( $sMenuItemId ),
+					$aMenuCallBack
+				);
 			}
 		}
+//		if ( !empty($this->aPluginMenu) ) {
+//			foreach ( $this->aPluginMenu as $sMenuTitle => $aMenu ) {
+//				list( $sMenuItemText, $sMenuItemId, $sMenuCallBack ) = $aMenu;
+//				add_submenu_page( $sFullParentMenuId, $sMenuTitle, $sMenuItemText, $this->oPluginVo->getBasePermissions(), $sMenuItemId, array( $this, $sMenuCallBack ) );
+//			}
+//		}
 		$this->fixSubmenu();
+	}
+
+	/**
+	 * @param array $aItems
+	 * @return array
+	 */
+	public function filter_addExtraAdminMenuItems( $aItems ) {
+		return $aItems;
 	}
 
 	protected function createPluginSubMenuItems(){
@@ -381,11 +408,8 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * The callback function for the main admin menu index page
 	 */
 	public function onDisplayMainMenu() {
-		$aData = array(
-			'plugin_url'	=> $this->sPluginUrl,
-			'fShowAds'		=> $this->isShowMarketing()
-		);
-		$this->display( $this->oPluginVo->getFullPluginPrefix('_') .'_index', $aData );
+		$aData = array();
+		$this->display( $this->doPluginPrefix( 'index', '_' ), $aData );
 	}
 
 	protected function getBaseDisplayData( $sSubmenu = '' ) {

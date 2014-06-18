@@ -161,8 +161,8 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		
 		$sOptionsVarName = 'm_o'.$insOptionHandler.'Options'; // e.g. m_oPluginMainOptions
 		if ( $insOptionHandler == 'PluginMain' ) {
-			$sSourceFile = dirname(__FILE__).'/icwp-optionshandler-'.$this->sPluginSlug.'.php'; // e.g. icwp-optionshandler-wpsf.php
-			$sClassName = 'ICWP_OptionsHandler_'.ucfirst( $this->sPluginSlug ); // e.g. ICWP_OptionsHandler_Wpsf
+			$sSourceFile = dirname(__FILE__).'/icwp-optionshandler-'.$this->oPluginVo->getPluginSlug().'.php'; // e.g. icwp-optionshandler-wpsf.php
+			$sClassName = 'ICWP_OptionsHandler_'.ucfirst( $this->oPluginVo->getPluginSlug() ); // e.g. ICWP_OptionsHandler_Wpsf
 		}
 		else {
 			$sSourceFile = dirname(__FILE__).'/icwp-optionshandler-'.strtolower($insOptionHandler).'.php'; // e.g. icwp-optionshandler-wpsf.php
@@ -187,6 +187,13 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 	 * @return ICWP_OptionsHandler_Base_Wpsf
 	 */
 	protected function loadProcessor( $insProcessorName, $infRebuild = false ) {
+		$sProcessorVarName = 'm_o'.$insProcessorName.'Processor'; // e.g. m_oFirewallProcessor
+
+		if ( isset( $this->{$sProcessorVarName} ) ) {
+			return $this->{$sProcessorVarName};
+		}
+
+
 		$aAllProcessors = $this->getFeaturesMap();
 
 		if ( !in_array( $insProcessorName, array_values($aAllProcessors) ) ) {
@@ -194,26 +201,32 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		}
 		$sProcessorVarName = 'm_o'.$insProcessorName.'Processor'; // e.g. m_oFirewallProcessor
 		$sSourceFile = dirname(__FILE__).'/icwp-processor-'.strtolower($insProcessorName).'.php'; // e.g. icwp-optionshandler-wpsf.php
-		$sClassName = 'ICWP_'.strtoupper( $this->sPluginSlug ).'_'.$insProcessorName.'Processor'; // e.g. ICWP_WPSF_FirewallProcessor
-		$sStorageKey = array_search($insProcessorName, $aAllProcessors).'_processor'; // e.g. firewall_processor
+		$sClassName = 'ICWP_'.strtoupper( $this->oPluginVo->getPluginSlug() ).'_'.$insProcessorName.'Processor'; // e.g. ICWP_WPSF_FirewallProcessor
+//		$sStorageKey = array_search($insProcessorName, $aAllProcessors).'_processor'; // e.g. firewall_processor
 		$sOptionsHandlerVarName = 'm_o'.$insProcessorName.'Options'; // e.g. m_oFirewallOptions
 		
 		require_once( $sSourceFile );
-		if ( $infRebuild || empty( $this->{$sProcessorVarName} ) ) {
-			$oTemp = $this->getOption( $sStorageKey );
-			if ( !$infRebuild && is_object( $oTemp ) && ( $oTemp instanceof $sClassName ) ) {
-				$oTemp->reset();
-			}
-			else {
-				$oTemp = new $sClassName( $this->oPluginVo, self::$sOptionPrefix );
-			}
-			$this->{$sProcessorVarName} = $oTemp;
-		}
-		if ( $this->loadOptionsHandler( $insProcessorName ) ) {
-			$aOptionsValues = $this->{$sOptionsHandlerVarName}->getPluginOptionsValues();
-			$this->{$sProcessorVarName}->setOptions( $aOptionsValues );
-		}
+
+		$this->{$sProcessorVarName} = new $sClassName( $this->oPluginVo );
+		$this->loadOptionsHandler( $insProcessorName );
+		$this->{$sProcessorVarName}->setOptions( $this->{$sOptionsHandlerVarName}->getPluginOptionsValues() );
 		return $this->{$sProcessorVarName};
+
+//		if ( $infRebuild || empty( $this->{$sProcessorVarName} ) ) {
+//			$oTemp = $this->getOption( $sStorageKey );
+//			if ( !$infRebuild && is_object( $oTemp ) && ( $oTemp instanceof $sClassName ) ) {
+//				$oTemp->reset();
+//			}
+//			else {
+//				$oTemp = new $sClassName( $this->oPluginVo );
+//			}
+//			$this->{$sProcessorVarName} = $oTemp;
+//		}
+//		if ( $this->loadOptionsHandler( $insProcessorName ) ) {
+//			$aOptionsValues = $this->{$sOptionsHandlerVarName}->getPluginOptionsValues();
+//			$this->{$sProcessorVarName}->setOptions( $aOptionsValues );
+//		}
+//		return $this->{$sProcessorVarName};
 	}
 	
 	protected function resetProcessor( $insProcessorName ) {

@@ -35,6 +35,11 @@ require_once( dirname(__FILE__).'/icwp-wpsf-main.php' );
 class ICWP_Wordpress_Simple_Firewall_Plugin {
 
 	/**
+	 * @const string
+	 */
+	const ViewDir				= 'views';
+
+	/**
 	 * @var string
 	 */
 	private static $sVersion	= '2.6.6';
@@ -191,6 +196,15 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	 */
 	public function getVersion() {
 		return self::$sVersion;
+	}
+
+	/**
+	 * get the directory for the plugin view with the trailing slash
+	 *
+	 * @return string
+	 */
+	public function getViewDir() {
+		return dirname( $this->getRootFile() ).ICWP_DS.self::ViewDir.ICWP_DS;
 	}
 }
 

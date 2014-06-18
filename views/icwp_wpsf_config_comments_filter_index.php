@@ -7,7 +7,6 @@ include_once( 'icwp_wpsf_config_header.php' );
 
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
-			
 				<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
 				<?php
 					wp_nonce_field( $icwp_nonce_field );

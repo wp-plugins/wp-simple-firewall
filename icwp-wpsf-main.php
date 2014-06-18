@@ -150,7 +150,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			)
 		);
 
-		// loads the base plugin options from 1 db call
 		if ( is_admin() ) {
 			$this->loadOptionsHandler( 'all' );
 		}
@@ -166,6 +165,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			$this->setPermissionToSubmit( false );
 		}
 
+		add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
+		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
 		add_filter( 'pre_update_option', array($this, 'blockOptionsSaves'), 1, 3 );
 	}
 
@@ -224,20 +225,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$this->m_oAutoUpdatesProcessor->run( $this->getPluginBaseFile() );
 	}
 
-	protected function createPluginSubMenuItems() {
-//		$aItems = array(
-//			Menu Page Title => Menu Item name, page ID (slug), callback function for this page - i.e. what to do/load.
-//			$this->getSubmenuPageTitle( _wpsf__('Firewall') )			=> array( 'Firewall', $this->getSubmenuId('firewall'), 'onDisplayAll' ),
-//			$this->getSubmenuPageTitle( _wpsf__('Login Protect') )		=> array( 'Login Protect', $this->getSubmenuId('login_protect'), 'onDisplayAll' ),
-//			$this->getSubmenuPageTitle( _wpsf__('Comments Filter') )	=> array( 'Comments Filter', $this->getSubmenuId('comments_filter'), 'onDisplayAll' ),
-//			$this->getSubmenuPageTitle( _wpsf__('Privacy Protect') )	=> array( 'Privacy Protect', $this->getSubmenuId('privacy_protect'), 'onDisplayAll' ),
-//			$this->getSubmenuPageTitle( _wpsf__('Automatic Updates') )	=> array( 'Automatic Updates', $this->getSubmenuId('autoupdates'), 'onDisplayAll' ),
-//			$this->getSubmenuPageTitle( _wpsf__('Lockdown') )			=> array( 'Lockdown', $this->getSubmenuId('lockdown'), 'onDisplayAll' ),
-//			$this->getSubmenuPageTitle( _wpsf__('Firewall Log' ) )		=> array( 'Firewall Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' ),
-//			$this->getSubmenuPageTitle( _wpsf__('Privacy Log' ) )		=> array( 'Privacy Log', $this->getSubmenuId('privacy_protect_log'), 'onDisplayAll' )
-//		);
-		$this->aPluginMenu = apply_filters( 'icwp_wpsf_filter_plugin_submenu_items', array() );
-		$this->aPluginMenu[ _wpsf__('Firewall Log' ) ] = array( 'Firewall Log', $this->getSubmenuId('firewall_log'), 'onDisplayAll' );
+	/**
+	 * @param array $aItems
+	 * @return array $aItems
+	 */
+	public function filter_addExtraAdminMenuItems( $aItems ) {
+		$aItems[ _wpsf__('Firewall Log' ) ] = array( 'Firewall Log', $this->getSubmenuId('firewall_log'), array( $this, 'onDisplayAll' ) );
+		return $aItems;
 	}
 
 	protected function handlePluginUpgrade() {
@@ -294,10 +288,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 				$this->onDisplayFirewallLog();
 				break;
 			default:
-				$aFeatures = $this->getFeaturesMap();
-				$this->loadOptionsHandler( $aFeatures[$sCurrent] );
-				$sOptionsName = 'm_o'.$aFeatures[$sCurrent].'Options';
-				$this->onDisplayConfig( $this->{$sOptionsName}, $sCurrent );
+				die( 'Report Error 0x010 to support' );
 				break;
 		}
 	}
@@ -514,7 +505,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 					$this->setPermissionToSubmit( false );
 				}
 
-				wp_safe_redirect(  $this->getUrl_PluginDashboard( $sCurrentPage ) );
+				wp_safe_redirect( $this->getUrl_PluginDashboard( $sCurrentPage ) );
 				return true;
 			}
 
@@ -552,7 +543,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	/**
 	 * @return boolean
 	 */
-	protected function hasPermissionToSubmit() {
+	public function hasPermissionToSubmit() {
 
 		if ( !is_null( $this->fAdminAccessPermSubmit ) ) {
 			return $this->fAdminAccessPermSubmit;
