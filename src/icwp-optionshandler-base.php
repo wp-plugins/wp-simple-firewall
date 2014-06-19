@@ -86,6 +86,11 @@ class ICWP_OptionsHandler_Base_V2 {
 	 */
 	protected $fShowFeatureMenuItem = true;
 
+	/**
+	 * @var ICWP_WPSF_BaseProcessor
+	 */
+	protected $oFeatureProcessor;
+
 	public function __construct( $oPluginVo, $sOptionsStoreKey ) {
 		$this->oPluginVo = $oPluginVo;
 		$this->sOptionsStoreKey = $this->prefixOptionKey( $sOptionsStoreKey );
@@ -106,7 +111,6 @@ class ICWP_OptionsHandler_Base_V2 {
 	public function onWpShutdown() {
 		$this->savePluginOptions();
 	}
-
 
 	protected function load() {
 		if ( !$this->getIsMainFeatureEnabled() ) {
@@ -130,6 +134,13 @@ class ICWP_OptionsHandler_Base_V2 {
 	 */
 	protected function loadFeatureProcessor() {
 		return null;
+	}
+
+	/**
+	 * @return ICWP_WPSF_BaseProcessor
+	 */
+	public function getProcessor() {
+		return $this->loadFeatureProcessor();
 	}
 
 	/**
@@ -259,7 +270,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( !$this->getIsOptionKey( $insKey ) ) {
 			return false;
 		}
-		
+
 		if ( !isset( $this->m_aOptionsValues ) ) {
 			$this->loadStoredOptionsValues();
 		}
@@ -267,12 +278,8 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( $this->getOpt( $insKey ) === $inmValue ) {
 			return true;
 		}
-		
 		$this->m_aOptionsValues[ $insKey ] = $inmValue;
-		
-		if ( !$this->fNeedSave ) {
-			$this->fNeedSave = true;
-		}
+		$this->fNeedSave = true;
 		return true;
 	}
 

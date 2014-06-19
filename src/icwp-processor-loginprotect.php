@@ -26,6 +26,11 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	const YubikeyVerifyApiUrl = 'https://api.yubico.com/wsapi/2.0/verify?id=%s&otp=%s&nonce=%s';
 
 	/**
+	 * @var ICWP_OptionsHandler_LoginProtect
+	 */
+	protected $oFeatureOptions;
+
+	/**
 	 * @var string
 	 */
 	static protected $sModeFile_LoginThrottled;
@@ -47,10 +52,6 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	/**
 	 * @var string
 	 */
-	protected $m_sGaspKey;
-	/**
-	 * @var string
-	 */
 	protected $nDaysToKeepLog = 1;
 
 	/**
@@ -58,7 +59,6 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function __construct( ICWP_OptionsHandler_LoginProtect $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions, self::TableName );
-		$this->m_sGaspKey = uniqid();
 //		$this->updateLastLoginThrottleTime( time() );
 		$this->createTable();
 		$this->reset();
@@ -683,12 +683,12 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 
 		return $sHtml;
 	}
-	
+
+	/**
+	 * @return string
+	 */
 	public function getGaspCheckboxName() {
-		if ( empty( $this->m_sGaspKey ) ) {
-			$this->m_sGaspKey = uniqid();
-		}
-		return "icwp_wpsf_$this->m_sGaspKey";
+		return $this->oFeatureOptions->doPluginPrefix( $this->oFeatureOptions->getGaspKey(), '_' );
 	}
 	
 	public function doGaspChecks( $insUsername ) {

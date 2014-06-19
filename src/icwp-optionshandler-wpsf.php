@@ -26,7 +26,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	/**
 	 * @var ICWP_WPSF_AutoUpdatesProcessor
 	 */
-	protected $oPluginProcessor;
+	protected $oFeatureProcessor;
 
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Dashboard');

@@ -24,7 +24,7 @@ class ICWP_OptionsHandler_Email extends ICWP_OptionsHandler_Base_Wpsf {
 	/**
 	 * @var ICWP_WPSF_EmailProcessor
 	 */
-	protected $oEmailProcessor;
+	protected $oFeatureProcessor;
 
 	/**
 	 * @param $oPluginVo
@@ -40,11 +40,11 @@ class ICWP_OptionsHandler_Email extends ICWP_OptionsHandler_Base_Wpsf {
 	 * @return ICWP_WPSF_EmailProcessor|null
 	 */
 	protected function loadFeatureProcessor() {
-		if ( !isset( $this->oEmailProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-logging.php' );
-			$this->oEmailProcessor = new ICWP_WPSF_EmailProcessor( $this );
+		if ( !isset( $this->oFeatureProcessor ) ) {
+			require_once( dirname(__FILE__).'/icwp-processor-email.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_EmailProcessor( $this );
 		}
-		return $this->oEmailProcessor;
+		return $this->oFeatureProcessor;
 	}
 
 	/**

@@ -24,7 +24,7 @@ class ICWP_OptionsHandler_Logging extends ICWP_OptionsHandler_Base_Wpsf {
 	/**
 	 * @var ICWP_WPSF_LoggingProcessor
 	 */
-	protected $oLoggingrocessor;
+	protected $oFeatureProcessor;
 
 	/**
 	 * @param $oPluginVo
@@ -40,11 +40,11 @@ class ICWP_OptionsHandler_Logging extends ICWP_OptionsHandler_Base_Wpsf {
 	 * @return ICWP_WPSF_LoggingProcessor|null
 	 */
 	protected function loadFeatureProcessor() {
-		if ( !isset( $this->oLoggingrocessor ) ) {
+		if ( !isset( $this->oFeatureProcessor ) ) {
 			require_once( dirname(__FILE__).'/icwp-processor-logging.php' );
-			$this->oLoggingrocessor = new ICWP_WPSF_LoggingProcessor( $this );
+			$this->oFeatureProcessor = new ICWP_WPSF_LoggingProcessor( $this );
 		}
-		return $this->oLoggingrocessor;
+		return $this->oFeatureProcessor;
 	}
 
 	/**

@@ -24,7 +24,7 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 	/**
 	 * @var ICWP_WPSF_LockdownProcessor
 	 */
-	protected $oLockdownProcessor;
+	protected $oFeatureProcessor;
 
 	/**
 	 * @param $oPluginVo
@@ -39,11 +39,11 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 	 * @return ICWP_WPSF_LockdownProcessor|null
 	 */
 	protected function loadFeatureProcessor() {
-		if ( !isset( $this->oLockdownProcessor ) ) {
+		if ( !isset( $this->oFeatureProcessor ) ) {
 			require_once( dirname(__FILE__).'/icwp-processor-lockdown.php' );
-			$this->oLockdownProcessor = new ICWP_WPSF_LockdownProcessor( $this );
+			$this->oFeatureProcessor = new ICWP_WPSF_LockdownProcessor( $this );
 		}
-		return $this->oLockdownProcessor;
+		return $this->oFeatureProcessor;
 	}
 
 	public function doPrePluginOptionsSave() {

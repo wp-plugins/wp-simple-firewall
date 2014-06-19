@@ -24,7 +24,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 	/**
 	 * @var ICWP_WPSF_AutoUpdatesProcessor
 	 */
-	protected $oAutoUpdatesProcessor;
+	protected $oFeatureProcessor;
 	
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Automatic Updates');
@@ -36,11 +36,11 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 	 * @return ICWP_WPSF_AutoUpdatesProcessor|null
 	 */
 	protected function loadFeatureProcessor() {
-		if ( !isset( $this->oAutoUpdatesProcessor ) ) {
+		if ( !isset( $this->oFeatureProcessor ) ) {
 			require_once( dirname(__FILE__).'/icwp-processor-autoupdates.php' );
-			$this->oAutoUpdatesProcessor = new ICWP_WPSF_AutoUpdatesProcessor( $this );
+			$this->oFeatureProcessor = new ICWP_WPSF_AutoUpdatesProcessor( $this );
 		}
-		return $this->oAutoUpdatesProcessor;
+		return $this->oFeatureProcessor;
 	}
 
 	public function doPrePluginOptionsSave() {}

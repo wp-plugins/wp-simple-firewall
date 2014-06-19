@@ -24,7 +24,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	/**
 	 * @var ICWP_WPSF_LoginProtectProcessor
 	 */
-	protected $oLoginProtectProcessor;
+	protected $oFeatureProcessor;
 
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Login Protect');
@@ -36,11 +36,11 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	 * @return ICWP_WPSF_LoginProtectProcessor|null
 	 */
 	protected function loadFeatureProcessor() {
-		if ( !isset( $this->oLoginProtectProcessor ) ) {
+		if ( !isset( $this->oFeatureProcessor ) ) {
 			require_once( dirname(__FILE__).'/icwp-processor-loginprotect.php' );
-			$this->oLoginProtectProcessor = new ICWP_WPSF_LoginProtectProcessor( $this );
+			$this->oFeatureProcessor = new ICWP_WPSF_LoginProtectProcessor( $this );
 		}
-		return $this->oLoginProtectProcessor;
+		return $this->oFeatureProcessor;
 	}
 	
 	public function doPrePluginOptionsSave() {
@@ -55,12 +55,19 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 		if ( empty($aTwoFactorAuthRoles) || !is_array( $aTwoFactorAuthRoles ) ) {
 			$this->setOpt( 'two_factor_auth_user_roles', $this->getTwoFactorUserAuthRoles( true ) );
 		}
+
+		$this->getGaspKey(); // ensures it has a value
 	}
 
 	/**
 	 * @return bool|void
 	 */
 	public function defineOptions() {
+
+		$aNonUiOptions = array(
+			'gasp_key'
+		);
+		$this->mergeNonUiOptions( $aNonUiOptions );
 
 		$aOptionsBase = array(
 			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Login Protection') ),
@@ -300,6 +307,18 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			return array_keys($aTwoAuthRoles);
 		}
 		return $aTwoAuthRoles;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getGaspKey() {
+		$sKey = $this->getOpt('gasp_key');
+		if ( empty( $sKey ) ) {
+			$sKey = uniqid();
+			$this->setOpt( 'gasp_key', $sKey );
+		}
+		return $sKey;
 	}
 }
 

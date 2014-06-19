@@ -179,39 +179,39 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		return true;
 	}
 	
-	/**
-	 * Given a feature/processor name will load the variable for it, including the appropriate source file.
-	 * 
-	 * @param string $insProcessorName
-	 * @param boolean $infRebuild
-	 * @return ICWP_OptionsHandler_Base_Wpsf
-	 */
-	protected function loadProcessor( $insProcessorName, $infRebuild = false ) {
-		$sProcessorVarName = 'm_o'.$insProcessorName.'Processor'; // e.g. m_oFirewallProcessor
-
-		if ( isset( $this->{$sProcessorVarName} ) ) {
-			return $this->{$sProcessorVarName};
-		}
-
-
-		$aAllProcessors = $this->getFeaturesMap();
-
-		if ( !in_array( $insProcessorName, array_values($aAllProcessors) ) ) {
-			$this->doWpDie( sprintf('Processor %s is not permitted here.', $insProcessorName) );
-		}
-		$sProcessorVarName = 'm_o'.$insProcessorName.'Processor'; // e.g. m_oFirewallProcessor
-		$sSourceFile = dirname(__FILE__).'/icwp-processor-'.strtolower($insProcessorName).'.php'; // e.g. icwp-optionshandler-wpsf.php
-		$sClassName = 'ICWP_'.strtoupper( $this->oPluginVo->getPluginSlug() ).'_'.$insProcessorName.'Processor'; // e.g. ICWP_WPSF_FirewallProcessor
-//		$sStorageKey = array_search($insProcessorName, $aAllProcessors).'_processor'; // e.g. firewall_processor
-		$sOptionsHandlerVarName = 'm_o'.$insProcessorName.'Options'; // e.g. m_oFirewallOptions
-		
-		require_once( $sSourceFile );
-
-		$this->{$sProcessorVarName} = new $sClassName( $this->oPluginVo );
-		$this->loadOptionsHandler( $insProcessorName );
-		$aOptionsValues = $this->{$sOptionsHandlerVarName}->getPluginOptionsValues();
-		$this->{$sProcessorVarName}->setOptions( $aOptionsValues );
-		return $this->{$sProcessorVarName};
+//	/**
+//	 * Given a feature/processor name will load the variable for it, including the appropriate source file.
+//	 *
+//	 * @param string $insProcessorName
+//	 * @param boolean $infRebuild
+//	 * @return ICWP_OptionsHandler_Base_Wpsf
+//	 */
+//	protected function loadProcessor( $insProcessorName, $infRebuild = false ) {
+//		$sProcessorVarName = 'm_o'.$insProcessorName.'Processor'; // e.g. m_oFirewallProcessor
+//
+//		if ( isset( $this->{$sProcessorVarName} ) ) {
+//			return $this->{$sProcessorVarName};
+//		}
+//
+//
+//		$aAllProcessors = $this->getFeaturesMap();
+//
+//		if ( !in_array( $insProcessorName, array_values($aAllProcessors) ) ) {
+//			$this->doWpDie( sprintf('Processor %s is not permitted here.', $insProcessorName) );
+//		}
+//		$sProcessorVarName = 'm_o'.$insProcessorName.'Processor'; // e.g. m_oFirewallProcessor
+//		$sSourceFile = dirname(__FILE__).'/icwp-processor-'.strtolower($insProcessorName).'.php'; // e.g. icwp-optionshandler-wpsf.php
+//		$sClassName = 'ICWP_'.strtoupper( $this->oPluginVo->getPluginSlug() ).'_'.$insProcessorName.'Processor'; // e.g. ICWP_WPSF_FirewallProcessor
+////		$sStorageKey = array_search($insProcessorName, $aAllProcessors).'_processor'; // e.g. firewall_processor
+//		$sOptionsHandlerVarName = 'm_o'.$insProcessorName.'Options'; // e.g. m_oFirewallOptions
+//
+//		require_once( $sSourceFile );
+//
+//		$this->{$sProcessorVarName} = new $sClassName( $this->oPluginVo );
+//		$this->loadOptionsHandler( $insProcessorName );
+//		$aOptionsValues = $this->{$sOptionsHandlerVarName}->getPluginOptionsValues();
+//		$this->{$sProcessorVarName}->setOptions( $aOptionsValues );
+//		return $this->{$sProcessorVarName};
 
 //		if ( $infRebuild || empty( $this->{$sProcessorVarName} ) ) {
 //			$oTemp = $this->getOption( $sStorageKey );
@@ -228,34 +228,8 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 //			$this->{$sProcessorVarName}->setOptions( $aOptionsValues );
 //		}
 //		return $this->{$sProcessorVarName};
-	}
-	
-	protected function resetProcessor( $insProcessorName ) {
-		if ( !$this->getIsFeature( $insProcessorName ) ) {
-			$this->doWpDie('Not a processor: '.$insProcessorName);
-			return;
-		}
-		$this->loadProcessor( $insProcessorName );
-		return;
-	}
-	
-	protected function resetOptionHandler( $insOptionName ) {
-		if ( !$this->getIsFeature( $insOptionName ) ) {
-			$this->doWpDie('Not a feature: '.$insOptionName);
-			return;
-		}
-		$this->loadOptionsHandler( $insOptionName );
-		return;
-	}
-	
-	public function clearCaches() {
-		$aFeatures = $this->getFeaturesMap();
-		foreach( $aFeatures as $sFeature ) {
-			$this->resetOptionHandler( $sFeature );
-			$this->resetProcessor( $sFeature );
-		}
-	}
-	
+//	}
+
 	protected function getAllOptionsHandlers() {
 		$this->loadOptionsHandler('all');
 		$aOptions = array();
@@ -279,31 +253,13 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		}
 	}
 
-	/**
-	 * 
-	 * @param string $insProcessorName
-	 * @param bool $infLoad
-	 * @return null|ICWP_WPSF_BaseProcessor
-	 */
-	protected function getProcessorVar( $insProcessorName, $infLoad = false ) {
-		if ( !$this->getIsFeature( $insProcessorName ) ) {
-			return null;
-		}
-		$sProcessorVariable = 'm_o'.$insProcessorName.'Processor';
-		if ( $infLoad || !isset( $this->{$sProcessorVariable} ) ) {
-			$this->loadProcessor( $insProcessorName );
-		}
-		$sProcessorVariable = 'm_o'.$insProcessorName.'Processor';
-		return $this->{$sProcessorVariable};
-	}
-
 	protected function shutdown() {
 		parent::shutdown();
 		$this->saveOptions();
 	}
 	
 	protected function deleteAllPluginDbOptions() {
-		if ( !current_user_can( 'manage_options' ) ) {
+		if ( !current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
 			return;
 		}
 
@@ -314,7 +270,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		
 		$aFeatures = $this->getFeaturesMap();
 		foreach( $aFeatures as $sSlug => $sProcessorName ) {
-			$oProcessor = $this->getProcessorVar( $sProcessorName, true );
+			$oProcessor = $oOption->getProcessor();
 			if ( !is_null($oProcessor) && is_object($oProcessor) ) {
 				$oProcessor->deleteAndCleanUp();
 			}

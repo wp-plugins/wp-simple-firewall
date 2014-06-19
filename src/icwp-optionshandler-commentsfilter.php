@@ -27,7 +27,7 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 	/**
 	 * @var ICWP_WPSF_CommentsFilterProcessor
 	 */
-	protected $oCommentsFilterProcessor;
+	protected $oFeatureProcessor;
 
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Comments Filter');
@@ -39,11 +39,11 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 	 * @return ICWP_WPSF_CommentsFilterProcessor|null
 	 */
 	protected function loadFeatureProcessor() {
-		if ( !isset( $this->oCommentsFilterProcessor ) ) {
+		if ( !isset( $this->oFeatureProcessor ) ) {
 			require_once( dirname(__FILE__).'/icwp-processor-commentsfilter.php' );
-			$this->oCommentsFilterProcessor = new ICWP_WPSF_CommentsFilterProcessor( $this );
+			$this->oFeatureProcessor = new ICWP_WPSF_CommentsFilterProcessor( $this );
 		}
-		return $this->oCommentsFilterProcessor;
+		return $this->oFeatureProcessor;
 	}
 
 	/**

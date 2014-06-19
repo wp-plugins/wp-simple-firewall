@@ -24,7 +24,7 @@ class ICWP_OptionsHandler_PrivacyProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	/**
 	 * @var ICWP_WPSF_PrivacyProtectProcessor
 	 */
-	protected $oPrivacyProtectProcessor;
+	protected $oFeatureProcessor;
 
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Privacy Protect');
@@ -36,11 +36,11 @@ class ICWP_OptionsHandler_PrivacyProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	 * @return ICWP_WPSF_PrivacyProtectProcessor|null
 	 */
 	protected function loadFeatureProcessor() {
-		if ( !isset( $this->oPrivacyProtectProcessor ) ) {
+		if ( !isset( $this->oFeatureProcessor ) ) {
 			require_once( dirname(__FILE__).'/icwp-processor-privacyprotect.php' );
-			$this->oPrivacyProtectProcessor = new ICWP_WPSF_PrivacyProtectProcessor( $this );
+			$this->oFeatureProcessor = new ICWP_WPSF_PrivacyProtectProcessor( $this );
 		}
-		return $this->oPrivacyProtectProcessor;
+		return $this->oFeatureProcessor;
 	}
 	
 	public function doPrePluginOptionsSave() { }

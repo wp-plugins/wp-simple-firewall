@@ -24,7 +24,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 	/**
 	 * @var ICWP_WPSF_FirewallProcessor
 	 */
-	protected $oFirewallProcessor;
+	protected $oFeatureProcessor;
 
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Firewall');
@@ -36,11 +36,11 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 	 * @return ICWP_WPSF_FirewallProcessor|null
 	 */
 	protected function loadFeatureProcessor() {
-		if ( !isset( $this->oFirewallProcessor ) ) {
+		if ( !isset( $this->oFeatureProcessor ) ) {
 			require_once( dirname(__FILE__).'/icwp-processor-firewall.php' );
-			$this->oFirewallProcessor = new ICWP_WPSF_FirewallProcessor( $this );
+			$this->oFeatureProcessor = new ICWP_WPSF_FirewallProcessor( $this );
 		}
-		return $this->oFirewallProcessor;
+		return $this->oFeatureProcessor;
 	}
 
 	/**

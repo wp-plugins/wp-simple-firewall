@@ -74,9 +74,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	protected $m_oAutoUpdatesOptions;
 
 	/**
-	 * @var ICWP_OptionsHandler_Email_Wpsf
+	 * @var ICWP_OptionsHandler_Email
 	 */
 	protected $m_oEmailOptions;
+
+	/**
+	 * @var ICWP_OptionsHandler_Logging
+	 */
+	protected $m_oLoggingOptions;
 
 	/**
 	 * @var ICWP_FirewallProcessor
@@ -106,16 +111,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @var ICWP_WPSF_AutoUpdatesProcessor
 	 */
 	protected $m_oAutoUpdatesProcessor;
-
-	/**
-	 * @var ICWP_WPSF_LoggingProcessor
-	 */
-	protected $m_oLoggingProcessor;
-
-	/**
-	 * @var ICWP_EmailProcessor
-	 */
-	protected $m_oEmailProcessor;
 
 	/**
 	 * @var bool
@@ -150,12 +145,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			)
 		);
 
-		if ( is_admin() ) {
-			$this->loadOptionsHandler( 'all' );
-		}
-		else {
-			$this->loadOptionsHandler( 'PluginMain' );
-		}
+		$this->loadOptionsHandler( 'all' );
 		$this->fAutoPluginUpgrade = false && $this->m_oPluginMainOptions->getOpt( 'enable_auto_plugin_upgrade' ) == 'Y';
 
 		// checks for filesystem based firewall overrides
@@ -190,31 +180,21 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 */
 	public function runFirewallProcess() {
 
-		$this->loadProcessor( 'Firewall' );
-		$fFirewallBlockUser = !$this->m_oFirewallProcessor->doFirewallCheck();
+		$oFirewallProcessor = $this->getProcessor_Firewall();
+		$fFirewallBlockUser = !$oFirewallProcessor->doFirewallCheck();
 
 		if ( $fFirewallBlockUser ) {
-			if ( $this->m_oFirewallProcessor->getNeedsEmailHandler() ) {
-				$this->loadProcessor( 'Email' );
-				$this->m_oFirewallProcessor->setEmailHandler( $this->m_oEmailProcessor );
+			if ( $oFirewallProcessor->getNeedsEmailHandler() ) {
+				$oEmailProcessor = $this->getProcessor_Email();
+				$oFirewallProcessor->setEmailHandler( $oEmailProcessor );
 			}
-			$this->m_oFirewallProcessor->doPreFirewallBlock();
+			$oFirewallProcessor->doPreFirewallBlock();
 		}
 
 		if ( $fFirewallBlockUser ) {
 			$this->shutdown();
-			$this->m_oFirewallProcessor->doFirewallBlock();
+			$oFirewallProcessor->doFirewallBlock();
 		}
-	}
-
-	/**
-	 * Handles the running of all Login Protection processes.
-	 */
-	public function runLoginProtect() {
-		$this->loadProcessor( 'LoginProtect' );
-		$this->loadProcessor( 'Email' );
-		$this->m_oLoginProtectProcessor->setEmailHandler( $this->m_oEmailProcessor );
-		$this->m_oLoginProtectProcessor->run();
 	}
 
 	/**
@@ -243,11 +223,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 				$this->m_oEmailOptions->setOpt( 'send_email_throttle_limit', $this->m_oPluginMainOptions->getOpt( 'send_email_throttle_limit') );
 			}//v2.3.0
 
-			$this->loadProcessor( 'Logging' );
-			$this->m_oLoggingProcessor->handleInstallUpgrade( $sCurrentPluginVersion );
-
-			// clears all the processor caches
-			$this->clearCaches();
+			$oProcessor = $this->getProcessor_Logging();
+			$oProcessor->handleInstallUpgrade( $sCurrentPluginVersion );
 		}
 	}
 
@@ -386,9 +363,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 	protected function onDisplayPrivacyProtectLog() {
 
-		$this->loadProcessor( 'PrivacyProtect' );
+		$oPrivacyProcessor = $this->getProcessor_PrivacyProtect();
 		$aData = array(
-			'urlrequests_log'	=> $this->m_oPrivacyProtectProcessor->getLogs( true )
+			'urlrequests_log'	=> $oPrivacyProcessor->getLogs( true )
 		);
 		$aData = array_merge( $this->getBaseDisplayData('privacy_protect_log'), $aData );
 		$this->display( 'icwp_wpsf_privacy_protect_log_index', $aData );
@@ -399,9 +376,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$this->loadOptionsHandler( 'Firewall' );
 		$aIpWhitelist = $this->m_oFirewallOptions->getOpt( 'ips_whitelist' );
 		$aIpBlacklist = $this->m_oFirewallOptions->getOpt( 'ips_blacklist' );
-		$this->loadProcessor( 'Logging' );
 
-		$aLogData = $this->m_oLoggingProcessor->getLogs( true );
+		$oLoggingProcessor = $this->getProcessor_Logging();
+		$aLogData = $oLoggingProcessor->getLogs( true );
+
 		$aData = array(
 			'firewall_log'		=> $aLogData,
 			'ip_whitelist'		=> isset( $aIpWhitelist['ips'] )? $aIpWhitelist['ips'] : array(),
@@ -491,8 +469,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 			// if it's the main dashboard, or one of the main features, load everything and save them
 			if ( $this->getIsPage_PluginAdmin() ) {
-
-				$this->clearCaches();
 
 				if ( $this->getIsPage_PluginMainDashboard() && !$this->fetchPost( $this->doPluginPrefix('enable_admin_access_restriction', '_') ) ) {
 					$this->setPermissionToSubmit( false );
@@ -588,15 +564,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 		// At the time of writing the page only has 1 form submission item - clear log
 		if ( !is_null( $this->fetchPost( 'clear_log_submit' ) ) ) {
-			$this->loadProcessor( 'Logging' );
-			$this->m_oLoggingProcessor->recreateTable();
+			$oLoggingProcessor = $this->getProcessor_Logging();
+			$oLoggingProcessor->recreateTable();
 		}
 		else {
 			$this->m_oFirewallOptions->addRawIpsToFirewallList( 'ips_whitelist', array( $this->fetchGet( 'whiteip' ) ) );
 			$this->m_oFirewallOptions->removeRawIpsFromFirewallList( 'ips_whitelist', array( $this->fetchGet( 'unwhiteip' ) ) );
 			$this->m_oFirewallOptions->addRawIpsToFirewallList( 'ips_blacklist', array( $this->fetchGet( 'blackip' ) ) );
 			$this->m_oFirewallOptions->removeRawIpsFromFirewallList( 'ips_blacklist', array( $this->fetchGet( 'unblackip' ) ) );
-			$this->resetProcessor( 'Firewall' );
 		}
 		wp_safe_redirect( $this->getUrl_PluginDashboard( 'firewall_log' ) ); //means no admin message is displayed
 		exit();
@@ -614,8 +589,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 		// At the time of writing the page only has 1 form submission item - clear log
 		if ( !is_null( $this->fetchPost( 'clear_log_submit' ) ) ) {
-			$this->loadProcessor( 'PrivacyProtect' );
-			$this->m_oPrivacyProtectProcessor->recreateTable();
+			$oPrivacyProtectProcessor = $this->getProcessor_PrivacyProtect();
+			$oPrivacyProtectProcessor->recreateTable();
 		}
 		else {
 //			$this->m_oFirewallOptions->addRawIpsToFirewallList( 'ips_whitelist', array( $this->fetchGet( 'whiteip' ) ) );
@@ -724,16 +699,16 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		if ( isset( $this->m_oFirewallProcessor ) && is_object( $this->m_oFirewallProcessor ) && $this->getIsMainFeatureEnabled( 'firewall' ) ) {
 			$aLogData = $this->m_oFirewallProcessor->flushLogData();
 			if ( !is_null( $aLogData ) && !empty( $aLogData ) ) {
-				$this->loadProcessor( 'Logging' );
-				$this->m_oLoggingProcessor->addDataToWrite( $aLogData );
+				$oLoggingProcessor = $this->getProcessor_Logging();
+				$oLoggingProcessor->addDataToWrite( $aLogData );
 			}
 		}
 
 		if ( isset( $this->m_oLoginProtectProcessor ) && is_object( $this->m_oLoginProtectProcessor ) && $this->getIsMainFeatureEnabled( 'login_protect' ) ) {
 			$aLogData = $this->m_oLoginProtectProcessor->flushLogData();
 			if ( !is_null( $aLogData ) && !empty( $aLogData ) ) {
-				$this->loadProcessor( 'Logging' );
-				$this->m_oLoggingProcessor->addDataToWrite( $aLogData );
+				$oLoggingProcessor = $this->getProcessor_Logging();
+				$oLoggingProcessor->addDataToWrite( $aLogData );
 			}
 		}
 	}
@@ -880,17 +855,51 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 
 	/**
+	 * @return ICWP_WPSF_FirewallProcessor|null
+	 */
+	public function getProcessor_Firewall() {
+		$this->loadOptionsHandler('Firewall');
+		return $this->m_oFirewallOptions->getProcessor();
+	}
+
+	/**
 	 * @return ICWP_WPSF_LoginProtectProcessor|null
 	 */
 	public function getProcessor_LoginProtect() {
-		return $this->getProcessorVar('LoginProtect');
+		$this->loadOptionsHandler('LoginProtect');
+		return $this->m_oLoginProtectOptions->getProcessor();
 	}
 
 	/**
 	 * @return ICWP_WPSF_AutoUpdatesProcessor|null
 	 */
 	public function getProcessor_Autoupdates() {
-		return $this->getProcessorVar('AutoUpdates');
+		$this->loadOptionsHandler('AutoUpdates');
+		return $this->m_oAutoUpdatesOptions->getProcessor();
+	}
+
+	/**
+	 * @return ICWP_WPSF_PrivacyProtectProcessor|null
+	 */
+	public function getProcessor_PrivacyProtect() {
+		$this->loadOptionsHandler('PrivacyProtect');
+		return $this->m_oPrivacyProtectOptions->getProcessor();
+	}
+
+	/**
+	 * @return ICWP_WPSF_LoggingProcessor|null
+	 */
+	public function getProcessor_Logging() {
+		$this->loadOptionsHandler('Logging');
+		return $this->m_oLoggingOptions->getProcessor();
+	}
+
+	/**
+	 * @return ICWP_WPSF_EmailProcessor|null
+	 */
+	public function getProcessor_Email() {
+		$this->loadOptionsHandler('Email');
+		return $this->m_oEmailOptions->getProcessor();
 	}
 }
 
