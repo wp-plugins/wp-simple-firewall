@@ -75,6 +75,12 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @var string
 	 */
 	protected $sFeatureSlug;
+
+	/**
+	 * @var string
+	 */
+	protected static $sPluginBaseFile;
+
 	/**
 	 * @var string
 	 */
@@ -85,9 +91,69 @@ class ICWP_OptionsHandler_Base_V2 {
 		$this->sOptionsStoreKey = $this->prefixOptionKey( $sOptionsStoreKey );
 
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
+		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ) );
 		add_action( 'init', array( $this, 'onWpInit' ), 1 );
-		add_action( $this->doPluginPrefix( 'form_submit', '_' ), array( $this, 'updatePluginOptionsFromSubmit' ) );
+		add_action( 'shutdown', array( $this, 'onWpShutdown' ) );
+//		add_action( $this->doPluginPrefix( 'form_submit', '_' ), array( $this, 'updatePluginOptionsFromSubmit' ) );
+		add_action( $this->doPluginPrefix( 'form_submit', '_' ), array( $this, 'handleFormSubmit' ) );
 		add_filter( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array( $this, 'filter_addPluginSubMenuItem' ) );
+	}
+
+	public function onWpPluginsLoaded() {
+		$this->load();
+	}
+
+	public function onWpShutdown() {
+		$this->savePluginOptions();
+	}
+
+
+	protected function load() {
+		if ( !$this->getIsMainFeatureEnabled() ) {
+			return;
+		}
+
+		$oProcessor = $this->loadFeatureProcessor();
+		if ( ! ( is_object( $oProcessor ) && $oProcessor instanceof ICWP_WPSF_BaseProcessor ) ) {
+			return;
+		}
+
+		// TODO: since we're passing in the options, there should be no need to also explicity set them.
+		$aOptionsValues = $this->getPluginOptionsValues();
+		$oProcessor->setOptions( $aOptionsValues );
+		$oProcessor->run();
+	}
+
+	/**
+	 * Override this and adapt per feature
+	 * @return null
+	 */
+	protected function loadFeatureProcessor() {
+		return null;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	protected function getIsMainFeatureEnabled() {
+		return $this->getOpt( 'enable_'.$this->sFeatureSlug ) == 'Y';
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getPluginBaseFile() {
+		if ( !isset( self::$sPluginBaseFile ) ) {
+			self::$sPluginBaseFile	= plugin_basename( $this->oPluginVo->getRootFile() );
+		}
+		return self::$sPluginBaseFile;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getFeatureSlug() {
+		return $this->sFeatureSlug;
 	}
 
 	/**
@@ -211,14 +277,14 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	/**
-	 * @param string $insKey
-	 * @return Ambigous <boolean, multitype:>
+	 * @param string $sOptionKey
+	 * @return mixed
 	 */
-	public function getOpt( $insKey ) {
+	public function getOpt( $sOptionKey ) {
 		if ( !isset( $this->m_aOptionsValues ) ) {
 			$this->loadStoredOptionsValues();
 		}
-		return ( isset( $this->m_aOptionsValues[ $insKey ] )? $this->m_aOptionsValues[ $insKey ] : false );
+		return ( isset( $this->m_aOptionsValues[ $sOptionKey ] )? $this->m_aOptionsValues[ $sOptionKey ] : false );
 	}
 	
 	/**
@@ -257,6 +323,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		$oWpFunc = $this->loadWpFunctions();
 		$oWpFunc->updateOption( $this->sOptionsStoreKey, $this->m_aOptionsValues );
 		$this->fNeedSave = false;
+		return true;
 	}
 	
 	public function collateAllFormInputsForAllOptions() {
@@ -461,6 +528,29 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	/**
+	 *
+	 */
+	public function handleFormSubmit() {
+		if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), false ) ) {
+//			TODO: manage how we react to prohibited submissions
+			return false;
+		}
+
+		// Now verify this is really a valid submission.
+		check_admin_referer( $this->oPluginVo->getFullPluginPrefix() );
+
+		$this->loadDataProcessor();
+		$sAllOptions = ICWP_WPSF_DataProcessor::FetchPost( $this->doPluginPrefix( 'all_options_input', '_' ) );
+
+		if ( empty( $sAllOptions ) ) {
+			return true;
+		}
+
+		$this->updatePluginOptionsFromSubmit( $sAllOptions ); //it also saves
+		return true;
+	}
+
+	/**
 	 * @param string $sAllOptionsInput - comma separated list of all the input keys to be processed from the $_POST
 	 * @return void|boolean
 	 */
@@ -520,7 +610,7 @@ class ICWP_OptionsHandler_Base_V2 {
 			}
 			$this->setOpt( $sOptionKey, $sOptionValue );
 		}
-		return $this->savePluginOptions( true );
+		return $this->savePluginOptions();
 	}
 	
 	/**
@@ -583,6 +673,14 @@ class ICWP_OptionsHandler_Base_V2 {
 		}
 
 		return sprintf( '%s%s%s', $sPrefix, empty($sSuffix)? '' : $sGlue, empty($sSuffix)? '' : $sSuffix );
+	}
+
+	/**
+	 * @param string
+	 * @return string
+	 */
+	public function getOptionStoragePrefix() {
+		return $this->oPluginVo->getFullPluginPrefix( '_' ).'_';
 	}
 	
 	/**
@@ -707,6 +805,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		}
 		return ICWP_WpFilesystem_WPSF::GetInstance();
 	}
+
 }
 
 endif;

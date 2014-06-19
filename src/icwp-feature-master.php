@@ -209,7 +209,8 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 
 		$this->{$sProcessorVarName} = new $sClassName( $this->oPluginVo );
 		$this->loadOptionsHandler( $insProcessorName );
-		$this->{$sProcessorVarName}->setOptions( $this->{$sOptionsHandlerVarName}->getPluginOptionsValues() );
+		$aOptionsValues = $this->{$sOptionsHandlerVarName}->getPluginOptionsValues();
+		$this->{$sProcessorVarName}->setOptions( $aOptionsValues );
 		return $this->{$sProcessorVarName};
 
 //		if ( $infRebuild || empty( $this->{$sProcessorVarName} ) ) {
@@ -265,20 +266,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		}
 		return $aOptions;
 	}
-	
-	/**
-	 * Makes sure and cache the processors after all is said and done.
-	 */
-	public function saveProcessors() {
-		$aFeatures = $this->getFeaturesMap();
-		foreach( $aFeatures as $sSlug => $sProcessorName ) {
-			$oProcessor = $this->getProcessorVar( $sProcessorName );
-			if ( !is_null($oProcessor) && is_object($oProcessor) ) {
-				$oProcessor->store();
-			}
-		}
-	}
-	
+
 	/**
 	 * Makes sure and cache the processors after all is said and done.
 	 */
@@ -312,7 +300,6 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 	protected function shutdown() {
 		parent::shutdown();
 		$this->saveOptions();
-		$this->saveProcessors();
 	}
 	
 	protected function deleteAllPluginDbOptions() {

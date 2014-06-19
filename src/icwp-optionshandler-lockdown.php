@@ -21,13 +21,29 @@ if ( !class_exists('ICWP_OptionsHandler_Lockdown') ):
 
 class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 
-	const StoreName = 'lockdown_options';
-	
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::StoreName );
+	/**
+	 * @var ICWP_WPSF_LockdownProcessor
+	 */
+	protected $oLockdownProcessor;
 
+	/**
+	 * @param $oPluginVo
+	 */
+	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Lockdown');
 		$this->sFeatureSlug = 'lockdown';
+		parent::__construct( $oPluginVo, $this->sFeatureSlug.'_options' );
+	}
+
+	/**
+	 * @return ICWP_WPSF_LockdownProcessor|null
+	 */
+	protected function loadFeatureProcessor() {
+		if ( !isset( $this->oLockdownProcessor ) ) {
+			require_once( dirname(__FILE__).'/icwp-processor-lockdown.php' );
+			$this->oLockdownProcessor = new ICWP_WPSF_LockdownProcessor( $this );
+		}
+		return $this->oLockdownProcessor;
 	}
 
 	public function doPrePluginOptionsSave() {

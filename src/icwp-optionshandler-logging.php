@@ -21,14 +21,30 @@ if ( !class_exists('ICWP_OptionsHandler_Logging') ):
 
 class ICWP_OptionsHandler_Logging extends ICWP_OptionsHandler_Base_Wpsf {
 
-	const StoreName = 'logging_options';
-	
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::StoreName );
+	/**
+	 * @var ICWP_WPSF_LoggingProcessor
+	 */
+	protected $oLoggingrocessor;
 
+	/**
+	 * @param $oPluginVo
+	 */
+	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Logging');
 		$this->sFeatureSlug = 'logging';
 		$this->fShowFeatureMenuItem = false;
+		parent::__construct( $oPluginVo, $this->sFeatureSlug.'_options' );
+	}
+
+	/**
+	 * @return ICWP_WPSF_LoggingProcessor|null
+	 */
+	protected function loadFeatureProcessor() {
+		if ( !isset( $this->oLoggingrocessor ) ) {
+			require_once( dirname(__FILE__).'/icwp-processor-logging.php' );
+			$this->oLoggingrocessor = new ICWP_WPSF_LoggingProcessor( $this );
+		}
+		return $this->oLoggingrocessor;
 	}
 
 	/**

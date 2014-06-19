@@ -21,19 +21,21 @@ if ( !class_exists('ICWP_AutoUpdatesProcessor_V5') ):
 
 class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 
-	const Slug = 'autoupdates';
-	
 	const FilterPriority = 1001;
 	
 	protected $sPluginFile;
-	
+
 	/**
 	 * @var boolean
 	 */
 	protected $m_fDoForceRunAutoUpdates = false;
-	
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::Slug );
+
+	/**
+	 * @param ICWP_OptionsHandler_AutoUpdates $oFeatureOptions
+	 */
+	public function __construct( ICWP_OptionsHandler_AutoUpdates $oFeatureOptions ) {
+		parent::__construct( $oFeatureOptions );
+		$this->sPluginFile = $this->oFeatureOptions->getPluginBaseFile();
 	}
 	
 	/**
@@ -51,10 +53,8 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 	
 	/**
 	 */
-	public function run( $sPluginFile = '' ) {
-		
-		$this->sPluginFile = $sPluginFile;
-		
+	public function run() {
+
 		// When we force run we only want our filters.
 		if ( $this->getForceRunAutoUpdates() ) {
 			$aFilters = array(

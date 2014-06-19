@@ -21,12 +21,8 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 
 class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
-	const Slug = 'firewall';
-	
 	protected $m_nRequestTimestamp;
 	
-	protected $m_aBlockSettings;
-
 	protected $m_aWhitelistPages;
 	protected $m_aWhitelistPagesPatterns;
 	protected $m_aCustomWhitelistPageParams;
@@ -70,36 +66,22 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 */
 	protected $m_aPageParamValues;
 
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::Slug );
+	/**
+	 * @param ICWP_OptionsHandler_Firewall $oFeatureOptions
+	 */
+	public function __construct( ICWP_OptionsHandler_Firewall $oFeatureOptions ) {
+		parent::__construct( $oFeatureOptions );
 		
-		$sMessage = "You were blocked by the %sWordPress Simple Firewall%s.";
+		$sMessage = _wpsf__( "You were blocked by the %sWordPress Simple Firewall%s." );
 		$this->m_sFirewallMessage = sprintf( $sMessage, '<a href="http://wordpress.org/plugins/wp-simple-firewall/" target="_blank">', '</a>');
 	}
 	
 	/**
 	 * @see ICWP_WPSF_BaseProcessor::setOptions()
 	 */
-	public function setOptions( &$inaOptions ) {
-		parent::setOptions( $inaOptions );
-				
-		// collect up all the settings to pass to the processor
-		$aSettingSlugs = array(
-			'include_cookie_checks',
-			'block_dir_traversal',
-			'block_sql_queries',
-			'block_wordpress_terms',
-			'block_field_truncation',
-			'block_php_code',
-			'block_exe_file_uploads',
-			'block_leading_schema'
-		);
-		$this->m_aBlockSettings = array();
-		foreach( $aSettingSlugs as $sSettingKey ) {
-			$this->m_aBlockSettings[ $sSettingKey ] = $this->getOption( $sSettingKey ) == 'Y';
-		}
-
-		$this->m_aCustomWhitelistPageParams = is_array( $this->m_aOptions[ 'page_params_whitelist' ] )? $this->m_aOptions[ 'page_params_whitelist' ] : array();
+	public function setOptions( &$aOptions ) {
+		parent::setOptions( $aOptions );
+		$this->m_aCustomWhitelistPageParams = is_array( $this->getOption( 'page_params_whitelist' )  )? $this->getOption( 'page_params_whitelist' ) : array();
 		$this->setLogging();
 	}
 
@@ -224,25 +206,25 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 			return true;
 		}
 		
-		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_dir_traversal' ] ) {
+		if ( $fIsPermittedVisitor && $this->getIsOption( 'block_dir_traversal', 'Y' ) ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockDirTraversal();
 		}
-		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_sql_queries' ] ) {
+		if ( $fIsPermittedVisitor && $this->getIsOption( 'block_sql_queries', 'Y' ) ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockSqlQueries();
 		}
-		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_wordpress_terms' ] ) {
+		if ( $fIsPermittedVisitor && $this->getIsOption( 'block_wordpress_terms', 'Y' ) ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockWordpressTerms();
 		}
-		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_field_truncation' ] ) {
+		if ( $fIsPermittedVisitor && $this->getIsOption( 'block_field_truncation', 'Y' ) ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockFieldTruncation();
 		}
-		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_php_code' ] ) {
+		if ( $fIsPermittedVisitor && $this->getIsOption( 'block_php_code', 'Y' ) ) {
 			$fIsPermittedVisitor = $this->doPassCheckPhpCode();
 		}
-		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_exe_file_uploads' ] ) {
+		if ( $fIsPermittedVisitor && $this->getIsOption( 'block_exe_file_uploads', 'Y' ) ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockExeFileUploads();
 		}
-		if ( $fIsPermittedVisitor && $this->m_aBlockSettings[ 'block_leading_schema' ] ) {
+		if ( $fIsPermittedVisitor && $this->getIsOption( 'block_leading_schema', 'Y' ) ) {
 			$fIsPermittedVisitor = $this->doPassCheckBlockLeadingSchema();
 		}
 
@@ -569,7 +551,8 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	
 	protected function setPageParams() {
 		$this->m_aPageParams = array_merge( $_GET, $_POST );
-		if ( $this->m_aBlockSettings[ 'include_cookie_checks' ] ) {
+
+		if ( $this->getIsOption( 'include_cookie_checks', 'Y' ) ) {
 			$this->m_aPageParams = array_merge( $this->m_aPageParams, $_COOKIE );
 		}
 		
@@ -603,12 +586,8 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 			)
 		);
 
-		if ( !is_null($this->m_aCustomWhitelistPageParams) && is_array($this->m_aCustomWhitelistPageParams) ) {
-			$this->m_aWhitelistPages = array_merge( $aDefaultWlPages, $this->m_aCustomWhitelistPageParams );
-		}
-		else {
-			$this->m_aWhitelistPages = $aDefaultWlPages;
-		}
+		$aCustomWhitelistPageParams = is_array( $this->getOption( 'page_params_whitelist' )  )? $this->getOption( 'page_params_whitelist' ) : array();
+		$this->m_aWhitelistPages = array_merge( $aDefaultWlPages, $aCustomWhitelistPageParams );
 
 		$this->m_aWhitelistPagesPatterns = array(
 			self::PcreDelimiter.'\/wp-admin\/\*'.self::PcreDelimiter => array(

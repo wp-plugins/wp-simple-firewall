@@ -21,7 +21,6 @@ if ( !class_exists('ICWP_CommentsFilterProcessor_V2') ):
 
 class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 
-	const Slug = 'comments_filter';
 	const TableName = 'comments_filter';
 	const Spam_Blacklist_Source = 'https://raw.githubusercontent.com/splorp/wordpress-comment-blacklist/master/blacklist.txt';
 
@@ -85,8 +84,11 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	protected $m_fAllowTwoFactorByPass;
 
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::Slug, self::TableName );
+	/**
+	 * @param ICWP_OptionsHandler_CommentsFilter $oFeatureOptions
+	 */
+	public function __construct( ICWP_OptionsHandler_CommentsFilter $oFeatureOptions ) {
+		parent::__construct( $oFeatureOptions, self::TableName );
 		$this->createTable();
 		$this->reset();
 	}

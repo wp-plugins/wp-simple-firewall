@@ -218,14 +218,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 
 	/**
-	 * Handles the running of all Auto Update processes.
-	 */
-	public function runAutoUpdates() {
-		$this->loadProcessor( 'AutoUpdates' );
-		$this->m_oAutoUpdatesProcessor->run( $this->getPluginBaseFile() );
-	}
-
-	/**
 	 * @param array $aItems
 	 * @return array $aItems
 	 */
@@ -356,37 +348,37 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$aSummaryData[] = array(
 			$this->m_oPluginMainOptions->getOpt( 'enable_admin_access_restriction' ) == 'Y',
 			_wpsf__('Admin Access Protection'),
-			$this->getSubmenuId()
+			$this->doPluginPrefix()
 		);
 
 		$aSummaryData[] = array(
 			$this->getIsMainFeatureEnabled('firewall'),
 			_wpsf__('Firewall'),
-			$this->getSubmenuId( 'firewall' )
+			$this->doPluginPrefix( 'firewall' )
 		);
 
 		$aSummaryData[] = array(
 			$this->getIsMainFeatureEnabled('login_protect'),
 			_wpsf__('Login Protection'),
-			$this->getSubmenuId( 'login_protect' )
+			$this->doPluginPrefix( 'login_protect' )
 		);
 
 		$aSummaryData[] = array(
 			$this->getIsMainFeatureEnabled('comments_filter'),
 			_wpsf__('Comments Filter'),
-			$this->getSubmenuId( 'comments_filter' )
+			$this->doPluginPrefix( 'comments_filter' )
 		);
 
 		$aSummaryData[] = array(
 			$this->getIsMainFeatureEnabled('autoupdates'),
 			_wpsf__('Auto Updates'),
-			$this->getSubmenuId( 'autoupdates' )
+			$this->doPluginPrefix( 'autoupdates' )
 		);
 
 		$aSummaryData[] = array(
 			$this->getIsMainFeatureEnabled('lockdown'),
 			_wpsf__('Lock Down'),
-			$this->getSubmenuId( 'lockdown' )
+			$this->doPluginPrefix( 'lockdown' )
 		);
 
 		return $aSummaryData;
@@ -420,23 +412,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 
 	/**
-	 *
-	 * @param ICWP_OptionsHandler_Base_WPSF $inoOptions
-	 * @param string $sSlug
-	 */
-	protected function onDisplayConfig( $inoOptions, $sSlug ) {
-		$aAvailableOptions = $inoOptions->getOptions();
-		$sAllFormInputOptions = $inoOptions->collateAllFormInputsForAllOptions();
-
-		$aData = array(
-			'aAllOptions'		=> $aAvailableOptions,
-			'all_options_input'	=> $sAllFormInputOptions,
-		);
-		$aData = array_merge( $this->getBaseDisplayData($sSlug), $aData );
-		$this->display( 'icwp_wpsf_config_'.$sSlug.'_index', $aData );
-	}
-
-	/**
 	 * @return boolean
 	 */
 	protected function isIcwpPluginFormSubmit() {
@@ -462,7 +437,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			return $this->handleSubmit_AccessKeyRequest();
 		}
 
-		if ( !$this->hasPermissionToSubmit() || !$this->isIcwpPluginFormSubmit() ) {
+		if ( !$this->isIcwpPluginFormSubmit() ) {
 			return false;
 		}
 
@@ -473,11 +448,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			return;
 		}
 
-		// If we're dealing with a standard options form submit
-		$aInputOptions = $this->fetchPost( $this->doPluginPrefix('all_options_input', '_') );
-		if ( !empty( $aInputOptions ) ) {
-			check_admin_referer( $this->getPluginPrefix() );
+		if ( !$this->isIcwpPluginFormSubmit() ) {
+			return false;
 		}
+
+		// do all the plugin feature/options.
+		do_action( $this->doPluginPrefix( 'form_submit', '_' ) );
+
+		// now all the outside cases and the main plugin.
+
+		if ( !$this->hasPermissionToSubmit() ) {
+			return false;
+		}
+		check_admin_referer( $this->getPluginPrefix() );
 
 		// When they've clicked to terminate all logged in authenticated users.
 		if ( $this->fetchPost( 'terminate-all-logins' ) ) {
@@ -494,20 +477,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 		$sCurrentPage = $this->getCurrentWpAdminPage();
 		if ( !empty( $sCurrentPage ) ) {
-			// if it's the main dashboard, or one of the main features, load everything and save them
-			if ( $this->getIsPage_PluginAdmin() ) {
-				$this->loadOptionsHandler( 'all' );
-				do_action( 'icwp_wpsf_form_submit', $aInputOptions );
-				$this->saveOptions();
-				$this->clearCaches();
-
-				if ( $this->getIsPage_PluginMainDashboard() && !$this->fetchPost( $this->doPluginPrefix('enable_admin_access_restriction', '_') ) ) {
-					$this->setPermissionToSubmit( false );
-				}
-
-				wp_safe_redirect( $this->getUrl_PluginDashboard( $sCurrentPage ) );
-				return true;
-			}
 
 			switch ( $sCurrentPage ) {
 				case $this->getSubmenuId( 'firewall_log' ):
@@ -517,17 +486,29 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 					$this->handleSubmit_PrivacyProtectLog();
 					break;
 				default:
-					return false;
 					break;
+			}
+
+			// if it's the main dashboard, or one of the main features, load everything and save them
+			if ( $this->getIsPage_PluginAdmin() ) {
+
+				$this->clearCaches();
+
+				if ( $this->getIsPage_PluginMainDashboard() && !$this->fetchPost( $this->doPluginPrefix('enable_admin_access_restriction', '_') ) ) {
+					$this->setPermissionToSubmit( false );
+				}
+
+				wp_safe_redirect( $this->getUrl_PluginDashboard( $sCurrentPage ) );
+				return true;
 			}
 		}
 	}
 
 	/**
-	 * @param bool $infPermission
+	 * @param bool $fPermission
 	 */
-	protected function setPermissionToSubmit( $infPermission = false ) {
-		if ( $infPermission ) {
+	protected function setPermissionToSubmit( $fPermission = false ) {
+		if ( $fPermission ) {
 			$this->loadDataProcessor();
 			$sValue = md5( $this->m_oPluginMainOptions->getOpt( 'admin_access_key' ).ICWP_WPSF_DataProcessor::GetVisitorIpAddress() );
 			$sTimeout = $this->m_oPluginMainOptions->getOpt( 'admin_access_timeout' ) * 60;
@@ -663,17 +644,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 				continue;
 			}
 			if ( $sFeatureSlug == 'firewall' ) {
-				$this->runFirewallProcess();
+//				$this->runFirewallProcess();
 			}
 			else if ( $sFeatureSlug == 'login_protect' ) {
-				$this->runLoginProtect();
-			}
-			else if ( $sFeatureSlug == 'autoupdates' ) {
-				$this->runAutoUpdates();
+//				$this->runLoginProtect();
 			}
 			else {
-				$sProcessorVariable = $this->loadProcessor( $sProcessor );
-				$sProcessorVariable->run();
+//				$sProcessorVariable = $this->loadProcessor( $sProcessor );
+//				$sProcessorVariable->run();
 			}
 		}
 

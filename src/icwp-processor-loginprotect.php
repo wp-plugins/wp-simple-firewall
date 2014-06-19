@@ -21,7 +21,6 @@ if ( !class_exists('ICWP_LoginProtectProcessor_V3') ):
 
 class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	
-	const Slug = 'login_protect';
 	const TableName = 'login_auth';
 	const AuthActiveCookie = 'wpsf_auth';
 	const YubikeyVerifyApiUrl = 'https://api.yubico.com/wsapi/2.0/verify?id=%s&otp=%s&nonce=%s';
@@ -53,19 +52,14 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	 * @var string
 	 */
 	protected $nDaysToKeepLog = 1;
-	
-	/**
-	 * Flag as to whether Two Factor Authentication will be by-pass when sending the verification
-	 * email fails.
-	 * 
-	 * @var boolean
-	 */
-	protected $m_fAllowTwoFactorByPass;
 
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::Slug, self::TableName );
+	/**
+	 * @param ICWP_OptionsHandler_LoginProtect $oFeatureOptions
+	 */
+	public function __construct( ICWP_OptionsHandler_LoginProtect $oFeatureOptions ) {
+		parent::__construct( $oFeatureOptions, self::TableName );
 		$this->m_sGaspKey = uniqid();
-		$this->updateLastLoginThrottleTime( time() );
+//		$this->updateLastLoginThrottleTime( time() );
 		$this->createTable();
 		$this->reset();
 	}
@@ -114,7 +108,6 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		parent::setOptions( $inaOptions );
 		$this->setLogging();
 		$this->setLoginCooldownInterval();
-		$this->setTwoFactorByPassOnFail();
 	}
 	
 	/**
@@ -425,7 +418,6 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		$oWpFs = $this->loadFileSystemProcessor();
 		$this->m_nLastLoginTime = $innLastLoginTime;
 		$oWpFs->fileAction( 'touch', array(self::$sModeFile_LoginThrottled, $innLastLoginTime) );
-		$this->setNeedSave();
 	}
 
 	/**
@@ -599,7 +591,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 					$fEmailSuccess = $this->sendEmailTwoFactorVerify( $inoUser, $aNewAuthData['ip'], $aNewAuthData['unique_id'] );
 					
 					// Failure to send email - log them in.
-					if ( !$fEmailSuccess && $this->getTwoFactorByPassOnFail() ) {
+					if ( !$fEmailSuccess && $this->getIsOption( 'enable_two_factor_bypass_on_email_fail', 'Y' ) ) {
 						$this->doMakePendingLoginAuthActive( $aNewAuthData );
 						return $inoUser;
 					}
@@ -719,17 +711,6 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		return true;
 	}
 	
-	public function setTwoFactorByPassOnFail() {
-		$this->m_fAllowTwoFactorByPass = $this->getIsOption( 'enable_two_factor_bypass_on_email_fail', 'Y' );
-	}
-	
-	public function getTwoFactorByPassOnFail() {
-		if ( !isset( $this->m_fAllowTwoFactorByPass ) ) {
-			$this->m_fAllowTwoFactorByPass = false;
-		}
-		return $this->m_fAllowTwoFactorByPass;
-	}
-
 	/**
 	 */
 	public function setLoginCooldownInterval() {
@@ -873,7 +854,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 			$sNow,
 			$sNow
 		);
-		$this->doSql( $sQuery );
+		return $this->doSql( $sQuery );
 	}
 
 	/**

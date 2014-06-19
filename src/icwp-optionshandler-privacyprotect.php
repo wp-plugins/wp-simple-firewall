@@ -20,14 +20,27 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 if ( !class_exists('ICWP_OptionsHandler_PrivacyProtect') ):
 
 class ICWP_OptionsHandler_PrivacyProtect extends ICWP_OptionsHandler_Base_Wpsf {
-	
-	const StoreName = 'privacyprotect_options';
-	
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::StoreName );
 
+	/**
+	 * @var ICWP_WPSF_PrivacyProtectProcessor
+	 */
+	protected $oPrivacyProtectProcessor;
+
+	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Privacy Protect');
 		$this->sFeatureSlug = 'privacy_protect';
+		parent::__construct( $oPluginVo, $this->sFeatureSlug.'_options' );
+	}
+
+	/**
+	 * @return ICWP_WPSF_PrivacyProtectProcessor|null
+	 */
+	protected function loadFeatureProcessor() {
+		if ( !isset( $this->oPrivacyProtectProcessor ) ) {
+			require_once( dirname(__FILE__).'/icwp-processor-privacyprotect.php' );
+			$this->oPrivacyProtectProcessor = new ICWP_WPSF_PrivacyProtectProcessor( $this );
+		}
+		return $this->oPrivacyProtectProcessor;
 	}
 	
 	public function doPrePluginOptionsSave() { }

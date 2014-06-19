@@ -21,11 +21,13 @@ if ( !class_exists('ICWP_PrivacyProtectProcessor_V1') ):
 
 class ICWP_PrivacyProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 
-	const Slug = 'privacy_protect';
 	const TableName = 'privacy_protect';
 
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::Slug, self::TableName );
+	/**
+	 * @param ICWP_OptionsHandler_LoginProtect $oFeatureOptions
+	 */
+	public function __construct( ICWP_OptionsHandler_LoginProtect $oFeatureOptions ) {
+		parent::__construct( $oFeatureOptions, self::TableName );
 		$this->createTable();
 		$this->reset();
 	}

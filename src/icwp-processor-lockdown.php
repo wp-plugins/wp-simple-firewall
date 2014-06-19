@@ -21,10 +21,11 @@ if ( !class_exists('ICWP_LockdownProcessor_V1') ):
 
 class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
-	const Slug = 'lockdown';
-
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::Slug );
+	/**
+	 * @param ICWP_OptionsHandler_Lockdown $oFeatureOptions
+	 */
+	public function __construct( ICWP_OptionsHandler_Lockdown $oFeatureOptions ) {
+		parent::__construct( $oFeatureOptions );
 	}
 
 	/**

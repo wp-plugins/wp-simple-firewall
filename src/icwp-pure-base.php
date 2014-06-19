@@ -238,7 +238,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	}
 
 	protected function getSubmenuId( $sId = '' ) {
-		return $this->doPluginPrefix( $sId, '-' );
+		return $this->doPluginPrefix( $sId );
 	}
 
 	/**
@@ -379,14 +379,10 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		return $aItems;
 	}
 
-	protected function createPluginSubMenuItems(){
-		/* Override to create array of sub-menu items
-		 $this->aPluginMenu = array(
-		 		//Menu Page Title => Menu Item name, page ID (slug), callback function onLoad.
-		 		$this->getSubmenuPageTitle( 'Content by Country' ) => array( 'Content by Country', $this->getSubmenuId('main'), 'onDisplayCbcMain' ),
-		 );
-		*/
-	}
+	/**
+	 * no longer used
+	 */
+	protected function createPluginSubMenuItems() { }
 
 	protected function fixSubmenu() {
 		global $submenu;

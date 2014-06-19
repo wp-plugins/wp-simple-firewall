@@ -20,14 +20,27 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 if ( !class_exists('ICWP_OptionsHandler_AutoUpdates_V2') ):
 
 class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
-	
-	const StoreName = 'autoupdates_options';
+
+	/**
+	 * @var ICWP_WPSF_AutoUpdatesProcessor
+	 */
+	protected $oAutoUpdatesProcessor;
 	
 	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::StoreName );
-
 		$this->sFeatureName = _wpsf__('Automatic Updates');
 		$this->sFeatureSlug = 'autoupdates';
+		parent::__construct( $oPluginVo, $this->sFeatureSlug.'_options' );
+	}
+
+	/**
+	 * @return ICWP_WPSF_AutoUpdatesProcessor|null
+	 */
+	protected function loadFeatureProcessor() {
+		if ( !isset( $this->oAutoUpdatesProcessor ) ) {
+			require_once( dirname(__FILE__).'/icwp-processor-autoupdates.php' );
+			$this->oAutoUpdatesProcessor = new ICWP_WPSF_AutoUpdatesProcessor( $this );
+		}
+		return $this->oAutoUpdatesProcessor;
 	}
 
 	public function doPrePluginOptionsSave() {}

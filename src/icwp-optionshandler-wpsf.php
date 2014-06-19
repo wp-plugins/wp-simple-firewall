@@ -21,15 +21,18 @@ if ( !class_exists('ICWP_OptionsHandler_Wpsf') ):
 
 class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 
-	const StoreName = 'plugin_options';
 	const Default_AccessKeyTimeout = 30;
 	
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::StoreName );
+	/**
+	 * @var ICWP_WPSF_AutoUpdatesProcessor
+	 */
+	protected $oPluginProcessor;
 
+	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Dashboard');
 		$this->sFeatureSlug = 'dashboard';
 		$this->fShowFeatureMenuItem = false;
+		parent::__construct( $oPluginVo, 'plugin_options' );
 	}
 
 	/**

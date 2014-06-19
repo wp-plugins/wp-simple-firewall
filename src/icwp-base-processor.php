@@ -22,11 +22,6 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 
 class ICWP_BaseProcessor_V3 {
 
-	/**
-	 * @var ICWP_Wordpress_Simple_Firewall_Plugin
-	 */
-	protected $oPluginVo;
-	
 	const PcreDelimiter = '/';
 	const LOG_MESSAGE_LEVEL_INFO = 0;
 	const LOG_MESSAGE_LEVEL_WARNING = 1;
@@ -35,16 +30,6 @@ class ICWP_BaseProcessor_V3 {
 	const LOG_CATEGORY_DEFAULT = 0;
 	const LOG_CATEGORY_FIREWALL = 1;
 	const LOG_CATEGORY_LOGINPROTECT = 2;
-
-	/**
-	 * @var string
-	 */
-	protected $m_sStorageKey;
-
-	/**
-	 * @var boolean
-	 */
-	protected $m_fNeedSave;
 
 	/**
 	 * @var array
@@ -78,12 +63,10 @@ class ICWP_BaseProcessor_V3 {
 	/**
 	 * @var ICWP_OptionsHandler_Base_WPSF
 	 */
-	protected $m_oOptionsHandler;
+	protected $oFeatureOptions;
 
-	public function __construct( $oPluginVo, $sFeatureSlug ) {
-		$this->oPluginVo = $oPluginVo;
-		$this->m_sStorageKey = $this->constructStorageKey( $sFeatureSlug );
-		$this->m_fNeedSave = true;
+	public function __construct( ICWP_OptionsHandler_Base_WPSF $oFeatureOptions ) {
+		$this->oFeatureOptions = $oFeatureOptions;
 		$this->reset();
 	}
 
@@ -109,32 +92,8 @@ class ICWP_BaseProcessor_V3 {
 
 	/**
 	 */
-	public function store() {
-		$this->doPreStore();
-		if ( $this->getNeedSave() ) {
-			$this->setNeedSave( false );
-			update_option( $this->m_sStorageKey, $this );
-		}
-	}
-
-	/**
-	 */
 	public function deleteStore() {
-		delete_option( $this->m_sStorageKey );
-	}
-	
-	/**
-	 * @return boolean
-	 */
-	public function getNeedSave() {
-		return $this->m_fNeedSave;
-	}
-	
-	/**
-	 * @param boolean $infNeedSave
-	 */
-	public function setNeedSave( $infNeedSave = true ) {
-		$this->m_fNeedSave = $infNeedSave;
+		delete_option( $this->constructStorageKey() );
 	}
 
 	/**
@@ -143,14 +102,6 @@ class ICWP_BaseProcessor_V3 {
 	 */
 	public function setOptions( &$inaOptions ) {
 		$this->m_aOptions = $inaOptions;
-	}
-	/**
-	 *
-	 * @param ICWP_OptionsHandler_Base_WPSF $inoOptionsHandler
-	 */
-	public function setOptionsHandler( ICWP_OptionsHandler_Base_WPSF &$inoOptionsHandler ) {
-		$this->m_oOptionsHandler = $inoOptionsHandler;
-		$this->m_aOptions = $this->m_oOptionsHandler->getPluginOptionsValues();
 	}
 
 	/**
@@ -355,11 +306,10 @@ class ICWP_BaseProcessor_V3 {
 	}
 
 	/**
-	 * @param string $sSlug
 	 * @return string
 	 */
-	protected function constructStorageKey( $sSlug = '' ) {
-		return sprintf( '%s%s_processor', $this->oPluginVo->getOptionStoragePrefix(), $sSlug );
+	protected function constructStorageKey() {
+		return sprintf( '%s%s_processor', $this->oFeatureOptions->getOptionStoragePrefix(), $this->oFeatureOptions->getFeatureSlug() );
 	}
 	
 	/**

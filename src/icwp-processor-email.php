@@ -51,8 +51,11 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 */
 	protected $m_fEmailIsThrottled;
 
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::Slug );
+	/**
+	 * @param ICWP_OptionsHandler_Email $oFeatureOptions
+	 */
+	public function __construct( ICWP_OptionsHandler_Email $oFeatureOptions ) {
+		parent::__construct( $oFeatureOptions );
 	}
 	
 	public function reset() {
@@ -64,6 +67,7 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 * @param string $insEmailAddress
 	 * @param string $insEmailSubject
 	 * @param array $inaMessage
+	 * @return boolean
 	 * @uses wp_mail
 	 */
 	public function sendEmailTo( $insEmailAddress, $insEmailSubject, $inaMessage ) {

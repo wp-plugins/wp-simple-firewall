@@ -21,14 +21,30 @@ if ( !class_exists('ICWP_OptionsHandler_Email') ):
 
 class ICWP_OptionsHandler_Email extends ICWP_OptionsHandler_Base_Wpsf {
 
-	const StoreName = 'email_options';
-	
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::StoreName );
+	/**
+	 * @var ICWP_WPSF_EmailProcessor
+	 */
+	protected $oEmailProcessor;
 
+	/**
+	 * @param $oPluginVo
+	 */
+	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Email');
 		$this->sFeatureSlug = 'email';
 		$this->fShowFeatureMenuItem = false;
+		parent::__construct( $oPluginVo, $this->sFeatureSlug.'_options' );
+	}
+
+	/**
+	 * @return ICWP_WPSF_EmailProcessor|null
+	 */
+	protected function loadFeatureProcessor() {
+		if ( !isset( $this->oEmailProcessor ) ) {
+			require_once( dirname(__FILE__).'/icwp-processor-logging.php' );
+			$this->oEmailProcessor = new ICWP_WPSF_EmailProcessor( $this );
+		}
+		return $this->oEmailProcessor;
 	}
 
 	/**

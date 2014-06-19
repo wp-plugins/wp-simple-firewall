@@ -21,16 +21,29 @@ if ( !class_exists('ICWP_OptionsHandler_CommentsFilter') ):
 
 class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 
-	const StoreName = 'commentsfilter_options';
-	
 	const DefaultCommentCooldown	= 30; //seconds.
 	const DefaultCommentExpire		= 600; //seconds.
 	
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::StoreName );
+	/**
+	 * @var ICWP_WPSF_CommentsFilterProcessor
+	 */
+	protected $oCommentsFilterProcessor;
 
+	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Comments Filter');
 		$this->sFeatureSlug = 'comments_filter';
+		parent::__construct( $oPluginVo, 'commentsfilter_options' ); //TODO: align this naming with the feature slug etc. as with the other features.
+	}
+
+	/**
+	 * @return ICWP_WPSF_CommentsFilterProcessor|null
+	 */
+	protected function loadFeatureProcessor() {
+		if ( !isset( $this->oCommentsFilterProcessor ) ) {
+			require_once( dirname(__FILE__).'/icwp-processor-commentsfilter.php' );
+			$this->oCommentsFilterProcessor = new ICWP_WPSF_CommentsFilterProcessor( $this );
+		}
+		return $this->oCommentsFilterProcessor;
 	}
 
 	/**

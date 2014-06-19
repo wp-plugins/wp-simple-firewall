@@ -21,13 +21,26 @@ if ( !class_exists('ICWP_OptionsHandler_LoginProtect') ):
 
 class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	
-	const StoreName = 'loginprotect_options';
-	
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::StoreName );
+	/**
+	 * @var ICWP_WPSF_LoginProtectProcessor
+	 */
+	protected $oLoginProtectProcessor;
 
+	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Login Protect');
 		$this->sFeatureSlug = 'login_protect';
+		parent::__construct( $oPluginVo, 'loginprotect_options' ); //TODO: align this naming with the feature slug etc. as with the other features.
+	}
+
+	/**
+	 * @return ICWP_WPSF_LoginProtectProcessor|null
+	 */
+	protected function loadFeatureProcessor() {
+		if ( !isset( $this->oLoginProtectProcessor ) ) {
+			require_once( dirname(__FILE__).'/icwp-processor-loginprotect.php' );
+			$this->oLoginProtectProcessor = new ICWP_WPSF_LoginProtectProcessor( $this );
+		}
+		return $this->oLoginProtectProcessor;
 	}
 	
 	public function doPrePluginOptionsSave() {
@@ -248,6 +261,25 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			$aYubikeyProtect,
 			$aLoggingSection
 		);
+	}
+
+	/**
+	 * @return bool|void
+	 */
+	public function handleFormSubmit() {
+		$fSuccess = parent::handleFormSubmit();
+		if ( !$fSuccess ) {
+			return;
+		}
+
+		// TODO : get the processors into the options handlers
+		// When they've clicked to terminate all logged in authenticated users.
+//		if ( ICWP_WPSF_DataProcessor::FetchPost( 'terminate-all-logins' ) ) {
+//			$oProc = $this->getProcessor_LoginProtect();
+//			$oProc->doTerminateAllVerifiedLogins();
+//			return;
+//		}
+
 	}
 
 	/**

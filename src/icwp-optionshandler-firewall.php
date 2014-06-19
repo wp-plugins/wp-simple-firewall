@@ -21,13 +21,26 @@ if ( !class_exists('ICWP_OptionsHandler_Firewall') ):
 
 class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 	
-	const StoreName = 'firewall_options';
-	
-	public function __construct( $oPluginVo ) {
-		parent::__construct( $oPluginVo, self::StoreName );
+	/**
+	 * @var ICWP_WPSF_FirewallProcessor
+	 */
+	protected $oFirewallProcessor;
 
+	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Firewall');
 		$this->sFeatureSlug = 'firewall';
+		parent::__construct( $oPluginVo, $this->sFeatureSlug.'_options' );
+	}
+
+	/**
+	 * @return ICWP_WPSF_FirewallProcessor|null
+	 */
+	protected function loadFeatureProcessor() {
+		if ( !isset( $this->oFirewallProcessor ) ) {
+			require_once( dirname(__FILE__).'/icwp-processor-firewall.php' );
+			$this->oFirewallProcessor = new ICWP_WPSF_FirewallProcessor( $this );
+		}
+		return $this->oFirewallProcessor;
 	}
 
 	/**
