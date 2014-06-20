@@ -48,10 +48,6 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	/**
 	 * @var string
 	 */
-	protected $m_sSecretKey;
-	/**
-	 * @var string
-	 */
 	protected $nDaysToKeepLog = 1;
 
 	/**
@@ -70,43 +66,14 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	public function reset() {
 		parent::reset();
 		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
-		$this->genSecretKey();
-	}
-	
-	/**
-	 * Set the secret key by which authentication is validated.
-	 *
-	 * @param boolean $infForceUpdate
-	 * @return string
-	 */
-	public function genSecretKey( $infForceUpdate = false ) {
-		if ( empty( $this->m_sSecretKey ) || $infForceUpdate ) {
-			$this->m_sSecretKey = md5( mt_rand() );
-		}
-		return $this->m_sSecretKey;
-	}
-	
-	/**
-	 * Set the secret key by which authentication is validated.
-	 * 
-	 * @param string $insSecretKey
-	 */
-	public function setSecretKey( $insSecretKey = '' ) {
-		if ( !empty( $insSecretKey ) ) {
-			$this->genSecretKey();
-		}
-		else {
-			$this->m_sSecretKey = $insSecretKey;
-		}
 	}
 	
 	/**
 	 *
-	 * @param array $inaOptions
+	 * @param array $aOptions
 	 */
-	public function setOptions( &$inaOptions ) {
-		parent::setOptions( $inaOptions );
-		$this->setLogging();
+	public function setOptions( &$aOptions ) {
+		parent::setOptions( $aOptions );
 		$this->setLoginCooldownInterval();
 	}
 	
@@ -140,10 +107,10 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 	/**
-	 * @param bool $fEnableLogging
+	 * @return bool|void
 	 */
-	public function setLogging( $fEnableLogging = true ) {
-		parent::setLogging( $this->getIsOption( 'enable_login_protect_log', 'Y' ) );
+	public function getIsLogging() {
+		return $this->getIsOption( 'enable_login_protect_log', 'Y' );
 	}
 
 	/**
@@ -292,7 +259,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function flushLogData() {
 	
-		if ( !$this->m_fLoggingEnabled || empty( $this->m_aLogMessages ) ) {
+		if ( !$this->getIsLogging() || empty( $this->m_aLogMessages ) ) {
 			return false;
 		}
 
@@ -311,7 +278,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		$this->loadDataProcessor();
 		// wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid
 
-		if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsfkey' ) !== $this->m_sSecretKey ) {
+		if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsfkey' ) !== $this->oFeatureOptions->getTwoAuthSecretKey() ) {
 			return false;
 		}
 
@@ -694,7 +661,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	public function doGaspChecks( $insUsername ) {
 		if ( !isset( $_POST[ $this->getGaspCheckboxName() ] ) ) {
 			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip($this->m_nRequestIp) )
+				sprintf( _wpsf__('User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip(self::$nRequestIp) )
 			);
 			$this->doStatIncrement( 'login.gasp.checkbox.fail' );
 			wp_die( "You must check that box to say you're not a bot." );
@@ -702,7 +669,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		}
 		else if ( isset( $_POST['icwp_wpsf_login_email'] ) && $_POST['icwp_wpsf_login_email'] !== '' ){
 			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip($this->m_nRequestIp) )
+				sprintf( _wpsf__('User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip(self::$nRequestIp) )
 			);
 			$this->doStatIncrement( 'login.gasp.honeypot.fail' );
 			wp_die( _wpsf__('You appear to be a bot - terminating login attempt.') );
@@ -745,8 +712,8 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		// Now add new pending entry
 		$aNewData = array();
 		$aNewData[ 'unique_id' ]	= uniqid();
-		$aNewData[ 'ip_long' ]		= $this->m_nRequestIp;
-		$aNewData[ 'ip' ]			= long2ip( $this->m_nRequestIp );
+		$aNewData[ 'ip_long' ]		= self::$nRequestIp;
+		$aNewData[ 'ip' ]			= long2ip( self::$nRequestIp );
 		$aNewData[ 'wp_username' ]	= $sUsername;
 		$aNewData[ 'pending' ]		= 1;
 		$aNewData[ 'created_at' ]	= time();
@@ -894,7 +861,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 			// Now we test based on which types of 2-factor auth is enabled
 			$fVerified = true;
 			$aUserAuthData = $mResult[0];
-			if ( $this->getIsTwoFactorAuthOn('ip') && ( $this->m_nRequestIp != $aUserAuthData['ip_long'] ) ) {
+			if ( $this->getIsTwoFactorAuthOn('ip') && ( self::$nRequestIp != $aUserAuthData['ip_long'] ) ) {
 				$fVerified = false;
 			}
 			if ( $fVerified && $this->getIsTwoFactorAuthOn('cookie') && !$this->isAuthCookieValid($aUserAuthData['unique_id']) ) {
@@ -904,7 +871,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		}
 		else {
 			$this->logWarning(
-				sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address "%s"'), $sUsername, long2ip( $this->m_nRequestIp ) )
+				sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address "%s"'), $sUsername, long2ip( self::$nRequestIp ) )
 			);
 			return false;
 		}
@@ -928,7 +895,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 			
 			if ( $this->getIsUserLevelSubjectToTwoFactorAuth( $oUser->user_level ) && !$this->isUserVerified( $oUser->user_login ) ) {
 				$this->logWarning(
-					sprintf( _wpsf__('User "%s" was forcefully logged out as they are not verified.'), $oUser->user_login )
+					sprintf( _wpsf__('User "%s" was forcefully logged out as they are not verified by either cookie or IP address (or both).'), $oUser->user_login )
 				);
 				$this->doStatIncrement( 'login.userverify.fail' );
 				wp_logout();
@@ -948,7 +915,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	protected function generateTwoFactorVerifyLink( $sUser, $sUniqueId ) {
 		$sSiteUrl = home_url() . '?wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid=%s';
 		$sAction = 'linkauth';
-		return sprintf( $sSiteUrl, $this->m_sSecretKey, $sAction, $sUser, $sUniqueId );
+		return sprintf( $sSiteUrl, $this->oFeatureOptions->getTwoAuthSecretKey(), $sAction, $sUser, $sUniqueId );
 	}
 
 	/**
@@ -974,7 +941,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		// add filters to email sending (for now only Mandrill)
 		add_filter( 'mandrill_payload', array($this, 'customiseMandrill') );
 
-		$fResult = $this->sendEmailTo( $sEmail, $sEmailSubject, $aMessage );
+		$fResult = $this->getEmailProcessor()->sendEmailTo( $sEmail, $sEmailSubject, $aMessage );
 		if ( $fResult ) {
 			$this->logInfo(
 				sprintf( _wpsf__('User "%s" was sent an email to verify their Identity using Two-Factor Login Auth for IP address "%s".'), $inoUser->user_login, $insIpAddress )

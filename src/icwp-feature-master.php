@@ -50,37 +50,6 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 	}
 	
 	/**
-	 * Based on the existence of files placed within the plugin directory, will enable or disable
-	 * all registered features and return the value of the override setting that was put in place.
-	 * 
-	 * @return string - override settings (empty string if none).
-	 */
-	protected function override() {
-		
-		if ( $this->m_oWpFs->exists( path_join($this->sPluginRootDir, 'forceOff') ) ) {
-			$fHasFtpOverride = true;
-			$sSetting = 'N';
-		}
-		else if ( $this->m_oWpFs->exists( path_join($this->sPluginRootDir, 'forceOn') ) ) {
-			$fHasFtpOverride = true;
-			$sSetting = 'Y';
-		}
-		else {
-			$sSetting = '';
-		}
-		
-		if ( $sSetting == '' ) {
-			return $sSetting;
-		}
-		
-		$aFeatures = $this->getFeaturesMap();
-		foreach( $aFeatures as $sFeature => $sName ) {
-			$this->setSharedOption( 'enable_'.$sFeature, $sSetting );
-		}
-		return $sSetting;
-	}
-	
-	/**
 	 * @return array
 	 */
 	protected function getFeaturesMap() {
@@ -90,34 +59,47 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 	/**
 	 * Given a certain feature 'slug' will return true if this is a particular supported feature of this plugin.
 	 * 
-	 * @param string $insFeature
+	 * @param string $sFeature
 	 * @return boolean
 	 */
-	public function getIsFeature( $insFeature ) {
-		return array_key_exists( $insFeature, $this->getFeaturesMap() ) || in_array( $insFeature, $this->getFeaturesMap() );
+	public function getIsFeature( $sFeature ) {
+		return array_key_exists( $sFeature, $this->getFeaturesMap() ) || in_array( $sFeature, $this->getFeaturesMap() );
 	}
 	
 	/**
-	 * @param string $insFeature	- firewall, login_protect, comments_filter, lockdown
+	 * @param string $sFeature	- firewall, login_protect, comments_filter, lockdown
 	 * @return boolean
 	 */
-	public function getIsMainFeatureEnabled( $insFeature ) {
-		
-		if ( $this->m_oWpFs->exists( $this->sPluginRootDir . 'forceOff' ) ) {
-			return false;
+	public function getIsMainFeatureEnabled( $sFeature ) {
+		$this->override();
+		return $this->getIsFeature( $sFeature ) && ( $this->m_oPluginMainOptions->getOpt( 'enable_'.$sFeature ) == 'Y' );
+	}
+	/**
+	 * Based on the existence of files placed within the plugin directory, will enable or disable
+	 * all registered features and return the value of the override setting that was put in place.
+	 *
+	 * @return string - override settings (empty string if none).
+	 */
+	protected function override() {
+
+		$oWpFs = $this->loadWpFilesystem();
+		if ( $oWpFs->exists( path_join($this->sPluginRootDir, 'forceOff') ) ) {
+			$sSetting = 'N';
 		}
-		else if ( $this->m_oWpFs->exists( $this->sPluginRootDir . 'forceOn' ) ) {
-			return true;
-		}
-		
-		$aFeatures = $this->getFeaturesMap();
-		if ( array_key_exists( $insFeature, $aFeatures ) ) {
-			$fEnabled = $this->m_oPluginMainOptions->getOpt( 'enable_'.$insFeature ) == 'Y';
+		else if ( $oWpFs->exists( path_join($this->sPluginRootDir, 'forceOn') ) ) {
+			$sSetting = 'Y';
 		}
 		else {
-			$fEnabled = false;
+			$sSetting = '';
 		}
-		return $fEnabled;
+
+		$aFeatures = $this->getFeaturesMap();
+		if ( !empty( $sSetting ) ) {
+			foreach( $aFeatures as $sFeature => $sName ) {
+				$this->setSharedOption( 'enable_'.$sFeature, $sSetting );
+			}
+		}
+		return $sSetting;
 	}
 	
 	/**
@@ -241,23 +223,6 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		return $aOptions;
 	}
 
-	/**
-	 * Makes sure and cache the processors after all is said and done.
-	 */
-	public function saveOptions() {
-		$aOptions = $this->getAllOptionsHandlers();
-		foreach( $aOptions as &$oOption ) {
-			if ( isset( $oOption ) ) {
-				$oOption->savePluginOptions();
-			}
-		}
-	}
-
-	protected function shutdown() {
-		parent::shutdown();
-		$this->saveOptions();
-	}
-	
 	protected function deleteAllPluginDbOptions() {
 		if ( !current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
 			return;

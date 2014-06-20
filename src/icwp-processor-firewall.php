@@ -82,14 +82,13 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	public function setOptions( &$aOptions ) {
 		parent::setOptions( $aOptions );
 		$this->m_aCustomWhitelistPageParams = is_array( $this->getOption( 'page_params_whitelist' )  )? $this->getOption( 'page_params_whitelist' ) : array();
-		$this->setLogging();
 	}
 
 	/**
 	 * @return boolean
 	 */
 	public function getNeedsEmailHandler() {
-		if ( $this->m_aOptions['block_send_email'] == 'Y' ) {
+		if ( $this->getIsOption( 'block_send_email', 'Y' ) ) {
 			return true;
 		}
 		return false;
@@ -103,10 +102,10 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	}
 
 	/**
-	 * @param bool $fEnableLogging
+	 * @return bool|void
 	 */
-	public function setLogging( $fEnableLogging = true ) {
-		parent::setLogging( $this->getIsOption( 'enable_firewall_log', 'Y' ) );
+	public function getIsLogging() {
+		return $this->getIsOption( 'enable_firewall_log', 'Y' );
 	}
 	
 	/**
@@ -117,21 +116,30 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 */
 	public function flushLogData() {
 		
-		if ( !$this->m_fLoggingEnabled ) {
+		if ( !$this->getIsLogging() || empty( $this->m_aLogMessages ) ) {
 			return false;
 		}
-		
+
 		$this->m_aLog = array(
 			'category'			=> self::LOG_CATEGORY_FIREWALL,
 			'messages'			=> serialize( $this->m_aLogMessages ),
 			'created_at'		=> $this->m_nRequestTimestamp,
-			'ip'				=> long2ip( $this->m_nRequestIp ),
-			'ip_long'			=> $this->m_nRequestIp,
+			'ip'				=> long2ip( self::$nRequestIp ),
+			'ip_long'			=> self::$nRequestIp,
 		);
 		$this->resetLog();
 		return $this->m_aLog;
 	}
-	
+
+	public function run() {
+		$fIfFirewallBlockUser = !$this->doFirewallCheck();
+
+		if ( $fIfFirewallBlockUser ) {
+			$this->doPreFirewallBlock();
+			$this->doFirewallBlock();
+		}
+	}
+
 	/**
 	 * @return boolean - true if visitor is permitted, false if it should be blocked.
 	 */
@@ -163,9 +171,9 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		}
 		$this->m_aPageParamValuesToCheck = array_values( $this->m_aPageParams );
 		
-		if ( $this->m_nRequestIp === false ) {
+		if ( self::$nRequestIp === false ) {
 			$this->logCritical(
-				_wpsf__("Visitor IP address could not be determined so by-passing the Firewall.")
+				_wpsf__("Visitor IP address could not be determined, so by-passing the Firewall.")
 			);
 			return true;
 		}
@@ -392,7 +400,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
 	public function doPreFirewallBlock() {
 		
-		switch( $this->m_aOptions['block_response'] ) {
+		switch( $this->getOption( 'block_response' ) ) {
 			case 'redirect_die':
 				$this->logWarning(
 					sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor connection was killed with wp_die()') )
@@ -415,14 +423,14 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 				break;
 		}
 			
-		if ( $this->m_aOptions['block_send_email'] == 'Y' ) {
+		if ( $this->getIsOption( 'block_send_email', 'Y' ) ) {
 			$this->sendBlockEmail();
 		}
 	}
 
 	public function doFirewallBlock() {
 		
-		switch( $this->m_aOptions['block_response'] ) {
+		switch( $this->getOption( 'block_response' ) ) {
 			case 'redirect_die':
 				break;
 			case 'redirect_die_message':
@@ -598,11 +606,11 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	}
 	
 	public function isVisitorOnWhitelist() {
-		return $this->isIpOnlist( $this->m_aOptions[ 'ips_whitelist' ], $this->m_nRequestIp, $this->m_sListItemLabel );
+		return $this->isIpOnlist( $this->getOption( 'ips_whitelist', array() ), self::$nRequestIp, $this->m_sListItemLabel );
 	}
 	
 	public function isVisitorOnBlacklist() {
-		return $this->isIpOnlist( $this->m_aOptions[ 'ips_blacklist' ], $this->m_nRequestIp, $this->m_sListItemLabel );
+		return $this->isIpOnlist( $this->getOption( 'ips_blacklist', array() ), self::$nRequestIp, $this->m_sListItemLabel );
 	}
 
 	/**
@@ -610,7 +618,9 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 */
 	public function sendBlockEmail() {
 
-		$sIp = long2ip( $this->m_nRequestIp );
+		$oEmailProcessor = $this->getEmailProcessor();
+
+		$sIp = long2ip( self::$nRequestIp );
 		$aMessage = array(
 			_wpsf__('WordPress Simple Firewall has blocked a page visit to your site.'),
 			_wpsf__('Log details for this visitor are below:'),
@@ -623,8 +633,8 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		$aMessage[] = sprintf( _wpsf__('You can look up the offending IP Address here: %s'), 'http://ip-lookup.net/?ip='.$sIp );
 
 		$sEmailSubject = sprintf( _wpsf__('Firewall Block Email Alert: %s'), home_url() );
-		$this->sendEmail( $sEmailSubject, $aMessage );
-		$this->logInfo( _wpsf__('Firewall block email alert sent.') );
+		$fSendSuccess = $oEmailProcessor->sendEmail( $sEmailSubject, $aMessage );
+		$this->logInfo( sprintf( _wpsf__('Firewall block email alert sent %s.'), $fSendSuccess? _wpsf__('successfully') : _wpsf__('unsuccessfully') ) );
 	}
 }
 

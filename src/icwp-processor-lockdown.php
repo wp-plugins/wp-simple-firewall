@@ -86,7 +86,7 @@ class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 */
 	public function maskWordpressVersion( $insOutput, $insShow ) {
 // 		if ( $insShow === 'version' ) {
-// 			$insOutput = $this->m_aOptions['mask_wordpress_version'];
+// 			$insOutput = $this->aOptions['mask_wordpress_version'];
 // 		}
 // 		return $insOutput;
 	}

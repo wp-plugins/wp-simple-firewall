@@ -274,7 +274,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->m_aOptions = array(
+		$this->aOptions = array(
 			$aFirewallBase,
 			$aBlockSection,
 			$aWhitelistSection,
@@ -284,6 +284,10 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 		);
 	}
 
+	/**
+	 * @param $insListName
+	 * @param $inaNewIps
+	 */
 	public function addRawIpsToFirewallList( $insListName, $inaNewIps ) {
 		if ( empty( $inaNewIps ) ) {
 			return;

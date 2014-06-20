@@ -52,15 +52,6 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	}
 
 	/**
-	 * Ensure that when we save the object later, it doesn't save unnecessary data.
-	 */
-	public function doPreStore() {
-		parent::doPreStore();
-		$this->commitData();
-		unset( $this->m_oWpdb );
-	}
-	
-	/**
 	 * Resets the object values to be re-used anew
 	 */
 	public function reset() {
@@ -126,6 +117,9 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 		$this->loadWpdb();
 		$fSuccess = true;
 		foreach( $this->m_aDataToWrite as $aDataEntry ) {
+			if ( empty( $aDataEntry ) ) {
+				continue;
+			}
 			$fSuccess = $fSuccess && $this->insertIntoTable( $aDataEntry );
 		}
 		if ( $fSuccess ) {
@@ -218,8 +212,8 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 		return $fResult;
 	}
 	
-	private function setTableName( $insTableName ) {
-		return $this->m_sTableName = esc_sql( $this->m_oWpdb->prefix . self::DB_TABLE_PREFIX . $insTableName );
+	private function setTableName( $sTableName ) {
+		return $this->m_sTableName = esc_sql( $this->m_oWpdb->prefix . self::DB_TABLE_PREFIX . $sTableName );
 	}
 	
 	/**

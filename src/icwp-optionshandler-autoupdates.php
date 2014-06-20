@@ -25,7 +25,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 	 * @var ICWP_WPSF_AutoUpdatesProcessor
 	 */
 	protected $oFeatureProcessor;
-	
+
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Automatic Updates');
 		$this->sFeatureSlug = 'autoupdates';
@@ -43,8 +43,25 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 		return $this->oFeatureProcessor;
 	}
 
+	/**
+	 * @return bool|void
+	 */
+	public function handleFormSubmit() {
+		$fSuccess = parent::handleFormSubmit();
+		if ( !$fSuccess ) {
+			return $fSuccess;
+		}
+
+		// Force run automatic updates
+		if ( ICWP_WPSF_DataProcessor::FetchGet( 'force_run_auto_updates' ) == 'now' ) {
+			$oProc = $this->getProcessor();
+			$oProc->setForceRunAutoUpdates( true );
+			return;
+		}
+	}
+
 	public function doPrePluginOptionsSave() {}
-	
+
 	public function defineOptions() {
 
 		$aAutoUpdatesBase = array(
@@ -148,7 +165,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 				)
 			)
 		);
-		
+
 		$aAutoUpdateEmail = array(
 			'section_title' => _wpsf__('Automatic Update Email Notifications'),
 			'section_options' => array(
@@ -173,7 +190,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->m_aOptions = array(
+		$this->aOptions = array(
 			$aAutoUpdatesBase,
 			$aAutoUpdateAll,
 			$aAutoUpdatePlugin,

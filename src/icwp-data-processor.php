@@ -24,6 +24,11 @@ if ( !class_exists('ICWP_DataProcessor_V1') ):
 class ICWP_DataProcessor_V1 {
 	
 	public static $fUseFilter = false;
+
+	/**
+	 * @var string
+	 */
+	protected static $sIpAddress;
 	
 	/**
 	 * Cloudflare compatible.
@@ -32,7 +37,11 @@ class ICWP_DataProcessor_V1 {
 	 * @return bool|integer - visitor IP Address as IP2Long
 	 */
 	public static function GetVisitorIpAddress( $infAsLong = true ) {
-	
+
+		if ( !empty( self::$sIpAddress ) ) {
+			return $infAsLong? ip2long( self::$sIpAddress ) : self::$sIpAddress;
+		}
+
 		$aAddressSourceOptions = array(
 			'HTTP_CF_CONNECTING_IP',
 			'HTTP_CLIENT_IP',
@@ -43,7 +52,6 @@ class ICWP_DataProcessor_V1 {
 		);
 		$fCanUseFilter = function_exists( 'filter_var' ) && defined( 'FILTER_FLAG_NO_PRIV_RANGE' ) && defined( 'FILTER_FLAG_IPV4' );
 		
-		$aIpAddresses = array();
 		foreach( $aAddressSourceOptions as $sOption ) {
 			if ( empty( $_SERVER[ $sOption ] ) ) {
 				continue;
@@ -57,7 +65,8 @@ class ICWP_DataProcessor_V1 {
 					continue;
 				}
 				else {
-					return $infAsLong? ip2long( $sIpAddress ) : $sIpAddress;
+					self::$sIpAddress = $sIpAddress;
+					return $infAsLong? ip2long( self::$sIpAddress ) : self::$sIpAddress;
 				}
 			}
 		}

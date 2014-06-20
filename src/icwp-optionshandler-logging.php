@@ -65,7 +65,7 @@ class ICWP_OptionsHandler_Logging extends ICWP_OptionsHandler_Base_Wpsf {
 				)
 			)
 		);
-		$this->m_aOptions = array(
+		$this->aOptions = array(
 			$aBase
 		);
 	}

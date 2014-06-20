@@ -2,7 +2,7 @@
 /**
  * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
- * 
+ *
  * Version: 2013-11-15-V1
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -34,20 +34,20 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @var string
 	 */
 	const PluginVersionKey = 'current_plugin_version';
-	
+
 	/**
 	 * @var boolean
 	 */
 	protected $fNeedSave;
-	
+
 	/**
 	 * @var array
 	 */
-	protected $m_aOptions;
+	protected $aOptions;
 
 	/**
 	 * These are options that need to be stored, but are never set by the UI.
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $m_aNonUiOptions;
@@ -56,12 +56,12 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @var array
 	 */
 	protected $m_aOptionsValues;
-	
+
 	/**
 	 * @var string
 	 */
 	protected $sOptionsStoreKey;
-	
+
 	/**
 	 * @var array
 	 */
@@ -87,6 +87,16 @@ class ICWP_OptionsHandler_Base_V2 {
 	protected $fShowFeatureMenuItem = true;
 
 	/**
+	 * @var ICWP_OptionsHandler_Email
+	 */
+	protected static $oEmailHandler;
+
+	/**
+	 * @var ICWP_OptionsHandler_Email
+	 */
+	protected static $oLoggingHandler;
+
+	/**
 	 * @var ICWP_WPSF_BaseProcessor
 	 */
 	protected $oFeatureProcessor;
@@ -98,18 +108,28 @@ class ICWP_OptionsHandler_Base_V2 {
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
 		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ) );
 		add_action( 'init', array( $this, 'onWpInit' ), 1 );
-		add_action( 'shutdown', array( $this, 'onWpShutdown' ) );
 //		add_action( $this->doPluginPrefix( 'form_submit', '_' ), array( $this, 'updatePluginOptionsFromSubmit' ) );
 		add_action( $this->doPluginPrefix( 'form_submit', '_' ), array( $this, 'handleFormSubmit' ) );
 		add_filter( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array( $this, 'filter_addPluginSubMenuItem' ) );
+		add_filter( $this->doPluginPrefix( 'flush_logs' ), array( $this, 'filter_flushFeatureLogs' ) );
+		add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
+
 	}
 
 	public function onWpPluginsLoaded() {
 		$this->load();
 	}
 
-	public function onWpShutdown() {
+	/**
+	 * Hooked to the plugin's main plugin_shutdown action
+	 */
+	public function action_doFeatureShutdown() {
 		$this->savePluginOptions();
+
+		$aLogData = apply_filters( $this->doPluginPrefix( 'flush_logs' ), array() );
+		$oLoggingProcessor = $this->getLoggingProcessor();
+		$oLoggingProcessor->addDataToWrite( $aLogData );
+		$oLoggingProcessor->commitData();
 	}
 
 	protected function load() {
@@ -122,9 +142,6 @@ class ICWP_OptionsHandler_Base_V2 {
 			return;
 		}
 
-		// TODO: since we're passing in the options, there should be no need to also explicity set them.
-		$aOptionsValues = $this->getPluginOptionsValues();
-		$oProcessor->setOptions( $aOptionsValues );
 		$oProcessor->run();
 	}
 
@@ -141,6 +158,40 @@ class ICWP_OptionsHandler_Base_V2 {
 	 */
 	public function getProcessor() {
 		return $this->loadFeatureProcessor();
+	}
+
+	/**
+	 * @return ICWP_OptionsHandler_Email
+	 */
+	public static function GetEmailHandler() {
+		if ( is_null( self::$oEmailHandler ) ) {
+			self::$oEmailHandler = new ICWP_OptionsHandler_Email( ICWP_Wordpress_Simple_Firewall_Plugin::GetInstance() );
+		}
+		return self::$oEmailHandler;
+	}
+
+	/**
+	 * @return ICWP_WPSF_EmailProcessor
+	 */
+	public function getEmailProcessor() {
+		return $this->GetEmailHandler()->getProcessor();
+	}
+
+	/**
+	 * @return ICWP_OptionsHandler_Logging
+	 */
+	public static function GetLoggingHandler() {
+		if ( is_null( self::$oLoggingHandler ) ) {
+			self::$oLoggingHandler = new ICWP_OptionsHandler_Logging( ICWP_Wordpress_Simple_Firewall_Plugin::GetInstance() );
+		}
+		return self::$oLoggingHandler;
+	}
+
+	/**
+	 * @return ICWP_WPSF_LoggingProcessor
+	 */
+	public function getLoggingProcessor() {
+		return $this->GetLoggingHandler()->getProcessor();
 	}
 
 	/**
@@ -168,11 +219,24 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	/**
+	 *
+	 */
+	public function filter_flushFeatureLogs( $aLogs ) {
+		if ( $this->getIsMainFeatureEnabled() ) {
+			$aFeatureLogs = $this->getProcessor()->flushLogData();
+			if ( !empty( $aFeatureLogs ) ) {
+				$aLogs = array_merge( $aLogs, $aFeatureLogs );
+			}
+		}
+		return $aLogs;
+	}
+
+	/**
 	 * @param $aItems
 	 * @return mixed
 	 */
 	public function filter_addPluginSubMenuItem( $aItems ) {
-		if ( !$this->fShowFeatureMenuItem || empty($this->sFeatureName) ) {
+		if ( !$this->fShowFeatureMenuItem || empty( $this->sFeatureName ) ) {
 			return $aItems;
 		}
 		$sMenuPageTitle = $this->oPluginVo->getHumanName().' - '.$this->sFeatureName;
@@ -183,14 +247,14 @@ class ICWP_OptionsHandler_Base_V2 {
 		);
 		return $aItems;
 	}
-	
+
 	/**
 	 * A action added to WordPress 'plugins_loaded' hook
 	 */
 	public function onWpInit() {
 		$this->doUpdates();
 	}
-	
+
 	protected function doUpdates() {
 		if ( $this->hasPluginManageRights() ) {
 			$this->buildOptions();
@@ -226,14 +290,14 @@ class ICWP_OptionsHandler_Base_V2 {
 
 	/**
 	 * Gets the array of all possible options keys
-	 * 
+	 *
 	 * @return array
 	 */
 	public function getOptionsKeys() {
 		$this->setOptionsKeys();
 		return $this->aOptionsKeys;
 	}
-	
+
 	/**
 	 * @return void
 	 */
@@ -243,7 +307,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		}
 		$this->buildOptions();
 	}
-	
+
 	/**
 	 * Determines whether the given option key is a valid option
 	 *
@@ -257,16 +321,16 @@ class ICWP_OptionsHandler_Base_V2 {
 		$this->setOptionsKeys();
 		return ( in_array( $sOptionKey, $this->aOptionsKeys ) );
 	}
-	
+
 	/**
 	 * Sets the value for the given option key
-	 * 
+	 *
 	 * @param string $insKey
 	 * @param mixed $inmValue
 	 * @return boolean
 	 */
 	public function setOpt( $insKey, $inmValue ) {
-		
+
 		if ( !$this->getIsOptionKey( $insKey ) ) {
 			return false;
 		}
@@ -274,7 +338,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( !isset( $this->m_aOptionsValues ) ) {
 			$this->loadStoredOptionsValues();
 		}
-		
+
 		if ( $this->getOpt( $insKey ) === $inmValue ) {
 			return true;
 		}
@@ -293,15 +357,15 @@ class ICWP_OptionsHandler_Base_V2 {
 		}
 		return ( isset( $this->m_aOptionsValues[ $sOptionKey ] )? $this->m_aOptionsValues[ $sOptionKey ] : false );
 	}
-	
+
 	/**
 	 * Retrieves the full array of options->values
-	 * 
+	 *
 	 * @return array
 	 */
 	public function getOptions() {
 		$this->buildOptions();
-		return $this->m_aOptions;
+		return $this->aOptions;
 	}
 
 	/**
@@ -313,14 +377,14 @@ class ICWP_OptionsHandler_Base_V2 {
 		$this->generateOptionsValues();
 		return $this->m_aOptionsValues;
 	}
-	
+
 	/**
 	 * Saves the options to the WordPress Options store.
-	 * 
+	 *
 	 * It will also update the stored plugin options version.
 	 */
 	public function savePluginOptions() {
-		
+
 		$this->doPrePluginOptionsSave();
 		$this->updateOptionsVersion();
 		if ( !$this->fNeedSave ) {
@@ -332,16 +396,16 @@ class ICWP_OptionsHandler_Base_V2 {
 		$this->fNeedSave = false;
 		return true;
 	}
-	
+
 	public function collateAllFormInputsForAllOptions() {
 
-		if ( !isset( $this->m_aOptions ) ) {
+		if ( !isset( $this->aOptions ) ) {
 			$this->buildOptions();
 		}
-		
+
 		$aToJoin = array();
-		foreach ( $this->m_aOptions as $aOptionsSection ) {
-			
+		foreach ( $this->aOptions as $aOptionsSection ) {
+
 			if ( empty( $aOptionsSection ) ) {
 				continue;
 			}
@@ -352,7 +416,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		}
 		return implode( self::CollateSeparator, $aToJoin );
 	}
-	
+
 	/**
 	 * @return array
 	 */
@@ -364,7 +428,7 @@ class ICWP_OptionsHandler_Base_V2 {
 			$this->buildOptions();	// set the defaults
 		}
 	}
-	
+
 	/**
 	 * Loads the options and their stored values from the WordPress Options store.
 	 */
@@ -376,14 +440,15 @@ class ICWP_OptionsHandler_Base_V2 {
 				$this->fNeedSave = true;
 			}
 		}
+		return $this->m_aOptionsValues;
 	}
-	
+
 	protected function defineOptions() {
-		
-		if ( !empty( $this->m_aOptions ) ) {
+
+		if ( !empty( $this->aOptions ) ) {
 			return true;
 		}
-		
+
 		$aMisc = array(
 			'section_title' => 'Miscellaneous Plugin Options',
 			'section_options' => array(
@@ -398,19 +463,19 @@ class ICWP_OptionsHandler_Base_V2 {
 				),
 			),
 		);
-		$this->m_aOptions = array( $aMisc );
+		$this->aOptions = array( $aMisc );
 	}
 
 	/**
 	 * Will initiate the plugin options structure for use by the UI builder.
-	 * 
+	 *
 	 * It will also fill in $this->m_aOptionsValues with defaults where appropriate.
-	 * 
+	 *
 	 * It doesn't set any values, just populates the array created in buildOptions()
 	 * with values stored.
-	 * 
+	 *
 	 * It has to handle the conversion of stored values to data to be displayed to the user.
-	 * 
+	 *
 	 * @param string $insUpdateKey - if only want to update a single key, supply it here.
 	 */
 	public function buildOptions() {
@@ -419,14 +484,14 @@ class ICWP_OptionsHandler_Base_V2 {
 		$this->loadStoredOptionsValues();
 
 		$this->aOptionsKeys = array();
-		foreach ( $this->m_aOptions as &$aOptionsSection ) {
-			
+		foreach ( $this->aOptions as &$aOptionsSection ) {
+
 			if ( empty( $aOptionsSection ) || !isset( $aOptionsSection['section_options'] ) ) {
 				continue;
 			}
-			
+
 			foreach ( $aOptionsSection['section_options'] as &$aOptionParams ) {
-				
+
 				list( $sOptionKey, $sOptionValue, $sOptionDefault, $sOptionType ) = $aOptionParams;
 
 				$this->aOptionsKeys[] = $sOptionKey;
@@ -435,12 +500,12 @@ class ICWP_OptionsHandler_Base_V2 {
 					$this->setOpt( $sOptionKey, $sOptionDefault );
 				}
 				$mCurrentOptionVal = $this->getOpt( $sOptionKey );
-				
+
 				if ( $sOptionType == 'password' && !empty( $mCurrentOptionVal ) ) {
 					$mCurrentOptionVal = '';
 				}
 				else if ( $sOptionType == 'ip_addresses' ) {
-					
+
 					if ( empty( $mCurrentOptionVal ) ) {
 						$mCurrentOptionVal = '';
 					}
@@ -462,7 +527,7 @@ class ICWP_OptionsHandler_Base_V2 {
 					}
 				}
 				else if ( $sOptionType == 'comma_separated_lists' ) {
-					
+
 					if ( empty( $mCurrentOptionVal ) ) {
 						$mCurrentOptionVal = '';
 					}
@@ -477,7 +542,7 @@ class ICWP_OptionsHandler_Base_V2 {
 				$aOptionParams[1] = $mCurrentOptionVal;
 			}
 		}
-		
+
 		// Cater for Non-UI options that don't necessarily go through the UI
 		if ( isset($this->m_aNonUiOptions) && is_array($this->m_aNonUiOptions) ) {
 			foreach( $this->m_aNonUiOptions as $sOption ) {
@@ -488,7 +553,7 @@ class ICWP_OptionsHandler_Base_V2 {
 			}
 		}
 	}
-	
+
 	/**
 	 * This is the point where you would want to do any options verification
 	 */
@@ -499,7 +564,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	protected function updateOptionsVersion() {
 		$this->setOpt( self::PluginVersionKey, $this->oPluginVo->getVersion() );
 	}
-	
+
 	/**
 	 * Deletes all the options including direct save.
 	 */
@@ -517,7 +582,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		foreach( $inaIpList['ips'] as $sAddress ) {
 			// offset=1 in the case that it's a range and the first number is negative on 32-bit systems
 			$mPos = strpos( $sAddress, '-', 1 );
-			
+
 			if ( $mPos === false ) { //plain IP address
 				$sDisplayText = long2ip( $sAddress );
 			}
@@ -567,19 +632,19 @@ class ICWP_OptionsHandler_Base_V2 {
 		}
 		$this->loadDataProcessor();
 		$this->loadStoredOptionsValues();
-		
+
 		$aAllInputOptions = explode( self::CollateSeparator, $sAllOptionsInput );
 		foreach ( $aAllInputOptions as $sInputKey ) {
 			$aInput = explode( ':', $sInputKey );
 			list( $sOptionType, $sOptionKey ) = $aInput;
-			
+
 			if ( !$this->getIsOptionKey( $sOptionKey ) ) {
 				continue;
 			}
 
 			$sOptionValue = ICWP_WPSF_DataProcessor::FetchPost( $this->prefixOptionKey( $sOptionKey ) );
 			if ( is_null($sOptionValue) ) {
-	
+
 				if ( $sOptionType == 'text' || $sOptionType == 'email' ) { //if it was a text box, and it's null, don't update anything
 					continue;
 				}
@@ -591,7 +656,7 @@ class ICWP_OptionsHandler_Base_V2 {
 				}
 			}
 			else { //handle any pre-processing we need to.
-	
+
 				if ( $sOptionType == 'integer' ) {
 					$sOptionValue = intval( $sOptionValue );
 				}
@@ -619,16 +684,16 @@ class ICWP_OptionsHandler_Base_V2 {
 		}
 		return $this->savePluginOptions();
 	}
-	
+
 	/**
 	 * Should be over-ridden by each new class to handle upgrades.
-	 * 
+	 *
 	 * Called upon construction and after plugin options are initialized.
 	 */
 	protected function updateHandler() {
 //		if ( version_compare( $sCurrentVersion, '2.3.0', '<=' ) ) { }
 	}
-	
+
 	/**
 	 * @param array $inaNewOptions
 	 */
@@ -649,7 +714,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		return function_exists( 'md5' );
 	//	return extension_loaded( 'mcrypt' );
 	}
-	
+
 	protected function getVisitorIpAddress( $infAsLong = true ) {
 		$this->loadDataProcessor();
 		return ICWP_WPSF_DataProcessor::GetVisitorIpAddress( $infAsLong );
@@ -689,7 +754,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	public function getOptionStoragePrefix() {
 		return $this->oPluginVo->getFullPluginPrefix( '_' ).'_';
 	}
-	
+
 	/**
 	 * @param string $insExistingListKey
 	 * @param string $insFilterName
@@ -700,7 +765,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		if ( empty( $aFilterIps ) ) {
 			return false;
 		}
-			
+
 		$aNewIps = array();
 		foreach( $aFilterIps as $mKey => $sValue ) {
 			if ( is_string( $mKey ) ) { //it's the IP
@@ -713,7 +778,7 @@ class ICWP_OptionsHandler_Base_V2 {
 			}
 			$aNewIps[ $sIP ] = $sLabel;
 		}
-		
+
 		// now add and store the new IPs
 		$aExistingIpList = $this->getOpt( $insExistingListKey );
 		if ( !is_array( $aExistingIpList ) ) {
@@ -789,7 +854,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		echo $sContents;
 		return true;
 	}
-	
+
 	protected function loadDataProcessor() {
 		if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
 			require_once( dirname(__FILE__).'/icwp-data-processor.php' );

@@ -180,12 +180,12 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->m_aOptions = array(
+		$this->aOptions = array(
 			$aGeneral,
 //			$aGlobal
 		);
 		if ( isset( $aAccessKey ) ) {
-			array_unshift( $this->m_aOptions, $aAccessKey );
+			array_unshift( $this->aOptions, $aAccessKey );
 		}
 	}
 	

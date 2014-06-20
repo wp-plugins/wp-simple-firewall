@@ -39,7 +39,7 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		parent::reset();
 		$this->m_sRequestId = uniqid();
 	}
-	
+
 	/**
 	 * @param boolean $infReverseOrder
 	 * @return array - numerical array of all log data entries.

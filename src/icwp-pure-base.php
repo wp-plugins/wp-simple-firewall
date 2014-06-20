@@ -99,8 +99,8 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		}
 		add_action( 'in_plugin_update_message-'.$this->getPluginBaseFile(), array( $this, 'onWpPluginUpdateMessage' ) );
 		add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
+		add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'doPluginShutdown' ) );
 
-		$this->m_oWpFs = ICWP_WpFilesystem_WPSF::GetInstance();
 		$this->registerActivationHooks();
 	}
 
@@ -501,7 +501,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 */
 	public function onWpAdminNotices() {
 		// Do we have admin priviledges?
-		if ( !$this->isValidAdminArea() || !current_user_can( 'manage_options' ) ) {
+		if ( !$this->isValidAdminArea() || !current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
 			return true;
 		}
 
@@ -720,7 +720,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * This is called from within onWpAdminInit. Use this solely to manage upgrades of the plugin
 	 */
 	protected function handlePluginUpgrade() {
-		if ( !is_admin() || !current_user_can( 'manage_options' ) ) {
+		if ( !is_admin() || !current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
 			return;
 		}
 		if ( $this->fAutoPluginUpgrade ) {
@@ -844,15 +844,13 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	/**
 	 * Use this to wrap up the function when the PHP process is coming to an end.  Call from onWpShudown()
 	 */
-	protected function shutdown() {
-		
-	}
+	public function doPluginShutdown() { }
 	
 	/**
 	 * Hooked to 'shutdown'
 	 */
 	public function onWpShutdown() {
-		$this->shutdown();
+		do_action( $this->doPluginPrefix( 'plugin_shutdown' ) );
 	}
 	
 	public function onWpActivatePlugin() { }
@@ -867,6 +865,13 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 			$this->m_oWpFunctions = ICWP_WpFunctions_WPSF::GetInstance();
 		}
 		return $this->m_oWpFunctions;
+	}
+
+	/**
+	 * @return ICWP_WpFilesystem_WPSF
+	 */
+	protected function loadWpFilesystem() {
+		return ICWP_WpFilesystem_WPSF::GetInstance();;
 	}
 
 	protected function flushCaches() {

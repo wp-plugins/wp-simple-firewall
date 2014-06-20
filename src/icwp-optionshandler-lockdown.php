@@ -136,14 +136,14 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->m_aOptions = array(
+		$this->aOptions = array(
 			$aBase,
 			$aAccess,
 			$aObscurity
 		);
 		
 		if ( false && $this->getCanDoAuthSalts() ) {
-			$this->m_aOptions[] = array(
+			$this->aOptions[] = array(
 				'section_title' => _wpsf__( 'Security Actions' ),
 				'section_options' => array(
 					array(

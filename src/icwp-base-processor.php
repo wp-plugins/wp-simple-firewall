@@ -43,22 +43,12 @@ class ICWP_BaseProcessor_V3 {
 	/**
 	 * @var long
 	 */
-	protected $m_nRequestIp;
+	protected static $nRequestIp;
 
-	/**
-	 * @var boolean
-	 */
-	protected $m_fLoggingEnabled;
-	
-	/**
-	 * @var ICWP_EmailProcessor
-	 */
-	protected $m_oEmailHandler;
-	
 	/**
 	 * @var array
 	 */
-	protected $m_aOptions;
+	protected $aOptions;
 	
 	/**
 	 * @var ICWP_OptionsHandler_Base_WPSF
@@ -74,7 +64,9 @@ class ICWP_BaseProcessor_V3 {
 	 * Resets the object values to be re-used anew
 	 */
 	public function reset() {
-		$this->m_nRequestIp = $this->getVisitorIpAddress();
+		if ( !isset( self::$nRequestIp ) ) {
+			self::$nRequestIp = $this->getVisitorIpAddress();
+		}
 		$this->resetLog();
 	}
 	
@@ -82,13 +74,6 @@ class ICWP_BaseProcessor_V3 {
 	 * Override to set what this processor does when it's "run"
 	 */
 	public function run() { }
-	
-	/**
-	 * Ensure that when we save the object later, it doesn't save unnecessary data.
-	 */
-	public function doPreStore() {
-		unset( $this->m_oEmailHandler );
-	}
 
 	/**
 	 */
@@ -98,19 +83,22 @@ class ICWP_BaseProcessor_V3 {
 
 	/**
 	 *
-	 * @param array $inaOptions
+	 * @param array $aOptions
 	 */
-	public function setOptions( &$inaOptions ) {
-		$this->m_aOptions = $inaOptions;
+	public function setOptions( &$aOptions ) {
+		$this->aOptions = $aOptions;
 	}
 
 	/**
-	 * @param $insKey
-	 * @param bool $inmDefault
+	 * @param $sOptionKey
+	 * @param bool $mDefault
 	 * @return bool
 	 */
-	public function getOption( $insKey, $inmDefault = false ) {
-		return isset( $this->m_aOptions[$insKey] )? $this->m_aOptions[$insKey] : $inmDefault;
+	public function getOption( $sOptionKey, $mDefault = false ) {
+		if ( !isset( $this->aOptions ) ) {
+			$this->aOptions = $this->oFeatureOptions->getPluginOptionsValues();
+		}
+		return isset( $this->aOptions[$sOptionKey] )? $this->aOptions[$sOptionKey] : $mDefault;
 	}
 
 	/**
@@ -130,12 +118,26 @@ class ICWP_BaseProcessor_V3 {
 	public function resetLog() {
 		$this->m_aLogMessages = array();
 	}
-	
+
 	/**
-	 * @param boolean $fEnableLogging
+	 * @return bool
 	 */
-	public function setLogging( $fEnableLogging = true ) {
-		$this->m_fLoggingEnabled = $fEnableLogging;
+	public function getIsLogging() {
+		return false;
+	}
+
+	/**
+	 * Should return false when logging is disabled.
+	 *
+	 * @return false|array	- false when logging is disabled, array with log data otherwise
+	 * @see ICWP_WPSF_BaseProcessor::getLogData()
+	 */
+	public function flushLogData() {
+		return false;
+		if ( !$this->getIsLogging() ) {
+			return false;
+		}
+		return false;
 	}
 	
 	/**
@@ -145,10 +147,8 @@ class ICWP_BaseProcessor_V3 {
 	 */
 	public function getLogData() {
 		
-		if ( $this->m_fLoggingEnabled  ) {
-			$this->m_aLog = array(
-				'messages'			=> serialize( $this->m_aLogMessages ),
-			);
+		if ( $this->getIsLogging() ) {
+			$this->m_aLog = array( 'messages'			=> serialize( $this->m_aLogMessages ) );
 		}
 		else {
 			$this->m_aLog = false;
@@ -156,16 +156,26 @@ class ICWP_BaseProcessor_V3 {
 		
 		return $this->m_aLog;
 	}
+
+	/**
+	 * @return array
+	 */
+	public function getLogMessages() {
+		if ( !is_array( $this->m_aLogMessages ) ) {
+			$this->m_aLogMessages = array();
+		}
+		return $this->m_aLogMessages;
+	}
 	
 	/**
-	 * @param string $insLogMessage
-	 * @param string $insMessageType
+	 * @param string $sLogMessage
+	 * @param integer $sMessageType
 	 */
-	public function writeLog( $insLogMessage = '', $insMessageType = self::LOG_MESSAGE_LEVEL_INFO ) {
+	public function writeLog( $sLogMessage = '', $sMessageType = self::LOG_MESSAGE_LEVEL_INFO ) {
 		if ( !is_array( $this->m_aLogMessages ) ) {
 			$this->resetLog();
 		}
-		$this->m_aLogMessages[] = array( $insMessageType, $insLogMessage );
+		$this->m_aLogMessages[] = array( $sMessageType, $sLogMessage );
 	}
 	/**
 	 * @param string $insLogMessage
@@ -257,31 +267,17 @@ class ICWP_BaseProcessor_V3 {
 	}
 	
 	/**
-	 * We force PHP to pass by reference in case of older versions of PHP (?)
-	 * 
-	 * @param ICWP_EmailProcessor $inoEmailHandler
+	 * @return ICWP_WPSF_EmailProcessor
 	 */
-	public function setEmailHandler( &$inoEmailHandler ) {
-		$this->m_oEmailHandler = $inoEmailHandler;
+	public function getEmailProcessor() {
+		return $this->oFeatureOptions->getEmailProcessor();
 	}
-	
+
 	/**
-	 * @param string $insEmailSubject	- message subject
-	 * @param array $inaMessage			- message content
-	 * @return boolean					- message sending success (remember that if throttled, returns true)
+	 * @return ICWP_WPSF_LoggingProcessor
 	 */
-	public function sendEmail( $insEmailSubject, $inaMessage ) {
-		return $this->m_oEmailHandler->sendEmail( $insEmailSubject, $inaMessage );
-	}
-	
-	/**
-	 * @param string $insEmailAddress	- message recipient
-	 * @param string $insEmailSubject	- message subject
-	 * @param array $inaMessage			- message content
-	 * @return boolean					- message sending success (remember that if throttled, returns true)
-	 */
-	public function sendEmailTo( $insEmailAddress, $insEmailSubject, $inaMessage ) {
-		return $this->m_oEmailHandler->sendEmailTo( $insEmailAddress, $insEmailSubject, $inaMessage );
+	public function getLoggingProcessor() {
+		return $this->oFeatureOptions->getLoggingProcessor();
 	}
 
 	/**
@@ -342,7 +338,7 @@ class ICWP_BaseProcessor_V3 {
 	}
 
 	/**
-	 * @return ICWP_WpFunctions_WPSF
+	 * @return ICWP_Stats_WPSF
 	 */
 	protected function loadWpsfStatsProcessor() {
 		require_once( dirname(__FILE__) . '/icwp-wpsf-stats.php' );

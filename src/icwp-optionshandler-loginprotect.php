@@ -56,7 +56,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			$this->setOpt( 'two_factor_auth_user_roles', $this->getTwoFactorUserAuthRoles( true ) );
 		}
 
-		$this->getGaspKey(); // ensures it has a value
+		$this->setKeys(); // ensures they have values
 	}
 
 	/**
@@ -65,7 +65,8 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	public function defineOptions() {
 
 		$aNonUiOptions = array(
-			'gasp_key'
+			'gasp_key',
+			'two_factor_secret_key'
 		);
 		$this->mergeNonUiOptions( $aNonUiOptions );
 
@@ -260,7 +261,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->m_aOptions = array(
+		$this->aOptions = array(
 			$aOptionsBase,
 			$aWhitelist,
 			$aLoginProtect,
@@ -279,13 +280,12 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			return;
 		}
 
-		// TODO : get the processors into the options handlers
 		// When they've clicked to terminate all logged in authenticated users.
-//		if ( ICWP_WPSF_DataProcessor::FetchPost( 'terminate-all-logins' ) ) {
-//			$oProc = $this->getProcessor_LoginProtect();
-//			$oProc->doTerminateAllVerifiedLogins();
-//			return;
-//		}
+		if ( ICWP_WPSF_DataProcessor::FetchPost( 'terminate-all-logins' ) ) {
+			$oProc = $this->getProcessor();
+			$oProc->doTerminateAllVerifiedLogins();
+			return;
+		}
 
 	}
 
@@ -312,11 +312,31 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	/**
 	 * @return string
 	 */
+	public function setKeys() {
+		$this->getTwoAuthSecretKey();
+		$this->getGaspKey();
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getGaspKey() {
-		$sKey = $this->getOpt('gasp_key');
+		$sKey = $this->getOpt( 'gasp_key' );
 		if ( empty( $sKey ) ) {
 			$sKey = uniqid();
 			$this->setOpt( 'gasp_key', $sKey );
+		}
+		return $sKey;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getTwoAuthSecretKey() {
+		$sKey = $this->getOpt( 'two_factor_secret_key' );
+		if ( empty( $sKey ) ) {
+			$sKey = md5( mt_rand() );
+			$this->setOpt( 'two_factor_secret_key', $sKey );
 		}
 		return $sKey;
 	}

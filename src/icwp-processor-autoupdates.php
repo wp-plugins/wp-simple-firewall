@@ -282,8 +282,9 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 	 * @return array
 	 */
 	public function autoupdate_email_override( $aEmailParams ) {
-		if ( !empty( $this->m_aOptions['override_email_address'] ) ) {
-			$aEmailParams['to'] = $this->m_aOptions['override_email_address'];
+		$sOverride = $this->getOption( 'override_email_address', '' );
+		if ( !empty( $sOverride ) && is_email( $sOverride ) ) {
+			$aEmailParams['to'] = $sOverride;
 		}
 		return $aEmailParams;
 	}

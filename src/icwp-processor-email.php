@@ -64,18 +64,20 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	}
 	
 	/**
-	 * @param string $insEmailAddress
+	 * @param string $sEmailAddress
 	 * @param string $insEmailSubject
-	 * @param array $inaMessage
+	 * @param array $aMessage
 	 * @return boolean
 	 * @uses wp_mail
 	 */
-	public function sendEmailTo( $insEmailAddress, $insEmailSubject, $inaMessage ) {
-		
+	public function sendEmailTo( $sEmailAddress = '', $insEmailSubject = '', $aMessage = array() ) {
+
+		$sEmailTo = $this->verifyEmailAddress( $sEmailAddress );
+
 		$aHeaders = array(
 			'MIME-Version: 1.0',
 			'Content-type: text/plain;',
-			sprintf( 'From: %s, Simple Firewall Plugin <%s>', $this->getSiteName(), $insEmailAddress ),
+			sprintf( 'From: %s, Simple Firewall Plugin <%s>', $this->getSiteName(), $sEmailTo ),
 			sprintf( "Subject: %s", $insEmailSubject ),
 			'X-Mailer: PHP/'.phpversion()
 		);
@@ -85,21 +87,21 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		if ( $this->m_fEmailIsThrottled ) {
 			return true;
 		}
-		$fSuccess = wp_mail( $insEmailAddress, $insEmailSubject, implode( "\r\n", $inaMessage ), implode( "\r\n", $aHeaders ) );
-		$this->store();
+		$fSuccess = wp_mail( $sEmailTo, $insEmailSubject, implode( "\r\n", $aMessage ), implode( "\r\n", $aHeaders ) );
 		return $fSuccess;
 	}
-	
+
 	/**
 	 * Will send email to the default recipient setup in the object.
-	 * 
+	 *
 	 * @param string $insEmailSubject
 	 * @param array $inaMessage
+	 * @return boolean
 	 */
 	public function sendEmail( $insEmailSubject, $inaMessage ) {
-		return $this->sendEmailTo( $this->getDefaultRecipientAddress(), $insEmailSubject, $inaMessage );
+		return $this->sendEmailTo( null, $insEmailSubject, $inaMessage );
 	}
-	
+
 	/**
 	 * Whether we're throttled is dependent on 2 signals.  The time interval has changed, or the there's a file
 	 * system object telling us we're throttled.
@@ -164,10 +166,18 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	public function setDefaultRecipientAddress( $insEmailAddress ) {
 		$this->m_sRecipientAddress = $insEmailAddress;
 	}
-	
+
+	/**
+	 * @param string $sEmailAddress
+	 * @return string
+	 */
+	public function verifyEmailAddress( $sEmailAddress = '' ) {
+		return ( empty( $sEmailAddress ) || !is_email( $sEmailAddress ) ) ? $this->getDefaultRecipientAddress() : $sEmailAddress;
+	}
+
 	public function getDefaultRecipientAddress() {
 		if ( empty( $this->m_sRecipientAddress ) ) {
-			$this->m_sRecipientAddress = $this->m_aOptions[ 'block_send_email_address' ];
+			$this->m_sRecipientAddress = $this->getOption( 'block_send_email_address' );
 		}
 		return $this->m_sRecipientAddress;
 	}
@@ -185,7 +195,7 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	
 	public function getThrottleLimit() {
 		if ( empty( $this->m_nEmailThrottleLimit ) ) {
-			$this->m_nEmailThrottleLimit = $this->m_aOptions[ 'send_email_throttle_limit' ];
+			$this->m_nEmailThrottleLimit = $this->getOption( 'send_email_throttle_limit' );
 		}
 		return $this->m_nEmailThrottleLimit;
 	}

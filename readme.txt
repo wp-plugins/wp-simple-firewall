@@ -232,6 +232,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 = 3.0.0 =
 
 *   CHANGED:    Removed support for upgrading from versions < 2.0
+*   CHANGED:    Removed support for importing from Firewall 2 plugin - to import, manually install plugin < 3.0, import settings, then upgrade.
 
 = 2.6.6 =
 

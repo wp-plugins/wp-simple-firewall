@@ -271,7 +271,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	protected function doStatHumanSpamWords( $sStatWord = '' ) {
 		$this->loadWpsfStatsProcessor();
-		if ( !empty($sStatWord) ) {
+		if ( !empty( $sStatWord ) ) {
 			ICWP_Stats_WPSF::DoStatIncrementKeyValue( 'spam.human.words', base64_encode( $sStatWord ) );
 		}
 	}
@@ -520,7 +520,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			$this->m_sTableName,
 			$sToken,
 			$sPostId,
-			$this->m_nRequestIp
+			self::$nRequestIp
 		);
 		$mResult = $this->selectCustomFromTable( $sQuery );
 
@@ -535,7 +535,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			$nNow = time();
 			$aRecord = $mResult[0];
 			$nInterval = $nNow - $aRecord['created_at'];
-			if ( $nInterval < $this->m_aOptions[ 'comments_cooldown_interval' ]
+			if ( $nInterval < $this->getOption( 'comments_cooldown_interval' )
 					|| ( $this->getOption( 'comments_token_expire_interval' ) > 0 && $nInterval > $this->getOption('comments_token_expire_interval') )
 				) {
 				return false;
@@ -633,16 +633,16 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 						AND `post_id`		= '%s'
 				";
 			$sQuery = sprintf( $sQuery,
-					$this->m_sTableName,
-					$nNow,
-					$this->m_nRequestIp,
-					$insPostId
+				$this->m_sTableName,
+				$nNow,
+				self::$nRequestIp,
+				$insPostId
 			);
 			$this->doSql( $sQuery );
 		}
 		else {
 			$aWhere = array();
-			$aWhere['ip_long']		= $this->m_nRequestIp;
+			$aWhere['ip_long']		= self::$nRequestIp;
 			$aWhere['post_id']		= $insPostId;
 			$this->deleteRowsFromTable( $aWhere );
 		}
@@ -656,15 +656,19 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 		$aData = array();
 		$aData[ 'post_id' ]			= $insPostId;
 		$aData[ 'unique_token' ]	= $outsUniqueToken;
-		$aData[ 'ip_long' ]			= $this->m_nRequestIp;
+		$aData[ 'ip_long' ]			= self::$nRequestIp;
 		$aData[ 'created_at' ]		= $nNow;
 		
 		$mResult = $this->insertIntoTable( $aData );
 		return $mResult;
 	}
-	
-	protected function getUniqueToken( $insPostId ) {
-		$sToken = uniqid( $this->m_nRequestIp.$insPostId );
+
+	/**
+	 * @param $sPostId
+	 * @return string
+	 */
+	protected function getUniqueToken( $sPostId ) {
+		$sToken = uniqid( self::$nRequestIp.$sPostId );
 		return md5( $sToken );
 	}
 
