@@ -24,7 +24,7 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	const TableName = 'wpsf_log';
 	const DaysToKeepLog = 7;
 
-	protected $m_sRequestId;
+	protected $sVisitorRequestId;
 
 	/**
 	 * @param ICWP_OptionsHandler_Logging $oFeatureOptions
@@ -64,16 +64,16 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			$inaLogData['category'] = self::LOG_CATEGORY_DEFAULT;
 		}
 		if ( !isset( $inaLogData['request_id'] ) ) {
-			$inaLogData['request_id'] = $this->m_sRequestId;
+			$inaLogData['request_id'] = $this->sVisitorRequestId;
 		}
 		if ( !isset( $inaLogData['ip'] ) ) {
-			$inaLogData['ip'] = self::GetVisitorIpAddress( false );
+			$inaLogData['ip'] = self::$nRequestIp;
 		}
 		if ( !isset( $inaLogData['ip_long'] ) ) {
-			$inaLogData['ip_long'] = ip2long( $inaLogData['ip'] );
+			$inaLogData['ip_long'] = ip2long( self::$nRequestIp );
 		}
 		if ( !isset( $inaLogData['created_at'] ) ) {
-			$inaLogData['created_at'] = time();
+			$inaLogData['created_at'] = self::$nRequestTimestamp;
 		}
 		return $inaLogData;
 	}
@@ -111,7 +111,7 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		if ( !$this->getTableExists() ) {
 			return;
 		}
-		$nTimeStamp = time() - DAY_IN_SECONDS * self::DaysToKeepLog;
+		$nTimeStamp = self::$nRequestTimestamp - DAY_IN_SECONDS * self::DaysToKeepLog;
 		$this->deleteAllRowsOlderThan( $nTimeStamp );
 	}
 }

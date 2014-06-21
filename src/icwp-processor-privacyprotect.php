@@ -66,14 +66,13 @@ class ICWP_PrivacyProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 
 		// Now add new pending entry
-		$nNow = time();
 		$aData = array();
 		$aData[ 'request_url' ]		= $sRequestUrl;
 		$aData[ 'request_method' ]	= $aRequestArgs['method'];
 		$aData[ 'is_ssl' ]			= strpos( $sRequestUrl, 'https' ) === 0? 1 : 0;
 		$aData[ 'is_error' ]		= is_wp_error( $oHttpResponse )? 1 : 0;
 		$aData[ 'request_args' ]	= serialize( $aRequestArgs );
-		$aData[ 'requested_at' ]	= $nNow;
+		$aData[ 'requested_at' ]	= self::$nRequestTimestamp;
 
 		$mResult = $this->insertIntoTable( $aData );
 		return $mResult;

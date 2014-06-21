@@ -39,11 +39,19 @@ class ICWP_BaseProcessor_V3 {
 	 * @var array
 	 */
 	protected $m_aLogMessages;
-	
+
 	/**
 	 * @var long
 	 */
 	protected static $nRequestIp;
+	/**
+	 * @var long
+	 */
+	protected static $nRequestPostId;
+	/**
+	 * @var integer
+	 */
+	protected static $nRequestTimestamp;
 
 	/**
 	 * @var array
@@ -66,6 +74,9 @@ class ICWP_BaseProcessor_V3 {
 	public function reset() {
 		if ( !isset( self::$nRequestIp ) ) {
 			self::$nRequestIp = $this->getVisitorIpAddress();
+		}
+		if ( !isset( self::$nRequestTimestamp ) ) {
+			self::$nRequestTimestamp = time();
 		}
 		$this->resetLog();
 	}
@@ -113,6 +124,20 @@ class ICWP_BaseProcessor_V3 {
 	}
 
 	/**
+	 * @return bool|long
+	 */
+	public function getRequestPostId() {
+		if ( !isset( self::$nRequestPostId ) ) {
+			global $post;
+			if ( empty( $post ) ) {
+				return false;
+			}
+			self::$nRequestPostId = $post->ID;
+		}
+		return self::$nRequestPostId;
+	}
+
+	/**
 	 * Resets the log
 	 */
 	public function resetLog() {
@@ -133,7 +158,6 @@ class ICWP_BaseProcessor_V3 {
 	 * @see ICWP_WPSF_BaseProcessor::getLogData()
 	 */
 	public function flushLogData() {
-		return false;
 		if ( !$this->getIsLogging() ) {
 			return false;
 		}
@@ -197,8 +221,6 @@ class ICWP_BaseProcessor_V3 {
 	}
 
 	/**
-	 * Cloudflare compatible.
-	 * 
 	 * @param boolean $infAsLong - visitor IP Address as IP2Long
 	 * @return integer - visitor IP Address as IP2Long
 	 */
@@ -318,7 +340,9 @@ class ICWP_BaseProcessor_V3 {
 	/**
 	 */
 	protected function loadDataProcessor() {
-		require_once( dirname(__FILE__) . '/icwp-data-processor.php' );
+		if ( !class_exists( 'ICWP_WPSF_DataProcessor' ) ) {
+			require_once( dirname(__FILE__) . '/icwp-data-processor.php' );
+		}
 	}
 
 	/**

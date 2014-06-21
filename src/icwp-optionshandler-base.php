@@ -219,6 +219,13 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	/**
+	 * with trailing slash
+	 */
+	public function getResourcesDir() {
+		$this->oPluginVo->getRootDir().'resources'.ICWP_DS;
+	}
+
+	/**
 	 *
 	 */
 	public function filter_flushFeatureLogs( $aLogs ) {
@@ -816,6 +823,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		$aData = array(
 			'requested_page'	=> $this->doPluginPrefix( $this->sFeatureSlug )
 		);
+		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $this->doPluginPrefix( 'view_access_restricted_index', '_' ), $aData );
 	}
 

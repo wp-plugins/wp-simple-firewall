@@ -35,38 +35,17 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 * @var string
 	 */
 	static protected $sModeFile_LoginThrottled;
+
 	/**
 	 * The unique comment token assigned to this page
 	 * @var integer
 	 */
-	protected $m_sUniqueToken;
+	protected $sUniqueCommentToken;
 	/**
 	 * The unique comment token assigned to this page
 	 * @var integer
 	 */
 	protected $m_sUniqueFormId;
-	/**
-	 * The length of time that must pass between a page being loaded and comment being posted.
-	 * @var integer
-	 */
-	protected $m_nCommentCooldown;
-	/**
-	 * The maxium length of time that comment token may last and be used.
-	 * @var integer
-	 */
-	protected $m_nCommentTokenExpire;
-	/**
-	 * @var integer
-	 */
-	protected $m_nLastLoginTime;
-	/**
-	 * @var string
-	 */
-	protected $m_sSecretKey;
-	/**
-	 * @var string
-	 */
-	protected $m_sGaspKey;
 	/**
 	 * @var string
 	 */
@@ -98,18 +77,16 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function reset() {
 		parent::reset();
-		$this->m_sUniqueToken = '';
+		$this->sUniqueCommentToken = '';
 		$this->sCommentStatus = '';
 		$this->sCommentStatusExplanation = '';
-		self::$sSpamBlacklistFile = dirname(__FILE__).ICWP_DS.'..'.ICWP_DS.'resources'.ICWP_DS.'spamblacklist.txt';
+		self::$sSpamBlacklistFile = $this->oFeatureOptions->getResourcesDir().'spamblacklist.txt';
 	}
 	
 	/**
 	 */
 	public function run() {
 		parent::run();
-
-		$fDoSetCommentStatus = false;
 
 		// Add GASP checking to the comment form.
 		if ( $this->getIsOption('enable_comments_gasp_protection', 'Y') ) {
@@ -164,25 +141,31 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	protected function doGaspCommentCheck( $nPostId ) {
 
 		//Check that we haven't already marked the comment through another scan
-		if ( !empty( $this->sCommentStatus ) || !$this->getIsOption('enable_comments_gasp_protection', 'Y') ) {
+		if ( !empty( $this->sCommentStatus ) || !$this->getIsOption( 'enable_comments_gasp_protection', 'Y' ) ) {
 			return;
 		}
 
 		$fIsSpam = true;
 		$sExplanation = '';
 
+		$this->loadDataProcessor();
+
+		$sFieldCheckboxName = ICWP_WPSF_DataProcessor::FetchPost( 'cb_nombre' );
+		$sFieldHoney = ICWP_WPSF_DataProcessor::FetchPost( 'sugar_sweet_email' );
+		$sFieldCommentToken = ICWP_WPSF_DataProcessor::FetchPost( 'comment_token' );
+
 		// we have the cb name, is it set?
-		if( !isset( $_POST['cb_nombre'] ) || !isset( $_POST[ $_POST['cb_nombre'] ] ) ) {
+		if( !$sFieldCheckboxName || !ICWP_WPSF_DataProcessor::FetchPost( $sFieldCheckboxName ) ) {
 			$sExplanation = sprintf( _wpsf__('Failed GASP Bot Filter Test (%s)' ), _wpsf__('checkbox') );
 			$sStatKey = 'checkbox';
 		}
 		// honeypot check
-		else if ( isset( $_POST['sugar_sweet_email'] ) && $_POST['sugar_sweet_email'] !== '' ) {
+		else if ( !empty( $sFieldHoney ) ) {
 			$sExplanation = sprintf( _wpsf__('Failed GASP Bot Filter Test (%s)' ), _wpsf__('honeypot') );
 			$sStatKey = 'honeypot';
 		}
 		// check the unique comment token is present
-		else if ( !isset( $_POST['comment_token'] ) || !$this->checkCommentToken( $_POST['comment_token'], $nPostId ) ) {
+		else if ( empty( $sFieldCommentToken ) || !$this->checkCommentToken( $sFieldCommentToken, $nPostId ) ) {
 			$sExplanation = sprintf( _wpsf__('Failed GASP Bot Filter Test (%s)' ), _wpsf__('comment token failure') );
 			$sStatKey = 'token';
 		}
@@ -192,7 +175,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 
 		if ( $fIsSpam ) {
 			$this->doStatIncrement( sprintf( 'spam.gasp.%s', $sStatKey ) );
-			$this->sCommentStatus = $this->getOption('comments_default_action_spam_bot');
+			$this->sCommentStatus = $this->getOption( 'comments_default_action_spam_bot' );
 			$this->setCommentStatusExplanation( $sExplanation );
 		}
 	}
@@ -207,7 +190,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			$aCommentData['comment_author_email'],
 			$aCommentData['comment_author_url'],
 			$aCommentData['comment_content'],
-			ICWP_WPSF_DataProcessor::GetVisitorIpAddress( false ),
+			long2ip( self::$nRequestIp ),
 			isset( $_SERVER['HTTP_USER_AGENT'] ) ? substr( $_SERVER['HTTP_USER_AGENT'], 0, 254 ) : ''
 		);
 	}
@@ -287,7 +270,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			$this->doSpamBlacklistImport();
 		}
 		// second, if it exists and it's older than 48hrs, update
-		else if ( time() - $oFs->getModifiedTime( self::$sSpamBlacklistFile ) > self::TWODAYS ) {
+		else if ( self::$nRequestTimestamp - $oFs->getModifiedTime( self::$sSpamBlacklistFile ) > self::TWODAYS ) {
 			$this->doSpamBlacklistUpdate();
 		}
 
@@ -348,14 +331,10 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			return;
 		}
 
-		global $post;
-		if ( !isset( $post ) || $post->comment_status != 'open' ) {
-			return;
-		}
-		$this->deleteOldPostCommentTokens( $post->ID );
-		$this->createUniquePostCommentToken( $post->ID, $this->m_sUniqueToken );
+		$this->deleteOldPostCommentTokens();
+		$this->insertUniquePostCommentToken();
 
-		require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+		$this->loadDataProcessor();
 		$this->m_sUniqueFormId = ICWP_WPSF_DataProcessor::GenerateRandomString( rand(7, 23), true );
 		
 		echo $this->getGaspCommentsHookHtml();
@@ -367,6 +346,13 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 * @return boolean
 	 */
 	protected function getIfDoCommentsCheck() {
+
+		//First, are comments allowed on this post?
+		global $post;
+		if ( !isset( $post ) || $post->comment_status != 'open' ) {
+			return false;
+		}
+
 		if ( !is_user_logged_in() ) {
 			return true;
 		}
@@ -392,7 +378,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 		$sId = $this->m_sUniqueFormId;
 		$sReturn = '<p id="'.$sId.'"></p>'; // we use this unique <p> to hook onto using javascript
 		$sReturn .= '<input type="hidden" id="_sugar_sweet_email" name="sugar_sweet_email" value="" />';
-		$sReturn .= '<input type="hidden" id="_comment_token" name="comment_token" value="'.$this->m_sUniqueToken.'" />';
+		$sReturn .= '<input type="hidden" id="_comment_token" name="comment_token" value="'.$this->sUniqueCommentToken.'" />';
 		return $sReturn;
 	}
 	
@@ -532,9 +518,8 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			$this->deleteUniquePostCommentToken( $sToken, $sPostId );
 			
 			// Did sufficient time pass, or has it expired?
-			$nNow = time();
 			$aRecord = $mResult[0];
-			$nInterval = $nNow - $aRecord['created_at'];
+			$nInterval = self::$nRequestTimestamp - $aRecord['created_at'];
 			if ( $nInterval < $this->getOption( 'comments_cooldown_interval' )
 					|| ( $this->getOption( 'comments_token_expire_interval' ) > 0 && $nInterval > $this->getOption('comments_token_expire_interval') )
 				) {
@@ -593,7 +578,6 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	protected function deleteUniquePostCommentToken( $insUniqueToken, $insPostId, $infSoftDelete = false ) {
 
 		if ( $infSoftDelete ) {
-			$nNow = time();
 			$sQuery = "
 					UPDATE `%s`
 						SET `deleted_at`	= '%s'
@@ -603,7 +587,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 				";
 			$sQuery = sprintf( $sQuery,
 				$this->m_sTableName,
-				$nNow,
+				self::$nRequestTimestamp,
 				$insUniqueToken,
 				$insPostId
 			);
@@ -617,14 +601,14 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 	/**
-	 *
-	 * @param string $insUniqueToken
-	 * @param string $insPostId
+	 * @param bool $fSoftDelete
+	 * @param string $sPostId
 	 */
-	protected function deleteOldPostCommentTokens( $insPostId, $infSoftDelete = false ) {
+	protected function deleteOldPostCommentTokens( $fSoftDelete = false, $sPostId = null ) {
 
-		if ( $infSoftDelete ) {
-			$nNow = time();
+		$nPostIdToDelete = empty( $sPostId ) ? $this->getRequestPostId() : $sPostId;
+
+		if ( $fSoftDelete ) {
 			$sQuery = "
 					UPDATE `%s`
 						SET `deleted_at`	= '%s'
@@ -634,42 +618,51 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 				";
 			$sQuery = sprintf( $sQuery,
 				$this->m_sTableName,
-				$nNow,
+				self::$nRequestTimestamp,
 				self::$nRequestIp,
-				$insPostId
+				$nPostIdToDelete
 			);
 			$this->doSql( $sQuery );
 		}
 		else {
 			$aWhere = array();
 			$aWhere['ip_long']		= self::$nRequestIp;
-			$aWhere['post_id']		= $insPostId;
+			$aWhere['post_id']		= $nPostIdToDelete;
 			$this->deleteRowsFromTable( $aWhere );
 		}
 	}
 
-	protected function createUniquePostCommentToken( $insPostId, &$outsUniqueToken = '' ) {
+	/**
+	 * @return mixed
+	 */
+	protected function insertUniquePostCommentToken() {
 
-		// Now add new pending entry
-		$nNow = time();
-		$outsUniqueToken = $this->getUniqueToken( $insPostId );
 		$aData = array();
-		$aData[ 'post_id' ]			= $insPostId;
-		$aData[ 'unique_token' ]	= $outsUniqueToken;
+		$aData[ 'post_id' ]			= $this->getRequestPostId();
+		$aData[ 'unique_token' ]	= $this->getUniqueCommentToken();
 		$aData[ 'ip_long' ]			= self::$nRequestIp;
-		$aData[ 'created_at' ]		= $nNow;
+		$aData[ 'created_at' ]		= self::$nRequestTimestamp;
 		
 		$mResult = $this->insertIntoTable( $aData );
 		return $mResult;
 	}
 
 	/**
-	 * @param $sPostId
 	 * @return string
 	 */
-	protected function getUniqueToken( $sPostId ) {
-		$sToken = uniqid( self::$nRequestIp.$sPostId );
+	protected function generateUniqueToken() {
+		$sToken = uniqid( self::$nRequestIp.self::$nRequestTimestamp.$this->getRequestPostId() );
 		return md5( $sToken );
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function getUniqueCommentToken() {
+		if ( !isset( $this->sUniqueCommentToken ) ) {
+			$this->sUniqueCommentToken = $this->generateUniqueToken();
+		}
+		return $this->sUniqueCommentToken;
 	}
 
 	/**
@@ -692,7 +685,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 		if ( !$this->getTableExists() ) {
 			return;
 		}
-		$nTimeStamp = time() - DAY_IN_SECONDS;
+		$nTimeStamp = self::$nRequestTimestamp - DAY_IN_SECONDS;
 		$this->deleteAllRowsOlderThan( $nTimeStamp );
 	}
 }

@@ -84,7 +84,7 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * @return type
 	 */
 	public function addDataToWrite( $inaLogData ) {
-		if ( empty( $inaLogData ) || empty( $inaLogData['messages'] ) ) {
+		if ( empty( $inaLogData ) ) {
 			return;
 		}
 		if ( empty( $this->m_aDataToWrite ) ) {
@@ -98,13 +98,14 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * 
 	 * This should be overridden per implementation
 	 * 
+	 * @param array $aLogData
 	 * @return array
 	 */
-	protected function completeDataForWrite( $inaLogData ) {
-		if ( is_null( $inaLogData ) ) {
+	protected function completeDataForWrite( $aLogData ) {
+		if ( is_null( $aLogData ) ) {
 			return array();
 		}
-		return $inaLogData;
+		return $aLogData;
 	}
 	
 	/**
@@ -134,9 +135,13 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	protected function flushData() {
 		$this->m_aDataToWrite = null;
 	}
-	
-	public function insertIntoTable( $inaData ) {
-		return $this->m_oWpdb->insert( $this->m_sTableName, $inaData );
+
+	/**
+	 * @param $aData
+	 * @return boolean
+	 */
+	public function insertIntoTable( $aData ) {
+		return $this->m_oWpdb->insert( $this->m_sTableName, $aData );
 	}
 	
 	public function selectAllFromTable( $innFormat = ARRAY_A ) {

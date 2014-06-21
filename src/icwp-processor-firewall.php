@@ -21,8 +21,6 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 
 class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
-	protected $m_nRequestTimestamp;
-	
 	protected $m_aWhitelistPages;
 	protected $m_aWhitelistPagesPatterns;
 	protected $m_aCustomWhitelistPageParams;
@@ -96,7 +94,6 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	
 	public function reset() {
 		parent::reset();
-		$this->m_nRequestTimestamp = time();
 		$this->m_nLoopProtect = 0;
 		$this->m_fRequestIsWhitelisted = false;
 	}
@@ -123,7 +120,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		$this->m_aLog = array(
 			'category'			=> self::LOG_CATEGORY_FIREWALL,
 			'messages'			=> serialize( $this->m_aLogMessages ),
-			'created_at'		=> $this->m_nRequestTimestamp,
+			'created_at'		=> self::$nRequestTimestamp,
 			'ip'				=> long2ip( self::$nRequestIp ),
 			'ip_long'			=> self::$nRequestIp,
 		);

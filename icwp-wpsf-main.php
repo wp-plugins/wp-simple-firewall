@@ -152,13 +152,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		return $aItems;
 	}
 
+	/**
+	 */
 	protected function handlePluginUpgrade() {
 		parent::handlePluginUpgrade();
 
 		$sCurrentPluginVersion = $this->m_oPluginMainOptions->getVersion();
-
-		if ( $sCurrentPluginVersion !== $this->oPluginVo->getVersion() && current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
-		}
+		if ( $sCurrentPluginVersion !== $this->oPluginVo->getVersion() && current_user_can( $this->oPluginVo->getBasePermissions() ) ) { }
 	}
 
 	/**
@@ -207,7 +207,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 	public function onDisplayAccessKeyRequest() {
 		$aData = array(
-			'nonce_field'		=> $this->getPluginPrefix(),
 			'requested_page'	=> $this->getCurrentWpAdminPage()
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );

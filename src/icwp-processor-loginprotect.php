@@ -332,18 +332,17 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		}
 		
 		// Get the last login time (and update it also for the next time)
-		$sNow = time();
 		$this->m_nLastLoginTime = $this->getLastLoginTime();
 
 		if ( empty( $this->m_nLastLoginTime ) || $this->m_nLastLoginTime < 0 ) {
-			$this->updateLastLoginThrottleTime( $sNow );
+			$this->updateLastLoginThrottleTime( self::$nRequestTimestamp );
 		}
 		
 		// If we're outside the interval, let the login process proceed as per normal and
 		// update our last login time.
-		$nLoginInterval = $sNow - $this->m_nLastLoginTime;
+		$nLoginInterval = self::$nRequestTimestamp - $this->m_nLastLoginTime;
 		if ( $nLoginInterval > $nRequiredLoginInterval ) {
-			$this->updateLastLoginThrottleTime( $sNow );
+			$this->updateLastLoginThrottleTime( self::$nRequestTimestamp );
 			$this->doStatIncrement( 'login.cooldown.success' );
 			return $inoUser;
 		}
@@ -695,12 +694,10 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 			return false;
 		}
 		
-		$sNow = time();
-		
 		// First set any other pending entries for the given user to be deleted.
 		$aOldData = array(
-			'deleted_at'	=> $sNow,
-			'expired_at'	=> $sNow,
+			'deleted_at'	=> self::$nRequestTimestamp,
+			'expired_at'	=> self::$nRequestTimestamp,
 		);
 		$aOldWhere = array(
 			'pending'		=> 1,
@@ -716,7 +713,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		$aNewData[ 'ip' ]			= long2ip( self::$nRequestIp );
 		$aNewData[ 'wp_username' ]	= $sUsername;
 		$aNewData[ 'pending' ]		= 1;
-		$aNewData[ 'created_at' ]	= time();
+		$aNewData[ 'created_at' ]	= self::$nRequestTimestamp;
 
 		$mResult = $this->insertIntoTable( $aNewData );
 		if ( $mResult ) {
@@ -784,7 +781,6 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	 * @param $sUsername
 	 */
 	protected function terminateActiveLoginForUser( $sUsername ) {
-		$sNow = time();
 		$sQuery = "
 			UPDATE `%s`
 			SET `deleted_at`	= '%s',
@@ -796,8 +792,8 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		";
 		$sQuery = sprintf( $sQuery,
 			$this->m_sTableName,
-			$sNow,
-			$sNow,
+			self::$nRequestTimestamp,
+			self::$nRequestTimestamp,
 			esc_sql( $sUsername )
 		);
 		$this->doSql( $sQuery );
@@ -807,7 +803,6 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	 *
 	 */
 	protected function terminateAllVerifiedLogins() {
-		$sNow = time();
 		$sQuery = "
 			UPDATE `%s`
 			SET `deleted_at`	= '%s',
@@ -818,8 +813,8 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		";
 		$sQuery = sprintf( $sQuery,
 			$this->m_sTableName,
-			$sNow,
-			$sNow
+			self::$nRequestTimestamp,
+			self::$nRequestTimestamp
 		);
 		return $this->doSql( $sQuery );
 	}
@@ -829,7 +824,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	public function setAuthActiveCookie( $insUniqueId ) {
 		$nWeek = defined( 'WEEK_IN_SECONDS' )? WEEK_IN_SECONDS : 24*60*60;
-		setcookie( self::AuthActiveCookie, $insUniqueId, time()+$nWeek, COOKIEPATH, COOKIE_DOMAIN, false );
+		setcookie( self::AuthActiveCookie, $insUniqueId, self::$nRequestTimestamp+$nWeek, COOKIEPATH, COOKIE_DOMAIN, false );
 	}
 	
 	/**
@@ -1006,7 +1001,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		if ( !$this->getTableExists() ) {
 			return;
 		}
-		$nTimeStamp = time() - (DAY_IN_SECONDS * $this->nDaysToKeepLog);
+		$nTimeStamp = self::$nRequestTimestamp - (DAY_IN_SECONDS * $this->nDaysToKeepLog);
 		$this->deleteAllRowsOlderThan( $nTimeStamp );
 	}
 

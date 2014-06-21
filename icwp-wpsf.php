@@ -178,6 +178,15 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	}
 
 	/**
+	 * get the root directory for the plugin with the trailing slash
+	 *
+	 * @return string
+	 */
+	public function getRootDir() {
+		return dirname( $this->getRootFile() ).ICWP_DS;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getRootFile() {
@@ -204,7 +213,7 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	 * @return string
 	 */
 	public function getViewDir() {
-		return dirname( $this->getRootFile() ).ICWP_DS.self::ViewDir.ICWP_DS;
+		return $this->getRootDir().ICWP_DS.self::ViewDir.ICWP_DS;
 	}
 }
 
