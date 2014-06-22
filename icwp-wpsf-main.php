@@ -351,79 +351,22 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			return false;
 		}
 
-		// do all the plugin feature/options.
-		do_action( $this->doPluginPrefix( 'form_submit', '_' ) );
+		// do all the plugin feature/options saving
+		do_action( $this->doPluginPrefix( 'form_submit' ) );
 
-		// now all the outside cases and the main plugin.
+		// here for reference. don't need this until we're processing a submit action here
+//		check_admin_referer( $this->getPluginPrefix() );
 
-		if ( !$this->hasPermissionToSubmit() ) {
-			return false;
-		}
+		// if it's the main dashboard, or one of the main features, load everything and save them
+		if ( $this->getIsPage_PluginAdmin() ) {
 
-		check_admin_referer( $this->getPluginPrefix() );
-		$sNonce = $this->fetchRequest( '_wpnonce', false );
-		if ( is_null( $sNonce ) || !wp_verify_nonce( $sNonce, $this->getPluginPrefix() ) ) {
-			wp_die( 'Whoops. You should not be trying that.' );
-		}
-
-		$sCurrentPage = $this->getCurrentWpAdminPage();
-		if ( !empty( $sCurrentPage ) ) {
-
-			switch ( $sCurrentPage ) {
-				case $this->getSubmenuId( 'firewall_log' ):
-					$this->handleSubmit_FirewallLog();
-					break;
-				case $this->getSubmenuId( 'privacy_protect_log' ):
-					$this->handleSubmit_PrivacyProtectLog();
-					break;
-				default:
-					break;
+			if ( $this->getIsPage_PluginMainDashboard() && !$this->fetchPost( $this->doPluginPrefix('enable_admin_access_restriction', '_') ) ) {
+				$this->setPermissionToSubmit( false );
 			}
 
-			// if it's the main dashboard, or one of the main features, load everything and save them
-			if ( $this->getIsPage_PluginAdmin() ) {
-
-				if ( $this->getIsPage_PluginMainDashboard() && !$this->fetchPost( $this->doPluginPrefix('enable_admin_access_restriction', '_') ) ) {
-					$this->setPermissionToSubmit( false );
-				}
-
-				wp_safe_redirect( $this->getUrl_PluginDashboard( $sCurrentPage ) );
-				return true;
-			}
+			wp_safe_redirect( $this->getUrl_PluginDashboard( $this->getCurrentWpAdminPage() ) );
+			return true;
 		}
-	}
-
-	protected function handleSubmit_FirewallLog() {
-		// Ensures we're actually getting this request from a valid WP submission.
-
-		$this->loadOptionsHandler( 'Firewall' );
-
-		// At the time of writing the page only has 1 form submission item - clear log
-		if ( !is_null( $this->fetchPost( 'clear_log_submit' ) ) ) {
-			$oLoggingProcessor = $this->getProcessor_Logging();
-			$oLoggingProcessor->recreateTable();
-		}
-		else {
-			$this->m_oFirewallOptions->addRawIpsToFirewallList( 'ips_whitelist', array( $this->fetchGet( 'whiteip' ) ) );
-			$this->m_oFirewallOptions->removeRawIpsFromFirewallList( 'ips_whitelist', array( $this->fetchGet( 'unwhiteip' ) ) );
-			$this->m_oFirewallOptions->addRawIpsToFirewallList( 'ips_blacklist', array( $this->fetchGet( 'blackip' ) ) );
-			$this->m_oFirewallOptions->removeRawIpsFromFirewallList( 'ips_blacklist', array( $this->fetchGet( 'unblackip' ) ) );
-		}
-		wp_safe_redirect( $this->getUrl_PluginDashboard( 'firewall_log' ) ); //means no admin message is displayed
-		exit();
-	}
-
-	protected function handleSubmit_PrivacyProtectLog() {
-
-		$this->loadOptionsHandler( 'PrivacyProtect' );
-
-		// At the time of writing the page only has 1 form submission item - clear log
-		if ( !is_null( $this->fetchPost( 'clear_log_submit' ) ) ) {
-			$oPrivacyProtectProcessor = $this->getProcessor_PrivacyProtect();
-			$oPrivacyProtectProcessor->recreateTable();
-		}
-		wp_safe_redirect( $this->getUrl_PluginDashboard( 'privacy_protect_log' ) ); //means no admin message is displayed
-		exit();
 	}
 
 	/**

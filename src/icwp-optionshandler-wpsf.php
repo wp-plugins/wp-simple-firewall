@@ -24,15 +24,26 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	const Default_AccessKeyTimeout = 30;
 	
 	/**
-	 * @var ICWP_WPSF_AutoUpdatesProcessor
+	 * @var ICWP_WPSF_PluginProcessor
 	 */
 	protected $oFeatureProcessor;
 
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Dashboard');
 		$this->sFeatureSlug = 'dashboard';
-		$this->fShowFeatureMenuItem = false;
+		$this->fShowFeatureMenuItem = true;
 		parent::__construct( $oPluginVo, 'plugin_options' );
+	}
+
+	/**
+	 * @return ICWP_WPSF_PluginProcessor|null
+	 */
+	protected function loadFeatureProcessor() {
+		if ( !isset( $this->oFeatureProcessor ) ) {
+			require_once( dirname(__FILE__).'/icwp-processor-plugin.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_PluginProcessor( $this );
+		}
+		return $this->oFeatureProcessor;
 	}
 
 	/**

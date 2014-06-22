@@ -213,7 +213,7 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	 * @return string
 	 */
 	public function getViewDir() {
-		return $this->getRootDir().ICWP_DS.self::ViewDir.ICWP_DS;
+		return $this->getRootDir().self::ViewDir.ICWP_DS;
 	}
 }
 

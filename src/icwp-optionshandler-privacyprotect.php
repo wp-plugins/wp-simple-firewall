@@ -106,6 +106,20 @@ class ICWP_OptionsHandler_PrivacyProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			$aFurtherOptions
 		);
 	}
+
+	public function handleFormSubmit() {
+		if ( !parent::handleFormSubmit() ) {
+			return false;
+		}
+		$this->loadDataProcessor();
+
+		if ( ICWP_WPSF_DataProcessor::FetchPost( 'clear_log_submit' ) ) {
+			$oLoggingProcessor = $this->getLoggingProcessor();
+			$oLoggingProcessor->recreateTable();
+			return true;
+		}
+		return true;
+	}
 }
 
 endif;

@@ -140,7 +140,11 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	protected function doGaspCommentCheck( $nPostId ) {
 
-		//Check that we haven't already marked the comment through another scan
+		if ( !$this->getIfDoGaspCheck() ) {
+			return;
+		}
+
+		// Check that we haven't already marked the comment through another scan
 		if ( !empty( $this->sCommentStatus ) || !$this->getIsOption( 'enable_comments_gasp_protection', 'Y' ) ) {
 			return;
 		}
@@ -347,6 +351,15 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	protected function getIfDoCommentsCheck() {
 
+		// Compatibility with shoutbox WP Wall Plugin
+		// http://wordpress.org/plugins/wp-wall/
+		if ( function_exists( 'WPWall_Init' ) ) {
+			$this->loadDataProcessor();
+			if ( !is_null( ICWP_WPSF_DataProcessor::FetchPost('submit_wall_post') ) ) {
+				return false;
+			}
+		}
+
 		//First, are comments allowed on this post?
 		global $post;
 		if ( !isset( $post ) || $post->comment_status != 'open' ) {
@@ -360,6 +373,24 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Tells us whether, for this particular comment post, if we should do GASP comments checking.
+	 *
+	 * @return boolean
+	 */
+	protected function getIfDoGaspCheck() {
+
+		// Compatibility with shoutbox WP Wall Plugin
+		// http://wordpress.org/plugins/wp-wall/
+		if ( function_exists( 'WPWall_Init' ) ) {
+			$this->loadDataProcessor();
+			if ( !is_null( ICWP_WPSF_DataProcessor::FetchPost('submit_wall_post') ) ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**

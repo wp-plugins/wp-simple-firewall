@@ -127,7 +127,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 	protected function loadOptionsHandler( $insOptionHandler = 'PluginMain', $infRecreate = false, $infFullBuild = false ) {
 
 		$aAllHandlers = array_values( $this->getFeaturesMap() );
-		$aAllHandlers[] = 'PluginMain';
+		array_unshift( $aAllHandlers, 'PluginMain' );
 		
 		// special case
 		if ( $insOptionHandler == 'all' ) {

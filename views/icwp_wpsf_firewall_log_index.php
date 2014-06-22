@@ -46,7 +46,7 @@ $aLogTypes = array(
 					?>
 					<div class="form-actions">
 						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-						<button type="submit" class="btn btn-primary" name="clear_log_submit"><?php _wpsf_e( 'Clear/Fix Log' ); ?></button>
+						<button type="submit" class="btn btn-primary" name="clear_log_submit" value="1"><?php _wpsf_e( 'Clear/Fix Log' ); ?></button>
 					</div>
 				</form>
 

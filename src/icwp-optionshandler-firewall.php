@@ -285,6 +285,29 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function handleFormSubmit() {
+		if ( !parent::handleFormSubmit() ) {
+			return false;
+		}
+		$this->loadDataProcessor();
+
+		if ( ICWP_WPSF_DataProcessor::FetchPost( 'clear_log_submit' ) ) {
+			$oLoggingProcessor = $this->getLoggingProcessor();
+			$oLoggingProcessor->recreateTable();
+			return true;
+		}
+
+		$this->addRawIpsToFirewallList( 'ips_whitelist', array( ICWP_WPSF_DataProcessor::FetchGet( 'whiteip' ) ) );
+		$this->removeRawIpsFromFirewallList( 'ips_whitelist', array( ICWP_WPSF_DataProcessor::FetchGet( 'unwhiteip' ) ) );
+		$this->addRawIpsToFirewallList( 'ips_blacklist', array( ICWP_WPSF_DataProcessor::FetchGet( 'blackip' ) ) );
+		$this->removeRawIpsFromFirewallList( 'ips_blacklist', array( ICWP_WPSF_DataProcessor::FetchGet( 'unblackip' ) ) );
+
+		return true;
+	}
+
+	/**
 	 * @param $insListName
 	 * @param $inaNewIps
 	 */

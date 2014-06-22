@@ -341,7 +341,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		}
 		
 		$sFullParentMenuId = $this->getPluginPrefix();
-		add_menu_page( $this->oPluginVo->getHumanName(), $this->oPluginVo->getAdminMenuTitle(), $this->oPluginVo->getBasePermissions(), $sFullParentMenuId, array( $this, 'onDisplayAll' ), $this->getPluginLogoUrl16() );
+		add_menu_page( $this->oPluginVo->getHumanName(), $this->oPluginVo->getAdminMenuTitle(), $this->oPluginVo->getBasePermissions(), $sFullParentMenuId, '', $this->getPluginLogoUrl16() );
 		//Create and Add the submenu items
 //		$this->createPluginSubMenuItems();
 
@@ -368,7 +368,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 //				add_submenu_page( $sFullParentMenuId, $sMenuTitle, $sMenuItemText, $this->oPluginVo->getBasePermissions(), $sMenuItemId, array( $this, $sMenuCallBack ) );
 //			}
 //		}
-		$this->fixSubmenu();
+//		$this->fixSubmenu();
 	}
 
 	/**

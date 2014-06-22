@@ -108,8 +108,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
 		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ) );
 		add_action( 'init', array( $this, 'onWpInit' ), 1 );
-//		add_action( $this->doPluginPrefix( 'form_submit', '_' ), array( $this, 'updatePluginOptionsFromSubmit' ) );
-		add_action( $this->doPluginPrefix( 'form_submit', '_' ), array( $this, 'handleFormSubmit' ) );
+		add_action( $this->doPluginPrefix( 'form_submit' ), array( $this, 'handleFormSubmit' ) );
 		add_filter( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array( $this, 'filter_addPluginSubMenuItem' ) );
 		add_filter( $this->doPluginPrefix( 'flush_logs' ), array( $this, 'filter_flushFeatureLogs' ) );
 		add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
