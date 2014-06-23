@@ -34,8 +34,6 @@ $aLogTypes = array(
 	}
 </style>
 
-<div class="wrap">
-	<div class="bootstrap-wpadmin">
 		<?php echo printOptionsPageHeader( _wpsf__('Firewall Log') ); ?>
 
 		<div class="row">
@@ -116,7 +114,5 @@ $aLogTypes = array(
 		  	<p></p>
 		  </div><!-- / span6 -->
 		</div><!-- / row -->
-		
-	</div><!-- / bootstrap-wpadmin -->
 
-</div><!-- / wrap -->
+<?php include_once( 'icwp_wpsf_config_footer.php' );

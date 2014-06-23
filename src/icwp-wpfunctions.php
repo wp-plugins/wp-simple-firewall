@@ -202,6 +202,15 @@ class ICWP_WpFunctions_V4 {
 		return $this->isMultisite() ? delete_site_option( $sKey ) : delete_option( $sKey );
 	}
 
+	/**
+	 */
+	public function getCurrentWpAdminPage() {
+		$sScript = isset( $_SERVER['SCRIPT_NAME'] )? $_SERVER['SCRIPT_NAME'] : $_SERVER['PHP_SELF'];
+		if ( is_admin() && !empty( $sScript ) && basename( $sScript ) == 'admin.php' && isset( $_GET['page'] ) ) {
+			$sCurrentPage = $_GET['page'];
+		}
+		return empty($sCurrentPage)? '' : $sCurrentPage;
+	}
 
 }
 endif;

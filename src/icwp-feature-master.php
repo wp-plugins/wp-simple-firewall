@@ -141,7 +141,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 			return false;
 		}
 		
-		$sOptionsVarName = 'm_o'.$insOptionHandler.'Options'; // e.g. m_oPluginMainOptions
+		$sOptionsVarName = 'o'.$insOptionHandler.'Options'; // e.g. m_oPluginMainOptions
 		if ( $insOptionHandler == 'PluginMain' ) {
 			$sSourceFile = dirname(__FILE__).'/icwp-optionshandler-'.$this->oPluginVo->getPluginSlug().'.php'; // e.g. icwp-optionshandler-wpsf.php
 			$sClassName = 'ICWP_OptionsHandler_'.ucfirst( $this->oPluginVo->getPluginSlug() ); // e.g. ICWP_OptionsHandler_Wpsf
@@ -158,7 +158,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		if ( $infFullBuild ) {
 			$this->{$sOptionsVarName}->buildOptions();
 		}
-		return true;
+		return $this->{$sOptionsVarName};
 	}
 	
 //	/**

@@ -1,43 +1,22 @@
 <?php
 include_once( 'icwp_wpsf_config_header.php' );
-
 $icwp_fShowAds = false;
 ?>
-<style>
-	dt {
-		width: auto !important;
-	}
-	tr.row-log-header td {
-		border-top: 2px solid #999 !important;
-	}
-	td .cell-section {
-		display: inline-block;
-	}
-	td .section-timestamp {
-		text-align: right;
-		width: 28%;
-	}
-</style>
+	<div class="row">
+		<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
+			<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
+				<?php
+				wp_nonce_field( $icwp_nonce_field );
+				?>
+				<div class="form-actions">
+					<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
+					<button type="submit" class="btn btn-primary" name="clear_log_submit"><?php _wpsf_e( 'Clear/Fix Log' ); ?></button>
+				</div>
+			</form>
 
-<div class="wrap">
-	<div class="bootstrap-wpadmin">
-		<?php echo printOptionsPageHeader( _wpsf__('Privacy Log') ); ?>
-
-		<div class="row">
-			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
-				<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
-					<?php
-						wp_nonce_field( $icwp_nonce_field );
-					?>
-					<div class="form-actions">
-						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-						<button type="submit" class="btn btn-primary" name="clear_log_submit"><?php _wpsf_e( 'Clear/Fix Log' ); ?></button>
-					</div>
-				</form>
-
-				<?php if ( !$icwp_urlrequests_log ) : ?>
-					<?php echo 'There are currently no logs to display. If you expect there to be some, use the button above to Clean/Fix them.'; ?>
-				<?php else : ?>
+			<?php if ( !$icwp_urlrequests_log ) : ?>
+				<?php echo 'There are currently no logs to display. If you expect there to be some, use the button above to Clean/Fix them.'; ?>
+			<?php else : ?>
 
 				<table class="table table-bordered table-hover table-condensed">
 					<tr>
@@ -70,23 +49,37 @@ $icwp_fShowAds = false;
 				</table>
 
 			<?php endif; ?>
-			</div><!-- / span9 -->
-		
-			<?php if ( $icwp_fShowAds ) : ?>
-			<div class="span3" id="side_widgets">
-		  		<?php echo getWidgetIframeHtml('side-widgets-wtb'); ?>
-			</div>
-			<?php endif; ?>
-		</div><!-- / row -->
-		
-		<div class="row">
-		  <div class="span6">
-		  </div><!-- / span6 -->
-		  <div class="span6">
-		  	<p></p>
-		  </div><!-- / span6 -->
-		</div><!-- / row -->
-		
-	</div><!-- / bootstrap-wpadmin -->
+		</div><!-- / span9 -->
 
-</div><!-- / wrap -->
+		<?php if ( $icwp_fShowAds ) : ?>
+			<div class="span3" id="side_widgets">
+				<?php echo getWidgetIframeHtml('side-widgets-wtb'); ?>
+			</div>
+		<?php endif; ?>
+	</div><!-- / row -->
+
+	<div class="row">
+		<div class="span6">
+		</div><!-- / span6 -->
+		<div class="span6">
+			<p></p>
+		</div><!-- / span6 -->
+	</div><!-- / row -->
+
+	<style>
+		dt {
+			width: auto !important;
+		}
+		tr.row-log-header td {
+			border-top: 2px solid #999 !important;
+		}
+		td .cell-section {
+			display: inline-block;
+		}
+		td .section-timestamp {
+			text-align: right;
+			width: 28%;
+		}
+	</style>
+
+<?php include_once( 'icwp_wpsf_config_footer.php' );

@@ -199,16 +199,17 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * @param boolean $fHasPermission
 	 * @return boolean
 	 */
-	public function hasPermissionToView( $fHasPermission = false ) {
-		return $this->hasPermissionToSubmit();
+	public function hasPermissionToView( $fHasPermission = true ) {
+		return $this->hasPermissionToSubmit( $fHasPermission );
 	}
 
 	/**
+	 * @param boolean $fHasPermission
 	 * @return boolean
 	 */
-	public function hasPermissionToSubmit() {
+	public function hasPermissionToSubmit( $fHasPermission = true ) {
 		// first a basic admin check
-		return is_super_admin() && current_user_can( $this->oPluginVo->getBasePermissions() );
+		return $fHasPermission && is_super_admin() && current_user_can( $this->oPluginVo->getBasePermissions() );
 	}
 	
 	public function doPluginUpdateCheck() {
@@ -251,25 +252,17 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 			$this->doPluginUpdateCheck();
 			$this->load_textdomain();
 		}
-		if ( $this->isIcwpPluginFormSubmit() ) {
-			$this->handlePluginFormSubmit();
-		}
+		$this->handlePluginFormSubmit();
 		add_filter( 'all_plugins', array( $this, 'filter_hidePluginFromTableList' ) );
 		add_filter( 'site_transient_update_plugins', array( $this, 'filter_hidePluginUpdatesFromUI' ) );
-		$this->removePluginConflicts(); // removes conflicts with other plugins
 	}
 
-	/**
-	 * Override this to remove conflicts with other plugins that may have loaded
-	 * that interfere with normal operations.
-	 */
-	protected function removePluginConflicts() {}
-	
 	/**
 	 * Added to a WordPress filter ('all_plugins') which will remove this particular plugin from the
 	 * list of all plugins based on the "plugin file" name.
 	 * 
 	 * @uses $this->m_fHeadless if the plugin is headless, it is hidden
+	 * @param array $aPlugins
 	 * @return array
 	 */
 	public function filter_hidePluginFromTableList( $aPlugins ) {
@@ -341,7 +334,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		}
 		
 		$sFullParentMenuId = $this->getPluginPrefix();
-		add_menu_page( $this->oPluginVo->getHumanName(), $this->oPluginVo->getAdminMenuTitle(), $this->oPluginVo->getBasePermissions(), $sFullParentMenuId, '', $this->getPluginLogoUrl16() );
+		add_menu_page( $this->oPluginVo->getHumanName(), $this->oPluginVo->getAdminMenuTitle(), $this->oPluginVo->getBasePermissions(), $sFullParentMenuId, array( $this, 'displayAll' ), $this->getPluginLogoUrl16() );
 		//Create and Add the submenu items
 //		$this->createPluginSubMenuItems();
 
@@ -368,7 +361,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 //				add_submenu_page( $sFullParentMenuId, $sMenuTitle, $sMenuItemText, $this->oPluginVo->getBasePermissions(), $sMenuItemId, array( $this, $sMenuCallBack ) );
 //			}
 //		}
-//		$this->fixSubmenu();
+		$this->fixSubmenu();
 	}
 
 	/**
@@ -388,7 +381,8 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		global $submenu;
 		$sFullParentMenuId = $this->getPluginPrefix();
 		if ( isset( $submenu[$sFullParentMenuId] ) ) {
-			$submenu[$sFullParentMenuId][0][0] = 'Dashboard';
+			unset( $submenu[$sFullParentMenuId][0] );
+//			$submenu[$sFullParentMenuId][0][0] = 'Dashboard';
 		}
 	}
 
@@ -729,13 +723,40 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		}
 	}
 
-	protected function handlePluginFormSubmit() { }
+	protected function handlePluginFormSubmit() {
+		if ( !$this->isIcwpPluginFormSubmit() ) {
+			return false;
+		}
+//		check_admin_referer( $this->getPluginPrefix() );
+
+		// do all the plugin feature/options saving
+		do_action( $this->doPluginPrefix( 'form_submit' ) );
+
+		if ( $this->getIsPage_PluginAdmin() ) {
+			wp_safe_redirect( $this->getUrl_PluginDashboard( $this->getCurrentWpAdminPage() ) );
+			return true;
+		}
+	}
 
 	/**
 	 * @return bool
 	 */
 	protected function isIcwpPluginFormSubmit() {
-		return $this->fetchPost( 'icwp_plugin_form_submit' ) == 'Y';
+		if ( empty($_POST) && empty($_GET) ) {
+			return false;
+		}
+
+		$aFormSubmitOptions = array(
+			'icwp_plugin_form_submit',
+			'icwp_link_action',
+			'icwp_wpsf_admin_access_key_request'
+		);
+		foreach( $aFormSubmitOptions as $sOption ) {
+			if ( !is_null( $this->fetchRequest( $sOption, false ) ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public function enqueueBootstrapAdminCss() {

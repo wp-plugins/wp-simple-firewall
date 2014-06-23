@@ -17,31 +17,18 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_WPSF_PluginProcessor') ):
+if ( !class_exists('ICWP_WPSF_Processor_AdminAccess') ):
 
-class ICWP_WPSF_PluginProcessor extends ICWP_WPSF_BaseProcessor {
+class ICWP_WPSF_Processor_AdminAccess extends ICWP_WPSF_BaseProcessor {
 
 	/**
-	 * @param ICWP_OptionsHandler_Wpsf $oFeatureOptions
+	 * @param ICWP_OptionsHandler_AdminAccessRestriction  $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_Wpsf $oFeatureOptions ) {
+	public function __construct( ICWP_OptionsHandler_AdminAccessRestriction $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 	}
 
-	public function run() {
-		$this->removePluginConflicts();
-	}
-
-	/**
-	 * Lets you remove certain plugin conflicts that might interfere with this plugin
-	 *
-	 * @see ICWP_Pure_Base_V1::removePluginConflicts()
-	 */
-	protected function removePluginConflicts() {
-		if ( class_exists('AIO_WP_Security') && isset( $GLOBALS['aio_wp_security'] ) ) {
-			remove_action( 'init', array( $GLOBALS['aio_wp_security'], 'wp_security_plugin_init'), 0 );
-		}
-	}
+	public function run() { }
 }
 
 endif;

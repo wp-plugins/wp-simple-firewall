@@ -53,6 +53,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 		}
 
 		// Force run automatic updates
+		$this->loadDataProcessor();
 		if ( ICWP_WPSF_DataProcessor::FetchGet( 'force_run_auto_updates' ) == 'now' ) {
 			$oProc = $this->getProcessor();
 			$oProc->setForceRunAutoUpdates( true );

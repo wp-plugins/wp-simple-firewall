@@ -71,6 +71,7 @@ function printFeatureSummaryBlock( $fOn, $sName, $sSettingsHref= '', $sInnerSpan
 		font: 48px/1 'dashicons';
 		vertical-align: top;
 	}
+	#feature-dashboard .feature-icon:before,
 	#feature-adminaccessprotection .feature-icon:before {
 		content: "\f332";
 	}
@@ -83,7 +84,7 @@ function printFeatureSummaryBlock( $fOn, $sName, $sSettingsHref= '', $sInnerSpan
 	#feature-commentsfilter .feature-icon:before {
 		content: "\f130";
 	}
-	#feature-autoupdates .feature-icon:before {
+	#feature-automaticupdates .feature-icon:before {
 		content: "\f463";
 	}
 	#feature-lockdown .feature-icon:before {
@@ -92,6 +93,11 @@ function printFeatureSummaryBlock( $fOn, $sName, $sSettingsHref= '', $sInnerSpan
 
 </style>
 
+<div class="row-fluid">
+	<div class="span">
+		<h3><?php _wpsf_e('Plugin Activated Features Summary:');?></h3>
+	</div>
+</div>
 <div class="row-fluid feature-summary-blocks">
 <?php
 foreach( $icwp_aSummaryData as $nKey => $aSummary ) {

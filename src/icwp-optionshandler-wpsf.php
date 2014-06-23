@@ -30,8 +30,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Dashboard');
-		$this->sFeatureSlug = 'dashboard';
-		$this->fShowFeatureMenuItem = true;
+		$this->sFeatureSlug = 'plugin';
 		parent::__construct( $oPluginVo, 'plugin_options' );
 	}
 
@@ -47,6 +46,33 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
+	 * @return mixed
+	 */
+	public function getIsMainFeatureEnabled() {
+		return true;
+	}
+
+	/**
+	 */
+	public function displayFeatureConfigPage( ) {
+
+		if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true ) ) {
+			$this->displayViewAccessRestrictedPage();
+			return;
+		}
+
+		$aPluginSummaryData = apply_filters( $this->doPluginPrefix( 'get_feature_summary_data' ), array() );
+
+		$aData = array(
+			'aAllOptions'		=> $this->getOptions(),
+			'all_options_input'	=> $this->collateAllFormInputsForAllOptions(),
+			'aSummaryData'		=> $aPluginSummaryData
+		);
+		$aData = array_merge( $this->getBaseDisplayData(), $aData );
+		$this->display( $this->doPluginPrefix( 'config_'.$this->sFeatureSlug.'_index', '_' ), $aData );
+	}
+
+	/**
 	 * @return bool|void
 	 */
 	public function defineOptions() {
@@ -58,6 +84,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 			'update_success_tracker',
 			'capability_can_disk_write',
 			'capability_can_remote_get',
+			'enable_admin_access_restriction',
 			'enable_firewall',
 			'enable_login_protect',
 			'enable_comments_filter',
@@ -65,48 +92,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 			'enable_autoupdates'
 		);
 		$this->mergeNonUiOptions( $aNonUiOptions );
-		
-		if ( $this->hasEncryptOption() ) {
-			
-			$aAccessKey = array(
-				'section_title' => _wpsf__( 'Admin Access Restriction' ),
-				'section_options' => array(
-					array(
-						'enable_admin_access_restriction',
-						'',
-						'N',
-						'checkbox',
-						_wpsf__( 'Enable Access Key' ),
-						_wpsf__( 'Enforce Admin Access Restriction' ),
-						_wpsf__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.' ),
-						'<a href="http://icwp.io/40" target="_blank">'._wpsf__( 'more info' ).'</a>'
-						.' | <a href="http://icwp.io/wpsf02" target="_blank">'._wpsf__( 'blog' ).'</a>'
-					),
-					array(
-						'admin_access_timeout',
-						'',
-						self::Default_AccessKeyTimeout,
-						'integer',
-						_wpsf__( 'Access Key Timeout' ),
-						_wpsf__( 'Specify A Timeout For Plugin Admin Access' ),
-						_wpsf__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again. Default: 30 minutes.' ),
-						'<a href="http://icwp.io/41" target="_blank">'._wpsf__( 'more info' ).'</a>'
-					),
-					array(
-						'admin_access_key',
-						'',
-						'',
-						'password',
-						_wpsf__( 'Admin Access Key' ),
-						_wpsf__( 'Specify Your Plugin Access Key' ),
-						_wpsf__( 'If you forget this, you could potentially lock yourself out from using this plugin.' )
-							.' <strong>'._wpsf__( 'Leave it blank to not update it' ).'</strong>',
-						'<a href="http://icwp.io/42" target="_blank">'._wpsf__( 'more info' ).'</a>'
-					)
-				)
-			);
-		}
-		
+
 		$aGeneral = array(
 			'section_title' => _wpsf__( 'General Plugin Options' ),
 			'section_options' => array(
@@ -131,73 +117,9 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$aGlobal = array(
-			'section_title' => _wpsf__( 'Global Plugin Features' ),
-			'section_options' => array(
-				array(
-					'enable_firewall',
-					'',	'N',
-					'checkbox',
-					_wpsf__( 'Enable Firewall' ),
-					_wpsf__( 'Enable (or Disable) The WordPress Firewall Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Firewall feature, or enable your selected Firewall options' )
-				),
-				array(
-					'enable_login_protect',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'Enable Login Protect' ),
-					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Login Protect feature, or enable your selected Login Protect options' )
-				),
-				array(
-					'enable_comments_filter',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'Enable Comments Filter' ),
-					_wpsf__( 'Enable (or Disable) The Comments Filter Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Comments Filter feature, or enable your selected Comments Filter options' )
-				),
-//				array(
-//					'enable_privacy_protect',
-//					'',
-//					'N',
-//					'checkbox',
-//					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Privacy Protection') ),
-//					sprintf( _wpsf__( 'Enable (or Disable) The %s Feature' ), _wpsf__('Privacy Protection') ),
-//					_wpsf__( 'Regardless of any other settings, this option will turn off the Privacy Protection feature, or enable your selected Privacy Protection options' ),
-//					'<a href="http://icwp.io/3y" target="_blank">'._wpsf__( 'more info' ).'</a>'
-//				),
-				array(
-					'enable_lockdown',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'Enable Lockdown' ),
-					_wpsf__( 'Enable (or Disable) The Lockdown Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Lockdown feature, or enable your selected Lockdown options' )
-				),
-				array(
-					'enable_autoupdates',
-					'',
-					'Y',
-					'checkbox',
-					_wpsf__( 'Enable Auto Updates' ),
-					_wpsf__( 'Enable (or Disable) The Auto Updates Feature' ),
-					_wpsf__( 'Regardless of any other settings, this option will turn off the Auto Updates feature, or enable your selected Auto Updates options' )
-				)
-			)
-		);
-
 		$this->aOptions = array(
-			$aGeneral,
-//			$aGlobal
+			$aGeneral
 		);
-		if ( isset( $aAccessKey ) ) {
-			array_unshift( $this->aOptions, $aAccessKey );
-		}
 	}
 	
 	/**

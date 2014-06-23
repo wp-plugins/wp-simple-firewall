@@ -110,6 +110,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		add_action( 'init', array( $this, 'onWpInit' ), 1 );
 		add_action( $this->doPluginPrefix( 'form_submit' ), array( $this, 'handleFormSubmit' ) );
 		add_filter( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array( $this, 'filter_addPluginSubMenuItem' ) );
+		add_filter( $this->doPluginPrefix( 'get_feature_summary_data' ), array( $this, 'filter_getFeatureSummaryData' ) );
 		add_filter( $this->doPluginPrefix( 'flush_logs' ), array( $this, 'filter_flushFeatureLogs' ) );
 		add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
 
@@ -196,8 +197,15 @@ class ICWP_OptionsHandler_Base_V2 {
 	/**
 	 * @return mixed
 	 */
-	protected function getIsMainFeatureEnabled() {
+	public function getIsMainFeatureEnabled() {
 		return $this->getOpt( 'enable_'.$this->sFeatureSlug ) == 'Y';
+	}
+
+	/**
+	 * @return mixed
+	 */
+	protected function getMainFeatureName() {
+		return $this->sFeatureName;
 	}
 
 	/**
@@ -238,20 +246,38 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	/**
-	 * @param $aItems
-	 * @return mixed
+	 * @param array $aItems
+	 * @return array
 	 */
 	public function filter_addPluginSubMenuItem( $aItems ) {
 		if ( !$this->fShowFeatureMenuItem || empty( $this->sFeatureName ) ) {
 			return $aItems;
 		}
-		$sMenuPageTitle = $this->oPluginVo->getHumanName().' - '.$this->sFeatureName;
+		$sMenuPageTitle = $this->oPluginVo->getHumanName().' - '.$this->getMainFeatureName();
 		$aItems[ $sMenuPageTitle ] = array(
-			$this->sFeatureName,
+			$this->getMainFeatureName(),
 			$this->sFeatureSlug,
 			array( $this, 'displayFeatureConfigPage' )
 		);
 		return $aItems;
+	}
+
+	/**
+	 * @param array $aSummaryData
+	 * @return array
+	 */
+	public function filter_getFeatureSummaryData( $aSummaryData ) {
+		if ( !$this->fShowFeatureMenuItem ) {
+			return $aSummaryData;
+		}
+
+		$aSummaryData[] = array(
+			$this->getIsMainFeatureEnabled(),
+			$this->getMainFeatureName(),
+			$this->doPluginPrefix( $this->sFeatureSlug )
+		);
+
+		return $aSummaryData;
 	}
 
 	/**
@@ -609,7 +635,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	 *
 	 */
 	public function handleFormSubmit() {
-		if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), false ) ) {
+		if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
 //			TODO: manage how we react to prohibited submissions
 			return false;
 		}
@@ -803,17 +829,26 @@ class ICWP_OptionsHandler_Base_V2 {
 	 */
 	public function displayFeatureConfigPage( ) {
 
-		if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), false ) ) {
+		if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true ) ) {
 			$this->displayViewAccessRestrictedPage();
 			return;
 		}
 
+		$aFeatureOptions = $this->getOptions();
+
+//		$aPluginSummaryData = apply_filters( $this->doPluginPrefix( 'get_feature_summary_data' ), array() );
 		$aData = array(
 			'aAllOptions'		=> $this->getOptions(),
-			'all_options_input'	=> $this->collateAllFormInputsForAllOptions()
+			'all_options_input'	=> $this->collateAllFormInputsForAllOptions(),
+			'aSummaryData'		=> isset( $aPluginSummaryData ) ? $aPluginSummaryData : array()
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $this->doPluginPrefix( 'config_'.$this->sFeatureSlug.'_index', '_' ), $aData );
+	}
+
+	public function getIsCurrentPageConfig() {
+		$oWpFunctions = $this->loadWpFunctions();
+		return $oWpFunctions->getCurrentWpAdminPage() == $this->doPluginPrefix( $this->sFeatureSlug );
 	}
 
 	/**
@@ -830,6 +865,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		return array(
 			'var_prefix'		=> $this->oPluginVo->getOptionStoragePrefix(),
 			'sPluginName'		=> $this->oPluginVo->getHumanName(),
+			'sFeatureName'		=> $this->getMainFeatureName(),
 			'fShowAds'			=> false && $this->isShowMarketing(),
 			'nonce_field'		=> $this->oPluginVo->getFullPluginPrefix(),
 			'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->sFeatureSlug )
