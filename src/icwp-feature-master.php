@@ -228,13 +228,6 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 //		return $aOptions;
 //	}
 
-	protected function deleteAllPluginDbOptions() {
-		if ( !current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
-			return;
-		}
-		do_action( $this->doPluginPrefix( 'delete_plugin_options' ) );
-	}
-
 	public function onWpActivatePlugin() {
 		$this->loadOptionsHandler( 'all', true, true );
 	}

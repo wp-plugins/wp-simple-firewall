@@ -544,8 +544,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 
 	public function onWpDeactivatePlugin() {
-		if ( $this->getFeatureHandler_MainPlugin()->getOpt( 'delete_on_deactivate' ) == 'Y' ) {
-			$this->deleteAllPluginDbOptions();
+		if ( $this->getFeatureHandler_MainPlugin()->getOpt( 'delete_on_deactivate' ) == 'Y' && current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
+			do_action( $this->doPluginPrefix( 'delete_plugin_options' ) );
 		}
 	}
 

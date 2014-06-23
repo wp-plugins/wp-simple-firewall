@@ -54,6 +54,14 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
+	 * @param array $aSummaryData
+	 * @return array
+	 */
+	public function filter_getFeatureSummaryData( $aSummaryData ) {
+		return $aSummaryData;
+	}
+
+	/**
 	 */
 	public function displayFeatureConfigPage( ) {
 
