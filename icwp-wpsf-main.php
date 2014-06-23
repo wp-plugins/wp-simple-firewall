@@ -407,37 +407,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		return parent::isShowMarketing();
 	}
 
-	/**
-	 * Updates the current log data with new data.
-	 *
-	 * @return void
-	 */
-	protected function updateLogStore() {
-//
-//		if ( $this->getIsMainFeatureEnabled( 'firewall' ) ) {
-//			$oFirewallProcessor = $this->getProcessor_Firewall();
-//			$aLogData = $oFirewallProcessor->flushLogData();
-//			if ( !is_null( $aLogData ) && !empty( $aLogData ) ) {
-//				$oLoggingProcessor = $this->getProcessor_Logging();
-//				$oLoggingProcessor->addDataToWrite( $aLogData );
-//			}
-//		}
-//
-//		if ( $this->getIsMainFeatureEnabled( 'login_protect' ) ) {
-//			$oLoginProtectProcessor = $this->getProcessor_Firewall();
-//			$aLogData = $oLoginProtectProcessor->flushLogData();
-//			if ( !is_null( $aLogData ) && !empty( $aLogData ) ) {
-//				$oLoggingProcessor = $this->getProcessor_Logging();
-//				$oLoggingProcessor->addDataToWrite( $aLogData );
-//			}
-//		}
-	}
-
-	public function doPluginShutdown() {
-		$this->updateLogStore();
-		parent::doPluginShutdown();
-	}
-
 	protected function getPluginsListUpdateMessage() {
 		return _wpsf__( 'Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features.' );
 	}
@@ -572,6 +541,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 			'href'	=> 'bob',
 		);
 		return array( $aMenu );
+	}
+
+	public function onWpDeactivatePlugin() {
+		if ( $this->getFeatureHandler_MainPlugin()->getOpt( 'delete_on_deactivate' ) == 'Y' ) {
+			$this->deleteAllPluginDbOptions();
+		}
+	}
+
+	/**
+	 * @return ICWP_OptionsHandler_AdminAccessRestriction|null
+	 */
+	public function getFeatureHandler_MainPlugin() {
+		return $this->loadOptionsHandler( 'PluginMain' );
 	}
 
 	/**

@@ -39,7 +39,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 	/**
 	 * @var ICWP_OptionsHandler_Wpsf
 	 */
-	protected $m_oPluginMainOptions;
+	protected $oPluginMainOptions;
 
 	protected $fHasFtpOverride = false;
 
@@ -66,14 +66,14 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		return array_key_exists( $sFeature, $this->getFeaturesMap() ) || in_array( $sFeature, $this->getFeaturesMap() );
 	}
 	
-	/**
-	 * @param string $sFeature	- firewall, login_protect, comments_filter, lockdown
-	 * @return boolean
-	 */
-	public function getIsMainFeatureEnabled( $sFeature ) {
-		$this->override();
-		return $this->getIsFeature( $sFeature ) && ( $this->m_oPluginMainOptions->getOpt( 'enable_'.$sFeature ) == 'Y' );
-	}
+//	/**
+//	 * @param string $sFeature	- firewall, login_protect, comments_filter, lockdown
+//	 * @return boolean
+//	 */
+//	public function getIsMainFeatureEnabled( $sFeature ) {
+//		$this->override();
+//		return $this->getIsFeature( $sFeature ) && ( $this->oPluginMainOptions->getOpt( 'enable_'.$sFeature ) == 'Y' );
+//	}
 	/**
 	 * Based on the existence of files placed within the plugin directory, will enable or disable
 	 * all registered features and return the value of the override setting that was put in place.
@@ -119,9 +119,9 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 		}
 		
 		$this->loadOptionsHandler( $aFeatures[$sFeature] );
-		$sOptions = 'm_o'.$aFeatures[$sFeature].'Options';// e.g. m_oFirewallOptions
+		$sOptions = 'o'.$aFeatures[$sFeature].'Options';// e.g. oFirewallOptions
 		$this->{$sOptions}->setOpt( $insOption, $inmValue );
-		$this->m_oPluginMainOptions->setOpt( $insOption, $inmValue );
+		$this->oPluginMainOptions->setOpt( $insOption, $inmValue );
 	}
 	
 	protected function loadOptionsHandler( $insOptionHandler = 'PluginMain', $infRecreate = false, $infFullBuild = false ) {
@@ -141,7 +141,12 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 			return false;
 		}
 		
-		$sOptionsVarName = 'o'.$insOptionHandler.'Options'; // e.g. m_oPluginMainOptions
+		$sOptionsVarName = 'o'.$insOptionHandler.'Options'; // e.g. oPluginMainOptions
+
+		if ( isset( $this->{$sOptionsVarName} ) ) {
+			return $this->{$sOptionsVarName};
+		}
+
 		if ( $insOptionHandler == 'PluginMain' ) {
 			$sSourceFile = dirname(__FILE__).'/icwp-optionshandler-'.$this->oPluginVo->getPluginSlug().'.php'; // e.g. icwp-optionshandler-wpsf.php
 			$sClassName = 'ICWP_OptionsHandler_'.ucfirst( $this->oPluginVo->getPluginSlug() ); // e.g. ICWP_OptionsHandler_Wpsf
@@ -169,7 +174,7 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 //	 * @return ICWP_OptionsHandler_Base_Wpsf
 //	 */
 //	protected function loadProcessor( $insProcessorName, $infRebuild = false ) {
-//		$sProcessorVarName = 'm_o'.$insProcessorName.'Processor'; // e.g. m_oFirewallProcessor
+//		$sProcessorVarName = 'o'.$insProcessorName.'Processor'; // e.g. oFirewallProcessor
 //
 //		if ( isset( $this->{$sProcessorVarName} ) ) {
 //			return $this->{$sProcessorVarName};
@@ -181,11 +186,11 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 //		if ( !in_array( $insProcessorName, array_values($aAllProcessors) ) ) {
 //			$this->doWpDie( sprintf('Processor %s is not permitted here.', $insProcessorName) );
 //		}
-//		$sProcessorVarName = 'm_o'.$insProcessorName.'Processor'; // e.g. m_oFirewallProcessor
+//		$sProcessorVarName = 'o'.$insProcessorName.'Processor'; // e.g. oFirewallProcessor
 //		$sSourceFile = dirname(__FILE__).'/icwp-processor-'.strtolower($insProcessorName).'.php'; // e.g. icwp-optionshandler-wpsf.php
 //		$sClassName = 'ICWP_'.strtoupper( $this->oPluginVo->getPluginSlug() ).'_'.$insProcessorName.'Processor'; // e.g. ICWP_WPSF_FirewallProcessor
 ////		$sStorageKey = array_search($insProcessorName, $aAllProcessors).'_processor'; // e.g. firewall_processor
-//		$sOptionsHandlerVarName = 'm_o'.$insProcessorName.'Options'; // e.g. m_oFirewallOptions
+//		$sOptionsHandlerVarName = 'o'.$insProcessorName.'Options'; // e.g. oFirewallOptions
 //
 //		require_once( $sSourceFile );
 //
@@ -211,46 +216,27 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 //		}
 //		return $this->{$sProcessorVarName};
 //	}
-
-	protected function getAllOptionsHandlers() {
-		$this->loadOptionsHandler('all');
-		$aOptions = array();
-		foreach( $this->m_aOptionsHandlers as $sName ) {
-			if ( isset( $this->{$sName} ) ) {
-				$aOptions[] = &$this->{$sName};
-			}
-		}
-		return $aOptions;
-	}
+//
+//	protected function getAllOptionsHandlers() {
+//		$this->loadOptionsHandler('all');
+//		$aOptions = array();
+//		foreach( $this->m_aOptionsHandlers as $sName ) {
+//			if ( isset( $this->{$sName} ) ) {
+//				$aOptions[] = &$this->{$sName};
+//			}
+//		}
+//		return $aOptions;
+//	}
 
 	protected function deleteAllPluginDbOptions() {
 		if ( !current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
 			return;
 		}
-
-		$aOptions = $this->getAllOptionsHandlers();
-		foreach( $aOptions as &$oOption ) {
-			$oOption->deletePluginOptions();
-		}
-		
-		$aFeatures = $this->getFeaturesMap();
-		foreach( $aFeatures as $sSlug => $sProcessorName ) {
-			$oProcessor = $oOption->getProcessor();
-			if ( !is_null($oProcessor) && is_object($oProcessor) ) {
-				$oProcessor->deleteAndCleanUp();
-			}
-		}
-		remove_action( 'shutdown', array( $this, 'onWpShutdown' ) );
+		do_action( $this->doPluginPrefix( 'delete_plugin_options' ) );
 	}
 
 	public function onWpActivatePlugin() {
 		$this->loadOptionsHandler( 'all', true, true );
-	}
-	
-	public function onWpDeactivatePlugin() {
-		if ( $this->m_oPluginMainOptions->getOpt( 'delete_on_deactivate' ) == 'Y' ) {
-			$this->deleteAllPluginDbOptions();
-		}
 	}
 
 }

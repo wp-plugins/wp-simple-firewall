@@ -32,6 +32,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 		$this->sFeatureName = _wpsf__('Dashboard');
 		$this->sFeatureSlug = 'plugin';
 		parent::__construct( $oPluginVo, 'plugin_options' );
+		add_action( 'deactivate_plugin',		array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
 	}
 
 	/**
@@ -70,6 +71,18 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $this->doPluginPrefix( 'config_'.$this->sFeatureSlug.'_index', '_' ), $aData );
+	}
+
+	/**
+	 * Hooked to 'deactivate_plugin' and can be used to interrupt the deactivation of this plugin.
+	 * @param string $insPlugin
+	 */
+	public function onWpHookDeactivatePlugin( $insPlugin ) {
+		if ( strpos( $this->oPluginVo->getRootFile(), $insPlugin ) !== false ) {
+			if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
+				wp_die( 'Sorry, you do not have permission to disable this plugin. You need to authenticate first.' );
+			}
+		}
 	}
 
 	/**

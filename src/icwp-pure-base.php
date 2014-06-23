@@ -94,7 +94,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 			add_action( 'admin_menu',				array( $this, 'onWpAdminMenu' ) );
 			add_action(	'network_admin_menu',		array( $this, 'onWpAdminMenu' ) );
 			add_action( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
-			add_action( 'deactivate_plugin',		array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
+//			add_action( 'deactivate_plugin',		array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
 			add_action( 'wp_before_admin_bar_render',		array( $this, 'onWpAdminBar' ), 1, 9999 );
 		}
 		add_action( 'in_plugin_update_message-'.$this->getPluginBaseFile(), array( $this, 'onWpPluginUpdateMessage' ) );
@@ -792,7 +792,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	
 	/**
 	 * Displays a message in the plugins listing when a plugin has an update available.
-	 * @param string $insPlugin
 	 */
 	public function onWpPluginUpdateMessage() {
 		echo '<div style="color: #dd3333;">'

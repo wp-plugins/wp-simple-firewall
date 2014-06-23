@@ -114,6 +114,7 @@ class ICWP_OptionsHandler_Base_V2 {
 		add_filter( $this->doPluginPrefix( 'flush_logs' ), array( $this, 'filter_flushFeatureLogs' ) );
 		add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
 
+		add_action( $this->doPluginPrefix( 'delete_plugin_options' ), array( $this, 'deletePluginOptions' )  );
 	}
 
 	public function onWpPluginsLoaded() {
@@ -601,8 +602,15 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * Deletes all the options including direct save.
 	 */
 	public function deletePluginOptions() {
-		$oWpFunc = $this->loadWpFunctions();
-		$oWpFunc->deleteOption( $this->sOptionsStoreKey );
+		if ( apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
+			$oWpFunc = $this->loadWpFunctions();
+			$oWpFunc->deleteOption( $this->sOptionsStoreKey );
+
+			$this->getProcessor()->deleteAndCleanUp(); // gets rid of the databases used by the processors.
+
+			//prevents resaving
+			remove_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
+		}
 	}
 
 	protected function convertIpListForDisplay( $inaIpList = array() ) {
