@@ -33,7 +33,7 @@ class ICWP_OptionsHandler_Email extends ICWP_OptionsHandler_Base_Wpsf {
 		$this->sFeatureName = _wpsf__('Email');
 		$this->sFeatureSlug = 'email';
 		$this->fShowFeatureMenuItem = false;
-		parent::__construct( $oPluginVo, $this->sFeatureSlug.'_options' );
+		parent::__construct( $oPluginVo );
 	}
 
 	/**

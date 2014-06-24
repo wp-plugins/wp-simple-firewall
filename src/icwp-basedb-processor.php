@@ -32,33 +32,24 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * A link to the WordPress Database object so we don't have to "global" that every time.
 	 * @var wpdb
 	 */
-	protected $m_oWpdb;
+	protected $oWpdb;
 
 	/**
 	 * The full database table name.
 	 * @var string
 	 */
-	protected $m_sTableName;
+	protected $sFullTableName;
 	/**
 	 * @var array 
 	 */
 	protected $m_aDataToWrite;
 	
-	public function __construct( ICWP_OptionsHandler_Base_WPSF $oFeatureOptions, $sTableName ) {
+	public function __construct( ICWP_OptionsHandler_Base_WPSF $oFeatureOptions, $sTableName = null ) {
 		parent::__construct( $oFeatureOptions );
-		$this->reset();
 		$this->setTableName( $sTableName );
 		$this->createCleanupCron();
 	}
 
-	/**
-	 * Resets the object values to be re-used anew
-	 */
-	public function reset() {
-		parent::reset();
-		$this->loadWpdb();
-	}
-	
 	/**
 	 * Override to set what this processor does when it's "run"
 	 */
@@ -72,11 +63,11 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * Loads our WPDB object if required.
 	 */
 	protected function loadWpdb() {
-		if ( !is_null( $this->m_oWpdb ) ) {
-			return;
+		if ( is_null( $this->oWpdb ) ) {
+			global $wpdb;
+			$this->oWpdb = $wpdb;
 		}
-		global $wpdb;
-		$this->m_oWpdb = $wpdb;
+		return $this->oWpdb;
 	}
 	
 	/**
@@ -115,7 +106,6 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 		if ( empty( $this->m_aDataToWrite ) ) {
 			return;
 		}
-		$this->loadWpdb();
 		$fSuccess = true;
 		foreach( $this->m_aDataToWrite as $aDataEntry ) {
 			if ( empty( $aDataEntry ) ) {
@@ -141,28 +131,34 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * @return boolean
 	 */
 	public function insertIntoTable( $aData ) {
-		return $this->m_oWpdb->insert( $this->m_sTableName, $aData );
+		$oDb = $this->loadWpdb();
+		return $oDb->insert( $this->getTableName(), $aData );
 	}
 	
 	public function selectAllFromTable( $innFormat = ARRAY_A ) {
-		$sQuery = sprintf( "SELECT * FROM `%s` WHERE `deleted_at` = '0'", $this->m_sTableName );
-		return $this->m_oWpdb->get_results( $sQuery, $innFormat );
+		$oDb = $this->loadWpdb();
+		$sQuery = sprintf( "SELECT * FROM `%s` WHERE `deleted_at` = '0'", $this->getTableName() );
+		return $oDb->get_results( $sQuery, $innFormat );
 	}
 	
 	public function selectCustomFromTable( $insQuery ) {
-		return $this->m_oWpdb->get_results( $insQuery, ARRAY_A );
+		$oDb = $this->loadWpdb();
+		return $oDb->get_results( $insQuery, ARRAY_A );
 	}
 	
 	public function selectRowFromTable( $insQuery ) {
-		return $this->m_oWpdb->get_row( $insQuery, ARRAY_A );
+		$oDb = $this->loadWpdb();
+		return $oDb->get_row( $insQuery, ARRAY_A );
 	}
 	
 	public function updateRowsFromTable( $inaData, $inaWhere ) {
-		return $this->m_oWpdb->update( $this->m_sTableName, $inaData, $inaWhere );
+		$oDb = $this->loadWpdb();
+		return $oDb->update( $this->getTableName(), $inaData, $inaWhere );
 	}
 	
 	public function deleteRowsFromTable( $inaWhere ) {
-		return $this->m_oWpdb->delete( $this->m_sTableName, $inaWhere );
+		$oDb = $this->loadWpdb();
+		return $oDb->delete( $this->getTableName(), $inaWhere );
 	}
 	
 	protected function deleteAllRowsOlderThan( $innTimeStamp ) {
@@ -172,7 +168,7 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 				`created_at`		< '%s'
 		";
 		$sQuery = sprintf( $sQuery,
-				$this->m_sTableName,
+				$this->getTableName(),
 				$innTimeStamp
 		);
 		$this->doSql( $sQuery );
@@ -186,7 +182,7 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * Will remove all data from this table (to delete the table see dropTable)
 	 */
 	public function emptyTable() {
-		$sQuery = sprintf( "TRUNCATE TABLE `%s`", $this->m_sTableName );
+		$sQuery = sprintf( "TRUNCATE TABLE `%s`", $this->getTableName() );
 		return $this->doSql( $sQuery );
 	}
 
@@ -202,7 +198,7 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * Will completely remove this table from the database
 	 */
 	public function dropTable() {
-		$sQuery = sprintf( 'DROP TABLE IF EXISTS `%s`', $this->m_sTableName ) ;
+		$sQuery = sprintf( 'DROP TABLE IF EXISTS `%s`', $this->getTableName() ) ;
 		return $this->doSql( $sQuery );
 	}
 
@@ -212,15 +208,28 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * @param string $insSql
 	 */
 	public function doSql( $insSql ) {
-		$this->loadWpdb();
-		$fResult = $this->m_oWpdb->query( $insSql );
+		$oDb = $this->loadWpdb();
+		$fResult = $oDb->query( $insSql );
 		return $fResult;
 	}
 	
-	private function setTableName( $sTableName ) {
-		return $this->m_sTableName = esc_sql( $this->m_oWpdb->prefix . self::DB_TABLE_PREFIX . $sTableName );
+	private function setTableName( $sTableName = null ) {
+		$oDb = $this->loadWpdb();
+		$this->sFullTableName = esc_sql(
+			$oDb->prefix
+			. self::DB_TABLE_PREFIX
+			. is_null( $sTableName ) ? $this->oFeatureOptions->getFeatureSlug() : $sTableName
+		);
+		return $this->sFullTableName;
 	}
-	
+
+	protected function getTableName() {
+		if ( empty( $this->sFullTableName ) ) {
+			return $this->setTableName();
+		}
+		return $this->sFullTableName;
+	}
+
 	/**
 	 * Override this to provide custom cleanup.
 	 */
@@ -238,20 +247,20 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 			wp_schedule_event( $nNextRun, 'daily', self::CleanupCronActionHook );
 		}
 	}
-	
-	public function cleanupDatabase() {
-		//by default do nothing - oiverrde this method
-	}
+
+	// by default does nothing - override this method
+	public function cleanupDatabase() { }
 
 	/**
 	 * @return bool
 	 */
 	public function getTableExists() {
+		$oDb = $this->loadWpdb();
 		$sQuery = "
 			SHOW TABLES LIKE '%s'
 		";
-		$sQuery = sprintf( $sQuery, $this->m_sTableName );
-		$mResult = $this->m_oWpdb->get_var( $sQuery );
+		$sQuery = sprintf( $sQuery, $this->getTableName() );
+		$mResult = $oDb->get_var( $sQuery );
 		return !is_null( $mResult );
 	}
 }

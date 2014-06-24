@@ -31,7 +31,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Dashboard');
 		$this->sFeatureSlug = 'plugin';
-		parent::__construct( $oPluginVo, 'plugin_options' );
+		parent::__construct( $oPluginVo, 'plugin' );
 
 		add_action( 'deactivate_plugin', array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
 		add_filter( $this->doPluginPrefix( 'report_email_address' ), array( $this, 'getPluginReportEmail' ) );

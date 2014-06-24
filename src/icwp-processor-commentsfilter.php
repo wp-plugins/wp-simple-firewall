@@ -534,7 +534,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 				AND `deleted_at`	= '0'
 		";
 		$sQuery = sprintf( $sQuery,
-			$this->m_sTableName,
+			$this->getTableName(),
 			$sToken,
 			$sPostId,
 			self::$nRequestIp
@@ -597,7 +597,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 			`deleted_at` int(15) NOT NULL DEFAULT '0',
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-		$sSqlTables = sprintf( $sSqlTables, $this->m_sTableName );
+		$sSqlTables = sprintf( $sSqlTables, $this->getTableName() );
 		return $this->doSql( $sSqlTables );
 	}
 
@@ -617,7 +617,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 						AND `post_id`		= '%s'
 				";
 			$sQuery = sprintf( $sQuery,
-				$this->m_sTableName,
+				$this->getTableName(),
 				self::$nRequestTimestamp,
 				$insUniqueToken,
 				$insPostId
@@ -648,7 +648,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 						AND `post_id`		= '%s'
 				";
 			$sQuery = sprintf( $sQuery,
-				$this->m_sTableName,
+				$this->getTableName(),
 				self::$nRequestTimestamp,
 				self::$nRequestIp,
 				$nPostIdToDelete

@@ -163,7 +163,7 @@ class ICWP_PrivacyProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 			`deleted_at` int(15) NOT NULL DEFAULT 0,
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-		$sSqlTables = sprintf( $sSqlTables, $this->m_sTableName );
+		$sSqlTables = sprintf( $sSqlTables, $this->getTableName() );
 		$mResult = $this->doSql( $sSqlTables );
 	}
 }

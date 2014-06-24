@@ -33,7 +33,7 @@ class ICWP_OptionsHandler_Logging extends ICWP_OptionsHandler_Base_Wpsf {
 		$this->sFeatureName = _wpsf__('Logging');
 		$this->sFeatureSlug = 'logging';
 		$this->fShowFeatureMenuItem = false;
-		parent::__construct( $oPluginVo, $this->sFeatureSlug.'_options' );
+		parent::__construct( $oPluginVo );
 	}
 
 	/**

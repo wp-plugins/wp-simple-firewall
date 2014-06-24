@@ -42,7 +42,7 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 		$this->sFeatureName = _wpsf__('Admin Access');
 		$this->sFeatureSlug = 'admin_access_restriction';
 		$this->fShowFeatureMenuItem = true;
-		parent::__construct( $oPluginVo, $this->sFeatureSlug.'_options' );
+		parent::__construct( $oPluginVo );
 
 		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'doCheckHasPermissionToSubmit' ) );
 		add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'doCheckHasPermissionToSubmit' ) );

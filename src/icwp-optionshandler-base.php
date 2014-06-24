@@ -101,9 +101,12 @@ class ICWP_OptionsHandler_Base_V2 {
 	 */
 	protected $oFeatureProcessor;
 
-	public function __construct( $oPluginVo, $sOptionsStoreKey ) {
+	public function __construct( $oPluginVo, $sOptionsStoreKey = null ) {
 		$this->oPluginVo = $oPluginVo;
-		$this->sOptionsStoreKey = $this->prefixOptionKey( $sOptionsStoreKey );
+		$this->sOptionsStoreKey = $this->prefixOptionKey(
+			( is_null( $sOptionsStoreKey ) ? $this->getFeatureSlug() : $sOptionsStoreKey )
+			.'_options'
+		);
 
 		// Handle any upgrades as necessary (only go near this if it's the admin area)
 		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ) );

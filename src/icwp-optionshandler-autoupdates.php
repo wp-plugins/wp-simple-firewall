@@ -29,7 +29,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Automatic Updates');
 		$this->sFeatureSlug = 'autoupdates';
-		parent::__construct( $oPluginVo, $this->sFeatureSlug.'_options' );
+		parent::__construct( $oPluginVo );
 	}
 
 	/**

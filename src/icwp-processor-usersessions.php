@@ -17,44 +17,27 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_LoginProtectProcessor_V3') ):
+if ( !class_exists('ICWP_WPSF_Processor_UserSessions_V1') ):
 
-class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_WPSF_Processor_UserSessions_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
-	const TableName = 'login_auth';
 	const AuthActiveCookie = 'wpsf_auth';
 	const YubikeyVerifyApiUrl = 'https://api.yubico.com/wsapi/2.0/verify?id=%s&otp=%s&nonce=%s';
 
 	/**
-	 * @var ICWP_OptionsHandler_LoginProtect
+	 * @var ICWP_WPSF_OptionsHandler_UserSessions
 	 */
 	protected $oFeatureOptions;
-
-	/**
-	 * @var string
-	 */
-	static protected $sModeFile_LoginThrottled;
-	
-	/**
-	 * The number of seconds between each authenticated login
-	 * @var integer
-	 */
-	protected $m_nRequiredLoginInterval;
-
-	/**
-	 * @var integer
-	 */
-	protected $m_nLastLoginTime;
 	/**
 	 * @var string
 	 */
 	protected $nDaysToKeepLog = 1;
 
 	/**
-	 * @param ICWP_OptionsHandler_LoginProtect $oFeatureOptions
+	 * @param ICWP_WPSF_OptionsHandler_UserSessions $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_LoginProtect $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions, self::TableName );
+	public function __construct( ICWP_WPSF_OptionsHandler_UserSessions $oFeatureOptions ) {
+		parent::__construct( $oFeatureOptions );
 		$this->createTable();
 		$this->reset();
 	}
@@ -1024,6 +1007,6 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 }
 endif;
 
-if ( !class_exists('ICWP_WPSF_LoginProtectProcessor') ):
-	class ICWP_WPSF_LoginProtectProcessor extends ICWP_LoginProtectProcessor_V3 { }
+if ( !class_exists('ICWP_WPSF_Processor_UserSessions') ):
+	class ICWP_WPSF_Processor_UserSessions extends ICWP_WPSF_Processor_UserSessions_V1 { }
 endif;
