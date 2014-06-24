@@ -17,15 +17,12 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_WPSF_Processor_UserSessions_V1') ):
+if ( !class_exists('ICWP_WPSF_Processor_UserManagement_V1') ):
 
-class ICWP_WPSF_Processor_UserSessions_V1 extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 	
-	const AuthActiveCookie = 'wpsf_auth';
-	const YubikeyVerifyApiUrl = 'https://api.yubico.com/wsapi/2.0/verify?id=%s&otp=%s&nonce=%s';
-
 	/**
-	 * @var ICWP_WPSF_OptionsHandler_UserSessions
+	 * @var ICWP_WPSF_OptionsHandler_UserManagement
 	 */
 	protected $oFeatureOptions;
 	/**
@@ -34,9 +31,9 @@ class ICWP_WPSF_Processor_UserSessions_V1 extends ICWP_BaseDbProcessor_WPSF {
 	protected $nDaysToKeepLog = 1;
 
 	/**
-	 * @param ICWP_WPSF_OptionsHandler_UserSessions $oFeatureOptions
+	 * @param ICWP_WPSF_OptionsHandler_UserManagement $oFeatureOptions
 	 */
-	public function __construct( ICWP_WPSF_OptionsHandler_UserSessions $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_OptionsHandler_UserManagement $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 		$this->createTable();
 		$this->reset();
@@ -1007,6 +1004,6 @@ class ICWP_WPSF_Processor_UserSessions_V1 extends ICWP_BaseDbProcessor_WPSF {
 }
 endif;
 
-if ( !class_exists('ICWP_WPSF_Processor_UserSessions') ):
-	class ICWP_WPSF_Processor_UserSessions extends ICWP_WPSF_Processor_UserSessions_V1 { }
+if ( !class_exists('ICWP_WPSF_Processor_UserManagement') ):
+	class ICWP_WPSF_Processor_UserManagement extends ICWP_WPSF_Processor_UserManagement_V1 { }
 endif;

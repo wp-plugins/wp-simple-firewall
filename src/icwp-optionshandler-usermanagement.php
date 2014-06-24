@@ -17,18 +17,18 @@
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_WPSF_OptionsHandler_UserSessions') ):
+if ( !class_exists('ICWP_WPSF_OptionsHandler_UserManagement') ):
 
-class ICWP_WPSF_OptionsHandler_UserSessions extends ICWP_OptionsHandler_Base_Wpsf {
+class ICWP_WPSF_OptionsHandler_UserManagement extends ICWP_OptionsHandler_Base_Wpsf {
 	
 	/**
-	 * @var ICWP_WPSF_Processor_UserSessions
+	 * @var ICWP_WPSF_Processor_UserManagement
 	 */
 	protected $oFeatureProcessor;
 
 	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('User Sessions');
-		$this->sFeatureSlug = 'user_sessions';
+		$this->sFeatureName = _wpsf__('User Management');
+		$this->sFeatureSlug = 'user_management';
 		parent::__construct( $oPluginVo );
 	}
 
@@ -37,8 +37,8 @@ class ICWP_WPSF_OptionsHandler_UserSessions extends ICWP_OptionsHandler_Base_Wps
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-usersessions.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_Processor_UserSessions( $this );
+			require_once( dirname(__FILE__).'/icwp-processor-usermanagement.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_UserManagement( $this );
 		}
 		return $this->oFeatureProcessor;
 	}
