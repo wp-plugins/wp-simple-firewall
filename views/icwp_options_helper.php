@@ -72,7 +72,6 @@ function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $i
 function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 	
 	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $mOptionType, $sOptionHumanName, $sOptionTitle, $sOptionHelpText, $sHelpLink ) = array_pad( $inaOption, 8, '' );
-	
 	if ( $sOptionKey == 'spacer' ) {
 		$sHtml = '
 			<div class="span'.$iSpanSize.'">
@@ -83,7 +82,7 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 		$sHelpLink = !empty($sHelpLink)? '<span>['.$sHelpLink.']</span>' : '';
 		$sSpanId = 'span_'.$insVarPrefix.$sOptionKey;
 		$sHtml = '
-			<div class="item_group span'.$iSpanSize.' '.( ($sOptionSaved == 'Y')? ' selected_item_group':'' ).'" id="'.$sSpanId.'">
+			<div class="item_group span'.$iSpanSize.' '.( ($sOptionSaved === 'Y' || $sOptionSaved != $sOptionDefault )? ' selected_item_group':'' ).'" id="'.$sSpanId.'">
 				<div class="control-group">
 					<label class="control-label" for="'.$insVarPrefix.$sOptionKey.'">'.$sOptionHumanName.'<br />'.$sHelpLink.'</label>
 					<div class="controls">

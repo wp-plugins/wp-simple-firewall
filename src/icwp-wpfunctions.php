@@ -171,6 +171,13 @@ class ICWP_WpFunctions_V4 {
 	}
 
 	/**
+	 * @param string $sRedirectUrl
+	 */
+	public function logoutUser( $sRedirectUrl = '' ) {
+		empty( $sRedirectUrl ) ? wp_logout() : wp_logout_url( $sRedirectUrl );
+	}
+
+	/**
 	 * @return bool
 	 */
 	public function isMultisite() {

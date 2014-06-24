@@ -20,76 +20,29 @@ require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 if ( !class_exists('ICWP_WPSF_Processor_UserManagement_V1') ):
 
 class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
-	
+
+	const Session_Cookie	=	'wpsf_sesh_id';
+
 	/**
-	 * @var ICWP_WPSF_OptionsHandler_UserManagement
+	 * @var ICWP_OptionsHandler_UserManagement
 	 */
 	protected $oFeatureOptions;
 	/**
 	 * @var string
 	 */
-	protected $nDaysToKeepLog = 1;
+	protected $nDaysToKeepLog = 30;
 
 	/**
-	 * @param ICWP_WPSF_OptionsHandler_UserManagement $oFeatureOptions
+	 * @var string
 	 */
-	public function __construct( ICWP_WPSF_OptionsHandler_UserManagement $oFeatureOptions ) {
+	protected $sSessionId;
+
+	/**
+	 * @param ICWP_OptionsHandler_UserManagement $oFeatureOptions
+	 */
+	public function __construct( ICWP_OptionsHandler_UserManagement $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 		$this->createTable();
-		$this->reset();
-	}
-
-	/**
-	 * Resets the object values to be re-used anew
-	 */
-	public function reset() {
-		parent::reset();
-		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
-	}
-	
-	/**
-	 *
-	 * @param array $aOptions
-	 */
-	public function setOptions( &$aOptions ) {
-		parent::setOptions( $aOptions );
-		$this->setLoginCooldownInterval();
-	}
-	
-	/**
-	 * @return boolean
-	 */
-	public function getNeedsEmailHandler() {
-		return $this->getIsTwoFactorAuthOn();
-	}
-
-	/**
-	 * @param string $sType		can be either 'ip' or 'cookie'. If empty, both are checked looking for either.
-	 * @return bool
-	 */
-	protected function getIsTwoFactorAuthOn( $sType = '' ) {
-
-		$fIp = $this->getOption( 'enable_two_factor_auth_by_ip', 'N' ) == 'Y';
-		$fCookie = $this->getOption( 'enable_two_factor_auth_by_cookie', 'N' ) == 'Y';
-
-		switch( $sType ) {
-			case 'ip':
-				return $fIp;
-				break;
-			case 'cookie':
-				return $fCookie;
-				break;
-			default:
-				return $fIp || $fCookie;
-				break;
-		}
-	}
-
-	/**
-	 * @return bool|void
-	 */
-	public function getIsLogging() {
-		return $this->getIsOption( 'enable_login_protect_log', 'Y' );
 	}
 
 	/**
@@ -97,139 +50,98 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 	public function run() {
 		parent::run();
 		$this->loadDataProcessor();
-//		$this->recreateTable();
 
 		$sRequestMethod = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'REQUEST_METHOD' );
 		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
 
-		$aWhitelist = $this->getOption( 'ips_whitelist', array() );
-		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::GetVisitorIpAddress() ) ) {
-			return true;
-		}
+		// Check the current logged-in user every page load.
+		add_action( 'init', array( $this, 'checkCurrentUser_Action' ) );
 
-		// check for remote posting before anything else.
-		if ( $fIsPost && $this->getIsOption('enable_prevent_remote_post', 'Y') ) {
-			add_filter( 'authenticate',			array( $this, 'checkRemotePostLogin_Filter' ), 9, 3);
-		}
+		// Check login attempts
+		// At this stage (30,3) WordPress has already (20) authenticated the user. So if the login
+		// is valid, the filter will have a valid WP_User object passed to it.
+		add_filter( 'auth_cookie_expiration', array( $this, 'setWordpressTimeoutCookieExpiration_Filter' ), 100, 1 );
 
-		// Add GASP checking to the login form.
-		if ( $this->getIsOption('enable_login_gasp_check', 'Y') ) {
-			add_action( 'login_form',				array( $this, 'printGaspLoginCheck_Action' ) );
-			add_action( 'woocommerce_login_form',	array( $this, 'printGaspLoginCheck_Action' ) );
-			add_filter( 'login_form_middle',		array( $this, 'printGaspLoginCheck_Filter' ) );
-			add_filter( 'authenticate',				array( $this, 'checkLoginForGasp_Filter' ), 22, 3);
-		}
+		// Check login attempts
+		// At this stage (30,3) WordPress has already (20) authenticated the user. So if the login
+		// is valid, the filter will have a valid WP_User object passed to it.
+		add_filter( 'authenticate', array( $this, 'createNewUserSession_Filter' ), 30, 3);
 
-		// Do GASP checking if it's a form submit.
-		if ( $fIsPost && $this->getOption( 'login_limit_interval' ) > 0 ) {
-			// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
-			add_filter( 'authenticate', array( $this, 'checkLoginInterval_Filter' ), 10, 3);
-		}
-
-		// check for Yubikey auth after user is authenticated with WordPress.
-		if ( $fIsPost && $this->getOption('enable_yubikey') && $this->getIsYubikeyConfigReady() ) {
-			add_filter( 'wp_authenticate_user', array( $this, 'checkYubikeyOtpAuth_Filter' ) );
-			add_action( 'login_form',			array( $this, 'printYubikeyOtp_Action' ) );
-		}
-
-		if ( $this->getIsTwoFactorAuthOn() ) {
-
-			// If their click was successful we give them a lovely message
-			if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsfuserverified' ) ) {
-				add_filter( 'login_message', array( $this, 'displayVerifiedUserMessage_Filter' ) );
-			}
-
-			// Check the current logged-in user every page load.
-			add_action( 'init', array( $this, 'checkCurrentUserAuth_Action' ) );
-
-			// At this stage (30,3) WordPress has already (20) authenticated the user. So if the login
-			// is valid, the filter will have a valid WP_User object passed to it.
-			add_filter( 'authenticate', array( $this, 'checkUserAuthLogin_Filter' ), 30, 3);
-		}
+		add_action( 'wp_logout', array( $this, 'onWpLogout' ) );
 	}
 
 	/**
-	 */
-	public function printGaspLoginCheck_Action() {
-		echo $this->getGaspLoginHtml();
-	}
-
-	/**
-	 * @return string
-	 */
-	public function printGaspLoginCheck_Filter() {
-		return $this->getGaspLoginHtml();
-	}
-
-	/**
-	 * @param $inoUser
-	 * @param $insUsername
-	 * @param $insPassword
-	 * @return mixed
-	 */
-	public function checkRemotePostLogin_Filter( $inoUser, $insUsername, $insPassword ) {
-		$this->loadDataProcessor();
-		$sHttpRef = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'HTTP_REFERER' );
-		$sHttpRef = is_null( $sHttpRef )? '' : $sHttpRef;
-		if ( empty($sHttpRef) || ( strpos($sHttpRef, home_url()) !== 0 ) ) {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but the HTTP REFERER was either empty or it was a remote login attempt. Bot Perhaps? HTTP REFERER: "%s".'), $insUsername, $sHttpRef )
-			);
-			$this->doStatIncrement( 'login.remotepost.fail' );
-			wp_die(
-				_wpsf__( 'Sorry, you must login directly from within the site.' )
-					.'<br /><a href="http://icwp.io/4n" target="_blank">&rarr;'._wpsf__('More Info').'</a>'
-			);
-		}
-		else {
-			$this->doStatIncrement( 'login.remotepost.success' );
-		}
-		return $inoUser;
-	}
-
-	/**
-	 * @param $inoUser
-	 * @param $insUsername
-	 * @param $insPassword
-	 * @return WP_Error
-	 */
-	public function checkLoginForGasp_Filter( $inoUser, $insUsername, $insPassword ) {
-
-		if ( empty( $insUsername ) || is_wp_error( $inoUser ) ) {
-			return $inoUser;
-		}
-		if ( $this->doGaspChecks( $insUsername ) ) {
-			return $inoUser;
-		}
-		//This doesn't actually ever get returned because we die() within doGaspChecks()
-		return new WP_Error('wpsf_gaspfail', _wpsf__('G.A.S.P. Checking Failed.') );
-	}
-
-	/**
-	 * Checks whether the current user that is logged-in is authenticated by IP address.
-	 * 
-	 * If the user is not found to be valid, they're logged out.
-	 * 
 	 * Should be hooked to 'init' so we have is_user_logged_in()
 	 */
-	public function checkCurrentUserAuth_Action() {
-
-		// User has clicked a link in their email to validate their IP address for login.
-		if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-action' ) == 'linkauth' ) {
-			$this->validateUserAuthLink();
-		}
-
+	public function checkCurrentUser_Action() {
+		$this->getSessionId();
 		if ( is_user_logged_in() ) {
-			$this->verifyCurrentUser();
+			$oUser = wp_get_current_user();
+			$this->doVerifyCurrentUser( $oUser );
+			$this->updateSessionLastActivityAt( $oUser );
 		}
 	}
-	
-	public function displayVerifiedUserMessage_Filter( $insMessage ) {
-		$sStyles = 'background-color: #FAFFE8; border: 1px solid #DDDDDD; margin: 8px 0 10px 8px; padding: 16px;';
-		$insMessage .= '<h3 style="'.$sStyles.'">'._wpsf__('You have successfully verified your identity - you may now login').'</h3>';
-		return $insMessage;
+
+	/**
+	 * If it cannot verify current user, will forcefully log them out and redirect to login
+	 */
+	public function doVerifyCurrentUser( $oUser ) {
+		if ( !is_object( $oUser ) || ! ( $oUser instanceof WP_User ) ) {
+			return false;
+		}
+
+		$aLoginSessionData = $this->getUserSessionRecord( $oUser->user_login );
+		if ( !$aLoginSessionData ) {
+			$this->doLogout();
+		}
+
+		// check timeout interval
+		$nSessionTimeoutInterval = $this->getSessionTimeoutInterval();
+		if ( $nSessionTimeoutInterval > 0 && ( self::$nRequestTimestamp - $aLoginSessionData['logged_in_at'] > $nSessionTimeoutInterval ) ) {
+			$this->doLogout();
+			//TODO: session expire message
+		}
+
+		// check idle timeout interval
+		$nSessionIdleTimeoutInterval = $this->getOption( 'session_idle_timeout_interval', 0 ) * HOUR_IN_SECONDS;
+		if ( $nSessionIdleTimeoutInterval > 0 && ( self::$nRequestTimestamp - $aLoginSessionData['last_activity_at'] > $nSessionIdleTimeoutInterval ) ) {
+			$this->doLogout();
+			//TODO: session idle expire message
+		}
+
+		// check login ip address
+		$fLockToIp = $this->getIsOption( 'session_lock_location', 'Y' );
+		if ( $fLockToIp && self::$nRequestIp != $aLoginSessionData['ip_long'] ) {
+			$this->doLogout();
+			//TODO: ip lock message
+		}
 	}
-	
+
+	/**
+	 * @return integer
+	 */
+	protected function getSessionTimeoutInterval( ) {
+		return $this->getOption( 'session_timeout_interval', 0 ) * DAY_IN_SECONDS;
+	}
+
+	/**
+	 *
+	 */
+	protected function doLogout() {
+		$oWp = $this->loadWpFunctionsProcessor();
+		$oWp->logoutUser();
+		$oWp->redirectToLogin();
+	}
+
+	/**
+	 * @param integer $nTimeout
+	 * @return integer
+	 */
+	public function setWordpressTimeoutCookieExpiration_Filter( $nTimeout ) {
+		$nSessionTimeoutInterval = $this->getSessionTimeoutInterval();
+		return ( ( $nSessionTimeoutInterval > 0 )? $nSessionTimeoutInterval : $nTimeout );
+	}
+
 	/**
 	 * Should return false when logging is disabled.
 	 *
@@ -249,599 +161,199 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$this->resetLog();
 		return $this->m_aLog;
 	}
-	
-	/**
-	 * Checks the link details to ensure all is valid before authorizing the user.
-	 */
-	public function validateUserAuthLink() {
-		$this->loadDataProcessor();
-		// wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid
-
-		if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsfkey' ) !== $this->oFeatureOptions->getTwoAuthSecretKey() ) {
-			return false;
-		}
-
-		$sUsername = ICWP_WPSF_DataProcessor::FetchGet( 'username' );
-		$sUniqueId = ICWP_WPSF_DataProcessor::FetchGet( 'uniqueid' );
-		if ( empty( $sUsername ) || empty( $sUniqueId ) ) {
-			return false;
-		}
-	
-		$aWhere = array(
-			'unique_id'		=> $sUniqueId,
-			'wp_username'	=> $sUsername
-		);
-
-		$oWp = $this->loadWpFunctionsProcessor();
-		if ( $this->doMakePendingLoginAuthActive( $aWhere ) ) {
-			$this->logInfo(
-				sprintf( _wpsf__('User "%s" verified their identity using Two-Factor Authentication.'), $sUsername )
-			);
-			$this->setUserLoggedIn( $sUsername );
-			$this->doStatIncrement( 'login.twofactor.verified' );
-			$oWp->redirectToAdmin();
-		}
-		else {
-			$oWp->redirectToHome();
-		}
-	}
-
-	// WordPress Hooks and Filters:
 
 	/**
-	 * Should be a filter added to WordPress's "authenticate" filter, but before WordPress performs
-	 * it's own authentication (theirs is priority 30, so we could go in at around 20).
-	 * 
-	 * @param null|WP_User|WP_Error $inoUser
-	 * @param string $insUsername
-	 * @param string $insPassword
-	 * @return unknown|WP_Error
-	 */
-	public function checkLoginInterval_Filter( $inoUser, $insUsername, $insPassword ) {
-		// No login attempt was made.
-		if ( empty( $insUsername ) ) {
-			return $inoUser;
-		}
-
-		// Is there an interval set?
-		$this->setLoginCooldownInterval();
-		$nRequiredLoginInterval = $this->m_nRequiredLoginInterval;
-		if ( $nRequiredLoginInterval === false || $nRequiredLoginInterval == 0 ) {
-			return $inoUser;
-		}
-		
-		// Get the last login time (and update it also for the next time)
-		$this->m_nLastLoginTime = $this->getLastLoginTime();
-
-		if ( empty( $this->m_nLastLoginTime ) || $this->m_nLastLoginTime < 0 ) {
-			$this->updateLastLoginThrottleTime( self::$nRequestTimestamp );
-		}
-		
-		// If we're outside the interval, let the login process proceed as per normal and
-		// update our last login time.
-		$nLoginInterval = self::$nRequestTimestamp - $this->m_nLastLoginTime;
-		if ( $nLoginInterval > $nRequiredLoginInterval ) {
-			$this->updateLastLoginThrottleTime( self::$nRequestTimestamp );
-			$this->doStatIncrement( 'login.cooldown.success' );
-			return $inoUser;
-		}
-
-		// At this point someone has attempted to login within the previous login wait interval
-		// So we remove WordPress's authentication filter and our own user check authentication
-		// And finally return a WP_Error which will be reflected back to the user.
-		$this->doStatIncrement( 'login.cooldown.fail' );
-		remove_filter( 'authenticate', 'wp_authenticate_username_password', 20, 3 );  // wp-includes/user.php
-		remove_filter( 'authenticate', array( $this, 'checkUserAuthLogin_Filter' ), 30, 3);
-	
-		$sErrorString = sprintf( _wpsf__( "Login Cooldown in effect. You must wait %s seconds before attempting to login again." ), ($nRequiredLoginInterval - $nLoginInterval ) );
-		$oError = new WP_Error( 'wpsf_logininterval', $sErrorString );
-		return $oError;
-	}
-
-	/**
-	 * @return int
-	 */
-	protected function getLastLoginTime() {
-		$oWpFs = $this->loadFileSystemProcessor();
-		// Check that there is a login throttle file. If it exists and its modified time is greater than the 
-		// current $this->m_nLastLoginTime it suggests another process has touched the file and updated it
-		// concurrently. So, we update our $this->m_nEmailThrottleTime accordingly.
-		if ( $oWpFs->fileAction( 'file_exists', self::$sModeFile_LoginThrottled ) ) {
-			$nModifiedTime = filemtime( self::$sModeFile_LoginThrottled );
-			if ( $nModifiedTime > $this->m_nLastLoginTime ) {
-				$this->m_nLastLoginTime = $nModifiedTime;
-			}
-		}
-		else { }
-		return $this->m_nLastLoginTime;
-	}
-
-	/**
-	 * @param $innLastLoginTime
-	 */
-	public function updateLastLoginThrottleTime( $innLastLoginTime ) {
-		$oWpFs = $this->loadFileSystemProcessor();
-		$this->m_nLastLoginTime = $innLastLoginTime;
-		$oWpFs->fileAction( 'touch', array(self::$sModeFile_LoginThrottled, $innLastLoginTime) );
-	}
-
-	/**
-	 */
-	public function printYubikeyOtp_Action() {
-		$sHtml =
-			'<p class="yubikey-otp">
-				<label>%s<br />
-					<input type="text" name="yubiotp" class="input" value="" size="20" />
-				</label>
-			</p>
-		';
-		echo sprintf( $sHtml, '<a href="http://icwp.io/4i" target="_blank">'._wpsf__('Yubikey OTP').'</a>' );
-	}
-
-	/**
-	 * @param WP_User $inoUser
-	 * @return WP_User|WP_Error
-	 */
-	public function checkYubikeyOtpAuth_Filter( $inoUser ) {
-		$oError = new WP_Error();
-
-		// Before anything else we check that a Yubikey pair has been provided for this username (and that there are pairs in the first place!)
-		$aYubikeyUsernamePairs = $this->getOption('yubikey_unique_keys');
-		if ( !$this->getIsYubikeyConfigReady() ) { // configuration is clearly not completed yet.
-			return $inoUser;
-		}
-
-		$sOneTimePassword =  empty( $_POST['yubiotp'] )? '' : trim( $_POST['yubiotp'] );
-		$sAppId = $this->getOption('yubikey_app_id');
-		$sApiKey = $this->getOption('yubikey_api_key');
-
-		// check that if we have a list of permitted keys, that the one used is on that list connected with the username.
-		$sYubikey12 = substr( $sOneTimePassword, 0 , 12 );
-		$fUsernameFound = false; // if username is never found, it means there's no yubikey specified which means we can bypass this authentication method.
-		$fFoundMatch = false;
-		foreach( $aYubikeyUsernamePairs as $aUsernameYubikeyPair ) {
-			if ( isset( $aUsernameYubikeyPair[$inoUser->user_login] ) ) {
-				$fUsernameFound = true;
-				if ( $aUsernameYubikeyPair[$inoUser->user_login] == $sYubikey12 ) {
-					$fFoundMatch = true;
-					break;
-				}
-			}
-		}
-
-		// If no yubikey-username pair found for given username, we by-pass Yubikey auth.
-		if ( !$fUsernameFound ) {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" logged in without a Yubikey One Time Password because no username-yubikey pair was found for this user.'), $inoUser->user_login )
-			);
-			return $inoUser;
-		}
-
-		// Username was found in the list of key pairs, but the yubikey provided didn't match that username.
-		if ( !$fFoundMatch ) {
-			$oError->add(
-				'yubikey_not_allowed',
-				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey provided is not on the list of permitted keys for this user.') )
-			);
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but Yubikey ID used was not in list of authorised keys: "%s".'), $inoUser->user_login, $sYubikey12 )
-			);
-			return $oError;
-		}
-
-		$oFs = $this->loadFileSystemProcessor();
-
-		$sNonce = md5( uniqid( rand() ) );
-		$sUrl = sprintf( self::YubikeyVerifyApiUrl, $sAppId, $sOneTimePassword, $sNonce );
-		$sRawYubiRequest = $oFs->getUrlContent( $sUrl );
-
-		// Validate response.
-		// 1. Check OTP and Nonce
-		if ( !preg_match( '/otp='.$sOneTimePassword.'/', $sRawYubiRequest, $aMatches )
-			|| !preg_match( '/nonce='.$sNonce.'/', $sRawYubiRequest, $aMatches )
-		) {
-			$oError->add(
-				'yubikey_validate_fail',
-				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
-			);
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API.'), $inoUser->user_login )
-			);
-			return $oError;
-		}
-
-		// Optionally we can check the hash, but since we're using HTTPS, this isn't necessary and adds more PHP requirements
-
-		// 2. Check status directly within response
-		preg_match( '/status=([a-zA-Z0-9_]+)/', $sRawYubiRequest, $aMatches );
-		$sStatus = $aMatches[1];
-
-		if ( $sStatus != 'OK' && $sStatus != 'REPLAYED_OTP' ) {
-			$oError->add(
-				'yubikey_validate_fail',
-				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
-			);
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API response status: %s.'), $inoUser->user_login, $sStatus )
-			);
-			return $oError;
-		}
-
-		$this->logInfo(
-			sprintf( _wpsf__('User "%s" successfully logged in using a validated Yubikey One Time Password.'), $inoUser->user_login )
-		);
-		return $inoUser;
-	}
-
-	/**
-	 * @return bool
-	 */
-	protected function getIsYubikeyConfigReady() {
-		$sAppId = $this->getOption('yubikey_app_id');
-		$sApiKey = $this->getOption('yubikey_api_key');
-		$aYubikeyKeys = $this->getOption('yubikey_unique_keys');
-		return !empty($sAppId) && !empty($sApiKey) && !empty($aYubikeyKeys);
-	}
-
-	/**
-	 * If $inoUser is a valid WP_User object, then the user logged in correctly.
+	 * If $oUser is a valid WP_User object, then the user logged in correctly.
 	 *
-	 * The flow is as follows:
-	 * 0. If username is empty, there was no login attempt.
-	 * 1. First we determine whether the user's login credentials were valid according to WordPress ($fUserLoginSuccess)
-	 * 2. Then we ask our 2-factor processor whether the current IP address + username combination is authenticated.
-	 * 		a) if yes, we return the WP_User object and login proceeds as per usual.
-	 * 		b) if no, we return null, which will send the message back to the user that the login details were invalid.
-	 * 3. If however the user's IP address + username combination is not authenticated, we react differently. We do not want
-	 * 	to give away whether a login was successful, or even the login username details exist. So:
-	 * 		a) if the login was a success we add a pending record to the authentication DB for this username+IP address combination and send the appropriate verification email
-	 * 		b) then, we give back a message saying that if the login was successful, they would have received a verification email. In this way we give nothing away.
-	 * 		c) note at this stage, if the username was empty, we give back nothing (this happens when wp-login.php is loaded as normal.
-	 *
-	 * @param WP_User|string $inoUser	- the docs say the first parameter a string, WP actually gives a WP_User object (or null)
-	 * @param string $insUsername
-	 * @param string $insPassword
+	 * @param WP_User|string $oUser	- the docs say the first parameter a string, WP actually gives a WP_User object (or null)
+	 * @param string $sUsername
+	 * @param string $sPassword
 	 * @return WP_Error|WP_User|null	- WP_User when the login success AND the IP is authenticated. null when login not successful but IP is valid. WP_Error otherwise.
 	 */
-	public function checkUserAuthLogin_Filter( $inoUser, $insUsername, $insPassword ) {
-	
-		if ( empty( $insUsername ) ) {
-			return $inoUser;
+	public function createNewUserSession_Filter( $oUser, $sUsername, $sPassword ) {
+		if ( empty( $sUsername ) ) {
+			return $oUser;
 		}
-	
-		$fUserLoginSuccess = is_object( $inoUser ) && ( $inoUser instanceof WP_User );
 
-		if ( is_wp_error( $inoUser ) ) {
-			$aCodes = $inoUser->get_error_codes();
-			if ( in_array( 'wpsf_logininterval', $aCodes ) ) {
-				return $inoUser;
-			}
+		$aCurrentRecord = $this->getUserSessionRecord( $sUsername );
+		if ( !$aCurrentRecord ) {
+			$this->addNewPendingUserSession( $sUsername );
 		}
-		else if ( $fUserLoginSuccess ) {
 
-			if ( !$this->getIsUserLevelSubjectToTwoFactorAuth( $inoUser->user_level ) ) {
-				return $inoUser;
-			}
+		$this->incrementUserLoginAttempts( $sUsername );
 
-			if ( $this->isUserVerified( $insUsername ) ) {
-				return $inoUser;
-			}
-			else {
-				// Create a new 2-factor auth pending entry
-				$aNewAuthData = $this->addNewPendingLoginAuth( $inoUser->user_login );
-	
-				// Now send email with authentication link for user.
-				if ( is_array( $aNewAuthData ) ) {
-					$this->doStatIncrement( 'login.twofactor.started' );
-					$fEmailSuccess = $this->sendEmailTwoFactorVerify( $inoUser, $aNewAuthData['ip'], $aNewAuthData['unique_id'] );
-					
-					// Failure to send email - log them in.
-					if ( !$fEmailSuccess && $this->getIsOption( 'enable_two_factor_bypass_on_email_fail', 'Y' ) ) {
-						$this->doMakePendingLoginAuthActive( $aNewAuthData );
-						return $inoUser;
-					}
-				}
-			}
+		$fUserLoginSuccess = is_object( $oUser ) && ( $oUser instanceof WP_User );
+		if ( !$fUserLoginSuccess ) {
+			return $oUser;
 		}
-		
-		$sErrorString = "Login is protected by 2-factor authentication. If your login details were correct, you would have received an email to verify this IP address.";
-		return new WP_Error( 'wpsf_loginauth', $sErrorString );
+
+		// We now know user has successfully authenticated and we activate the session entry in the database
+		$this->activateUserSession( $oUser->user_login );
+		return $oUser;
 	}
 
 	/**
-	 * TODO: http://stackoverflow.com/questions/3499104/how-to-know-the-role-of-current-user-in-wordpress
-	 * @param integer $nUserLevel
-	 * @return bool
+	 *
 	 */
-	public function getIsUserLevelSubjectToTwoFactorAuth( $nUserLevel ) {
-
-		$aSubjectedUserLevels = $this->getOption( 'two_factor_auth_user_roles' );
-		if ( empty($aSubjectedUserLevels) || !is_array($aSubjectedUserLevels) ) {
-			$aSubjectedUserLevels = array( 1, 2, 3, 8 ); // by default all except subscribers!
-		}
-
-		// see: https://codex.wordpress.org/Roles_and_Capabilities#User_Level_to_Role_Conversion
-
-		// authors, contributors and subscribers
-		if ( $nUserLevel < 3 && in_array( $nUserLevel, $aSubjectedUserLevels ) ) {
-			return true;
-		}
-		// editors
-		if ( $nUserLevel >= 3 && $nUserLevel < 8 && in_array( 3, $aSubjectedUserLevels ) ) {
-			return true;
-		}
-		// administrators
-		if ( $nUserLevel >= 8 && $nUserLevel <= 10 && in_array( 8, $aSubjectedUserLevels ) ) {
-			return true;
-		}
-		return false;
-	}
-	
-	public function getGaspLoginHtml() {
-	
-		$sLabel = _wpsf__("I'm a human.");
-		$sAlert = _wpsf__("Please check the box to show us you're a human.");
-	
-		$sUniqElem = 'icwp_wpsf_login_p'.uniqid();
-		
-		$sStyles = '
-			<style>
-				#'.$sUniqElem.' {
-					clear:both;
-					border: 1px solid #888;
-					padding: 6px 8px 4px 10px;
-					margin: 0 0px 12px !important;
-					border-radius: 2px;
-					background-color: #f9f9f9;
-				}
-				#'.$sUniqElem.' input {
-					margin-right: 5px;
-				}
-			</style>
-		';
-	
-		$sHtml =
-			$sStyles.
-			'<p id="'.$sUniqElem.'"></p>
-			<script type="text/javascript">
-				var icwp_wpsf_login_p		= document.getElementById("'.$sUniqElem.'");
-				var icwp_wpsf_login_cb		= document.createElement("input");
-				var icwp_wpsf_login_text	= document.createTextNode(" '.$sLabel.'");
-				icwp_wpsf_login_cb.type		= "checkbox";
-				icwp_wpsf_login_cb.id		= "'.$this->getGaspCheckboxName().'";
-				icwp_wpsf_login_cb.name		= "'.$this->getGaspCheckboxName().'";
-				icwp_wpsf_login_p.appendChild( icwp_wpsf_login_cb );
-				icwp_wpsf_login_p.appendChild( icwp_wpsf_login_text );
-				var frm = icwp_wpsf_login_cb.form;
-				frm.onsubmit = icwp_wpsf_login_it;
-				function icwp_wpsf_login_it(){
-					if(icwp_wpsf_login_cb.checked != true){
-						alert("'.$sAlert.'");
-						return false;
-					}
-					return true;
-				}
-			</script>
-			<noscript>'._wpsf__('You MUST enable Javascript to be able to login').'</noscript>
-			<input type="hidden" id="icwp_wpsf_login_email" name="icwp_wpsf_login_email" value="" />
-		';
-
-		return $sHtml;
+	public function onWpLogout() {
+		$oUser = wp_get_current_user();
+		$this->doTerminateUserSession( $oUser->user_login );
 	}
 
 	/**
-	 * @return string
+	 * @param $sUsername
+	 * @return boolean
 	 */
-	public function getGaspCheckboxName() {
-		return $this->oFeatureOptions->doPluginPrefix( $this->oFeatureOptions->getGaspKey(), '_' );
-	}
-	
-	public function doGaspChecks( $insUsername ) {
-		if ( !isset( $_POST[ $this->getGaspCheckboxName() ] ) ) {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip(self::$nRequestIp) )
-			);
-			$this->doStatIncrement( 'login.gasp.checkbox.fail' );
-			wp_die( "You must check that box to say you're not a bot." );
+	protected function doTerminateUserSession( $sUsername ) {
+		if ( empty( $sUsername ) ) {
 			return false;
 		}
-		else if ( isset( $_POST['icwp_wpsf_login_email'] ) && $_POST['icwp_wpsf_login_email'] !== '' ){
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip(self::$nRequestIp) )
-			);
-			$this->doStatIncrement( 'login.gasp.honeypot.fail' );
-			wp_die( _wpsf__('You appear to be a bot - terminating login attempt.') );
-			return false;
-		}
-		return true;
+
+		$aNewData = array(
+			'deleted_at'	=> self::$nRequestTimestamp
+		);
+		$aWhere = array(
+			'session_id'	=> $this->getSessionId(),
+			'wp_username'	=> $sUsername,
+			'deleted_at'	=> 0
+		);
+		$mResult = $this->updateRowsFromTable( $aNewData, $aWhere );
+
+		unset( $_COOKIE[ self::Session_Cookie ] );
+		setcookie( self::Session_Cookie, "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
+
+		return $mResult;
 	}
-	
-	/**
-	 */
-	public function setLoginCooldownInterval() {
-		$nInterval = intval( $this->getOption('login_limit_interval', 0) );
-		$this->m_nRequiredLoginInterval = ( $nInterval < 0 )? 0 : $nInterval;
-	}
-	
+
 	/**
 	 * @param string $sUsername
 	 * @return boolean
 	 */
-	public function addNewPendingLoginAuth( $sUsername ) {
-		
+	protected function addNewPendingUserSession( $sUsername ) {
 		if ( empty( $sUsername ) ) {
 			return false;
 		}
 		
-		// First set any other pending entries for the given user to be deleted.
-		$aOldData = array(
-			'deleted_at'	=> self::$nRequestTimestamp,
-			'expired_at'	=> self::$nRequestTimestamp,
-		);
-		$aOldWhere = array(
-			'pending'		=> 1,
-			'deleted_at'	=> 0,
-			'wp_username'	=> $sUsername
-		);
-		$this->updateRowsFromTable( $aOldData, $aOldWhere );
-
-		// Now add new pending entry
+		// Add new session entry
+		// set attempts = 1 and then when we know it's a valid login, we zero it.
 		$aNewData = array();
-		$aNewData[ 'unique_id' ]	= uniqid();
-		$aNewData[ 'ip_long' ]		= self::$nRequestIp;
-		$aNewData[ 'ip' ]			= long2ip( self::$nRequestIp );
-		$aNewData[ 'wp_username' ]	= $sUsername;
-		$aNewData[ 'pending' ]		= 1;
-		$aNewData[ 'created_at' ]	= self::$nRequestTimestamp;
-
+		$aNewData[ 'session_id' ]		= $this->getSessionId();
+		$aNewData[ 'ip_long' ]			= self::$nRequestIp;
+		$aNewData[ 'wp_username' ]		= $sUsername;
+		$aNewData[ 'login_attempts' ]	= 0;
+		$aNewData[ 'pending' ]			= 1;
+		$aNewData[ 'logged_in_at' ]		= self::$nRequestTimestamp;
+		$aNewData[ 'last_activity_at' ]	= self::$nRequestTimestamp;
+		$aNewData[ 'created_at' ]		= self::$nRequestTimestamp;
 		$mResult = $this->insertIntoTable( $aNewData );
-		if ( $mResult ) {
-			$this->logInfo(
-				sprintf( _wpsf__('User "%s" created a pending Two-Factor Authentication for IP Address "%s".'), $sUsername, $aNewData[ 'ip' ] )
-			);
-			$mResult = $aNewData;
-		}
-		return $mResult;
-	}
-	
-	/**
-	 * Given a unique Id and a corresponding WordPress username, will update the authentication table so that it is active (pending=0).
-	 * 
-	 * @param array $inaWhere - unique_id, wp_username
-	 * @return boolean
-	 */
-	public function doMakePendingLoginAuthActive( $inaWhere ) {
-		
-		$aChecks = array( 'unique_id', 'wp_username' );
-		if ( !$this->validateParameters( $inaWhere, $aChecks ) ) {
-			return false;
-		}
-		
-		// First set any active, non-pending entries for the given user to be deleted
-		$this->terminateActiveLoginForUser( $inaWhere['wp_username'] );
 
-		// Now activate the new one.
-
-		// Updates the database
-		$inaWhere['pending']	= 1;
-		$inaWhere['deleted_at']	= 0;
-		$mResult = $this->updateRowsFromTable( array( 'pending' => 0 ), $inaWhere );
-
-		// Set the necessary cookie
-		$this->setAuthActiveCookie( $inaWhere['unique_id'] );
 		return $mResult;
 	}
 
 	/**
-	 * Invalidates all currently active two-factor logins and redirects to admin (->login)
 	 */
-	public function doTerminateAllVerifiedLogins() {
-		$this->terminateAllVerifiedLogins();
-		$oWp = $this->loadWpFunctionsProcessor();
-		$oWp->redirectToAdmin();
+	protected function setSessionCookie() {
+		setcookie( self::Session_Cookie, $this->getSessionId(), time()+$this->getSessionTimeoutInterval(), COOKIEPATH, COOKIE_DOMAIN, false );
 	}
 
 	/**
-	 * @param $sUsername
-	 */
-	protected function setUserLoggedIn( $sUsername ) {
-		$oWp = $this->loadWpFunctionsProcessor();
-		$oUser = version_compare( $oWp->getWordpressVersion(), '3.2.2', '<=' )? get_userdatabylogin( $sUsername ) : get_user_by( 'login', $sUsername );
-
-		wp_clear_auth_cookie();
-		wp_set_current_user ( $oUser->ID, $oUser->user_login );
-		wp_set_auth_cookie  ( $oUser->ID, true );
-		do_action( 'wp_login', $oUser->user_login );
-	}
-
-	/**
-	 * Given a username will soft-delete any currently active two-factor authentication.
-	 *
-	 * @param $sUsername
-	 */
-	protected function terminateActiveLoginForUser( $sUsername ) {
-		$sQuery = "
-			UPDATE `%s`
-			SET `deleted_at`	= '%s',
-				`expired_at`	= '%s'
-			WHERE
-				`wp_username`		= '%s'
-				AND `deleted_at`	= '0'
-				AND `pending`		= '0'
-		";
-		$sQuery = sprintf( $sQuery,
-			$this->getTableName(),
-			self::$nRequestTimestamp,
-			self::$nRequestTimestamp,
-			esc_sql( $sUsername )
-		);
-		$this->doSql( $sQuery );
-	}
-
-	/**
-	 *
-	 */
-	protected function terminateAllVerifiedLogins() {
-		$sQuery = "
-			UPDATE `%s`
-			SET `deleted_at`	= '%s',
-				`expired_at`	= '%s'
-			WHERE
-				`deleted_at`	= '0'
-				AND `pending`	= '0'
-		";
-		$sQuery = sprintf( $sQuery,
-			$this->getTableName(),
-			self::$nRequestTimestamp,
-			self::$nRequestTimestamp
-		);
-		return $this->doSql( $sQuery );
-	}
-
-	/**
-	 * @param $insUniqueId
-	 */
-	public function setAuthActiveCookie( $insUniqueId ) {
-		$nWeek = defined( 'WEEK_IN_SECONDS' )? WEEK_IN_SECONDS : 24*60*60;
-		setcookie( self::AuthActiveCookie, $insUniqueId, self::$nRequestTimestamp+$nWeek, COOKIEPATH, COOKIE_DOMAIN, false );
-	}
-	
-	/**
-	 * Checks whether a given user is authenticated.
-	 * 
 	 * @param string $sUsername
 	 * @return boolean
 	 */
-	public function isUserVerified( $sUsername ) {
+	protected function incrementUserLoginAttempts( $sUsername ) {
+		if ( empty( $sUsername ) ) {
+			return false;
+		}
+
+		$aSessionData = $this->getUserSessionRecord( $sUsername );
+
+		$aWhere = array(
+			'session_id'	=> $this->getSessionId(),
+			'deleted_at'	=> 0,
+			'wp_username'	=> $sUsername
+		);
+		$aNewData = array(
+			'login_attempts'	=> $aSessionData['login_attempts'] + 1
+		);
+		$mResult = $this->updateRowsFromTable( $aNewData, $aWhere );
+		return $mResult;
+	}
+
+	/**
+	 * @param string $sUsername
+	 * @return boolean
+	 */
+	protected function activateUserSession( $sUsername ) {
+		if ( empty( $sUsername ) ) {
+			return false;
+		}
+
+		// First set any other entries for the given user to be deleted.
+		$aNewData = array(
+			'pending'			=> 0,
+			'logged_in_at'		=> self::$nRequestTimestamp,
+			'last_activity_at'	=> self::$nRequestTimestamp,
+		);
+		$aWhere = array(
+			'session_id'	=> $this->getSessionId(),
+			'pending'		=> 1,
+			'wp_username'	=> $sUsername,
+			'deleted_at'	=> 0
+		);
+		$mResult = $this->updateRowsFromTable( $aNewData, $aWhere );
+
+		// Now set session Cookie so it reflects the correct expiry
+		$this->setSessionCookie();
+		return $mResult;
+	}
+
+	/**
+	 * @param WP_User $oUser
+	 * @return boolean
+	 */
+	protected function updateSessionLastActivityAt( $oUser ) {
+		if ( !is_object( $oUser ) || ! ( $oUser instanceof WP_User ) ) {
+			return false;
+		}
+
+		// First set any other entries for the given user to be deleted.
+		$aNewData = array(
+			'last_activity_at'	=> self::$nRequestTimestamp
+		);
+		$aWhere = array(
+			'session_id'	=> $this->getSessionId(),
+			'deleted_at'	=> 0,
+			'wp_username'	=> $oUser->user_login
+		);
+		$mResult = $this->updateRowsFromTable( $aNewData, $aWhere );
+		return $mResult;
+	}
+
+	/**
+	 * Checks for and gets a user session.
+	 * 
+	 * @param string $sUsername
+	 * @return array|boolean
+	 */
+	protected function getUserSessionRecord( $sUsername ) {
 
 		$sQuery = "
 			SELECT *
 			FROM `%s`
 			WHERE
 				`wp_username`		= '%s'
-				AND `pending`		= '0'
+				AND `session_id`	= '%s'
 				AND `deleted_at`	= '0'
-				AND `expired_at`	= '0'
 		";
-
 		$sQuery = sprintf( $sQuery,
 			$this->getTableName(),
-			$sUsername
+			$sUsername,
+			$this->getSessionId()
 		);
 
 		$mResult = $this->selectCustomFromTable( $sQuery );
-
 		if ( is_array( $mResult ) && count( $mResult ) == 1 ) {
-			// Now we test based on which types of 2-factor auth is enabled
-			$fVerified = true;
-			$aUserAuthData = $mResult[0];
-			if ( $this->getIsTwoFactorAuthOn('ip') && ( self::$nRequestIp != $aUserAuthData['ip_long'] ) ) {
-				$fVerified = false;
-			}
-			if ( $fVerified && $this->getIsTwoFactorAuthOn('cookie') && !$this->isAuthCookieValid($aUserAuthData['unique_id']) ) {
-				$fVerified = false;
-			}
-			return $fVerified;
+			return $mResult[0];
 		}
 		else {
 			$this->logWarning(
@@ -852,123 +364,40 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 	/**
-	 * @param $sUniqueId
-	 * @return bool
-	 */
-	protected function isAuthCookieValid( $sUniqueId ) {
-		$this->loadDataProcessor();
-		return ICWP_WPSF_DataProcessor::FetchCookie( self::AuthActiveCookie ) == $sUniqueId;
-	}
-
-	/**
-	 * If it cannot verify current user, will forcefully log them out and redirect to login
-	 */
-	public function verifyCurrentUser() {
-		$oUser = wp_get_current_user();
-		if ( is_object( $oUser ) && $oUser instanceof WP_User ) {
-			
-			if ( $this->getIsUserLevelSubjectToTwoFactorAuth( $oUser->user_level ) && !$this->isUserVerified( $oUser->user_login ) ) {
-				$this->logWarning(
-					sprintf( _wpsf__('User "%s" was forcefully logged out as they are not verified by either cookie or IP address (or both).'), $oUser->user_login )
-				);
-				$this->doStatIncrement( 'login.userverify.fail' );
-				wp_logout();
-				$oWp = $this->loadWpFunctionsProcessor();
-				$oWp->redirectToLogin();
-			}
-		}
-	}
-	
-	/**
-	 * Given the necessary components, creates the 2-factor verification link for giving to the user.
-	 * 
-	 * @param string $sUser
-	 * @param string $sUniqueId
-	 * @return string
-	 */
-	protected function generateTwoFactorVerifyLink( $sUser, $sUniqueId ) {
-		$sSiteUrl = home_url() . '?wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid=%s';
-		$sAction = 'linkauth';
-		return sprintf( $sSiteUrl, $this->oFeatureOptions->getTwoAuthSecretKey(), $sAction, $sUser, $sUniqueId );
-	}
-
-	/**
-	 * @param WP_User $inoUser
-	 * @param string $insIpAddress
-	 * @param string $insUniqueId
-	 * @return boolean
-	 */
-	public function sendEmailTwoFactorVerify( WP_User $inoUser, $insIpAddress, $insUniqueId ) {
-	
-		$sEmail = $inoUser->user_email;
-		$sAuthLink = $this->generateTwoFactorVerifyLink( $inoUser->user_login, $insUniqueId );
-		
-		$aMessage = array(
-			_wpsf__('You, or someone pretending to be you, just attempted to login into your WordPress site.'),
-			_wpsf__('The IP Address / Cookie from which they tried to login is not currently verified.'),
-			_wpsf__('To validate this user, click the following link and then attempt to login again.'),
-			sprintf( _wpsf__('IP Address: %s'), $insIpAddress ),
-			sprintf( _wpsf__('Authentication Link: %s'), $sAuthLink ),
-		);
-		$sEmailSubject = sprintf( _wpsf__('Two-Factor Login Verification for: %s'), home_url() );
-
-		// add filters to email sending (for now only Mandrill)
-		add_filter( 'mandrill_payload', array($this, 'customiseMandrill') );
-
-		$fResult = $this->getEmailProcessor()->sendEmailTo( $sEmail, $sEmailSubject, $aMessage );
-		if ( $fResult ) {
-			$this->logInfo(
-				sprintf( _wpsf__('User "%s" was sent an email to verify their Identity using Two-Factor Login Auth for IP address "%s".'), $inoUser->user_login, $insIpAddress )
-			);
-		}
-		else {
-			$this->logCritical(
-				sprintf( _wpsf__('Tried to send User "%s" email to verify their Identity using Two-Factor Login Auth for IP Address "%s", but email sending failed.'), $inoUser->user_login, $insIpAddress )
-			);
-		}
-		return $fResult;
-	}
-
-	/**
 	 *
 	 */
-	public function customiseMandrill( $aMessage ) {
-		if ( empty( $aMessage['text'] ) ) {
-			$aMessage['text'] = $aMessage['html'];
+	protected function getSessionId() {
+		if ( empty( $this->sSessionId ) ) {
+			$this->loadDataProcessor();
+			$this->sSessionId = ICWP_WPSF_DataProcessor::FetchCookie( self::Session_Cookie );
+			if ( is_null( $this->sSessionId ) ) {
+				$this->sSessionId = md5( uniqid() );
+				$this->setSessionCookie();
+			}
 		}
-		return $aMessage;
+		return $this->sSessionId;
 	}
-	
+
 	public function createTable() {
 
 		// Set up login processor table
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
 			`id` int(11) NOT NULL AUTO_INCREMENT,
-			`unique_id` varchar(20) NOT NULL DEFAULT '',
+			`session_id` varchar(32) NOT NULL DEFAULT '',
 			`wp_username` varchar(255) NOT NULL DEFAULT '',
-			`ip` varchar(20) NOT NULL DEFAULT '',
 			`ip_long` bigint(20) NOT NULL DEFAULT '0',
+			`logged_in_at` int(15) NOT NULL DEFAULT '0',
+			`last_activity_at` int(15) NOT NULL DEFAULT '0',
+			`last_activity_uri` varchar(255) NOT NULL DEFAULT '',
+			`used_mfa` int(1) NOT NULL DEFAULT '0',
 			`pending` int(1) NOT NULL DEFAULT '0',
+			`login_attempts` int(1) NOT NULL DEFAULT '0',
 			`created_at` int(15) NOT NULL DEFAULT '0',
 			`deleted_at` int(15) NOT NULL DEFAULT '0',
-			`expired_at` int(15) NOT NULL DEFAULT '0',
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 		$sSqlTables = sprintf( $sSqlTables, $this->getTableName() );
 		$mResult = $this->doSql( $sSqlTables );
-	}
-	
-	/**
-	 * Assumes that unique_id AND wp_username have been set correctly in the data array (no checking done).
-	 * 
-	 * @param array $inaData
-	 * @return array
-	 */
-	protected function getLoginAuthData( $inaData ) {
-
-		$sQuery = "SELECT * FROM %s WHERE `unique_id` = `%s` AND `wp_username` = %s";
-		$sQuery = sprintf( $sQuery, $this->getTableName(), $inaData['unique_id'], $inaData['wp_username'] );
-		return $this->selectRowFromTable( $sQuery );
 	}
 
 	/**

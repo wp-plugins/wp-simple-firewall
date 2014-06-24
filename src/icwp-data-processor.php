@@ -430,26 +430,28 @@ class ICWP_DataProcessor_V1 {
 	}
 	/**
 	 * @param string $insKey		The $_POST key
+	 * @param mixed $mDefault
 	 * @return mixed|null
 	 */
-	public static function FetchCookie( $insKey ) {
+	public static function FetchCookie( $insKey, $mDefault = null ) {
 		if ( function_exists( 'filter_input' ) && defined( 'INPUT_COOKIE' ) ) {
 			return filter_input( INPUT_COOKIE, $insKey );
 		}
-		return self::ArrayFetch( $_COOKIE, $insKey );
+		return self::ArrayFetch( $_COOKIE, $insKey, $mDefault );
 	}
 
 	/**
 	 * @param array $inaArray
 	 * @param string $insKey		The array key
+	 * @param mixed $mDefault
 	 * @return mixed|null
 	 */
-	public static function ArrayFetch( &$inaArray, $insKey ) {
+	public static function ArrayFetch( &$inaArray, $insKey, $mDefault = null ) {
 		if ( empty( $inaArray ) ) {
-			return null;
+			return $mDefault;
 		}
 		if ( !isset( $inaArray[$insKey] ) ) {
-			return null;
+			return $mDefault;
 		}
 		return $inaArray[$insKey];
 	}

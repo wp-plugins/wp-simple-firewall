@@ -55,7 +55,8 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 */
 	public function run() {
 		if ( $this->getTableExists() ) {
-			add_action( self::CleanupCronActionHook, array( $this, 'cleanupDatabase' ) );
+			$sFullHookName = $this->oFeatureOptions->doPluginPrefix( self::CleanupCronActionHook, '_' );
+			add_action( $sFullHookName, array( $this, 'cleanupDatabase' ) );
 		}
 	}
 	
@@ -141,35 +142,36 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 		return $oDb->get_results( $sQuery, $innFormat );
 	}
 	
-	public function selectCustomFromTable( $insQuery ) {
+	public function selectCustomFromTable( $sQuery ) {
 		$oDb = $this->loadWpdb();
-		return $oDb->get_results( $insQuery, ARRAY_A );
+		return $oDb->get_results( $sQuery, ARRAY_A );
 	}
 	
-	public function selectRowFromTable( $insQuery ) {
+	public function selectRowFromTable( $sQuery ) {
 		$oDb = $this->loadWpdb();
-		return $oDb->get_row( $insQuery, ARRAY_A );
+		return $oDb->get_row( $sQuery, ARRAY_A );
 	}
 	
-	public function updateRowsFromTable( $inaData, $inaWhere ) {
+	public function updateRowsFromTable( $aData, $aWhere ) {
 		$oDb = $this->loadWpdb();
-		return $oDb->update( $this->getTableName(), $inaData, $inaWhere );
+		return $oDb->update( $this->getTableName(), $aData, $aWhere );
 	}
 	
-	public function deleteRowsFromTable( $inaWhere ) {
+	public function deleteRowsFromTable( $aWhere ) {
 		$oDb = $this->loadWpdb();
-		return $oDb->delete( $this->getTableName(), $inaWhere );
+		return $oDb->delete( $this->getTableName(), $aWhere );
 	}
 	
-	protected function deleteAllRowsOlderThan( $innTimeStamp ) {
+	protected function deleteAllRowsOlderThan( $nTime ) {
 		$sQuery = "
 			DELETE from `%s`
 			WHERE
 				`created_at`		< '%s'
 		";
-		$sQuery = sprintf( $sQuery,
-				$this->getTableName(),
-				$innTimeStamp
+		$sQuery = sprintf(
+			$sQuery,
+			$this->getTableName(),
+			$nTime
 		);
 		$this->doSql( $sQuery );
 	}
@@ -215,11 +217,11 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	
 	private function setTableName( $sTableName = null ) {
 		$oDb = $this->loadWpdb();
-		$this->sFullTableName = esc_sql(
+		$sTableString =
 			$oDb->prefix
 			. self::DB_TABLE_PREFIX
-			. is_null( $sTableName ) ? $this->oFeatureOptions->getFeatureSlug() : $sTableName
-		);
+			. ( is_null( $sTableName ) ? $this->oFeatureOptions->getFeatureSlug() : $sTableName );
+		$this->sFullTableName = esc_sql( $sTableString );
 		return $this->sFullTableName;
 	}
 
@@ -242,9 +244,10 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 * Will setup the cleanup cron to clean out old entries. This should be overridden per implementation.
 	 */
 	protected function createCleanupCron() {
-		if ( ! wp_next_scheduled( self::CleanupCronActionHook ) && ! defined( 'WP_INSTALLING' ) ) {
+		$sFullHookName = $this->oFeatureOptions->doPluginPrefix( self::CleanupCronActionHook, '_' );
+		if ( ! wp_next_scheduled( $sFullHookName ) && ! defined( 'WP_INSTALLING' ) ) {
 			$nNextRun = strtotime( 'tomorrow 6am' ) - get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
-			wp_schedule_event( $nNextRun, 'daily', self::CleanupCronActionHook );
+			wp_schedule_event( $nNextRun, 'daily', $sFullHookName );
 		}
 	}
 
