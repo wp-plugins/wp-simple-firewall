@@ -63,8 +63,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	
 	protected $fShowMarketing;
 	
-	protected $fAutoPluginUpgrade = false;
-	
 	/**
 	 * @var ICWP_WpFunctions_WPSF;
 	 */
@@ -80,7 +78,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		// All core values of the plugin are derived from the values stored in this value object.
 		$this->oPluginVo				= $oPluginVo;
 		$this->sPluginRootFile			= $this->oPluginVo->getRootFile();
-		$this->fAutoPluginUpgrade		= $this->oPluginVo->getAutoUpgrade();
 		$this->sPluginSlug				= $this->oPluginVo->getPluginSlug();
 		self::$sOptionPrefix			= $this->oPluginVo->getOptionStoragePrefix();
 		$this->setPaths();
@@ -409,7 +406,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 			'sPluginName'		=> $this->oPluginVo->getHumanName(),
 			'fShowAds'			=> $this->isShowMarketing(),
 			'nonce_field'		=> $this->getPluginPrefix(),
-			'form_action'		=> 'admin.php?page='.$this->getSubmenuId( $sSubmenu )
+			'form_action'		=> 'admin.php?page='.$this->getCurrentWpAdminPage()
 		);
 	}
 
@@ -716,10 +713,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	protected function handlePluginUpgrade() {
 		if ( !is_admin() || !current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
 			return;
-		}
-		if ( $this->fAutoPluginUpgrade ) {
-			$this->loadWpFunctions();
-			$this->m_oWpFunctions->doPluginUpgrade( $this->getPluginBaseFile() );
 		}
 	}
 

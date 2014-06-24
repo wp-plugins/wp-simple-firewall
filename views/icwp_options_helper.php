@@ -67,7 +67,7 @@ function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $i
 
 	}
 
-}//printAllPluginOptionsForm
+}
 
 function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 	
@@ -83,7 +83,7 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 		$sHelpLink = !empty($sHelpLink)? '<span>['.$sHelpLink.']</span>' : '';
 		$sSpanId = 'span_'.$insVarPrefix.$sOptionKey;
 		$sHtml = '
-			<div class="span'.$iSpanSize.'" id="'.$sSpanId.'">
+			<div class="item_group span'.$iSpanSize.' '.( ($sOptionSaved == 'Y')? ' selected_item_group':'' ).'" id="'.$sSpanId.'">
 				<div class="control-group">
 					<label class="control-label" for="'.$insVarPrefix.$sOptionKey.'">'.$sOptionHumanName.'<br />'.$sHelpLink.'</label>
 					<div class="controls">

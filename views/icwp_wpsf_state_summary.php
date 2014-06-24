@@ -72,7 +72,7 @@ function printFeatureSummaryBlock( $fOn, $sName, $sSettingsHref= '', $sInnerSpan
 		vertical-align: top;
 	}
 	#feature-dashboard .feature-icon:before,
-	#feature-adminaccessprotection .feature-icon:before {
+	#feature-adminaccess .feature-icon:before {
 		content: "\f332";
 	}
 	#feature-firewall .feature-icon:before {

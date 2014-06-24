@@ -25,7 +25,7 @@
 }
 .bootstrap-wpadmin .page-header {
 	padding-bottom: 17px;
-	margin: 18px 0;
+	margin: 18px 0 0;
 	border-bottom: 1px solid #EEE;
 }
 /* Form elements */
@@ -81,11 +81,28 @@ p.code-description {
 	font-size: smaller;
 	font-style: italic;
 }
+.form-horizontal legend {
+	border-bottom: 1px dashed #aaa;
+	margin-bottom: 8px;
+	margin-top: 30px;
+}
+.form-horizontal .item_group .control-group {
+	margin-bottom: 0;
+}
+.form-horizontal .item_group {
+	border-radius: 4px;
+	box-sizing: border-box;
+	margin-bottom: 10px;
+	padding: 20px 20px 20px 0;
+ }
+.form-horizontal .selected_item_group {
+	border: 1px solid rgba(135, 232, 38, 0.55);
+	background-color: rgba(135, 232, 38, 0.1);
+}
 .option_section {
 	background-color: rgba(0, 0, 0, 0.008);
 	border: 1px solid #E6E6E6;
-	border-radius: 8px;
-    margin-bottom: 8px;
+	border-radius: 4px;
 	padding: 8px 10px;
 }
 .option_section label {

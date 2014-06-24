@@ -32,7 +32,9 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 		$this->sFeatureName = _wpsf__('Dashboard');
 		$this->sFeatureSlug = 'plugin';
 		parent::__construct( $oPluginVo, 'plugin_options' );
-		add_action( 'deactivate_plugin',		array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
+
+		add_action( 'deactivate_plugin', array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
+		add_filter( $this->doPluginPrefix( 'report_email_address' ), array( $this, 'getPluginReportEmail' ) );
 	}
 
 	/**
@@ -94,6 +96,18 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
+	 * @param $sEmail
+	 * @return string
+	 */
+	public function getPluginReportEmail( $sEmail ) {
+		$sReportEmail = $this->getOpt( 'block_send_email_address' );
+		if ( !empty( $sReportEmail ) && is_email( $sReportEmail ) ) {
+			$sEmail = $sReportEmail;
+		}
+		return $sEmail;
+	}
+
+	/**
 	 * @return bool|void
 	 */
 	public function defineOptions() {
@@ -104,19 +118,22 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 			'feedback_admin_notice',
 			'update_success_tracker',
 			'capability_can_disk_write',
-			'capability_can_remote_get',
-			'enable_admin_access_restriction',
-			'enable_firewall',
-			'enable_login_protect',
-			'enable_comments_filter',
-			'enable_lockdown',
-			'enable_autoupdates'
+			'capability_can_remote_get'
 		);
 		$this->mergeNonUiOptions( $aNonUiOptions );
 
 		$aGeneral = array(
 			'section_title' => _wpsf__( 'General Plugin Options' ),
 			'section_options' => array(
+				array(
+					'block_send_email_address',
+					'',
+					'',
+					'email',
+					_wpsf__( 'Report Email' ),
+					_wpsf__( 'Where to send email reports from the Firewall' ),
+					_wpsf__( 'If this is empty, it will default to the blog admin email address' )
+				),
 				array(
 					'enable_upgrade_admin_notice',
 					'',

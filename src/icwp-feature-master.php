@@ -41,8 +41,6 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 	 */
 	protected $oPluginMainOptions;
 
-	protected $fHasFtpOverride = false;
-
 	public function __construct( ICWP_Wordpress_Simple_Firewall_Plugin $oPluginVo, $aFeatures, $inaOptions ) {
 		parent::__construct( $oPluginVo );
 		$this->aFeatures = $aFeatures;
@@ -65,70 +63,12 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 	public function getIsFeature( $sFeature ) {
 		return array_key_exists( $sFeature, $this->getFeaturesMap() ) || in_array( $sFeature, $this->getFeaturesMap() );
 	}
-	
-//	/**
-//	 * @param string $sFeature	- firewall, login_protect, comments_filter, lockdown
-//	 * @return boolean
-//	 */
-//	public function getIsMainFeatureEnabled( $sFeature ) {
-//		$this->override();
-//		return $this->getIsFeature( $sFeature ) && ( $this->oPluginMainOptions->getOpt( 'enable_'.$sFeature ) == 'Y' );
-//	}
-	/**
-	 * Based on the existence of files placed within the plugin directory, will enable or disable
-	 * all registered features and return the value of the override setting that was put in place.
-	 *
-	 * @return string - override settings (empty string if none).
-	 */
-	protected function override() {
 
-		$oWpFs = $this->loadWpFilesystem();
-		if ( $oWpFs->exists( path_join($this->sPluginRootDir, 'forceOff') ) ) {
-			$sSetting = 'N';
-		}
-		else if ( $oWpFs->exists( path_join($this->sPluginRootDir, 'forceOn') ) ) {
-			$sSetting = 'Y';
-		}
-		else {
-			$sSetting = '';
-		}
-
-		$aFeatures = $this->getFeaturesMap();
-		if ( !empty( $sSetting ) ) {
-			foreach( $aFeatures as $sFeature => $sName ) {
-				$this->setSharedOption( 'enable_'.$sFeature, $sSetting );
-			}
-		}
-		return $sSetting;
-	}
-	
-	/**
-	 * This is necessary because we store these values in several places and we need to always keep it in sync.
-	 * 
-	 * @param string $insOption
-	 * @param mixed $inmValue
-	 * @return boolean
-	 */
-	public function setSharedOption( $insOption, $inmValue ) {
-
-		$aFeatures = $this->getFeaturesMap();
-		
-		$sFeature = str_replace( 'enable_', '', $insOption );
-		if ( !array_key_exists( $sFeature, $aFeatures ) ) {
-			return;
-		}
-		
-		$this->loadOptionsHandler( $aFeatures[$sFeature] );
-		$sOptions = 'o'.$aFeatures[$sFeature].'Options';// e.g. oFirewallOptions
-		$this->{$sOptions}->setOpt( $insOption, $inmValue );
-		$this->oPluginMainOptions->setOpt( $insOption, $inmValue );
-	}
-	
 	protected function loadOptionsHandler( $insOptionHandler = 'PluginMain', $infRecreate = false, $infFullBuild = false ) {
 
 		$aAllHandlers = array_values( $this->getFeaturesMap() );
 		array_unshift( $aAllHandlers, 'PluginMain' );
-		
+
 		// special case
 		if ( $insOptionHandler == 'all' ) {
 			foreach( $aAllHandlers as $sHandler ) {
@@ -136,11 +76,11 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 			}
 			return $fSuccess;
 		}
-		
+
 		if ( !in_array( $insOptionHandler, $aAllHandlers ) ) {
 			return false;
 		}
-		
+
 		$sOptionsVarName = 'o'.$insOptionHandler.'Options'; // e.g. oPluginMainOptions
 
 		if ( isset( $this->{$sOptionsVarName} ) ) {
@@ -155,17 +95,81 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 			$sSourceFile = dirname(__FILE__).'/icwp-optionshandler-'.strtolower($insOptionHandler).'.php'; // e.g. icwp-optionshandler-wpsf.php
 			$sClassName = 'ICWP_OptionsHandler_'.$insOptionHandler; // e.g. ICWP_OptionsHandler_Wpsf
 		}
-		
+
 		require_once( $sSourceFile );
 		if ( $infRecreate || !isset( $this->{$sOptionsVarName} ) ) {
-		 	$this->{$sOptionsVarName} = new $sClassName( $this->oPluginVo );
+			$this->{$sOptionsVarName} = new $sClassName( $this->oPluginVo );
 		}
 		if ( $infFullBuild ) {
 			$this->{$sOptionsVarName}->buildOptions();
 		}
 		return $this->{$sOptionsVarName};
 	}
+
+
+	public function onWpActivatePlugin() {
+		$this->loadOptionsHandler( 'all', true, true );
+	}
 	
+//	/**
+//	 * @param string $sFeature	- firewall, login_protect, comments_filter, lockdown
+//	 * @return boolean
+//	 */
+//	public function getIsMainFeatureEnabled( $sFeature ) {
+//		$this->override();
+//		return $this->getIsFeature( $sFeature ) && ( $this->oPluginMainOptions->getOpt( 'enable_'.$sFeature ) == 'Y' );
+//	}
+//	/**
+//	 * Based on the existence of files placed within the plugin directory, will enable or disable
+//	 * all registered features and return the value of the override setting that was put in place.
+//	 *
+//	 * @return string - override settings (empty string if none).
+//	 */
+//	protected function override() {
+//
+//		$oWpFs = $this->loadWpFilesystem();
+//		if ( $oWpFs->exists( path_join($this->sPluginRootDir, 'forceOff') ) ) {
+//			$sSetting = 'N';
+//		}
+//		else if ( $oWpFs->exists( path_join($this->sPluginRootDir, 'forceOn') ) ) {
+//			$sSetting = 'Y';
+//		}
+//		else {
+//			$sSetting = '';
+//		}
+//
+//		$aFeatures = $this->getFeaturesMap();
+//		if ( !empty( $sSetting ) ) {
+//			foreach( $aFeatures as $sFeature => $sName ) {
+//				$this->setSharedOption( 'enable_'.$sFeature, $sSetting );
+//			}
+//		}
+//		return $sSetting;
+//	}
+	
+//	/**
+//	 * This is necessary because we store these values in several places and we need to always keep it in sync.
+//	 *
+//	 * @param string $insOption
+//	 * @param mixed $inmValue
+//	 * @return boolean
+//	 */
+//	public function setSharedOption( $insOption, $inmValue ) {
+//
+//		$aFeatures = $this->getFeaturesMap();
+//
+//		$sFeature = str_replace( 'enable_', '', $insOption );
+//		if ( !array_key_exists( $sFeature, $aFeatures ) ) {
+//			return;
+//		}
+//
+//		$this->loadOptionsHandler( $aFeatures[$sFeature] );
+//		$sOptions = 'o'.$aFeatures[$sFeature].'Options';// e.g. oFirewallOptions
+//		$this->{$sOptions}->setOpt( $insOption, $inmValue );
+//		$this->oPluginMainOptions->setOpt( $insOption, $inmValue );
+//	}
+
+
 //	/**
 //	 * Given a feature/processor name will load the variable for it, including the appropriate source file.
 //	 *
@@ -227,10 +231,6 @@ class ICWP_Feature_Master extends ICWP_Pure_Base_V5 {
 //		}
 //		return $aOptions;
 //	}
-
-	public function onWpActivatePlugin() {
-		$this->loadOptionsHandler( 'all', true, true );
-	}
 
 }
 

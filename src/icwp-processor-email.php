@@ -174,22 +174,20 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		return ( empty( $sEmailAddress ) || !is_email( $sEmailAddress ) ) ? $this->getDefaultRecipientAddress() : $sEmailAddress;
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getDefaultRecipientAddress() {
-		if ( empty( $this->m_sRecipientAddress ) ) {
-			$this->m_sRecipientAddress = $this->getOption( 'block_send_email_address' );
-		}
-		return $this->m_sRecipientAddress;
+		$oWpFunctions = $this->loadWpFunctionsProcessor();
+		return apply_filters( $this->oFeatureOptions->doPluginPrefix( 'report_email_address' ), $oWpFunctions->getSiteAdminEmail() );
 	}
-	
-	public function setSiteName( $insName ) {
-		$this->m_sSiteName = $insName;
-	}
-	
+
+	/**
+	 * @return string
+	 */
 	public function getSiteName() {
-		if ( empty( $this->m_sSiteName ) ) {
-			$this->m_sSiteName = function_exists( 'get_bloginfo' )? get_bloginfo('name') : 'WordPress Site';
-		}
-		return $this->m_sSiteName;
+		$oWpFunctions = $this->loadWpFunctionsProcessor();
+		return $oWpFunctions->getSiteName();
 	}
 	
 	public function getThrottleLimit() {

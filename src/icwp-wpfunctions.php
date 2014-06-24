@@ -158,6 +158,19 @@ class ICWP_WpFunctions_V4 {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getSiteName() {
+		return function_exists( 'get_bloginfo' )? get_bloginfo('name') : 'WordPress Site';
+	}
+	/**
+	 * @return string
+	 */
+	public function getSiteAdminEmail() {
+		return function_exists( 'get_bloginfo' )? get_bloginfo('admin_email') : '';
+	}
+
+	/**
 	 * @return bool
 	 */
 	public function isMultisite() {

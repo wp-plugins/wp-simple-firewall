@@ -128,7 +128,7 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 	public function defineOptions() {
 
 		if ( $this->hasEncryptOption() ) {
-			
+
 			$aAccessKey = array(
 				'section_title' => _wpsf__( 'Admin Access Restriction' ),
 				'section_options' => array(
@@ -144,16 +144,6 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 						.' | <a href="http://icwp.io/wpsf02" target="_blank">'._wpsf__( 'blog' ).'</a>'
 					),
 					array(
-						'admin_access_timeout',
-						'',
-						self::Default_AccessKeyTimeout,
-						'integer',
-						_wpsf__( 'Access Key Timeout' ),
-						_wpsf__( 'Specify A Timeout For Plugin Admin Access' ),
-						_wpsf__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again. Default: 30 minutes.' ),
-						'<a href="http://icwp.io/41" target="_blank">'._wpsf__( 'more info' ).'</a>'
-					),
-					array(
 						'admin_access_key',
 						'',
 						'',
@@ -161,13 +151,24 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 						_wpsf__( 'Admin Access Key' ),
 						_wpsf__( 'Specify Your Plugin Access Key' ),
 						_wpsf__( 'If you forget this, you could potentially lock yourself out from using this plugin.' )
-							.' <strong>'._wpsf__( 'Leave it blank to not update it' ).'</strong>',
+						.' <strong>'._wpsf__( 'Leave it blank to not update it' ).'</strong>',
 						'<a href="http://icwp.io/42" target="_blank">'._wpsf__( 'more info' ).'</a>'
+					),
+					array(
+						'admin_access_timeout',
+						'',
+						self::Default_AccessKeyTimeout,
+						'integer',
+						_wpsf__( 'Access Key Timeout' ),
+						_wpsf__( 'Specify A Timeout For Plugin Admin Access' ),
+						_wpsf__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again.').'<br />'.sprintf(_wpsf__( 'Default: %s minutes.' ), self::Default_AccessKeyTimeout ),
+						'<a href="http://icwp.io/41" target="_blank">'._wpsf__( 'more info' ).'</a>'
 					)
 				)
 			);
 		}
 
+		$this->setOptions();
 		$this->aOptions = array(
 			$aAccessKey
 		);

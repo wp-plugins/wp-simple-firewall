@@ -123,27 +123,23 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		);
 
 		$this->loadOptionsHandler( 'all' );
-		$this->fAutoPluginUpgrade = false && $this->oPluginMainOptions->getOpt( 'enable_auto_plugin_upgrade' ) == 'Y';
-
-		// checks for filesystem based firewall overrides
-		$this->override();
 
 		add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
 		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
 		add_filter( 'pre_update_option', array($this, 'blockOptionsSaves'), 1, 3 );
 	}
 
-	/**
-	 * @return string
-	 */
-	protected function override() {
-		$sSetting = parent::override();
-		if ( !empty( $sSetting ) ) {
-			$this->oPluginMainOptions->setOpt( 'enable_admin_access_restriction', $sSetting );
-			$this->oPluginMainOptions->savePluginOptions();
-		}
-		return $sSetting;
-	}
+//	/**
+//	 * @return string
+//	 */
+//	protected function override() {
+//		$sSetting = parent::override();
+//		if ( !empty( $sSetting ) ) {
+//			$this->oPluginMainOptions->setOpt( 'enable_admin_access_restriction', $sSetting );
+//			$this->oPluginMainOptions->savePluginOptions();
+//		}
+//		return $sSetting;
+//	}
 
 	/**
 	 * @param array $aItems

@@ -117,6 +117,18 @@ class ICWP_OptionsHandler_Base_V2 {
 		add_action( $this->doPluginPrefix( 'delete_plugin_options' ), array( $this, 'deletePluginOptions' )  );
 	}
 
+	public function override() {
+
+		$oWpFs = $this->loadFileSystemProcessor();
+		if ( $oWpFs->exists( path_join( $this->oPluginVo->getRootDir(), 'forceOff') ) ) {
+			$this->setIsMainFeatureEnabled( false );
+		}
+		else if ( $oWpFs->exists( path_join( $this->oPluginVo->getRootDir(), 'forceOn') ) ) {
+			$this->setIsMainFeatureEnabled( true );
+		}
+
+	}
+
 	public function onWpPluginsLoaded() {
 		$this->load();
 	}
@@ -196,10 +208,18 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	/**
+	 * @param $fEnable
+	 */
+	public function setIsMainFeatureEnabled( $fEnable ) {
+		$this->setOpt( 'enable_'.$this->getFeatureSlug(), $fEnable ? 'Y' : 'N' );
+	}
+
+	/**
 	 * @return mixed
 	 */
 	public function getIsMainFeatureEnabled() {
-		return $this->getOpt( 'enable_'.$this->sFeatureSlug ) == 'Y';
+		$this->override();
+		return $this->getOpt( 'enable_'.$this->getFeatureSlug() ) == 'Y';
 	}
 
 	/**
@@ -477,6 +497,29 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	protected function defineOptions() {
+
+		if ( !empty( $this->aOptions ) ) {
+			return true;
+		}
+
+		$aMisc = array(
+			'section_title' => 'Miscellaneous Plugin Options',
+			'section_options' => array(
+				array(
+					'delete_on_deactivate',
+					'',
+					'N',
+					'checkbox',
+					'Delete Plugin Settings',
+					'Delete All Plugin Settings Upon Plugin Deactivation',
+					'Careful: Removes all plugin options when you deactivite the plugin.'
+				)
+			)
+		);
+		$this->aOptions = array( $aMisc );
+	}
+
+	protected function getOptionsDefinitions() {
 
 		if ( !empty( $this->aOptions ) ) {
 			return true;
@@ -851,7 +894,12 @@ class ICWP_OptionsHandler_Base_V2 {
 			'aSummaryData'		=> isset( $aPluginSummaryData ) ? $aPluginSummaryData : array()
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
-		$this->display( $this->doPluginPrefix( 'config_'.$this->sFeatureSlug.'_index', '_' ), $aData );
+
+		$oWpFs = $this->loadFileSystemProcessor();
+
+		$sCustomViewSource = 'config_'.$this->sFeatureSlug.'_index';
+		$sViewSource = $oWpFs->exists( $sCustomViewSource ) ? $sCustomViewSource : 'config_index';
+		$this->display( $this->doPluginPrefix( $sViewSource ), $aData );
 	}
 
 	public function getIsCurrentPageConfig() {

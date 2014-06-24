@@ -122,13 +122,6 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	/**
 	 * @return string
 	 */
-	public function getAutoUpgrade() {
-		return self::$fAutoUpgrade;
-	}
-
-	/**
-	 * @return string
-	 */
 	public function getBasePermissions() {
 		return self::$sBasePermissions;
 	}
