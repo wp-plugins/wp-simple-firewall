@@ -48,9 +48,9 @@ class ICWP_OptionsHandler_Logging extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
-	 * @return bool|void
+	 * @return array
 	 */
-	public function defineOptions() {
+	protected function getOptionsDefinitions() {
 		$aBase = array(
 			'section_title' => _wpsf__( 'Enable Logging' ),
 			'section_options' => array(
@@ -65,9 +65,11 @@ class ICWP_OptionsHandler_Logging extends ICWP_OptionsHandler_Base_Wpsf {
 				)
 			)
 		);
-		$this->aOptions = array(
+
+		$aOptionsDefinitions = array(
 			$aBase
 		);
+		return $aOptionsDefinitions;
 	}
 
 	/**

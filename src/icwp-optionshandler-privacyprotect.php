@@ -46,9 +46,9 @@ class ICWP_OptionsHandler_PrivacyProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	public function doPrePluginOptionsSave() { }
 
 	/**
-	 * @return bool|void
+	 * @return array
 	 */
-	public function defineOptions() {
+	protected function getOptionsDefinitions() {
 
 		$aOptionsBase = array(
 			'section_title' => _wpsf__( 'Enable Privacy Protection' ),
@@ -101,10 +101,11 @@ class ICWP_OptionsHandler_PrivacyProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->aOptions = array(
+		$aOptionsDefinitions = array(
 			$aOptionsBase,
 			$aFurtherOptions
 		);
+		return $aOptionsDefinitions;
 	}
 
 	public function handleFormSubmit() {

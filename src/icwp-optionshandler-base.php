@@ -50,7 +50,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	 *
 	 * @var array
 	 */
-	protected $m_aNonUiOptions;
+	protected $aNonUiOptions;
 
 	/**
 	 * @var array
@@ -115,6 +115,8 @@ class ICWP_OptionsHandler_Base_V2 {
 		add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
 
 		add_action( $this->doPluginPrefix( 'delete_plugin_options' ), array( $this, 'deletePluginOptions' )  );
+		add_filter( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array( $this, 'aggregateOptionsValues' ) );
+
 	}
 
 	public function override() {
@@ -310,8 +312,8 @@ class ICWP_OptionsHandler_Base_V2 {
 
 	protected function doUpdates() {
 		if ( $this->hasPluginManageRights() ) {
-			$this->buildOptions();
 			$this->updateHandler();
+//			$this->buildOptions();
 		}
 	}
 
@@ -368,9 +370,6 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * @return boolean
 	 */
 	public function getIsOptionKey( $sOptionKey ) {
-		if ( $sOptionKey == self::PluginVersionKey ) {
-			return true;
-		}
 		$this->setOptionsKeys();
 		return ( in_array( $sOptionKey, $this->aOptionsKeys ) );
 	}
@@ -439,6 +438,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	public function savePluginOptions() {
 
 		$this->doPrePluginOptionsSave();
+		$this->cleanOptions();
 		$this->updateOptionsVersion();
 		if ( !$this->fNeedSave ) {
 			return true;
@@ -448,6 +448,17 @@ class ICWP_OptionsHandler_Base_V2 {
 		$oWpFunc->updateOption( $this->sOptionsStoreKey, $this->m_aOptionsValues );
 		$this->fNeedSave = false;
 		return true;
+	}
+
+	/**
+	 *
+	 */
+	protected function cleanOptions() {
+		foreach( $this->m_aOptionsValues as $sKey => $mValue ) {
+			if ( !$this->getIsOptionKey( $sKey ) ) {
+				unset( $this->m_aOptionsValues[$sKey] );
+			}
+		}
 	}
 
 	public function collateAllFormInputsForAllOptions() {
@@ -483,6 +494,14 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	/**
+	 * @param $aAggregatedOptions
+	 * @return array
+	 */
+	public function aggregateOptionsValues( $aAggregatedOptions ) {
+		return array_merge( $aAggregatedOptions, $this->loadStoredOptionsValues() );
+	}
+
+	/**
 	 * Loads the options and their stored values from the WordPress Options store.
 	 */
 	protected function loadStoredOptionsValues() {
@@ -496,35 +515,23 @@ class ICWP_OptionsHandler_Base_V2 {
 		return $this->m_aOptionsValues;
 	}
 
+	/**
+	 */
 	protected function defineOptions() {
+		$this->aOptions = $this->getOptionsDefinitions();
 
-		if ( !empty( $this->aOptions ) ) {
-			return true;
+		// All features store the current plugin version.
+		$this->aNonUiOptions = array( self::PluginVersionKey );
+		$aNonUiOptions = $this->getNonUiOptions();
+		if ( !empty( $aNonUiOptions ) || is_array( $aNonUiOptions ) ) {
+			$this->aNonUiOptions = array_merge( $this->aNonUiOptions, $aNonUiOptions );
 		}
-
-		$aMisc = array(
-			'section_title' => 'Miscellaneous Plugin Options',
-			'section_options' => array(
-				array(
-					'delete_on_deactivate',
-					'',
-					'N',
-					'checkbox',
-					'Delete Plugin Settings',
-					'Delete All Plugin Settings Upon Plugin Deactivation',
-					'Careful: Removes all plugin options when you deactivite the plugin.'
-				)
-			)
-		);
-		$this->aOptions = array( $aMisc );
 	}
 
+	/**
+	 * @return array
+	 */
 	protected function getOptionsDefinitions() {
-
-		if ( !empty( $this->aOptions ) ) {
-			return true;
-		}
-
 		$aMisc = array(
 			'section_title' => 'Miscellaneous Plugin Options',
 			'section_options' => array(
@@ -539,7 +546,17 @@ class ICWP_OptionsHandler_Base_V2 {
 				),
 			),
 		);
-		$this->aOptions = array( $aMisc );
+		$aOptionsDefinitions = array(
+			$aMisc
+		);
+		return $aOptionsDefinitions;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getNonUiOptions() {
+		return array();
 	}
 
 	/**
@@ -551,8 +568,6 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * with values stored.
 	 *
 	 * It has to handle the conversion of stored values to data to be displayed to the user.
-	 *
-	 * @param string $insUpdateKey - if only want to update a single key, supply it here.
 	 */
 	public function buildOptions() {
 
@@ -620,8 +635,8 @@ class ICWP_OptionsHandler_Base_V2 {
 		}
 
 		// Cater for Non-UI options that don't necessarily go through the UI
-		if ( isset($this->m_aNonUiOptions) && is_array($this->m_aNonUiOptions) ) {
-			foreach( $this->m_aNonUiOptions as $sOption ) {
+		if ( isset( $this->aNonUiOptions ) && is_array( $this->aNonUiOptions ) ) {
+			foreach( $this->aNonUiOptions as $sOption ) {
 				$this->aOptionsKeys[] = $sOption;
 				if ( !$this->getOpt( $sOption ) ) {
 					$this->setOpt( $sOption, '' );
@@ -773,22 +788,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	 *
 	 * Called upon construction and after plugin options are initialized.
 	 */
-	protected function updateHandler() {
-//		if ( version_compare( $sCurrentVersion, '2.3.0', '<=' ) ) { }
-	}
-
-	/**
-	 * @param array $inaNewOptions
-	 */
-	protected function mergeNonUiOptions( $inaNewOptions = array() ) {
-
-		if ( !empty( $this->m_aNonUiOptions ) ) {
-			$this->m_aNonUiOptions = array_merge( $this->m_aNonUiOptions, $inaNewOptions );
-		}
-		else {
-			$this->m_aNonUiOptions = $inaNewOptions;
-		}
-	}
+	protected function updateHandler() { }
 
 	/**
 	 * @return boolean

@@ -12,7 +12,7 @@ include_once( 'icwp_wpsf_config_header.php' );
 				<div class="form-actions">
 					<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
 					<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
-					<button type="submit" class="btn btn-primary" name="submit"><?php _wpsf_e( 'Save All Settings' ); ?></button>
+					<button type="submit" class="btn btn-primary btn-large" name="submit"><?php _wpsf_e( 'Save All Settings' ); ?></button>
 				</div>
 			</form>
 

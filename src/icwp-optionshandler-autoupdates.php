@@ -63,8 +63,10 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 
 	public function doPrePluginOptionsSave() {}
 
-	public function defineOptions() {
-
+	/**
+	 * @return array
+	 */
+	protected function getOptionsDefinitions() {
 		$aAutoUpdatesBase = array(
 			'section_title' => _wpsf__('Enable Automatic Updates Section'),
 			'section_options' => array(
@@ -191,13 +193,14 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->aOptions = array(
+		$aOptionsDefinitions = array(
 			$aAutoUpdatesBase,
 			$aAutoUpdateAll,
 			$aAutoUpdatePlugin,
 			$aAutoUpdateComponents,
 			$aAutoUpdateEmail
 		);
+		return $aOptionsDefinitions;
 	}
 }
 

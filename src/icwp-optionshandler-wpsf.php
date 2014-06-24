@@ -108,20 +108,9 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
-	 * @return bool|void
+	 * @return array
 	 */
-	public function defineOptions() {
-		
-		$aNonUiOptions = array(
-			'installation_time',
-			'secret_key',
-			'feedback_admin_notice',
-			'update_success_tracker',
-			'capability_can_disk_write',
-			'capability_can_remote_get'
-		);
-		$this->mergeNonUiOptions( $aNonUiOptions );
-
+	protected function getOptionsDefinitions() {
 		$aGeneral = array(
 			'section_title' => _wpsf__( 'General Plugin Options' ),
 			'section_options' => array(
@@ -155,9 +144,25 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->aOptions = array(
+		$aOptionsDefinitions = array(
 			$aGeneral
 		);
+		return $aOptionsDefinitions;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getNonUiOptions() {
+		$aNonUiOptions = array(
+			'installation_time',
+			'secret_key',
+			'feedback_admin_notice',
+			'update_success_tracker',
+			'capability_can_disk_write',
+			'capability_can_remote_get'
+		);
+		return $aNonUiOptions;
 	}
 	
 	/**
@@ -179,6 +184,13 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 		$nInstalledAt = $this->getOpt( 'installation_time' );
 		if ( empty($nInstalledAt) || $nInstalledAt <= 0 ) {
 			$this->setOpt( 'installation_time', time() );
+		}
+	}
+
+	protected function updateHandler() {
+		if ( version_compare( $this->getVersion(), '3.0.0', '<' ) ) {
+			$aAllOptions = apply_filters( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array() );
+			$this->setOpt( 'block_send_email_address', $aAllOptions['block_send_email_address'] );
 		}
 	}
 }

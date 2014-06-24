@@ -75,9 +75,9 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
-	 * @return bool|void
+	 * @return array
 	 */
-	public function defineOptions() {
+	protected function getOptionsDefinitions() {
 		$aFirewallBase = 	array(
 			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('WordPress Firewall') ),
 			'section_options' => array(
@@ -260,7 +260,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 		$aMisc = array(
-			'section_title' => _wpsf__( 'Miscellaneous Plugin Options' ),
+			'section_title' => _wpsf__( 'Logging Options' ),
 			'section_options' => array(
 				array(
 					'enable_firewall_log',
@@ -268,13 +268,13 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 					'N',
 					'checkbox',
 					_wpsf__( 'Firewall Logging' ),
-					_wpsf__( 'Turn on a detailed Firewall Log' ),
+					_wpsf__( 'Turn on Firewall Log' ),
 					_wpsf__( 'Will log every visit to the site and how the firewall processes it. Not recommended to leave on unless you want to debug something and check the firewall is working as you expect' )
 				)
 			)
 		);
 
-		$this->aOptions = array(
+		$aOptionsDefinitions = array(
 			$aFirewallBase,
 			$aBlockSection,
 			$aWhitelistSection,
@@ -282,6 +282,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 			$aBlockTypesSection,
 			$aMisc
 		);
+		return $aOptionsDefinitions;
 	}
 
 	/**

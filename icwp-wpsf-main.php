@@ -185,7 +185,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 				$this->onDisplayFirewallLog();
 				break;
 			default:
-				die( 'Report Error 0x010 to support' );
+				$this->getFeatureHandler_MainPlugin()->displayFeatureConfigPage();
 				break;
 		}
 	}

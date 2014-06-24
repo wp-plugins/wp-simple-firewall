@@ -62,9 +62,9 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
-	 * @return bool|void
+	 * @return array
 	 */
-	public function defineOptions() {
+	protected function getOptionsDefinitions() {
 
 		$aBase = array(
 			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('WordPress Lockdown') ),
@@ -136,12 +136,13 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->aOptions = array(
+		$aOptionsDefinitions = array(
 			$aBase,
 			$aAccess,
 			$aObscurity
 		);
-		
+		return $aOptionsDefinitions;
+
 		if ( false && $this->getCanDoAuthSalts() ) {
 			$this->aOptions[] = array(
 				'section_title' => _wpsf__( 'Security Actions' ),

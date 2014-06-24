@@ -60,16 +60,9 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
-	 * @return bool|void
+	 * @return array
 	 */
-	public function defineOptions() {
-
-		$aNonUiOptions = array(
-			'gasp_key',
-			'two_factor_secret_key'
-		);
-		$this->mergeNonUiOptions( $aNonUiOptions );
-
+	protected function getOptionsDefinitions() {
 		$aOptionsBase = array(
 			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Login Protection') ),
 			'section_options' => array(
@@ -261,7 +254,7 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->aOptions = array(
+		$aOptionsDefinitions = array(
 			$aOptionsBase,
 			$aWhitelist,
 			$aLoginProtect,
@@ -269,6 +262,18 @@ class ICWP_OptionsHandler_LoginProtect extends ICWP_OptionsHandler_Base_Wpsf {
 			$aYubikeyProtect,
 			$aLoggingSection
 		);
+		return $aOptionsDefinitions;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getNonUiOptions() {
+		$aNonUiOptions = array(
+			'gasp_key',
+			'two_factor_secret_key'
+		);
+		return $aNonUiOptions;
 	}
 
 	/**

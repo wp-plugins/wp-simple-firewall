@@ -125,7 +125,7 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 	/**
 	 * @return bool|void
 	 */
-	public function defineOptions() {
+	protected function getOptionsDefinitions() {
 
 		if ( $this->hasEncryptOption() ) {
 
@@ -167,11 +167,10 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 				)
 			);
 		}
-
-		$this->setOptions();
-		$this->aOptions = array(
+		$aOptionsDefinitions = array(
 			$aAccessKey
 		);
+		return $aOptionsDefinitions;
 	}
 	
 	/**
@@ -186,6 +185,15 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 		$sAccessKey = $this->getOpt( 'admin_access_key');
 		if ( empty( $sAccessKey ) ) {
 			$this->setOpt( 'enable_admin_access_restriction', 'N' );
+		}
+	}
+
+	protected function updateHandler() {
+		if ( version_compare( $this->getVersion(), '3.0.0', '<' ) ) {
+			$aAllOptions = apply_filters( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array() );
+			$this->setOpt( 'enable_admin_access_restriction', $aAllOptions['enable_admin_access_restriction'] );
+			$this->setOpt( 'admin_access_key', $aAllOptions['admin_access_key'] );
+			$this->setOpt( 'admin_access_timeout', $aAllOptions['admin_access_timeout'] );
 		}
 	}
 }

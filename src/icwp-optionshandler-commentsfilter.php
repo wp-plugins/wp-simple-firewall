@@ -47,9 +47,9 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
-	 * @return bool|void
+	 * @return array
 	 */
-	public function defineOptions() {
+	protected function getOptionsDefinitions() {
 
 		$aBase = array(
 			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('SPAM Comments Protection Filter') ),
@@ -211,12 +211,13 @@ class ICWP_OptionsHandler_CommentsFilter extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->aOptions = array(
+		$aOptionsDefinitions = array(
 			$aBase,
 			$aHumanSpam,
 			$aGasp,
 			$aCustomMessages
 		);
+		return $aOptionsDefinitions;
 	}
 
 	/**

@@ -48,9 +48,9 @@ class ICWP_OptionsHandler_Email extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
-	 * @return bool|void
+	 * @return array
 	 */
-	public function defineOptions() {
+	protected function getOptionsDefinitions() {
 		$aEmail = array(
 			'section_title' => _wpsf__( 'Email Options' ),
 			'section_options' => array(
@@ -75,9 +75,10 @@ class ICWP_OptionsHandler_Email extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$this->aOptions = array(
+		$aOptionsDefinitions = array(
 			$aEmail
 		);
+		return $aOptionsDefinitions;
 	}
 	
 	/**
