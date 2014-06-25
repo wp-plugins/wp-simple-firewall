@@ -234,9 +234,11 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		if ( empty( $sUsername ) ) {
 			return false;
 		}
-		
+
+		$this->loadDataProcessor();
 		// Add new session entry
 		// set attempts = 1 and then when we know it's a valid login, we zero it.
+		// First set any other entries for the given user to be deleted.
 		$aNewData = array();
 		$aNewData[ 'session_id' ]		= $this->getSessionId();
 		$aNewData[ 'ip_long' ]			= self::$nRequestIp;
@@ -245,6 +247,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$aNewData[ 'pending' ]			= 1;
 		$aNewData[ 'logged_in_at' ]		= self::$nRequestTimestamp;
 		$aNewData[ 'last_activity_at' ]	= self::$nRequestTimestamp;
+		$aNewData[ 'last_activity_uri' ]	= ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_URI' );
 		$aNewData[ 'created_at' ]		= self::$nRequestTimestamp;
 		$mResult = $this->insertIntoTable( $aNewData );
 
@@ -368,6 +371,33 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$sQuery = sprintf(
 			$sQuery,
 			$this->getTableName()
+		);
+
+		return $this->selectCustomFromTable( $sQuery );
+	}
+
+	/**
+	 * Checks for and gets a user session.
+	 *
+	 * @param integer $nTime - number of seconds back from now to look
+	 * @return array|boolean
+	 */
+	public function getPendingOrFailedUserSessionRecordsSince( $nTime = 0 ) {
+
+		$nTime = ( $nTime <= 0 ) ? 2*DAY_IN_SECONDS : $nTime;
+
+		$sQuery = "
+			SELECT *
+			FROM `%s`
+			WHERE
+				`pending`			= '1'
+				AND `deleted_at`	= '0'
+				AND `created_at`	> '%s'
+		";
+		$sQuery = sprintf(
+			$sQuery,
+			$this->getTableName(),
+			( self::$nRequestTimestamp - $nTime )
 		);
 
 		return $this->selectCustomFromTable( $sQuery );

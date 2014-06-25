@@ -53,7 +53,8 @@ class ICWP_OptionsHandler_UserManagement extends ICWP_OptionsHandler_Base_Wpsf {
 		}
 
 		$aData = array(
-			'aActiveSessions'		=> $this->getIsMainFeatureEnabled()? $this->oFeatureProcessor->getActiveUserSessionRecords() : array()
+			'aActiveSessions'		=> $this->getIsMainFeatureEnabled()? $this->oFeatureProcessor->getActiveUserSessionRecords() : array(),
+			'aFailedSessions'		=> $this->getIsMainFeatureEnabled()? $this->oFeatureProcessor->getPendingOrFailedUserSessionRecordsSince() : array()
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $aData );
