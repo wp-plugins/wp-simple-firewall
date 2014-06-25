@@ -182,7 +182,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 
 		$this->incrementUserLoginAttempts( $sUsername );
-
+		
 		$fUserLoginSuccess = is_object( $oUser ) && ( $oUser instanceof WP_User );
 		if ( !$fUserLoginSuccess ) {
 			return $oUser;
@@ -354,6 +354,28 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 	/**
 	 * Checks for and gets a user session.
 	 * 
+	 * @return array|boolean
+	 */
+	public function getActiveUserSessionRecords() {
+
+		$sQuery = "
+			SELECT *
+			FROM `%s`
+			WHERE
+				`pending`			= '0'
+				AND `deleted_at`	= '0'
+		";
+		$sQuery = sprintf(
+			$sQuery,
+			$this->getTableName()
+		);
+
+		return $this->selectCustomFromTable( $sQuery );
+	}
+
+	/**
+	 * Checks for and gets a user session.
+	 *
 	 * @param string $sUsername
 	 * @return array|boolean
 	 */

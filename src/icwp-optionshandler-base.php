@@ -888,21 +888,12 @@ class ICWP_OptionsHandler_Base_V2 {
 			return;
 		}
 
-		$aFeatureOptions = $this->getOptions();
-
 //		$aPluginSummaryData = apply_filters( $this->doPluginPrefix( 'get_feature_summary_data' ), array() );
 		$aData = array(
-			'aAllOptions'		=> $this->getOptions(),
-			'all_options_input'	=> $this->collateAllFormInputsForAllOptions(),
 			'aSummaryData'		=> isset( $aPluginSummaryData ) ? $aPluginSummaryData : array()
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
-
-		$oWpFs = $this->loadFileSystemProcessor();
-
-		$sCustomViewSource = 'config_'.$this->sFeatureSlug.'_index';
-		$sViewSource = $oWpFs->exists( $sCustomViewSource ) ? $sCustomViewSource : 'config_index';
-		$this->display( $this->doPluginPrefix( $sViewSource ), $aData );
+		$this->display( $aData );
 	}
 
 	public function getIsCurrentPageConfig() {
@@ -917,7 +908,7 @@ class ICWP_OptionsHandler_Base_V2 {
 			'requested_page'	=> $this->doPluginPrefix( $this->sFeatureSlug )
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
-		$this->display( $this->doPluginPrefix( 'view_access_restricted_index', '_' ), $aData );
+		$this->display( $aData, 'access_restricted_index' );
 	}
 
 	protected function getBaseDisplayData() {
@@ -927,17 +918,29 @@ class ICWP_OptionsHandler_Base_V2 {
 			'sFeatureName'		=> $this->getMainFeatureName(),
 			'fShowAds'			=> false && $this->isShowMarketing(),
 			'nonce_field'		=> $this->oPluginVo->getFullPluginPrefix(),
-			'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->sFeatureSlug )
+			'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->sFeatureSlug ),
+
+			'aAllOptions'		=> $this->getOptions(),
+			'all_options_input'	=> $this->collateAllFormInputsForAllOptions()
 		);
 	}
 
 	/**
-	 * @param $sView
 	 * @param array $inaData
+	 * @param string $sView
 	 * @return bool
 	 */
-	protected function display( $sView, $inaData = array() ) {
-		$sFile = $this->oPluginVo->getViewDir().$sView.'.php';
+	protected function display( $inaData = array(), $sView = '' ) {
+
+		if ( empty( $sView ) ) {
+			$oWpFs = $this->loadFileSystemProcessor();
+			$sCustomViewSource = $this->oPluginVo->getViewDir().$this->doPluginPrefix( 'config_'.$this->sFeatureSlug.'_index' ).'.php';
+			$sNormalViewSource = $this->oPluginVo->getViewDir().$this->doPluginPrefix( 'config_index' ).'.php';
+			$sFile = $oWpFs->exists( $sCustomViewSource ) ? $sCustomViewSource : $sNormalViewSource;
+		}
+		else {
+			$sFile = $this->doPluginPrefix( $sView ).'.php';
+		}
 
 		if ( !is_file( $sFile ) ) {
 			echo "View not found: ".$sFile;

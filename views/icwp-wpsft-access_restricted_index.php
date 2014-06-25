@@ -1,5 +1,5 @@
 <?php
-include_once( 'icwp_wpsf_config_header.php' );
+include_once( 'icwp-wpsf-config_header.php' );
 ?>
 	<div class="row">
 		<div class="span9">
@@ -51,4 +51,4 @@ include_once( 'icwp_wpsf_config_header.php' );
 		</div>
 	</div>
 
-<?php include_once( 'icwp_wpsf_config_footer.php' );
+<?php include_once( 'icwp-wpsf-config_footer.php' );

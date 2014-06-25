@@ -80,7 +80,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 			'aSummaryData'		=> $aPluginSummaryData
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
-		$this->display( $this->doPluginPrefix( 'config_'.$this->sFeatureSlug.'_index', '_' ), $aData );
+		$this->display( $aData );
 	}
 
 	/**

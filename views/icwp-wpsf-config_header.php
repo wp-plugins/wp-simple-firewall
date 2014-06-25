@@ -19,7 +19,7 @@ $sOff = _wpsf__( 'Off' );
 	<div class="bootstrap-wpadmin">
 		<div class="row">
 			<div class="span12">
-				<?php include_once( dirname(__FILE__).'/icwp_wpsf_state_summary.php' ); ?>
+				<?php include_once( dirname(__FILE__).'/icwp-wpsf-state_summary.php' ); ?>
 			</div>
 		</div>
 <?php echo printOptionsPageHeader( $icwp_sFeatureName );

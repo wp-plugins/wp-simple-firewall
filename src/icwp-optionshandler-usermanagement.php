@@ -42,6 +42,22 @@ class ICWP_OptionsHandler_UserManagement extends ICWP_OptionsHandler_Base_Wpsf {
 		}
 		return $this->oFeatureProcessor;
 	}
+
+	/**
+	 */
+	public function displayFeatureConfigPage( ) {
+
+		if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true ) ) {
+			$this->displayViewAccessRestrictedPage();
+			return;
+		}
+
+		$aData = array(
+			'aActiveSessions'		=> $this->getIsMainFeatureEnabled()? $this->oFeatureProcessor->getActiveUserSessionRecords() : array()
+		);
+		$aData = array_merge( $this->getBaseDisplayData(), $aData );
+		$this->display( $aData );
+	}
 	
 	public function doPrePluginOptionsSave() { }
 

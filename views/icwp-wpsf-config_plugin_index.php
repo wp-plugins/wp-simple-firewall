@@ -1,5 +1,5 @@
 <?php
-include_once( 'icwp_wpsf_config_header.php' );
+include_once( 'icwp-wpsf-config_header.php' );
 ?>
 		<?php if ( $icwp_fShowAds ) : ?>
 			<div class="row" id="worpit_promo">
@@ -302,4 +302,4 @@ include_once( 'icwp_wpsf_config_header.php' );
 		  </div><!-- / span6 -->
 		</div><!-- / row -->
 
-<?php include_once( 'icwp_wpsf_config_footer.php' );
+<?php include_once( 'icwp-wpsf-config_footer.php' );

@@ -1,5 +1,5 @@
 <?php
-include_once( 'icwp_wpsf_config_header.php' );
+include_once( 'icwp-wpsf-config_header.php' );
 
 $aLogTypes = array(
 	0	=>	_wpsf__('Info'),
@@ -112,4 +112,4 @@ $aLogTypes = array(
 		}
 	</style>
 
-<?php include_once( 'icwp_wpsf_config_footer.php' );
+<?php include_once( 'icwp-wpsf-config_footer.php' );
