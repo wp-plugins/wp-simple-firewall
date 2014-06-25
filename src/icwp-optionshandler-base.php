@@ -920,13 +920,20 @@ class ICWP_OptionsHandler_Base_V2 {
 			'var_prefix'		=> $this->oPluginVo->getOptionStoragePrefix(),
 			'sPluginName'		=> $this->oPluginVo->getHumanName(),
 			'sFeatureName'		=> $this->getMainFeatureName(),
-			'fShowAds'			=> false && $this->isShowMarketing(),
+			'fShowAds'			=> $this->getIsShowMarketing(),
 			'nonce_field'		=> $this->oPluginVo->getFullPluginPrefix(),
 			'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->sFeatureSlug ),
 
 			'aAllOptions'		=> $this->getOptions(),
 			'all_options_input'	=> $this->collateAllFormInputsForAllOptions()
 		);
+	}
+
+	/**
+	 * @return boolean
+	 */
+	protected function getIsShowMarketing() {
+		return apply_filters( $this->doPluginPrefix( 'show_marketing' ), true );
 	}
 
 	/**

@@ -210,8 +210,8 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	}
 	
 	public function doPluginUpdateCheck() {
-		$this->loadWpFunctions();
-		$this->m_oWpFunctions->getIsPluginUpdateAvailable( $this->getPluginBaseFile() );
+		$oWp = $this->loadWpFunctions();
+		$oWp->getIsPluginUpdateAvailable( $this->getPluginBaseFile() );
 	}
 
 	protected function display( $insView, $inaData = array() ) {
@@ -245,7 +245,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	public function onWpPluginsLoaded() {
 		if ( is_admin() ) {
 			//Handle plugin upgrades
-			$this->handlePluginUpgrade();
 			$this->doPluginUpdateCheck();
 			$this->load_textdomain();
 		}
@@ -705,15 +704,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		global $current_user;
 		get_currentuserinfo();
 		return $current_user;
-	}
-
-	/**
-	 * This is called from within onWpAdminInit. Use this solely to manage upgrades of the plugin
-	 */
-	protected function handlePluginUpgrade() {
-		if ( !is_admin() || !current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
-			return;
-		}
 	}
 
 	protected function handlePluginFormSubmit() {

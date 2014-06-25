@@ -132,6 +132,15 @@ class ICWP_OptionsHandler_Lockdown extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Enter how you would like your WordPress version displayed publicly. Leave blank to disable this feature.' )
 						.'<br />'._wpsf__( 'Warning: This may interfere with WordPress plugins that rely on the $wp_version variable.' ),
 					'<a href="http://icwp.io/43" target="_blank">'._wpsf__( 'more info' ).'</a>'
+				),
+				array(
+					'hide_wordpress_generator_tag',
+					'',
+					'N',
+					'checkbox',
+					_wpsf__( 'WP Generator Tag' ),
+					_wpsf__( 'Remove WP Generator Meta Tag' ),
+					_wpsf__( 'Remove a meta tag from your WordPress pages that publicly displays that your site is WordPress and its current version.' )
 				)
 			)
 		);

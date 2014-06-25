@@ -28,8 +28,47 @@ class ICWP_WPSF_PluginProcessor extends ICWP_WPSF_BaseProcessor {
 		parent::__construct( $oFeatureOptions );
 	}
 
+	/**
+	 *
+	 */
 	public function run() {
 		$this->removePluginConflicts();
+		add_filter( $this->oFeatureOptions->doPluginPrefix( 'show_marketing' ), array( $this, 'getIsShowMarketing' ) );
+	}
+
+	public function getIsShowMarketing( $fShow ) {
+		if ( !$fShow ) {
+			return $fShow;
+		}
+
+		$oWpFunctions = $this->loadWpFunctionsProcessor();
+		if ( class_exists( 'Worpit_Plugin' ) ) {
+			if ( method_exists( 'Worpit_Plugin', 'IsLinked' ) ) {
+				$fShow = !Worpit_Plugin::IsLinked();
+			}
+			else if ( $oWpFunctions->getOption( Worpit_Plugin::$VariablePrefix.'assigned' ) == 'Y'
+				&& $oWpFunctions->getOption( Worpit_Plugin::$VariablePrefix.'assigned_to' ) != '' ) {
+
+				$fShow = false;
+			}
+		}
+
+		if ( $this->getInstallationDays() < 1 ) {
+			$fShow = false;
+		}
+
+		return $fShow;
+	}
+
+	/**
+	 * @return int
+	 */
+	protected function getInstallationDays() {
+		$nTimeInstalled = $this->oFeatureOptions->getOpt( 'installation_time' );
+		if ( empty($nTimeInstalled) ) {
+			return 0;
+		}
+		return round( ( time() - $nTimeInstalled ) / DAY_IN_SECONDS );
 	}
 
 	/**

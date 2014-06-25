@@ -152,15 +152,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 
 	/**
-	 */
-	protected function handlePluginUpgrade() {
-		parent::handlePluginUpgrade();
-
-		$sCurrentPluginVersion = $this->oPluginMainOptions->getVersion();
-		if ( $sCurrentPluginVersion !== $this->oPluginVo->getVersion() && current_user_can( $this->oPluginVo->getBasePermissions() ) ) { }
-	}
-
-	/**
 	 * Displaying all views now goes through this central function and we work out
 	 * what to display based on the name of current hook/filter being processed.
 	 */
@@ -381,11 +372,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @return bool
 	 */
 	protected function isShowMarketing() {
-		// don't show marketing on the first 24hrs.
-		if ( $this->getInstallationDays() < 1 ) {
-			return false;
-		}
-		return parent::isShowMarketing();
+		return apply_filters( $this->doPluginPrefix( 'show_marketing' ), true );
 	}
 
 	protected function getPluginsListUpdateMessage() {

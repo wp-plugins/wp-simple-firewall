@@ -64,6 +64,10 @@ class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 			}
 			force_ssl_admin( true );
 		}
+
+		if ( $this->getIsOption( 'hide_wordpress_generator_tag', 'Y' ) ) {
+			remove_action( 'wp_head', 'wp_generator' );
+		}
 	}
 
 	/**

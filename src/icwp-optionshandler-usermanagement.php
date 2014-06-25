@@ -77,8 +77,6 @@ class ICWP_OptionsHandler_UserManagement extends ICWP_OptionsHandler_Base_Wpsf {
 					_wpsf__( 'Enable User Accounts Management' ),
 					_wpsf__( 'Enable (or Disable) The User Accounts Management Feature' ),
 					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('User Accounts Management') ),
-					'<a href="http://icwp.io/51" target="_blank">'._wpsf__( 'more info' ).'</a>'
-					.' | <a href="http://icwp.io/wpsf03" target="_blank">'._wpsf__( 'blog' ).'</a>'
 				)
 			),
 		);
@@ -93,8 +91,7 @@ class ICWP_OptionsHandler_UserManagement extends ICWP_OptionsHandler_Base_Wpsf {
 					'integer',
 					_wpsf__( 'Session Timeout' ),
 					_wpsf__( 'Specify How Many Days After Login To Automatically Force Re-Login' ),
-					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' ),
-					'<a href="http://icwp.io/52" target="_blank">'._wpsf__( 'more info' ).'</a>'
+					sprintf( _wpsf__( 'WordPress default is 2 days, or 14 days if you check the "Remember Me" box.' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
 				),
 				array(
 					'session_idle_timeout_interval',
@@ -103,8 +100,7 @@ class ICWP_OptionsHandler_UserManagement extends ICWP_OptionsHandler_Base_Wpsf {
 					'integer',
 					_wpsf__( 'Idle Timeout' ),
 					_wpsf__( 'Specify How Many Hours After Inactivity To Automatically Logout User' ),
-					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' ),
-					'<a href="http://icwp.io/52" target="_blank">'._wpsf__( 'more info' ).'</a>'
+					_wpsf__( 'If the user is inactive for the number of hours specified, they will be forcefully logged out next time they return.' )
 				),
 				array(
 					'session_lock_location',
@@ -113,8 +109,7 @@ class ICWP_OptionsHandler_UserManagement extends ICWP_OptionsHandler_Base_Wpsf {
 					'checkbox',
 					_wpsf__( 'Lock To Location' ),
 					_wpsf__( 'Locks A User Session To IP address' ),
-					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' ),
-					'<a href="http://icwp.io/52" target="_blank">'._wpsf__( 'more info' ).'</a>'
+					_wpsf__( 'Restricts login to any account to a location as determined by IP address.' )
 				)
 			)
 		);
