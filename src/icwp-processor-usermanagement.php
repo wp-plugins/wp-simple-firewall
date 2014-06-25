@@ -79,6 +79,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 			$oUser = wp_get_current_user();
 			$this->doVerifyCurrentUser( $oUser );
 			$this->updateSessionLastActivityAt( $oUser );
+			$this->updateSessionLastActivityUri( $oUser );
 		}
 	}
 
@@ -104,7 +105,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 
 		// check idle timeout interval
 		$nSessionIdleTimeoutInterval = $this->getOption( 'session_idle_timeout_interval', 0 ) * HOUR_IN_SECONDS;
-		if ( $nSessionIdleTimeoutInterval > 0 && ( self::$nRequestTimestamp - $aLoginSessionData['last_activity_at'] > $nSessionIdleTimeoutInterval ) ) {
+		if ( intval($nSessionIdleTimeoutInterval) > 0 && ( (self::$nRequestTimestamp - $aLoginSessionData['last_activity_at']) > $nSessionIdleTimeoutInterval ) ) {
 			$this->doLogout();
 			//TODO: session idle expire message
 		}
@@ -266,16 +267,10 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 
 		$aSessionData = $this->getUserSessionRecord( $sUsername );
-
-		$aWhere = array(
-			'session_id'	=> $this->getSessionId(),
-			'deleted_at'	=> 0,
-			'wp_username'	=> $sUsername
-		);
 		$aNewData = array(
 			'login_attempts'	=> $aSessionData['login_attempts'] + 1
 		);
-		$mResult = $this->updateRowsFromTable( $aNewData, $aWhere );
+		return $this->updateCurrentSession( $sUsername, $aNewData );
 		return $mResult;
 	}
 
@@ -320,12 +315,39 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$aNewData = array(
 			'last_activity_at'	=> self::$nRequestTimestamp
 		);
+		return $this->updateCurrentSession( $oUser->user_login, $aNewData );
+	}
+
+	/**
+	 * @param WP_User $oUser
+	 * @return boolean
+	 */
+	protected function updateSessionLastActivityUri( $oUser ) {
+		if ( !is_object( $oUser ) || ! ( $oUser instanceof WP_User ) ) {
+			return false;
+		}
+
+		$this->loadDataProcessor();
+		// First set any other entries for the given user to be deleted.
+		$aNewData = array(
+			'last_activity_uri'	=> ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_URI' )
+		);
+		$mResult = $this->updateCurrentSession( $oUser->user_login, $aNewData );
+		return $mResult;
+	}
+
+	/**
+	 * @param $sUsername
+	 * @param $aUpdateData
+	 * @return boolean
+	 */
+	protected function updateCurrentSession( $sUsername, $aUpdateData ) {
 		$aWhere = array(
 			'session_id'	=> $this->getSessionId(),
 			'deleted_at'	=> 0,
-			'wp_username'	=> $oUser->user_login
+			'wp_username'	=> $sUsername
 		);
-		$mResult = $this->updateRowsFromTable( $aNewData, $aWhere );
+		$mResult = $this->updateRowsFromTable( $aUpdateData, $aWhere );
 		return $mResult;
 	}
 
@@ -388,7 +410,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 			`ip_long` bigint(20) NOT NULL DEFAULT '0',
 			`logged_in_at` int(15) NOT NULL DEFAULT '0',
 			`last_activity_at` int(15) NOT NULL DEFAULT '0',
-			`last_activity_uri` varchar(255) NOT NULL DEFAULT '',
+			`last_activity_uri` text NOT NULL DEFAULT '',
 			`used_mfa` int(1) NOT NULL DEFAULT '0',
 			`pending` int(1) NOT NULL DEFAULT '0',
 			`login_attempts` int(1) NOT NULL DEFAULT '0',

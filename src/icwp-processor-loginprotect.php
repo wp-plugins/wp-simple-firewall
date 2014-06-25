@@ -89,8 +89,8 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	protected function getIsTwoFactorAuthOn( $sType = '' ) {
 
-		$fIp = $this->getOption( 'enable_two_factor_auth_by_ip', 'N' ) == 'Y';
-		$fCookie = $this->getOption( 'enable_two_factor_auth_by_cookie', 'N' ) == 'Y';
+		$fIp = $this->getIsOption( 'enable_two_factor_auth_by_ip', 'Y' );
+		$fCookie = $this->getIsOption( 'enable_two_factor_auth_by_cookie', 'Y' );
 
 		switch( $sType ) {
 			case 'ip':
@@ -950,7 +950,8 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 	/**
-	 *
+	 * @param array $aMessage
+	 * @return array
 	 */
 	public function customiseMandrill( $aMessage ) {
 		if ( empty( $aMessage['text'] ) ) {

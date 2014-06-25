@@ -72,7 +72,7 @@ class ICWP_DataProcessor_V1 {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Assumes a valid IPv4 address is provided as we're only testing for a whether the IP is public or not.
 	 * 
@@ -391,6 +391,34 @@ class ICWP_DataProcessor_V1 {
 			$sPassword .= $sCharset[ ( rand() % strlen( $sCharset ) ) ];
 		}
 		return $sPassword;
+	}
+
+	/**
+	 * @param string $sKey
+	 * @return mixed|null
+	 */
+	public static function FetchServer( $sKey ) {
+		if ( function_exists( 'filter_input' ) && defined( 'INPUT_SERVER' ) ) {
+			$sPossible = filter_input( INPUT_SERVER, $sKey );
+			if ( !empty( $sPossible ) ) {
+				return $sPossible;
+			}
+		}
+		return self::ArrayFetch( $_SERVER, $sKey );
+	}
+
+	/**
+	 * @param string $sKey
+	 * @return mixed|null
+	 */
+	public static function FetchEnv( $sKey ) {
+		if ( function_exists( 'filter_input' ) && defined( 'INPUT_ENV' ) ) {
+			$sPossible = filter_input( INPUT_ENV, $sKey );
+			if ( !empty( $sPossible ) ) {
+				return $sPossible;
+			}
+		}
+		return self::ArrayFetch( $_ENV, $sKey );
 	}
 
 	/**
