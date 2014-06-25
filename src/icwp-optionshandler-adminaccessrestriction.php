@@ -189,6 +189,7 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 	}
 
 	protected function updateHandler() {
+		parent::updateHandler();
 		if ( version_compare( $this->getVersion(), '3.0.0', '<' ) ) {
 			$aAllOptions = apply_filters( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array() );
 			$this->setOpt( 'enable_admin_access_restriction', $aAllOptions['enable_admin_access_restriction'] );

@@ -119,7 +119,6 @@ class ICWP_OptionsHandler_Base_V2 {
 
 		add_action( $this->doPluginPrefix( 'delete_plugin_options' ), array( $this, 'deletePluginOptions' )  );
 		add_filter( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array( $this, 'aggregateOptionsValues' ) );
-
 	}
 
 	public function override() {
@@ -131,11 +130,17 @@ class ICWP_OptionsHandler_Base_V2 {
 		else if ( $oWpFs->exists( path_join( $this->oPluginVo->getRootDir(), 'forceOn') ) ) {
 			$this->setIsMainFeatureEnabled( true );
 		}
-
 	}
 
 	public function onWpPluginsLoaded() {
 		$this->load();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getIsUpgrading() {
+		return $this->getVersion() != $this->oPluginVo->getVersion();
 	}
 
 	/**
@@ -310,14 +315,7 @@ class ICWP_OptionsHandler_Base_V2 {
 	 * A action added to WordPress 'plugins_loaded' hook
 	 */
 	public function onWpInit() {
-		$this->doUpdates();
-	}
-
-	protected function doUpdates() {
-		if ( $this->hasPluginManageRights() ) {
-			$this->updateHandler();
-//			$this->buildOptions();
-		}
+		$this->updateHandler();
 	}
 
 	/**
@@ -791,7 +789,13 @@ class ICWP_OptionsHandler_Base_V2 {
 	 *
 	 * Called upon construction and after plugin options are initialized.
 	 */
-	protected function updateHandler() { }
+	protected function updateHandler() {
+		if ( version_compare( $this->getVersion(), '3.0.0', '<' ) ) {
+			$oWpFunctions = $this->loadWpFunctions();
+			$sKey = $this->doPluginPrefix( $this->getFeatureSlug().'_processor', '_' );
+			$oWpFunctions->deleteOption( $sKey );
+		}
+	}
 
 	/**
 	 * @return boolean

@@ -188,6 +188,7 @@ class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	protected function updateHandler() {
+		parent::updateHandler();
 		if ( version_compare( $this->getVersion(), '3.0.0', '<' ) ) {
 			$aAllOptions = apply_filters( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array() );
 			$this->setOpt( 'block_send_email_address', $aAllOptions['block_send_email_address'] );

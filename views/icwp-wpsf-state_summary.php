@@ -78,11 +78,14 @@ function printFeatureSummaryBlock( $fOn, $sName, $sSettingsHref= '', $sInnerSpan
 	#feature-firewall .feature-icon:before {
 		content: "\f479";
 	}
+	#feature-usermanagement .feature-icon:before {
+		content: "\f307";
+	}
 	#feature-loginprotection .feature-icon:before {
-		content: "\f110";
+		content: "\f112";
 	}
 	#feature-commentsfilter .feature-icon:before {
-		content: "\f130";
+		content: "\f125";
 	}
 	#feature-automaticupdates .feature-icon:before {
 		content: "\f463";

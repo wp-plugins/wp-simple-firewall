@@ -12,9 +12,6 @@ include_once( 'icwp-wpsf-config_header.php' );
 
 		<div class="row">
 			<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
-
-				<?php include_once( dirname(__FILE__).'/icwp_wpsf_state_summary.php' ); ?>
-
 				<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
 				<?php
 					wp_nonce_field( $icwp_nonce_field );

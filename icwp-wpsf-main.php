@@ -128,7 +128,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 		add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
 		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
-		add_filter( 'pre_update_option', array($this, 'blockOptionsSaves'), 1, 3 );
 	}
 
 //	/**
@@ -348,22 +347,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 //		}
 //		return false;
 //	}
-
-	/**
-	 * Right before a plugin option is due to update it will check that we have permissions to do so and if not, will
-	 * revert the option to save to the previous one.
-	 *
-	 * @param $mValue
-	 * @param $sOption
-	 * @param $mOldValue
-	 * @return mixed
-	 */
-	public function blockOptionsSaves( $mValue, $sOption, $mOldValue ) {
-		if ( !preg_match( '/^'.self::$sOptionPrefix.'.*_options$/', $sOption ) || $this->fHasFtpOverride ) {
-			return $mValue;
-		}
-		return apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true )? $mValue : $mOldValue;
-	}
 
 	public function onWpAdminInit() {
 		parent::onWpAdminInit();
