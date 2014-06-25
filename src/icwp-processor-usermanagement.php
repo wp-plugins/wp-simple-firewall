@@ -67,10 +67,36 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		// is valid, the filter will have a valid WP_User object passed to it.
 		add_filter( 'authenticate', array( $this, 'createNewUserSession_Filter' ), 30, 3);
 
-		// We now know user has successfully authenticated and we activate the session entry in the database
+		// When we know user has successfully authenticated and we activate the session entry in the database
 		add_action( 'wp_login', array( $this, 'activateUserSession' ) );
 
 		add_action( 'wp_logout', array( $this, 'onWpLogout' ) );
+
+		add_filter( 'wp_login_errors', array( $this, 'addLoginMessage' ) );
+	}
+
+	/**
+	 * @param WP_Error $oError
+	 * @return WP_Error
+	 */
+	public function addLoginMessage( $oError ) {
+
+		if ( ! $oError instanceof WP_Error ) {
+			$oError = new WP_Error();
+		}
+
+		$this->loadDataProcessor();
+		$sForceLogout = ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-forcelogout' );
+		if ( $sForceLogout == 1 ) {
+			$oError->add( 'wpsf-forcelogout', _wpsf__('Your session has expired.').'<br />'._wpsf__('Please login again.') );
+		}
+		else if ( $sForceLogout == 2 ) {
+			$oError->add( 'wpsf-forcelogout', _wpsf__('Your session was idle for too long.').'<br />'._wpsf__('Please login again.') );
+		}
+		else if ( $sForceLogout == 3 ) {
+			$oError->add( 'wpsf-forcelogout', _wpsf__('Your session was locked to another IP Address.').'<br />'._wpsf__('Please login again.') );
+		}
+		return $oError;
 	}
 
 	/**
@@ -102,22 +128,19 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		// check timeout interval
 		$nSessionTimeoutInterval = $this->getSessionTimeoutInterval();
 		if ( $nSessionTimeoutInterval > 0 && ( self::$nRequestTimestamp - $aLoginSessionData['logged_in_at'] > $nSessionTimeoutInterval ) ) {
-			$this->doLogout();
-			//TODO: session expire message
+			$this->doLogout( 'wpsf-forcelogout=1' );
 		}
 
 		// check idle timeout interval
 		$nSessionIdleTimeoutInterval = $this->getOption( 'session_idle_timeout_interval', 0 ) * HOUR_IN_SECONDS;
 		if ( intval($nSessionIdleTimeoutInterval) > 0 && ( (self::$nRequestTimestamp - $aLoginSessionData['last_activity_at']) > $nSessionIdleTimeoutInterval ) ) {
-			$this->doLogout();
-			//TODO: session idle expire message
+			$this->doLogout( 'wpsf-forcelogout=2' );
 		}
 
 		// check login ip address
 		$fLockToIp = $this->getIsOption( 'session_lock_location', 'Y' );
 		if ( $fLockToIp && self::$nRequestIp != $aLoginSessionData['ip_long'] ) {
-			$this->doLogout();
-			//TODO: ip lock message
+			$this->doLogout( 'wpsf-forcelogout=3' );
 		}
 	}
 
@@ -131,10 +154,10 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 	/**
 	 *
 	 */
-	protected function doLogout() {
+	protected function doLogout( $sParams = '' ) {
 		$oWp = $this->loadWpFunctionsProcessor();
 		$oWp->logoutUser();
-		$oWp->redirectToLogin();
+		$oWp->redirectToLogin( $sParams );
 	}
 
 	/**
@@ -240,15 +263,15 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		// set attempts = 1 and then when we know it's a valid login, we zero it.
 		// First set any other entries for the given user to be deleted.
 		$aNewData = array();
-		$aNewData[ 'session_id' ]		= $this->getSessionId();
-		$aNewData[ 'ip_long' ]			= self::$nRequestIp;
-		$aNewData[ 'wp_username' ]		= $sUsername;
-		$aNewData[ 'login_attempts' ]	= 0;
-		$aNewData[ 'pending' ]			= 1;
-		$aNewData[ 'logged_in_at' ]		= self::$nRequestTimestamp;
-		$aNewData[ 'last_activity_at' ]	= self::$nRequestTimestamp;
+		$aNewData[ 'session_id' ]			= $this->getSessionId();
+		$aNewData[ 'ip_long' ]				= self::$nRequestIp;
+		$aNewData[ 'wp_username' ]			= $sUsername;
+		$aNewData[ 'login_attempts' ]		= 0;
+		$aNewData[ 'pending' ]				= 1;
+		$aNewData[ 'logged_in_at' ]			= self::$nRequestTimestamp;
+		$aNewData[ 'last_activity_at' ]		= self::$nRequestTimestamp;
 		$aNewData[ 'last_activity_uri' ]	= ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_URI' );
-		$aNewData[ 'created_at' ]		= self::$nRequestTimestamp;
+		$aNewData[ 'created_at' ]			= self::$nRequestTimestamp;
 		$mResult = $this->insertIntoTable( $aNewData );
 
 		return $mResult;

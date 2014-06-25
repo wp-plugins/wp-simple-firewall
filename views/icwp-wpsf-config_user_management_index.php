@@ -44,7 +44,7 @@ function printSessionTable( $aSessionsData ) {
 	</div>
 	<div class="row">
 		<div class="span12">
-			<h2><?php _wpsf_e('Failed or Pending User Sessions');?></h2>
+			<h2><?php _wpsf_e('Failed or Pending User Sessions');?> (48hrs)</h2>
 			<?php if ( !empty($icwp_aFailedSessions) ) : ?>
 				<?php printSessionTable($icwp_aFailedSessions); ?>
 			<?php else : ?>

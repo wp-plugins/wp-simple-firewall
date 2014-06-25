@@ -227,7 +227,7 @@ class ICWP_OptionsHandler_Firewall extends ICWP_OptionsHandler_Base_Wpsf {
 				array(
 					'whitelist_admins',
 					'',
-					'Y',
+					'N',
 					'checkbox',
 					sprintf( _wpsf__( 'Ignore %s' ), _wpsf__( 'Administrators' ) ),
 					_wpsf__( 'Ignore users logged in as Administrator' ),

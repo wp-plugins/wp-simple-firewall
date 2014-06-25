@@ -138,6 +138,7 @@ class ICWP_WpFunctions_V4 {
 	 * @param string $sParams
 	 */
 	public function redirectToLogin( $sParams = '' ) {
+		$sParams = empty( $sParams ) ? '' : '?'.$sParams;
 		header( "Location: ".site_url().'/wp-login.php'.$sParams );
 		exit();
 	}
