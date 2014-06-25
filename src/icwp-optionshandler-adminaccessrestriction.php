@@ -34,7 +34,7 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 	private $fHasPermissionToSubmit;
 	
 	/**
-	 * @var ICWP_WPSF_Processor_AdminAccess
+	 * @var ICWP_WPSF_Processor_AdminAccessRestriction
 	 */
 	protected $oFeatureProcessor;
 
@@ -49,12 +49,12 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 	}
 
 	/**
-	 * @return ICWP_WPSF_Processor_AdminAccess|null
+	 * @return ICWP_WPSF_Processor_AdminAccessRestriction|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-adminaccess.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_Processor_AdminAccess( $this );
+			require_once( dirname(__FILE__).'/icwp-processor-adminaccessrestriction.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_AdminAccessRestriction( $this );
 		}
 		return $this->oFeatureProcessor;
 	}
