@@ -67,6 +67,9 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		// is valid, the filter will have a valid WP_User object passed to it.
 		add_filter( 'authenticate', array( $this, 'createNewUserSession_Filter' ), 30, 3);
 
+		// We now know user has successfully authenticated and we activate the session entry in the database
+		add_action( 'wp_login', array( $this, 'activateUserSession' ) );
+
 		add_action( 'wp_logout', array( $this, 'onWpLogout' ) );
 	}
 
@@ -182,14 +185,11 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 
 		$this->incrementUserLoginAttempts( $sUsername );
-		
+
 		$fUserLoginSuccess = is_object( $oUser ) && ( $oUser instanceof WP_User );
 		if ( !$fUserLoginSuccess ) {
 			return $oUser;
 		}
-
-		// We now know user has successfully authenticated and we activate the session entry in the database
-		$this->activateUserSession( $oUser->user_login );
 		return $oUser;
 	}
 
@@ -278,7 +278,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 	 * @param string $sUsername
 	 * @return boolean
 	 */
-	protected function activateUserSession( $sUsername ) {
+	public function activateUserSession( $sUsername ) {
 		if ( empty( $sUsername ) ) {
 			return false;
 		}

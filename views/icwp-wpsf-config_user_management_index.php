@@ -15,7 +15,7 @@ include_once( 'icwp-wpsf-config-options-table.php' );
 						<th><?php _wpsf_e('Last Activity At'); ?></th>
 						<th><?php _wpsf_e('Last Activity URI'); ?></th>
 						<th><?php _wpsf_e('Login IP'); ?></th>
-						<th><?php _wpsf_e('Failed Login Attempts'); ?></th>
+						<th><?php _wpsf_e('Login Attempts'); ?></th>
 					</tr>
 					<?php foreach( $icwp_aActiveSessions as $aSessionData ) : ?>
 						<tr>

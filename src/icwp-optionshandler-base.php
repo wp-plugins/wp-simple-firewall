@@ -939,7 +939,7 @@ class ICWP_OptionsHandler_Base_V2 {
 			$sFile = $oWpFs->exists( $sCustomViewSource ) ? $sCustomViewSource : $sNormalViewSource;
 		}
 		else {
-			$sFile = $this->doPluginPrefix( $sView ).'.php';
+			$sFile = $this->oPluginVo->getViewDir().$this->doPluginPrefix( $sView ).'.php';
 		}
 
 		if ( !is_file( $sFile ) ) {
