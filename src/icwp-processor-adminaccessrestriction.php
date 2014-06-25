@@ -55,7 +55,7 @@ class ICWP_WPSF_Processor_AdminAccessRestriction extends ICWP_WPSF_BaseProcessor
 		if ( !preg_match( $this->sOptionRegexPattern, $sOption ) ) {
 			return $mValue;
 		}
-		return apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true )? $mValue : $mOldValue;
+		return apply_filters( $this->oFeatureOptions->doPluginPrefix( 'has_permission_to_submit' ), true )? $mValue : $mOldValue;
 	}
 }
 
