@@ -27,9 +27,9 @@ class ICWP_LoggingProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	protected $sVisitorRequestId;
 
 	/**
-	 * @param ICWP_OptionsHandler_Logging $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_Logging $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_Logging $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_Logging $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions, self::TableName );
 		$this->createTable();
 	}

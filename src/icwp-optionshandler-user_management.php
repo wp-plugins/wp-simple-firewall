@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_WPSF_OptionsHandler_UserManagement') ):
+if ( !class_exists('ICWP_WPSF_FeatureHandler_UserManagement') ):
 
-class ICWP_OptionsHandler_UserManagement extends ICWP_OptionsHandler_Base_Wpsf {
+class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_Base {
 	
 	/**
 	 * @var ICWP_WPSF_Processor_UserManagement
@@ -33,7 +33,7 @@ class ICWP_OptionsHandler_UserManagement extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
-	 * @return ICWP_WPSF_OptionsHandler_UserManagement|null
+	 * @return ICWP_WPSF_FeatureHandler_UserManagement|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {

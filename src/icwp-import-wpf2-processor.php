@@ -22,11 +22,11 @@ if ( !class_exists('ICWP_ImportWpf2Processor') ):
 class ICWP_ImportWpf2Processor extends ICWP_ImportBaseProcessor {
 	
 	/**
-	 * @var ICWP_OptionsHandler_Wpsf
+	 * @var ICWP_WPSF_FeatureHandler_Plugin
 	 */
 	protected $m_oWpsfOptions;
 	/**
-	 * @var ICWP_OptionsHandler_Firewall
+	 * @var ICWP_WPSF_FeatureHandler_Firewall
 	 */
 	protected $m_oFirewallOptions;
 	

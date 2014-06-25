@@ -24,9 +24,9 @@ class ICWP_PrivacyProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
 	const TableName = 'privacy_protect';
 
 	/**
-	 * @param ICWP_OptionsHandler_LoginProtect $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_LoginProtect $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions, self::TableName );
 		$this->createTable();
 		$this->reset();

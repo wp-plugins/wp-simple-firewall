@@ -52,9 +52,9 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	protected $m_fEmailIsThrottled;
 
 	/**
-	 * @param ICWP_OptionsHandler_Email $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_Email $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_Email $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_Email $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 	}
 	

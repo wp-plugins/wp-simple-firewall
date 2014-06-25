@@ -151,14 +151,14 @@ include_once( 'icwp-wpsf-config_header.php' );
 				<?php endif; ?>
 				<hr/>
 				<h4 style="margin-top:20px;">
-					<?php printf( _wpsf__('Auto Updates is %s'), $fAutoUpdatesOn ? $sOn : $sOff ); ?>
+					<?php printf( _wpsf__('Auto Updates is %s'), $fAutoupdatesOn ? $sOn : $sOff ); ?>
 					[ <a href="admin.php?page=icwp-wpsf-autoupdates"><?php _wpsf_e('Configure Now'); ?></a> ]</h4>
-				<?php if ( $fAutoUpdatesOn ) :
+				<?php if ( $fAutoupdatesOn ) :
 					
-					if ( $icwp_aAutoUpdatesOptions['autoupdate_core'] == 'core_never' ) {
+					if ( $icwp_aAutoupdatesOptions['autoupdate_core'] == 'core_never' ) {
 						$sAutoCoreUpdateOption = $sOff;
 					}
-					else if ( $icwp_aAutoUpdatesOptions['autoupdate_core'] == 'core_minor' )  {
+					else if ( $icwp_aAutoupdatesOptions['autoupdate_core'] == 'core_minor' )  {
 						$sAutoCoreUpdateOption = _wpsf__('Minor Versions Only');
 					}
 					else {
@@ -166,12 +166,12 @@ include_once( 'icwp-wpsf-config_header.php' );
 					}
 				?>
 					<ul>
-						<li><?php printf( _wpsf__('Automatically Update WordPress Simple Firewall Plugin: %s'), ($icwp_aAutoUpdatesOptions['autoupdate_plugin_self'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Automatically Update WordPress Simple Firewall Plugin: %s'), ($icwp_aAutoupdatesOptions['autoupdate_plugin_self'] == 'Y')? $sOn : $sOff ); ?></li>
 						<li><?php printf( _wpsf__('Automatically Update WordPress Core: %s'), $sAutoCoreUpdateOption ); ?></li>
-						<li><?php printf( _wpsf__('Automatically Update Plugins: %s'), ($icwp_aAutoUpdatesOptions['enable_autoupdate_plugins'] == 'Y')? $sOn : $sOff ); ?></li>
-						<li><?php printf( _wpsf__('Automatically Update Themes: %s'), ($icwp_aAutoUpdatesOptions['enable_autoupdate_themes'] == 'Y')? $sOn : $sOff ); ?></li>
-						<li><?php printf( _wpsf__('Automatically Update Translations: %s'), ($icwp_aAutoUpdatesOptions['enable_autoupdate_translations'] == 'Y')? $sOn : $sOff ); ?></li>
-						<li><?php printf( _wpsf__('Ignore Version Control Systems: %s'), ($icwp_aAutoUpdatesOptions['enable_autoupdate_ignore_vcs'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Automatically Update Plugins: %s'), ($icwp_aAutoupdatesOptions['enable_autoupdate_plugins'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Automatically Update Themes: %s'), ($icwp_aAutoupdatesOptions['enable_autoupdate_themes'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Automatically Update Translations: %s'), ($icwp_aAutoupdatesOptions['enable_autoupdate_translations'] == 'Y')? $sOn : $sOff ); ?></li>
+						<li><?php printf( _wpsf__('Ignore Version Control Systems: %s'), ($icwp_aAutoupdatesOptions['enable_autoupdate_ignore_vcs'] == 'Y')? $sOn : $sOff ); ?></li>
 					</ul>
 				<?php endif; ?>
 			  </div>

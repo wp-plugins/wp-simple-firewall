@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_OptionsHandler_Email') ):
+if ( !class_exists('ICWP_WPSF_FeatureHandler_Email') ):
 
-class ICWP_OptionsHandler_Email extends ICWP_OptionsHandler_Base_Wpsf {
+class ICWP_WPSF_FeatureHandler_Email extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
 	 * @var ICWP_WPSF_EmailProcessor

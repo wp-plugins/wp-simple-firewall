@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_AutoUpdatesProcessor_V5') ):
+if ( !class_exists('ICWP_AutoupdatesProcessor_V5') ):
 
-class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
+class ICWP_AutoupdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 
 	const FilterPriority = 1001;
 	
@@ -28,12 +28,12 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 	/**
 	 * @var boolean
 	 */
-	protected $m_fDoForceRunAutoUpdates = false;
+	protected $m_fDoForceRunAutoupdates = false;
 
 	/**
-	 * @param ICWP_OptionsHandler_AutoUpdates $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_Autoupdates $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_AutoUpdates $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_Autoupdates $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 		$this->sPluginFile = $this->oFeatureOptions->getPluginBaseFile();
 	}
@@ -41,14 +41,14 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 	/**
 	 * @param boolean $infDoForceRun
 	 */
-	public function setForceRunAutoUpdates( $infDoForceRun ) {
-		$this->m_fDoForceRunAutoUpdates = $infDoForceRun;
+	public function setForceRunAutoupdates( $infDoForceRun ) {
+		$this->m_fDoForceRunAutoupdates = $infDoForceRun;
 	}
 	
 	/**
 	 */
-	public function getForceRunAutoUpdates() {
-		return apply_filters( 'icwp_force_autoupdate', $this->m_fDoForceRunAutoUpdates );
+	public function getForceRunAutoupdates() {
+		return apply_filters( 'icwp_force_autoupdate', $this->m_fDoForceRunAutoupdates );
 	}
 	
 	/**
@@ -56,7 +56,7 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 	public function run() {
 
 		// When we force run we only want our filters.
-		if ( $this->getForceRunAutoUpdates() ) {
+		if ( $this->getForceRunAutoupdates() ) {
 			$aFilters = array(
 				'allow_minor_auto_core_updates',
 				'allow_major_auto_core_updates',
@@ -89,7 +89,7 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 		add_filter( 'auto_core_update_send_email', array( $this, 'autoupdate_send_email' ), self::FilterPriority, 1 ); //more parameter options here for later
 		add_filter( 'auto_core_update_email', array( $this, 'autoupdate_email_override' ), self::FilterPriority, 1 ); //more parameter options here for later
 
-		if ( $this->getForceRunAutoUpdates() ) {
+		if ( $this->getForceRunAutoupdates() ) {
 			$this->force_run_autoupdates( 'update-core.php' ); //we'll redirect to the updates page for to show
 		}
 	}
@@ -203,11 +203,11 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 			return false;
 		}
 
-		$aAutoUpdatePluginFiles = apply_filters( 'icwp_wpsf_autoupdate_plugins', array() );
+		$aAutoupdatePluginFiles = apply_filters( 'icwp_wpsf_autoupdate_plugins', array() );
 
-		if ( !empty( $aAutoUpdatePluginFiles )
-			&& is_array($aAutoUpdatePluginFiles)
-			&& in_array( $sItemFile, $aAutoUpdatePluginFiles ) ) {
+		if ( !empty( $aAutoupdatePluginFiles )
+			&& is_array($aAutoupdatePluginFiles)
+			&& in_array( $sItemFile, $aAutoupdatePluginFiles ) ) {
 
 				return true;
 		}
@@ -242,11 +242,11 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 			return $infUpdate;
 		}
 
-		$aAutoUpdateThemeFiles = apply_filters( 'icwp_wpsf_autoupdate_themes', array() );
+		$aAutoupdateThemeFiles = apply_filters( 'icwp_wpsf_autoupdate_themes', array() );
 		
-		if ( !empty( $aAutoUpdateThemeFiles )
-			&& is_array($aAutoUpdateThemeFiles)
-			&& in_array( $sItemFile, $aAutoUpdateThemeFiles ) ) {
+		if ( !empty( $aAutoupdateThemeFiles )
+			&& is_array($aAutoupdateThemeFiles)
+			&& in_array( $sItemFile, $aAutoupdateThemeFiles ) ) {
 
 				return true;
 		}
@@ -292,6 +292,6 @@ class ICWP_AutoUpdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 
 endif;
 
-if ( !class_exists('ICWP_WPSF_AutoUpdatesProcessor') ):
-	class ICWP_WPSF_AutoUpdatesProcessor extends ICWP_AutoUpdatesProcessor_V5 { }
+if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor') ):
+	class ICWP_WPSF_AutoupdatesProcessor extends ICWP_AutoupdatesProcessor_V5 { }
 endif;

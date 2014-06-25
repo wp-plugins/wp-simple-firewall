@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_OptionsHandler_Logging') ):
+if ( !class_exists('ICWP_WPSF_FeatureHandler_Logging') ):
 
-class ICWP_OptionsHandler_Logging extends ICWP_OptionsHandler_Base_Wpsf {
+class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
 	 * @var ICWP_WPSF_LoggingProcessor

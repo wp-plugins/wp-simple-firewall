@@ -21,7 +21,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/src/icwp-feature-master.php' );
+require_once( dirname(__FILE__).'/src/icwp-pure-base.php' );
 require_once( dirname(__FILE__).'/src/icwp-data-processor.php' );
 
 if ( !function_exists( '_wpsf_e' ) ) {
@@ -37,7 +37,7 @@ if ( !function_exists( '_wpsf__' ) ) {
 
 if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
-class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
+class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 
 	/**
 	 * @var string
@@ -45,102 +45,111 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	const AdminAccessKeyCookieName		= 'icwp_wpsf_aakcook';
 
 	/**
-	 * @var ICWP_OptionsHandler_AdminAccessRestriction
+	 * @var ICWP_WPSF_FeatureHandler_Plugin
+	 */
+	protected $oPluginOptions;
+	/**
+	 * @var ICWP_WPSF_FeatureHandler_AdminAccessRestriction
 	 */
 	protected $oAdminAccessRestrictionOptions;
 	/**
-	 * @var ICWP_OptionsHandler_Firewall
+	 * @var ICWP_WPSF_FeatureHandler_Firewall
 	 */
 	protected $oFirewallOptions;
 	/**
-	 * @var ICWP_OptionsHandler_LoginProtect
+	 * @var ICWP_WPSF_FeatureHandler_LoginProtect
 	 */
 	protected $oLoginProtectOptions;
 
 	/**
-	 * @var ICWP_OptionsHandler_PrivacyProtect
+	 * @var ICWP_WPSF_FeatureHandler_PrivacyProtect
 	 */
 	protected $oPrivacyProtectOptions;
 
 	/**
-	 * @var ICWP_OptionsHandler_CommentsFilter
+	 * @var ICWP_WPSF_FeatureHandler_CommentsFilter
 	 */
 	protected $oCommentsFilterOptions;
 
 	/**
-	 * @var ICWP_OptionsHandler_Lockdown
+	 * @var ICWP_WPSF_FeatureHandler_Lockdown
 	 */
 	protected $oLockdownOptions;
 
 	/**
-	 * @var ICWP_OptionsHandler_AutoUpdates
+	 * @var ICWP_WPSF_FeatureHandler_Autoupdates
 	 */
-	protected $oAutoUpdatesOptions;
+	protected $oAutoupdatesOptions;
 
 	/**
-	 * @var ICWP_OptionsHandler_Email
+	 * @var ICWP_WPSF_FeatureHandler_Email
 	 */
 	protected $oEmailOptions;
 
 	/**
-	 * @var ICWP_OptionsHandler_Logging
+	 * @var ICWP_WPSF_FeatureHandler_Logging
 	 */
 	protected $oLoggingOptions;
 
 	/**
-	 * @var bool
-	 */
-	private $fAdminAccessPermSubmit = null;
-
-	/**
 	 */
 	public function __construct( ICWP_Wordpress_Simple_Firewall_Plugin $oPluginVo ) {
+		parent::__construct( $oPluginVo );
 
-		parent::__construct(
-			$oPluginVo,
-			array(
-				'logging'			=> 'Logging',
-				'email'				=> 'Email',
-				'admin_access_restriction'			=> 'AdminAccessRestriction',
-				'firewall'			=> 'Firewall',
-				'login_protect'		=> 'LoginProtect',
-				'user_management'	=> 'UserManagement',
-				'comments_filter'	=> 'CommentsFilter',
-//				'privacy_protect'	=> 'PrivacyProtect',
-				'autoupdates'		=> 'AutoUpdates',
-				'lockdown'			=> 'Lockdown'
-			),
-			array(
-				'oPluginMainOptions',
-				'oAdminAccessRestrictionOptions',
-				'oEmailOptions',
-				'oFirewallOptions',
-				'oLoginProtectOptions',
-				'oUserManagementOptions',
-				'oCommentsFilterOptions',
-				'oPrivacyProtectOptions',
-				'oLockdownOptions',
-				'oAutoUpdatesOptions'
-			)
-		);
-
-		$this->loadOptionsHandler( 'all' );
-
+		$this->loadAllFeatures();
 		add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
 		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
 	}
 
-//	/**
-//	 * @return string
-//	 */
-//	protected function override() {
-//		$sSetting = parent::override();
-//		if ( !empty( $sSetting ) ) {
-//			$this->oPluginMainOptions->setOpt( 'enable_admin_access_restriction', $sSetting );
-//			$this->oPluginMainOptions->savePluginOptions();
-//		}
-//		return $sSetting;
-//	}
+	public function onWpActivatePlugin() {
+		$this->loadAllFeatures( true, true );
+	}
+
+	/**
+	 * @param bool $fRecreate
+	 * @param bool $fFullBuild
+	 * @return bool
+	 */
+	protected function loadAllFeatures( $fRecreate = false, $fFullBuild = false ) {
+		foreach( $this->oPluginVo->getFeatures() as $sFeature ) {
+			$fSuccess = $this->loadFeatureHandler( $sFeature, $fRecreate, $fFullBuild );
+		}
+		return $fSuccess;
+	}
+
+	protected function loadFeatureHandler( $sFeatureSlug = 'plugin', $infRecreate = false, $infFullBuild = false ) {
+		if ( !$this->getIsFeature( $sFeatureSlug ) ) {
+			return false;
+		}
+
+		$sFeatureName = str_replace( ' ', '', ucwords( str_replace( '_', ' ', $sFeatureSlug ) ) );
+		$sOptionsVarName = 'o'.$sFeatureName.'Options'; // e.g. oPluginOptions
+
+		if ( isset( $this->{$sOptionsVarName} ) ) {
+			return $this->{$sOptionsVarName};
+		}
+		$sSourceFile = $this->oPluginVo->getSourceDir().'icwp-optionshandler-'.$sFeatureSlug.'.php'; // e.g. icwp-optionshandler-plugin.php
+		$sClassName = 'ICWP_WPSF_FeatureHandler_'.$sFeatureName; // e.g. ICWP_WPSF_FeatureHandler_Plugin
+
+		require_once( $sSourceFile );
+		if ( $infRecreate || !isset( $this->{$sOptionsVarName} ) ) {
+			$this->{$sOptionsVarName} = new $sClassName( $this->oPluginVo );
+		}
+		if ( $infFullBuild ) {
+			$this->{$sOptionsVarName}->buildOptions();
+		}
+		return $this->{$sOptionsVarName};
+	}
+
+	/**
+	 * Given a certain feature 'slug' will return true if this is a particular supported feature of this plugin.
+	 *
+	 * @param string $sFeature
+	 * @return boolean
+	 */
+	public function getIsFeature( $sFeature ) {
+		return in_array( $sFeature, $this->oPluginVo->getFeatures() );
+	}
 
 	/**
 	 * @param array $aItems
@@ -188,96 +197,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 */
 	protected function getBaseDisplayData( $sSubmenu = '' ) {
 		$aBaseData = parent::getBaseDisplayData( $sSubmenu );
-		$aBaseData['aMainOptions'] = $this->oPluginMainOptions->getPluginOptionsValues();
+		$aBaseData['aMainOptions'] = $this->oPluginOptions->getPluginOptionsValues();
 		return $aBaseData;
 	}
-//
-//	public function onDisplayAccessKeyRequest() {
-//		$aData = array(
-//			'requested_page'	=> $this->getCurrentWpAdminPage()
-//		);
-//		$aData = array_merge( $this->getBaseDisplayData(), $aData );
-//		$this->display( $this->doPluginPrefix( 'access_key_request_index', '_' ), $aData );
-//	}
-//
-//	public function onDisplayMainMenu() {
-//		$this->loadOptionsHandler( 'all', true );
-//		$aAvailableOptions = array_merge( $this->oPluginMainOptions->getOptions(), $this->oEmailOptions->getOptions() );
-//		$sMainOptions = $this->oPluginMainOptions->collateAllFormInputsForAllOptions();
-//		$sEmailMainOptions = $this->oEmailOptions->collateAllFormInputsForAllOptions();
-//		$sAllFormInputOptions = $sMainOptions.(ICWP_OptionsHandler_Base_Wpsf::CollateSeparator).$sEmailMainOptions;
-//
-//		$aData = array(
-//			'aAllOptions'		=> $aAvailableOptions,
-//			'all_options_input'	=> $sAllFormInputOptions,
-//		);
-//		$aData = array_merge( $this->getBaseDisplayData(), $aData );
-//		$aData['aSummaryData'] = $this->getDashboardSummaryDisplayData();
-//
-//		if ( $this->getIsMainFeatureEnabled('firewall') ) {
-//			$this->loadOptionsHandler( 'Firewall' );
-//			$aData['aFirewallOptions'] = $this->oFirewallOptions->getPluginOptionsValues();
-//		}
-//		if ( $this->getIsMainFeatureEnabled('login_protect') ) {
-//			$this->loadOptionsHandler( 'LoginProtect' );
-//			$aData['aLoginProtectOptions'] = $this->oLoginProtectOptions->getPluginOptionsValues();
-//		}
-//		if ( $this->getIsMainFeatureEnabled('comments_filter') ) {
-//			$this->loadOptionsHandler( 'CommentsFilter' );
-//			$aData['aCommentsFilterOptions'] = $this->oCommentsFilterOptions->getPluginOptionsValues();
-//		}
-//		if ( $this->getIsMainFeatureEnabled('lockdown') ) {
-//			$this->loadOptionsHandler( 'Lockdown' );
-//			$aData['aLockdownOptions'] = $this->oLockdownOptions->getPluginOptionsValues();
-//		}
-//		if ( $this->getIsMainFeatureEnabled('autoupdates') ) {
-//			$this->loadOptionsHandler( 'AutoUpdates' );
-//			$aData['aAutoUpdatesOptions'] = $this->oAutoUpdatesOptions->getPluginOptionsValues();
-//		}
-//		$this->display( $this->doPluginPrefix( 'index', '_' ), $aData );
-//	}
-//
-//	protected function getDashboardSummaryDisplayData() {
-//
-//		$aSummaryData = array();
-//		$aSummaryData[] = array(
-//			$this->oPluginMainOptions->getOpt( 'enable_admin_access_restriction' ) == 'Y',
-//			_wpsf__('Admin Access Protection'),
-//			$this->doPluginPrefix()
-//		);
-//
-//		$aSummaryData[] = array(
-//			$this->getIsMainFeatureEnabled('firewall'),
-//			_wpsf__('Firewall'),
-//			$this->doPluginPrefix( 'firewall' )
-//		);
-//
-//		$aSummaryData[] = array(
-//			$this->getIsMainFeatureEnabled('login_protect'),
-//			_wpsf__('Login Protection'),
-//			$this->doPluginPrefix( 'login_protect' )
-//		);
-//
-//		$aSummaryData[] = array(
-//			$this->getIsMainFeatureEnabled('comments_filter'),
-//			_wpsf__('Comments Filter'),
-//			$this->doPluginPrefix( 'comments_filter' )
-//		);
-//
-//		$aSummaryData[] = array(
-//			$this->getIsMainFeatureEnabled('autoupdates'),
-//			_wpsf__('Auto Updates'),
-//			$this->doPluginPrefix( 'autoupdates' )
-//		);
-//
-//		$aSummaryData[] = array(
-//			$this->getIsMainFeatureEnabled('lockdown'),
-//			_wpsf__('Lock Down'),
-//			$this->doPluginPrefix( 'lockdown' )
-//		);
-//
-//		return $aSummaryData;
-//	}
 
 	protected function onDisplayPrivacyProtectLog() {
 
@@ -291,7 +213,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 
 	protected function onDisplayFirewallLog() {
 
-		$this->loadOptionsHandler( 'Firewall' );
+		$this->loadFeatureHandler( 'firewall' );
 		$aIpWhitelist = $this->oFirewallOptions->getOpt( 'ips_whitelist' );
 		$aIpBlacklist = $this->oFirewallOptions->getOpt( 'ips_blacklist' );
 
@@ -306,38 +228,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 		$aData = array_merge( $this->getBaseDisplayData('firewall_log'), $aData );
 		$this->display( $this->doPluginPrefix( 'firewall_log_index', '_' ), $aData );
 	}
-
-//	/**
-//	 * @param bool $fPermission
-//	 */
-//	protected function setPermissionToSubmit( $fPermission = false ) {
-//		if ( $fPermission ) {
-//			$this->loadDataProcessor();
-//			$sValue = md5( $this->oPluginMainOptions->getOpt( 'admin_access_key' ).ICWP_WPSF_DataProcessor::GetVisitorIpAddress() );
-//			$sTimeout = $this->oPluginMainOptions->getOpt( 'admin_access_timeout' ) * 60;
-//			$_COOKIE[ self::AdminAccessKeyCookieName ] = $sValue;
-//			setcookie( self::AdminAccessKeyCookieName, $sValue, time()+$sTimeout, COOKIEPATH, COOKIE_DOMAIN, false );
-//		}
-//		else {
-//			unset( $_COOKIE[ self::AdminAccessKeyCookieName ] );
-//			setcookie( self::AdminAccessKeyCookieName, "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
-//		}
-//	}
-
-//	protected function handleSubmit_AccessKeyRequest() {
-//		//Ensures we're actually getting this request from WP.
-//		check_admin_referer( $this->getPluginPrefix() );
-//
-//		$sAccessKey = md5( trim( $this->fetchPost( $this->doPluginPrefix('admin_access_key_request', '_') ) ) );
-//		$sStoredAccessKey = $this->oPluginMainOptions->getOpt( 'admin_access_key' );
-//
-//		if ( $sAccessKey === $sStoredAccessKey ) {
-//			$this->setPermissionToSubmit( true );
-//			header( 'Location: '.$this->getUrl_PluginDashboard( sanitize_text_field( $this->fetchPost('icwp_wpsf_requested_page') ) ) );
-//			exit();
-//		}
-//		return false;
-//	}
 
 	public function onWpAdminInit() {
 		parent::onWpAdminInit();
@@ -475,11 +365,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 
 	protected function getAdminNoticeHtml_OptionsUpdated() {
-		$sAdminFeedbackNotice = $this->oPluginMainOptions->getOpt( 'feedback_admin_notice' );
+		$sAdminFeedbackNotice = $this->oPluginOptions->getOpt( 'feedback_admin_notice' );
 		if ( !empty( $sAdminFeedbackNotice ) ) {
 			$sNotice = '<p>'.$sAdminFeedbackNotice.'</p>';
 			return $sNotice;
-			$this->oPluginMainOptions->setOpt( 'feedback_admin_notice', '' );
+			$this->oPluginOptions->setOpt( 'feedback_admin_notice', '' );
 		}
 	}
 
@@ -487,14 +377,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 *
 	 */
 	protected function getShowAdminNotices() {
-		return $this->oPluginMainOptions->getOpt('enable_upgrade_admin_notice') == 'Y';
+		return $this->oPluginOptions->getOpt('enable_upgrade_admin_notice') == 'Y';
 	}
 
 	/**
 	 * @return int
 	 */
 	protected function getInstallationDays() {
-		$nTimeInstalled = $this->oPluginMainOptions->getOpt( 'installation_time' );
+		$nTimeInstalled = $this->oPluginOptions->getOpt( 'installation_time' );
 		if ( empty($nTimeInstalled) ) {
 			return 0;
 		}
@@ -518,21 +408,21 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	}
 
 	/**
-	 * @return ICWP_OptionsHandler_AdminAccessRestriction|null
+	 * @return ICWP_WPSF_FeatureHandler_Plugin|null
 	 */
 	public function getFeatureHandler_MainPlugin() {
-		return $this->loadOptionsHandler( 'PluginMain' );
+		return $this->loadFeatureHandler( 'plugin' );
 	}
 
 	/**
-	 * @return ICWP_OptionsHandler_AdminAccessRestriction|null
+	 * @return ICWP_WPSF_FeatureHandler_AdminAccessRestriction|null
 	 */
 	public function getFeatureHandler_AdminAccessRestriction() {
-		return $this->loadOptionsHandler( 'AdminAccessRestriction' );
+		return $this->loadFeatureHandler( 'admin_access_restriction' );
 	}
 
 	/**
-	 * @return ICWP_OptionsHandler_AdminAccessRestriction|null
+	 * @return ICWP_WPSF_FeatureHandler_AdminAccessRestriction|null
 	 */
 	public function getProcessor_AdminAccessRestriction() {
 		return $this->getFeatureHandler_AdminAccessRestriction()->getProcessor();
@@ -542,7 +432,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @return ICWP_WPSF_FirewallProcessor|null
 	 */
 	public function getProcessor_Firewall() {
-		$this->loadOptionsHandler('Firewall');
+		$this->loadFeatureHandler( 'firewall' );
 		return $this->oFirewallOptions->getProcessor();
 	}
 
@@ -550,23 +440,23 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @return ICWP_WPSF_LoginProtectProcessor|null
 	 */
 	public function getProcessor_LoginProtect() {
-		$this->loadOptionsHandler('LoginProtect');
+		$this->loadFeatureHandler( 'login_protect' );
 		return $this->oLoginProtectOptions->getProcessor();
 	}
 
 	/**
-	 * @return ICWP_WPSF_AutoUpdatesProcessor|null
+	 * @return ICWP_WPSF_AutoupdatesProcessor|null
 	 */
 	public function getProcessor_Autoupdates() {
-		$this->loadOptionsHandler('AutoUpdates');
-		return $this->oAutoUpdatesOptions->getProcessor();
+		$this->loadFeatureHandler( 'autoupdates' );
+		return $this->oAutoupdatesOptions->getProcessor();
 	}
 
 	/**
 	 * @return ICWP_WPSF_PrivacyProtectProcessor|null
 	 */
 	public function getProcessor_PrivacyProtect() {
-		$this->loadOptionsHandler( 'PrivacyProtect' );
+		$this->loadFeatureHandler( 'privacy_protect' );
 		return $this->oPrivacyProtectOptions->getProcessor();
 	}
 
@@ -574,7 +464,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @return ICWP_WPSF_LoggingProcessor|null
 	 */
 	public function getProcessor_Logging() {
-		$this->loadOptionsHandler('Logging');
+		$this->loadFeatureHandler( 'logging' );
 		return $this->oLoggingOptions->getProcessor();
 	}
 
@@ -582,7 +472,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Feature_Master {
 	 * @return ICWP_WPSF_EmailProcessor|null
 	 */
 	public function getProcessor_Email() {
-		return $this->oPluginMainOptions->getEmailProcessor();
+		return $this->oPluginOptions->getEmailProcessor();
 	}
 }
 

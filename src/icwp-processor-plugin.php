@@ -22,9 +22,9 @@ if ( !class_exists('ICWP_WPSF_PluginProcessor') ):
 class ICWP_WPSF_PluginProcessor extends ICWP_WPSF_BaseProcessor {
 
 	/**
-	 * @param ICWP_OptionsHandler_Wpsf $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_Plugin $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_Wpsf $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_Plugin $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 	}
 

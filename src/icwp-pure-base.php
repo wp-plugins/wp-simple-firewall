@@ -128,25 +128,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		return sprintf( '%s%s%s', $sPrefix, empty($sSuffix)? '' : $sGlue, empty($sSuffix)? '' : $sSuffix );
 	}
 	
-	/**
-	 * This is a generic plugin auto-update checker. Since the library is never included WordPress.org
-	 * plugins, this may never actually run.
-	 * 
-	 * @return void
-	 */
-//	protected function setupAutoUpdates() {
-//		$sLibSource = $this->sPluginRootDir.'/src/lib/plugin-update-checker.php';
-//		if ( !is_file($sLibSource) || empty( $this->m_sAutoUpdateUrl ) ) {
-//			return;
-//		}
-//		require_once( $sLibSource );
-//		$oUpdateChecker = new PluginUpdateChecker(
-//			$this->m_sAutoUpdateUrl,
-//			$this->sPluginRootFile,
-//			$this->oPluginVo->getTextDomain()
-//		);
-//	}
-	
 	protected function isValidAdminArea() {
 		$this->loadWpFunctions();
 		if ( !$this->m_oWpFunctions->isMultisite() && is_admin() ) {
@@ -803,45 +784,6 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		if ( !$this->hasPermissionToSubmit() ) {
 			wp_die( 'Sorry, you do not have permission to disable this plugin. You need to authenticate first.' );
 		}
-	}
-	
-	/**
-	 * Gets the WordPress option based on this object's option prefix.
-	 * @param string $insKey
-	 * @return mixed
-	 */
-	public function getOption( $insKey ) {
-		return get_option( $this->getOptionKey($insKey) );
-	}
-
-	/**
-	 * @param string $insKey
-	 * @param mixed $insValue
-	 * @return boolean
-	 */
-	public function addOption( $insKey, $inmValue ) {
-		return add_option( $this->getOptionKey($insKey), $inmValue );
-	}
-
-	/**
-	 * @param string $insKey
-	 * @param mixed $inmValue
-	 * @return boolean
-	 */
-	public function updateOption( $insKey, $inmValue ) {
-		return update_option( $this->getOptionKey($insKey), $inmValue );
-	}
-
-	/**
-	 * @param string $insKey
-	 * @return boolean
-	 */
-	public function deleteOption( $insKey ) {
-		return delete_option( $this->getOptionKey($insKey) );
-	}
-
-	public function getOptionKey( $insKey ) {
-		return self::$sOptionPrefix.$insKey;
 	}
 
 	/**

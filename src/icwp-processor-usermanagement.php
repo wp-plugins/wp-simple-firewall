@@ -24,7 +24,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 	const Session_Cookie	=	'wpsf_sesh_id';
 
 	/**
-	 * @var ICWP_OptionsHandler_UserManagement
+	 * @var ICWP_WPSF_FeatureHandler_UserManagement
 	 */
 	protected $oFeatureOptions;
 	/**
@@ -38,9 +38,9 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 	protected $sSessionId;
 
 	/**
-	 * @param ICWP_OptionsHandler_UserManagement $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_UserManagement $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_UserManagement $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_UserManagement $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 		$this->createTable();
 	}

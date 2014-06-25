@@ -22,9 +22,9 @@ if ( !class_exists('ICWP_LockdownProcessor_V1') ):
 class ICWP_LockdownProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
 	/**
-	 * @param ICWP_OptionsHandler_Lockdown $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_Lockdown $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_Lockdown $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_Lockdown $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 	}
 

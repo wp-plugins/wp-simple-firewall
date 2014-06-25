@@ -26,7 +26,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	const YubikeyVerifyApiUrl = 'https://api.yubico.com/wsapi/2.0/verify?id=%s&otp=%s&nonce=%s';
 
 	/**
-	 * @var ICWP_OptionsHandler_LoginProtect
+	 * @var ICWP_WPSF_FeatureHandler_LoginProtect
 	 */
 	protected $oFeatureOptions;
 
@@ -51,9 +51,9 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	protected $nDaysToKeepLog = 1;
 
 	/**
-	 * @param ICWP_OptionsHandler_LoginProtect $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_LoginProtect $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions, self::TableName );
 		$this->createTable();
 		$this->reset();

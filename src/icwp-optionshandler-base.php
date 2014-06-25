@@ -17,9 +17,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_OptionsHandler_Base_V2') ):
+if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
-class ICWP_OptionsHandler_Base_V2 {
+class ICWP_WPSF_FeatureHandler_Base_V2 {
 
 	/**
 	 * @var ICWP_Wordpress_Simple_Firewall_Plugin
@@ -87,12 +87,12 @@ class ICWP_OptionsHandler_Base_V2 {
 	protected $fShowFeatureMenuItem = true;
 
 	/**
-	 * @var ICWP_OptionsHandler_Email
+	 * @var ICWP_WPSF_FeatureHandler_Email
 	 */
 	protected static $oEmailHandler;
 
 	/**
-	 * @var ICWP_OptionsHandler_Email
+	 * @var ICWP_WPSF_FeatureHandler_Email
 	 */
 	protected static $oLoggingHandler;
 
@@ -184,11 +184,11 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	/**
-	 * @return ICWP_OptionsHandler_Email
+	 * @return ICWP_WPSF_FeatureHandler_Email
 	 */
 	public static function GetEmailHandler() {
 		if ( is_null( self::$oEmailHandler ) ) {
-			self::$oEmailHandler = new ICWP_OptionsHandler_Email( ICWP_Wordpress_Simple_Firewall_Plugin::GetInstance() );
+			self::$oEmailHandler = new ICWP_WPSF_FeatureHandler_Email( ICWP_Wordpress_Simple_Firewall_Plugin::GetInstance() );
 		}
 		return self::$oEmailHandler;
 	}
@@ -201,11 +201,11 @@ class ICWP_OptionsHandler_Base_V2 {
 	}
 
 	/**
-	 * @return ICWP_OptionsHandler_Logging
+	 * @return ICWP_WPSF_FeatureHandler_Logging
 	 */
 	public static function GetLoggingHandler() {
 		if ( is_null( self::$oLoggingHandler ) ) {
-			self::$oLoggingHandler = new ICWP_OptionsHandler_Logging( ICWP_Wordpress_Simple_Firewall_Plugin::GetInstance() );
+			self::$oLoggingHandler = new ICWP_WPSF_FeatureHandler_Logging( ICWP_Wordpress_Simple_Firewall_Plugin::GetInstance() );
 		}
 		return self::$oLoggingHandler;
 	}
@@ -998,4 +998,4 @@ class ICWP_OptionsHandler_Base_V2 {
 
 endif;
 
-class ICWP_OptionsHandler_Base_Wpsf extends ICWP_OptionsHandler_Base_V2 { }
+class ICWP_WPSF_FeatureHandler_Base extends ICWP_WPSF_FeatureHandler_Base_V2 { }

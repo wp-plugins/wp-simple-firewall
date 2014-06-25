@@ -8,7 +8,7 @@ $fFirewallOn = $icwp_aMainOptions['enable_firewall'] == 'Y';
 $fLoginProtectOn = $icwp_aMainOptions['enable_login_protect'] == 'Y';
 $fCommentsFilteringOn = $icwp_aMainOptions['enable_comments_filter'] == 'Y';
 $fLockdownOn = $icwp_aMainOptions['enable_lockdown'] == 'Y';
-$fAutoUpdatesOn = $icwp_aMainOptions['enable_autoupdates'] == 'Y';
+$fAutoupdatesOn = $icwp_aMainOptions['enable_autoupdates'] == 'Y';
 
 $sLatestVersionBranch = '2.x.x';
 $sOn = _wpsf__( 'On' );

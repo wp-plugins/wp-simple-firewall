@@ -44,7 +44,7 @@ class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
 	 */
 	protected $m_aDataToWrite;
 	
-	public function __construct( ICWP_OptionsHandler_Base_WPSF $oFeatureOptions, $sTableName = null ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_Base $oFeatureOptions, $sTableName = null ) {
 		parent::__construct( $oFeatureOptions );
 		$this->setTableName( $sTableName );
 		$this->createCleanupCron();

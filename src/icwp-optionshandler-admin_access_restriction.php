@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_OptionsHandler_AdminAccessRestriction') ):
+if ( !class_exists('ICWP_WPSF_FeatureHandler_AdminAccessRestriction') ):
 
-class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Base_Wpsf {
+class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
 	 * @const integer
@@ -89,7 +89,6 @@ class ICWP_OptionsHandler_AdminAccessRestriction extends ICWP_OptionsHandler_Bas
 		}
 		return $this->fHasPermissionToSubmit;
 	}
-
 
 	/**
 	 *

@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_OptionsHandler_Wpsf') ):
+if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 
-class ICWP_OptionsHandler_Wpsf extends ICWP_OptionsHandler_Base_Wpsf {
+class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 
 	const Default_AccessKeyTimeout = 30;
 	

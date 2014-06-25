@@ -59,11 +59,11 @@ class ICWP_BaseProcessor_V3 {
 	protected $aOptions;
 	
 	/**
-	 * @var ICWP_OptionsHandler_Base_WPSF
+	 * @var ICWP_WPSF_FeatureHandler_Base
 	 */
 	protected $oFeatureOptions;
 
-	public function __construct( ICWP_OptionsHandler_Base_WPSF $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_Base $oFeatureOptions ) {
 		$this->oFeatureOptions = $oFeatureOptions;
 		$this->reset();
 	}

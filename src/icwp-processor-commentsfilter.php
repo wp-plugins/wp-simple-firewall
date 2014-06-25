@@ -64,9 +64,9 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
 	protected $m_fAllowTwoFactorByPass;
 
 	/**
-	 * @param ICWP_OptionsHandler_CommentsFilter $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_CommentsFilter $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions, self::TableName );
 		$this->createTable();
 		$this->reset();

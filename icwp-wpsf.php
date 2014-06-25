@@ -40,6 +40,11 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	const ViewDir				= 'views';
 
 	/**
+	 * @const string
+	 */
+	const SrcDir				= 'src';
+
+	/**
 	 * @var string
 	 */
 	private static $sVersion	= '3.0.0';
@@ -90,6 +95,23 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	private static $fAutoUpgrade = false;
 
 	/**
+	 * @var string
+	 */
+	private static $aFeatures = array(
+		'plugin',
+		'logging',
+		'email',
+		'admin_access_restriction',
+		'firewall',
+		'login_protect',
+		'user_management',
+		'comments_filter',
+//		'privacy_protect',
+		'autoupdates',
+		'lockdown'
+	);
+
+	/**
 	 * @var ICWP_Wordpress_Simple_Firewall_Plugin
 	 */
 	public static $oInstance;
@@ -132,6 +154,14 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	 */
 	public function getFullPluginPrefix( $sGlue = '-' ) {
 		return sprintf( '%s%s%s', self::$sParentSlug, $sGlue, self::$sPluginSlug );
+	}
+
+	/**
+	 * @param string
+	 * @return string
+	 */
+	public function getFeatures() {
+		return self::$aFeatures;
 	}
 
 	/**
@@ -184,6 +214,15 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	 */
 	public function getRootFile() {
 		return self::$sRootFile;
+	}
+
+	/**
+	 * get the directory for the plugin view with the trailing slash
+	 *
+	 * @return string
+	 */
+	public function getSourceDir() {
+		return $this->getRootDir().self::SrcDir.ICWP_DS;
 	}
 
 	/**

@@ -27,9 +27,9 @@ class ICWP_WPSF_Processor_AdminAccessRestriction extends ICWP_WPSF_BaseProcessor
 	protected $sOptionRegexPattern;
 
 	/**
-	 * @param ICWP_OptionsHandler_AdminAccessRestriction  $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_AdminAccessRestriction  $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_AdminAccessRestriction $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_AdminAccessRestriction $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 	}
 

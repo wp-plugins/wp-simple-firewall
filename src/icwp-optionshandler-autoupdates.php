@@ -17,12 +17,12 @@
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_OptionsHandler_AutoUpdates_V2') ):
+if ( !class_exists('ICWP_WPSF_FeatureHandler_Autoupdates_V2') ):
 
-class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
+class ICWP_WPSF_FeatureHandler_Autoupdates_V2 extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
-	 * @var ICWP_WPSF_AutoUpdatesProcessor
+	 * @var ICWP_WPSF_AutoupdatesProcessor
 	 */
 	protected $oFeatureProcessor;
 
@@ -33,12 +33,12 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 	}
 
 	/**
-	 * @return ICWP_WPSF_AutoUpdatesProcessor|null
+	 * @return ICWP_WPSF_AutoupdatesProcessor|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
 			require_once( dirname(__FILE__).'/icwp-processor-autoupdates.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_AutoUpdatesProcessor( $this );
+			$this->oFeatureProcessor = new ICWP_WPSF_AutoupdatesProcessor( $this );
 		}
 		return $this->oFeatureProcessor;
 	}
@@ -56,7 +56,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 		$this->loadDataProcessor();
 		if ( ICWP_WPSF_DataProcessor::FetchGet( 'force_run_auto_updates' ) == 'now' ) {
 			$oProc = $this->getProcessor();
-			$oProc->setForceRunAutoUpdates( true );
+			$oProc->setForceRunAutoupdates( true );
 			return;
 		}
 	}
@@ -67,7 +67,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 	 * @return array
 	 */
 	protected function getOptionsDefinitions() {
-		$aAutoUpdatesBase = array(
+		$aAutoupdatesBase = array(
 			'section_title' => _wpsf__('Enable Automatic Updates Section'),
 			'section_options' => array(
 				array(
@@ -82,7 +82,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 				)
 			)
 		);
-		$aAutoUpdateAll = array(
+		$aAutoupdateAll = array(
 			'section_title' => _wpsf__('Disable ALL WordPress Automatic Updates'),
 			'section_options' => array(
 				array(
@@ -97,7 +97,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 				)
 			)
 		);
-		$aAutoUpdatePlugin = array(
+		$aAutoupdatePlugin = array(
 			'section_title' => _wpsf__('Automatic Plugin Self-Update'),
 			'section_options' => array(
 				array(
@@ -112,19 +112,19 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 				)
 			)
 		);
-		$aAutoUpdateOptions = array( 'select',
+		$aAutoupdateOptions = array( 'select',
 			array( 'core_never',		_wpsf__('Never') ),
 			array( 'core_minor',		_wpsf__('Minor Versions Only') ),
 			array( 'core_major', 		_wpsf__('Major and Minor Versions') ),
 		);
-		$aAutoUpdateComponents = array(
+		$aAutoupdateComponents = array(
 			'section_title' => _wpsf__('Choose Which WordPress Components To Allow Automatic Updates'),
 			'section_options' => array(
 				array(
 					'autoupdate_core',
 					'',
 					'core_minor',
-					$aAutoUpdateOptions,
+					$aAutoupdateOptions,
 					_wpsf__( 'WordPress Core Updates' ),
 					_wpsf__( 'Decide how the WordPress Core will automatically update, if at all' ),
 					_wpsf__( 'At least automatically upgrading minor versions is recommended (and is the WordPress default).' ),
@@ -169,7 +169,7 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 			)
 		);
 
-		$aAutoUpdateEmail = array(
+		$aAutoupdateEmail = array(
 			'section_title' => _wpsf__('Automatic Update Email Notifications'),
 			'section_options' => array(
 				array(
@@ -194,11 +194,11 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 		);
 
 		$aOptionsDefinitions = array(
-			$aAutoUpdatesBase,
-			$aAutoUpdateAll,
-			$aAutoUpdatePlugin,
-			$aAutoUpdateComponents,
-			$aAutoUpdateEmail
+			$aAutoupdatesBase,
+			$aAutoupdateAll,
+			$aAutoupdatePlugin,
+			$aAutoupdateComponents,
+			$aAutoupdateEmail
 		);
 		return $aOptionsDefinitions;
 	}
@@ -206,4 +206,4 @@ class ICWP_OptionsHandler_AutoUpdates_V2 extends ICWP_OptionsHandler_Base_Wpsf {
 
 endif;
 
-class ICWP_OptionsHandler_AutoUpdates extends ICWP_OptionsHandler_AutoUpdates_V2 { }
+class ICWP_WPSF_FeatureHandler_Autoupdates extends ICWP_WPSF_FeatureHandler_Autoupdates_V2 { }

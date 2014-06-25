@@ -65,9 +65,9 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	protected $m_aPageParamValues;
 
 	/**
-	 * @param ICWP_OptionsHandler_Firewall $oFeatureOptions
+	 * @param ICWP_WPSF_FeatureHandler_Firewall $oFeatureOptions
 	 */
-	public function __construct( ICWP_OptionsHandler_Firewall $oFeatureOptions ) {
+	public function __construct( ICWP_WPSF_FeatureHandler_Firewall $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 		
 		$sMessage = _wpsf__( "You were blocked by the %sWordPress Simple Firewall%s." );
