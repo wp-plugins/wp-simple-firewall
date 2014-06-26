@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack, login
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.6.6
+Stable tag: 3.0.0
 
 Complete and Simple WordPress Security. Unrestricted, Easy, No Premium Features.
 
@@ -231,18 +231,18 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 = 3.0.0 =
 
+*   FEATURE:    User Management. Phase 1 - create user sessions to track current and attempted logged in users.
 *   CHANGED:    MASSIVE plugin refactoring for better performance and faster, more reliable future development of features
-*   ADDED FEATURE:  User Management. Phase 1 - create users sessions to track current and existing logged in users.
 *   ADDED:      Obscurity Feature - ability to remove the WP Generator meta tag.
 *   ADDED:      ability to change user login session length in days
 *   ADDED:      ability to set session idle timeout in hours
-*   ADDED:      ability to lock session to a particular IP address (separate from 2-factor auth by IP)
-*   ADDED:      ability to view active sessions
+*   ADDED:      ability to lock session to a particular IP address (2-factor auth by IP is separate)
+*   ADDED:      ability to view active user sessions
 *   ADDED:      ability to view last page visited for active sessions
 *   ADDED:      ability to view last active time for active sessions
 *   ADDED:      ability to view failed or attempted logins in the past 48hrs
-*   ADDED:      Support for login using WooCommerce
-*   CHANGED:    Admin Access Restriction is now has a separate options/feature page
+*   ADDED:      Support for GASP login using WooCommerce
+*   CHANGED:    Admin Access Restriction now has a separate options/feature page
 *   CHANGED:    Admin styling to better see some selected options
 *   ADDED:      Support for WP Wall shoutbox plugin (does no GASP comment checks)
 *   CHANGED:    Removed support for upgrading from versions prior to 2.0

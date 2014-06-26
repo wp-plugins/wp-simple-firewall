@@ -39,7 +39,6 @@ class ICWP_WPSF_Processor_AdminAccessRestriction extends ICWP_WPSF_BaseProcessor
 			$this->sOptionRegexPattern = '/^'. $this->oFeatureOptions->getOptionStoragePrefix() . '.*_options$/';
 			add_filter( 'pre_update_option', array( $this, 'blockOptionsSaves' ), 1, 3 );
 		}
-
 	}
 
 	/**
