@@ -59,8 +59,6 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $aData );
 	}
-	
-	public function doPrePluginOptionsSave() { }
 
 	/**
 	 * @return array
@@ -92,6 +90,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					_wpsf__( 'Session Timeout' ),
 					_wpsf__( 'Specify How Many Days After Login To Automatically Force Re-Login' ),
 					sprintf( _wpsf__( 'WordPress default is 2 days, or 14 days if you check the "Remember Me" box.' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
+					.'<br />'. sptrintf( _wpsf__( 'Set to %s to turn off this option.' ), '"<strong>0</strong>"' )
 				),
 				array(
 					'session_idle_timeout_interval',
@@ -101,6 +100,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					_wpsf__( 'Idle Timeout' ),
 					_wpsf__( 'Specify How Many Hours After Inactivity To Automatically Logout User' ),
 					_wpsf__( 'If the user is inactive for the number of hours specified, they will be forcefully logged out next time they return.' )
+					.'<br />'. sptrintf( _wpsf__( 'Set to %s to turn off this option.' ), '"<strong>0</strong>"' )
 				),
 				array(
 					'session_lock_location',
@@ -109,7 +109,18 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					'checkbox',
 					_wpsf__( 'Lock To Location' ),
 					_wpsf__( 'Locks A User Session To IP address' ),
-					_wpsf__( 'Restricts login to any account to a location as determined by IP address.' )
+					_wpsf__( 'When selected, a session is restricted to the same IP address as when the user logged in.' )
+					.' '._wpsf__( "If a logged-in user's IP address changes, the session will be invalidated and they'll be forced to re-login to WordPress." )
+				),
+				array(
+					'session_check_admin_area_only',
+					'',
+					'Y',
+					'checkbox',
+					_wpsf__( 'Check Admin Area Only' ),
+					_wpsf__( 'Perform Session Checking For Logged In Users Only In Admin Area' ),
+					_wpsf__( 'When selected, session timeouts will only be checked on visits to the WordPress admin area.' )
+					. _wpsf__( 'When deselected, it will check all visits to the WordPress site - both the WordPress admin area and the frontend.' )
 				)
 			)
 		);

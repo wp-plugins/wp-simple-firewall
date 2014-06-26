@@ -51,7 +51,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		parent::run();
 		$this->loadDataProcessor();
 
-		$sRequestMethod = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'REQUEST_METHOD' );
+		$sRequestMethod = ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_METHOD' );
 		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
 
 		// Check the current logged-in user every page load.
@@ -87,7 +87,10 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 
 		$this->loadDataProcessor();
 		$sForceLogout = ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-forcelogout' );
-		if ( $sForceLogout == 1 ) {
+		if ( $sForceLogout == 0 ) {
+			$oError->add( 'wpsf-forcelogout', _wpsf__('You do not currently have a Simple Firewall user session.').'<br />'._wpsf__('Please login again.') );
+		}
+		else if ( $sForceLogout == 1 ) {
 			$oError->add( 'wpsf-forcelogout', _wpsf__('Your session has expired.').'<br />'._wpsf__('Please login again.') );
 		}
 		else if ( $sForceLogout == 2 ) {
@@ -95,6 +98,9 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		}
 		else if ( $sForceLogout == 3 ) {
 			$oError->add( 'wpsf-forcelogout', _wpsf__('Your session was locked to another IP Address.').'<br />'._wpsf__('Please login again.') );
+		}
+		else if ( $sForceLogout == 4 ) {
+			$oError->add( 'wpsf-forcelogout', _wpsf__('An administrator has terminated this session.').'<br />'._wpsf__('Please login again.') );
 		}
 		return $oError;
 	}
@@ -106,9 +112,14 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		$this->getSessionId();
 		if ( is_user_logged_in() ) {
 			$oUser = wp_get_current_user();
-			$this->doVerifyCurrentUser( $oUser );
-			$this->updateSessionLastActivityAt( $oUser );
-			$this->updateSessionLastActivityUri( $oUser );
+
+			// only check the non-admin areas if specified to do so.
+			if ( is_admin() || !$this->getIsOption( 'session_check_admin_area_only', 'Y' ) ) {
+				$this->doVerifyCurrentUser( $oUser );
+			}
+
+			// always track activity
+			$this->updateSessionLastActivity( $oUser );
 		}
 	}
 
@@ -122,7 +133,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 
 		$aLoginSessionData = $this->getUserSessionRecord( $oUser->user_login );
 		if ( !$aLoginSessionData ) {
-			$this->doLogout();
+			$this->doLogout( 'wpsf-forcelogout=0' );
 		}
 
 		// check timeout interval
@@ -326,6 +337,26 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		// Now set session Cookie so it reflects the correct expiry
 		$this->setSessionCookie();
 		return $mResult;
+	}
+
+	/**
+	 * This is the same as both updateSessionLastActivityAt() and updateSessionLastActivityUri()
+	 *
+	 * @param WP_User $oUser
+	 * @return boolean
+	 */
+	protected function updateSessionLastActivity( $oUser ) {
+		if ( !is_object( $oUser ) || ! ( $oUser instanceof WP_User ) ) {
+			return false;
+		}
+
+		$this->loadDataProcessor();
+		// First set any other entries for the given user to be deleted.
+		$aNewData = array(
+			'last_activity_at'	=> self::$nRequestTimestamp,
+			'last_activity_uri'	=> ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_URI' )
+		);
+		return $this->updateCurrentSession( $oUser->user_login, $aNewData );
 	}
 
 	/**

@@ -228,6 +228,12 @@ You can either manually upgrade, or WordPress will handle it in due course.
 = TODO =
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+*   TODO:       Add auto-forwarding from wp-login.php when a valid session is discovered.
+
+= 3.0.1 =
+
+*   ADDED:      option to check the logged-in user session only on WordPress admin pages (the default setting)
+*   ADDED:      message to login screen when no user session is found
 
 = 3.0.0 =
 
