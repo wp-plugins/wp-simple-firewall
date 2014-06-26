@@ -87,10 +87,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 
 		$this->loadDataProcessor();
 		$sForceLogout = ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-forcelogout' );
-		if ( $sForceLogout == 0 ) {
-			$oError->add( 'wpsf-forcelogout', _wpsf__('You do not currently have a Simple Firewall user session.').'<br />'._wpsf__('Please login again.') );
-		}
-		else if ( $sForceLogout == 1 ) {
+		if ( $sForceLogout == 1 ) {
 			$oError->add( 'wpsf-forcelogout', _wpsf__('Your session has expired.').'<br />'._wpsf__('Please login again.') );
 		}
 		else if ( $sForceLogout == 2 ) {
@@ -100,6 +97,9 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 			$oError->add( 'wpsf-forcelogout', _wpsf__('Your session was locked to another IP Address.').'<br />'._wpsf__('Please login again.') );
 		}
 		else if ( $sForceLogout == 4 ) {
+			$oError->add( 'wpsf-forcelogout', _wpsf__('You do not currently have a Simple Firewall user session.').'<br />'._wpsf__('Please login again.') );
+		}
+		else if ( $sForceLogout == 5 ) {
 			$oError->add( 'wpsf-forcelogout', _wpsf__('An administrator has terminated this session.').'<br />'._wpsf__('Please login again.') );
 		}
 		return $oError;
@@ -118,6 +118,16 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 				$this->doVerifyCurrentUser( $oUser );
 			}
 
+			// At this point session is validated.
+			if ( $this->getIsOption( 'session_auto_forward_to_admin_area', 'Y' ) ) {
+				$sScript = ICWP_WPSF_DataProcessor::GetScriptName();
+				$sWpLogin = 'wp-login.php';
+				if ( substr( $sScript, -strlen( $sWpLogin ) ) === $sWpLogin ) {
+					$oWp = $this->loadWpFunctionsProcessor();
+					$oWp->redirectToAdmin();
+				}
+			}
+
 			// always track activity
 			$this->updateSessionLastActivity( $oUser );
 		}
@@ -133,7 +143,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 
 		$aLoginSessionData = $this->getUserSessionRecord( $oUser->user_login );
 		if ( !$aLoginSessionData ) {
-			$this->doLogout( 'wpsf-forcelogout=0' );
+			$this->doLogout( 'wpsf-forcelogout=4' );
 		}
 
 		// check timeout interval
@@ -153,6 +163,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		if ( $fLockToIp && self::$nRequestIp != $aLoginSessionData['ip_long'] ) {
 			$this->doLogout( 'wpsf-forcelogout=3' );
 		}
+
+		return true;
 	}
 
 	/**
@@ -460,6 +472,33 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 	/**
 	 * Checks for and gets a user session.
 	 *
+	 * @param string $sSessionId
+	 * @return array|boolean
+	 */
+	protected function getSessionRecord( $sSessionId = null ) {
+
+		$sQuery = "
+			SELECT *
+			FROM `%s`
+			WHERE
+				`session_id`	= '%s'
+				AND `deleted_at`	= '0'
+		";
+		$sQuery = sprintf( $sQuery,
+			$this->getTableName(),
+			empty( $sSessionId ) ? $this->getSessionId() : $sSessionId
+		);
+
+		$mResult = $this->selectCustomFromTable( $sQuery );
+		if ( is_array( $mResult ) && count( $mResult ) == 1 ) {
+			return $mResult[0];
+		}
+		return false;
+	}
+
+	/**
+	 * Checks for and gets a user session.
+	 *
 	 * @param string $sUsername
 	 * @return array|boolean
 	 */
@@ -483,12 +522,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		if ( is_array( $mResult ) && count( $mResult ) == 1 ) {
 			return $mResult[0];
 		}
-		else {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address "%s"'), $sUsername, long2ip( self::$nRequestIp ) )
-			);
-			return false;
-		}
+		return false;
 	}
 
 	/**

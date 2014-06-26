@@ -394,6 +394,14 @@ class ICWP_DataProcessor_V1 {
 	}
 
 	/**
+	 * @return string|null
+	 */
+	static public function GetScriptName() {
+		$sScriptName = self::FetchServer( 'SCRIPT_NAME' );
+		return !empty( $sScriptName )? $sScriptName : self::FetchServer( 'PHP_SELF' );
+	}
+
+	/**
 	 * @param string $sKey
 	 * @return mixed|null
 	 */

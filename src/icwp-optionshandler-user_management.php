@@ -90,7 +90,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					_wpsf__( 'Session Timeout' ),
 					_wpsf__( 'Specify How Many Days After Login To Automatically Force Re-Login' ),
 					sprintf( _wpsf__( 'WordPress default is 2 days, or 14 days if you check the "Remember Me" box.' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
-					.'<br />'. sptrintf( _wpsf__( 'Set to %s to turn off this option.' ), '"<strong>0</strong>"' )
+					.'<br />'. sprintf( _wpsf__( 'Set to %s to turn off this option.' ), '"<strong>0</strong>"' )
 				),
 				array(
 					'session_idle_timeout_interval',
@@ -100,7 +100,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					_wpsf__( 'Idle Timeout' ),
 					_wpsf__( 'Specify How Many Hours After Inactivity To Automatically Logout User' ),
 					_wpsf__( 'If the user is inactive for the number of hours specified, they will be forcefully logged out next time they return.' )
-					.'<br />'. sptrintf( _wpsf__( 'Set to %s to turn off this option.' ), '"<strong>0</strong>"' )
+					.'<br />'. sprintf( _wpsf__( 'Set to %s to turn off this option.' ), '"<strong>0</strong>"' )
 				),
 				array(
 					'session_lock_location',
@@ -119,6 +119,16 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					'checkbox',
 					_wpsf__( 'Check Admin Area Only' ),
 					_wpsf__( 'Perform Session Checking For Logged In Users Only In Admin Area' ),
+					_wpsf__( 'When selected, session timeouts will only be checked on visits to the WordPress admin area.' )
+					. _wpsf__( 'When deselected, it will check all visits to the WordPress site - both the WordPress admin area and the frontend.' )
+				),
+				array(
+					'session_auto_forward_to_admin_area',
+					'',
+					'Y',
+					'checkbox',
+					_wpsf__( 'Auto Forward Admin' ),
+					_wpsf__( 'Auto Forward To WP Admin When Valid Session Detected' ),
 					_wpsf__( 'When selected, session timeouts will only be checked on visits to the WordPress admin area.' )
 					. _wpsf__( 'When deselected, it will check all visits to the WordPress site - both the WordPress admin area and the frontend.' )
 				)
