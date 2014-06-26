@@ -172,6 +172,13 @@ class ICWP_WpFunctions_V4 {
 	}
 
 	/**
+	 * @return boolean
+	 */
+	public function getIsAjax() {
+		return defined( 'DOING_AJAX' ) && DOING_AJAX;
+	}
+
+	/**
 	 * @param string $sRedirectUrl
 	 */
 	public function logoutUser( $sRedirectUrl = '' ) {

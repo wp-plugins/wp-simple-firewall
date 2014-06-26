@@ -113,16 +113,17 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 		if ( is_user_logged_in() ) {
 			$oUser = wp_get_current_user();
 
-			// only check the non-admin areas if specified to do so.
-			if ( is_admin() || !$this->getIsOption( 'session_check_admin_area_only', 'Y' ) ) {
+			// only check the non-admin areas if specified to do so and it's not AJAX
+			$oWp = $this->loadWpFunctionsProcessor();
+			if ( !$oWp->getIsAjax() && ( is_admin() || !$this->getIsOption( 'session_check_admin_area_only', 'Y' ) ) ) {
 				$this->doVerifyCurrentUser( $oUser );
 			}
 
 			// At this point session is validated.
 			if ( $this->getIsOption( 'session_auto_forward_to_admin_area', 'Y' ) ) {
-				$sScript = ICWP_WPSF_DataProcessor::GetScriptName();
+				global $pagenow;
 				$sWpLogin = 'wp-login.php';
-				if ( substr( $sScript, -strlen( $sWpLogin ) ) === $sWpLogin ) {
+				if ( substr( $pagenow, -strlen( $sWpLogin ) ) === $sWpLogin ) {
 					$oWp = $this->loadWpFunctionsProcessor();
 					$oWp->redirectToAdmin();
 				}
