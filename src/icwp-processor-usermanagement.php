@@ -144,25 +144,25 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 
 		$aLoginSessionData = $this->getUserSessionRecord( $oUser->user_login );
 		if ( !$aLoginSessionData ) {
-			$this->doLogout( 'wpsf-forcelogout=4' );
+			$this->doLogout( array( 'wpsf-forcelogout', 4 ) );
 		}
 
 		// check timeout interval
 		$nSessionTimeoutInterval = $this->getSessionTimeoutInterval();
 		if ( $nSessionTimeoutInterval > 0 && ( self::$nRequestTimestamp - $aLoginSessionData['logged_in_at'] > $nSessionTimeoutInterval ) ) {
-			$this->doLogout( 'wpsf-forcelogout=1' );
+			$this->doLogout( array( 'wpsf-forcelogout', 1 ) );
 		}
 
 		// check idle timeout interval
 		$nSessionIdleTimeoutInterval = $this->getOption( 'session_idle_timeout_interval', 0 ) * HOUR_IN_SECONDS;
 		if ( intval($nSessionIdleTimeoutInterval) > 0 && ( (self::$nRequestTimestamp - $aLoginSessionData['last_activity_at']) > $nSessionIdleTimeoutInterval ) ) {
-			$this->doLogout( 'wpsf-forcelogout=2' );
+			$this->doLogout( array( 'wpsf-forcelogout', 2 ) );
 		}
 
 		// check login ip address
 		$fLockToIp = $this->getIsOption( 'session_lock_location', 'Y' );
 		if ( $fLockToIp && self::$nRequestIp != $aLoginSessionData['ip_long'] ) {
-			$this->doLogout( 'wpsf-forcelogout=3' );
+			$this->doLogout( array( 'wpsf-forcelogout', 3 ) );
 		}
 
 		return true;
@@ -176,12 +176,12 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_BaseDbProcessor_WPSF {
 	}
 
 	/**
-	 *
+	 * @param array $aRedirectParams
 	 */
-	protected function doLogout( $sParams = '' ) {
+	protected function doLogout( $aRedirectParams = array() ) {
 		$oWp = $this->loadWpFunctionsProcessor();
 		$oWp->logoutUser();
-		$oWp->redirectToLogin( $sParams );
+		$oWp->redirectToLogin( $aRedirectParams );
 	}
 
 	/**

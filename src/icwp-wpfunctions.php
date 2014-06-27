@@ -135,25 +135,32 @@ class ICWP_WpFunctions_V4 {
 	}
 
 	/**
-	 * @param string $sParams
+	 * @param array $aQueryParams
 	 */
-	public function redirectToLogin( $sParams = '' ) {
-		$sParams = empty( $sParams ) ? '' : '?'.$sParams;
-		header( "Location: ".site_url().'/wp-login.php'.$sParams );
+	public function redirectToLogin( $aQueryParams = array() ) {
+		$sLoginUrl = site_url() . '/wp-login.php';
+		$this->doRedirect( $sLoginUrl, $aQueryParams );
 		exit();
 	}
 	/**
+	 * @param $aQueryParams
 	 */
-	public function redirectToAdmin() {
-		$this->doRedirect( is_multisite()? get_admin_url() : admin_url() );
+	public function redirectToAdmin( $aQueryParams = array() ) {
+		$this->doRedirect( is_multisite()? get_admin_url() : admin_url(), $aQueryParams );
 	}
 	/**
+	 * @param $aQueryParams
 	 */
-	public function redirectToHome() {
-		$this->doRedirect( home_url() );
+	public function redirectToHome( $aQueryParams = array() ) {
+		$this->doRedirect( home_url(), $aQueryParams );
 	}
 
-	public function doRedirect( $sUrl ) {
+	/**
+	 * @param $sUrl
+	 * @param $aQueryParams
+	 */
+	public function doRedirect( $sUrl, $aQueryParams = array() ) {
+		$sUrl = empty( $aQueryParams ) ? $sUrl : add_query_arg( $aQueryParams, $sUrl ) ;
 		wp_safe_redirect( $sUrl );
 		exit();
 	}

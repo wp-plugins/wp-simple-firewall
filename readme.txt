@@ -232,7 +232,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 = 3.0.1 =
 
-*   ADDED:      option to check the logged-in user session only on WordPress admin pages (the default setting)
+*   ADDED:      option to check the logged-in user session only on WordPress admin pages (now the default setting)
 *   ADDED:      message to login screen when no user session is found
 *   ADDED:      option to auto-forward to the WordPress dashboard when you go to wp-login.php and you're already logged in.
 *   CHANGED:    does not verify session when performing AJAX request. (need to build appropriate AJAX response)
