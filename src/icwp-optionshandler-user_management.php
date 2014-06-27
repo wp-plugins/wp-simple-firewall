@@ -120,7 +120,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					_wpsf__( 'Check Admin Area Only' ),
 					_wpsf__( 'Perform Session Checking For Logged In Users Only In Admin Area' ),
 					_wpsf__( 'When selected, session timeouts will only be checked on visits to the WordPress admin area.' )
-					. _wpsf__( 'When deselected, it will check all visits to the WordPress site - both the WordPress admin area and the frontend.' )
+					.' '. _wpsf__( 'When deselected, it will check all visits to the WordPress site - both the WordPress admin area and the frontend.' )
 				),
 				array(
 					'session_auto_forward_to_admin_area',
@@ -130,7 +130,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					_wpsf__( 'Auto Forward Admin' ),
 					_wpsf__( 'Auto Forward To WP Admin When Valid Session Detected' ),
 					_wpsf__( 'When selected, users will be automatically forwarded to the WordPress admin screen when they visit wp-login.php.' )
-					.'<br /'. _wpsf__( 'It removes the extra step to get to the admin screen for already-authenticated users.' )
+					.'<br />'. _wpsf__( 'It removes the extra step to get to the admin screen for already-authenticated users.' )
 				)
 			)
 		);
