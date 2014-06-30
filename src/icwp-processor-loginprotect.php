@@ -771,7 +771,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 		wp_clear_auth_cookie();
 		wp_set_current_user ( $oUser->ID, $oUser->user_login );
 		wp_set_auth_cookie  ( $oUser->ID, true );
-		do_action( 'wp_login', $oUser->user_login );
+		do_action( 'wp_login', $oUser->user_login, $oUser );
 	}
 
 	/**
