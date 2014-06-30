@@ -225,7 +225,7 @@ class ICWP_BaseProcessor_V3 {
 	 * @return integer - visitor IP Address as IP2Long
 	 */
 	public function getVisitorIpAddress( $infAsLong = true ) {
-		require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+		$this->loadDataProcessor();
 		return ICWP_WPSF_DataProcessor::GetVisitorIpAddress( $infAsLong );
 	}
 
@@ -261,26 +261,26 @@ class ICWP_BaseProcessor_V3 {
 	}
 	
 	/**
-	 * @param string $insIpAddress	- an IP or IP address range in LONG format.
+	 * @param string $sIpAddress	- an IP or IP address range in LONG format.
 	 * @return array				- with 1 ip address, or 2 addresses if it is a range.
 	 */
-	protected function parseIpAddress( $insIpAddress ) {
-		
+	protected function parseIpAddress( $sIpAddress ) {
+
 		$aIps = array();
-		
-		if ( empty($insIpAddress) ) {
+
+		if ( empty($sIpAddress) ) {
 			return $aIps;
 		}
-		
+
 		// offset=1 in the case that it's a range and the first number is negative on 32-bit systems
-		$mPos = strpos( $insIpAddress, '-', 1 );
+		$mPos = strpos( $sIpAddress, '-', 1 );
 
 		if ( $mPos === false ) { //plain IP address
-			$aIps[] = $insIpAddress;
+			$aIps[] = $sIpAddress;
 		}
 		else {
 			//we remove the first character in case this is '-'
-			$aParts = array( substr( $insIpAddress, 0, 1 ), substr( $insIpAddress, 1 ) );
+			$aParts = array( substr( $sIpAddress, 0, 1 ), substr( $sIpAddress, 1 ) );
 			list( $sStart, $sEnd ) = explode( '-', $aParts[1], 2 );
 			$aIps[] = $aParts[0].$sStart;
 			$aIps[] = $sEnd;

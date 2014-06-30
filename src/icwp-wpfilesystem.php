@@ -90,7 +90,17 @@ class ICWP_WpFilesystem_V2 {
 	public function putContent_WpConfig( $insContent ) {
 		return $this->putFileContent( $this->m_sWpConfigPath, $insContent );
 	}
-	
+
+	/**
+	 * @param string $sUrl
+	 * @param boolean $fSecure
+	 * @return boolean
+	 */
+	public function getIsUrlValid( $sUrl, $fSecure = false ) {
+		$sSchema = $fSecure? 'https://' : 'http://';
+		$sUrl = ( strpos( $sUrl, 'http' ) !== 0 )? $sSchema.$sUrl : $sUrl;
+		return ( $this->getUrl( $sUrl ) != false );
+	}
 	
 	/**
 	 * @return string

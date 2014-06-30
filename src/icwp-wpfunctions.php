@@ -94,6 +94,7 @@ class ICWP_WpFunctions_V4 {
 		wp_redirect( $sUrl );
 		exit();
 	}
+
 	/**
 	 * @param string $insKey
 	 * @return object
@@ -163,6 +164,22 @@ class ICWP_WpFunctions_V4 {
 		$sUrl = empty( $aQueryParams ) ? $sUrl : add_query_arg( $aQueryParams, $sUrl ) ;
 		wp_safe_redirect( $sUrl );
 		exit();
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCurrentPage() {
+		global $pagenow;
+		return $pagenow;
+	}
+
+	/**
+	 * @param string
+	 * @return string
+	 */
+	public function getIsCurrentPage( $sPage ) {
+		return $sPage == $this->getCurrentPage();
 	}
 
 	/**

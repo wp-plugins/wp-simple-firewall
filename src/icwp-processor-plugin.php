@@ -36,6 +36,10 @@ class ICWP_WPSF_PluginProcessor extends ICWP_WPSF_BaseProcessor {
 		add_filter( $this->oFeatureOptions->doPluginPrefix( 'show_marketing' ), array( $this, 'getIsShowMarketing' ) );
 	}
 
+	/**
+	 * @param $fShow
+	 * @return bool
+	 */
 	public function getIsShowMarketing( $fShow ) {
 		if ( !$fShow ) {
 			return $fShow;

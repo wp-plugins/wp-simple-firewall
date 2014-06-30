@@ -66,12 +66,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	/**
 	 * @var ICWP_WpFunctions_WPSF;
 	 */
-	protected $m_oWpFunctions;
-	
-	/**
-	 * @var ICWP_WpFilesystem_WPSF;
-	 */
-	protected $m_oWpFs;
+	protected $oWpFunctions;
 
 	public function __construct( ICWP_Wordpress_Simple_Firewall_Plugin $oPluginVo ) {
 
@@ -129,11 +124,11 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	}
 	
 	protected function isValidAdminArea() {
-		$this->loadWpFunctions();
-		if ( !$this->m_oWpFunctions->isMultisite() && is_admin() ) {
+		$oWp = $this->loadWpFunctions();
+		if ( !$oWp->isMultisite() && is_admin() ) {
 			return true;
 		}
-		else if ( $this->m_oWpFunctions->isMultisite() && $this->oPluginVo->getIsWpmsNetworkAdminOnly() && is_network_admin() ) {
+		else if ( $oWp->isMultisite() && $this->oPluginVo->getIsWpmsNetworkAdminOnly() && is_network_admin() ) {
 			return true;
 		}
 		return false;
@@ -461,7 +456,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 				}
 			}
 
-			$sSettingsLink = sprintf( '<a href="%s">%s</a>', $this->getUrl_PluginDashboard(), _wpsf__( 'Dashboard' ) ); ;
+			$sSettingsLink = sprintf( '<a href="%s">%s</a>', $this->getUrl_PluginDashboard(), 'Dashboard' ); ;
 			array_unshift( $aActionLinks, $sSettingsLink );
 		}
 		return $aActionLinks;
@@ -499,8 +494,8 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 			return;
 		}
 
-		$this->loadWpFunctions();
-		$oUpdate = $this->m_oWpFunctions->getIsPluginUpdateAvailable( $this->getPluginBaseFile() );
+		$oWp = $this->loadWpFunctions();
+		$oUpdate = $oWp->getIsPluginUpdateAvailable( $this->getPluginBaseFile() );
 		if ( !$oUpdate ) {
 			return;
 		}
@@ -563,7 +558,8 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * Override this to change the message for the particular plugin upgrade.
 	 */
 	protected function getAdminNoticeHtml_PluginUpgradeAvailable() {
-		$sUpgradeLink = $this->m_oWpFunctions->getPluginUpgradeLink( $this->getPluginBaseFile() );
+		$oWp = $this->loadWpFunctions();
+		$sUpgradeLink = $oWp->getPluginUpgradeLink( $this->getPluginBaseFile() );
 		$sNotice = '<p>There is an update available for the %s plugin. <a href="%s">Click to update immediately</a>.</p>';
 		$sNotice = sprintf( $sNotice, $this->oPluginVo->getHumanName(), $sUpgradeLink );
 		return $sNotice;
@@ -806,10 +802,10 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	 * @return ICWP_WpFunctions_WPSF
 	 */
 	protected function loadWpFunctions() {
-		if ( !isset( $this->m_oWpFunctions ) ) {
-			$this->m_oWpFunctions = ICWP_WpFunctions_WPSF::GetInstance();
+		if ( !isset( $this->oWpFunctions ) ) {
+			$this->oWpFunctions = ICWP_WpFunctions_WPSF::GetInstance();
 		}
-		return $this->m_oWpFunctions;
+		return $this->oWpFunctions;
 	}
 
 	/**
