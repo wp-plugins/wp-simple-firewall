@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
 if ( !class_exists('ICWP_PrivacyProtectProcessor_V1') ):
 
-class ICWP_PrivacyProtectProcessor_V1 extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_PrivacyProtectProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 	const TableName = 'privacy_protect';
 

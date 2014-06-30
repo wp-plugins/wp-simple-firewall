@@ -122,7 +122,6 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 	}
 
 	public function override() {
-
 		$oWpFs = $this->loadFileSystemProcessor();
 		if ( $oWpFs->exists( path_join( $this->oPluginVo->getRootDir(), 'forceOff') ) ) {
 			$this->setIsMainFeatureEnabled( false );

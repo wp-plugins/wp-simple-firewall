@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_LoginProtectProcessor_V3') ):
+if ( !class_exists('ICWP_WPSF_LoginProtectProcessor_V3') ):
 
-class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 	
 	const TableName = 'login_auth';
 	const AuthActiveCookie = 'wpsf_auth';
@@ -766,7 +766,7 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 	 */
 	protected function setUserLoggedIn( $sUsername ) {
 		$oWp = $this->loadWpFunctionsProcessor();
-		$oUser = version_compare( $oWp->getWordpressVersion(), '3.2.2', '<=' )? get_userdatabylogin( $sUsername ) : get_user_by( 'login', $sUsername );
+		$oUser = version_compare( $oWp->getWordpressVersion(), '2.8.0', '<' )? get_userdatabylogin( $sUsername ) : get_user_by( 'login', $sUsername );
 
 		wp_clear_auth_cookie();
 		wp_set_current_user ( $oUser->ID, $oUser->user_login );
@@ -1026,5 +1026,5 @@ class ICWP_LoginProtectProcessor_V3 extends ICWP_BaseDbProcessor_WPSF {
 endif;
 
 if ( !class_exists('ICWP_WPSF_LoginProtectProcessor') ):
-	class ICWP_WPSF_LoginProtectProcessor extends ICWP_LoginProtectProcessor_V3 { }
+	class ICWP_WPSF_LoginProtectProcessor extends ICWP_WPSF_LoginProtectProcessor_V3 { }
 endif;

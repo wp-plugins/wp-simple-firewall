@@ -18,9 +18,9 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_BaseDbProcessor_WPSF') ):
+if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 
-class ICWP_BaseDbProcessor_WPSF extends ICWP_WPSF_BaseProcessor {
+class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_BaseProcessor {
 	
 	const DB_TABLE_PREFIX	= 'icwp_';
 	

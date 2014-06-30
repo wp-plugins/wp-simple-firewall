@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
 if ( !class_exists('ICWP_CommentsFilterProcessor_V2') ):
 
-class ICWP_CommentsFilterProcessor_V2 extends ICWP_BaseDbProcessor_WPSF {
+class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 
 	const TableName = 'comments_filter';
 	const Spam_Blacklist_Source = 'https://raw.githubusercontent.com/splorp/wordpress-comment-blacklist/master/blacklist.txt';

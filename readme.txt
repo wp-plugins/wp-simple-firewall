@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack, login
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 3.0.0
+Stable tag: 3.1.0
 
 Complete and Simple WordPress Security. Unrestricted, Easy, No Premium Features.
 
@@ -228,14 +228,14 @@ You can either manually upgrade, or WordPress will handle it in due course.
 = TODO =
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
-*   TODO:       Add auto-forwarding from wp-login.php when a valid session is discovered.
 
-= 3.0.1 =
+= 3.1.0 =
 
 *   ADDED:      option to check the logged-in user session only on WordPress admin pages (now the default setting)
-*   ADDED:      message to login screen when no user session is found
 *   ADDED:      option to auto-forward to the WordPress dashboard when you go to wp-login.php and you're already logged in.
+*   ADDED:      message to login screen when no user session is found
 *   CHANGED:    does not verify session when performing AJAX request. (need to build appropriate AJAX response)
+*   FIX:        for wp_login action not passing second argument
 
 = 3.0.0 =
 
