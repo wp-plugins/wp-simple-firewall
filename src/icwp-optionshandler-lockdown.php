@@ -22,7 +22,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Lockdown') ):
 class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
-	 * @var ICWP_WPSF_LockdownProcessor
+	 * @var ICWP_WPSF_Processor_Lockdown
 	 */
 	protected $oFeatureProcessor;
 
@@ -36,12 +36,12 @@ class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 	}
 
 	/**
-	 * @return ICWP_WPSF_LockdownProcessor|null
+	 * @return ICWP_WPSF_Processor_Lockdown|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-lockdown.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_LockdownProcessor( $this );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-lockdown.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Lockdown( $this );
 		}
 		return $this->oFeatureProcessor;
 	}

@@ -22,7 +22,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Email') ):
 class ICWP_WPSF_FeatureHandler_Email extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
-	 * @var ICWP_WPSF_EmailProcessor
+	 * @var ICWP_WPSF_Processor_Email
 	 */
 	protected $oFeatureProcessor;
 
@@ -37,12 +37,12 @@ class ICWP_WPSF_FeatureHandler_Email extends ICWP_WPSF_FeatureHandler_Base {
 	}
 
 	/**
-	 * @return ICWP_WPSF_EmailProcessor|null
+	 * @return ICWP_WPSF_Processor_Email|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-email.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_EmailProcessor( $this );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-email.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Email( $this );
 		}
 		return $this->oFeatureProcessor;
 	}

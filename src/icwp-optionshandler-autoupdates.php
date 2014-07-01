@@ -22,7 +22,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Autoupdates_V2') ):
 class ICWP_WPSF_FeatureHandler_Autoupdates_V2 extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
-	 * @var ICWP_WPSF_AutoupdatesProcessor
+	 * @var ICWP_WPSF_Processor_Autoupdates
 	 */
 	protected $oFeatureProcessor;
 
@@ -33,12 +33,12 @@ class ICWP_WPSF_FeatureHandler_Autoupdates_V2 extends ICWP_WPSF_FeatureHandler_B
 	}
 
 	/**
-	 * @return ICWP_WPSF_AutoupdatesProcessor|null
+	 * @return ICWP_WPSF_Processor_Autoupdates|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-autoupdates.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_AutoupdatesProcessor( $this );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-autoupdates.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Autoupdates( $this );
 		}
 		return $this->oFeatureProcessor;
 	}

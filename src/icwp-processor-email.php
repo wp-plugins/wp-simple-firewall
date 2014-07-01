@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
 if ( !class_exists('ICWP_EmailProcessor_V1') ):
 
-class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
+class ICWP_EmailProcessor_V1 extends ICWP_WPSF_Processor_Base {
 
 	const Slug = 'email';
 	
@@ -200,6 +200,6 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
 endif;
 
-if ( !class_exists('ICWP_WPSF_EmailProcessor') ):
-	class ICWP_WPSF_EmailProcessor extends ICWP_EmailProcessor_V1 { }
+if ( !class_exists('ICWP_WPSF_Processor_Email') ):
+	class ICWP_WPSF_Processor_Email extends ICWP_EmailProcessor_V1 { }
 endif;

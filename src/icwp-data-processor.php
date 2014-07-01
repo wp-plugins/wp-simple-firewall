@@ -29,7 +29,19 @@ class ICWP_DataProcessor_V1 {
 	 * @var string
 	 */
 	protected static $sIpAddress;
-	
+
+	/**
+	 * @var integer
+	 */
+	protected static $nRequestTime;
+
+	public static function GetRequestTime() {
+		if ( empty( self::$nRequestTime ) ) {
+			self::$nRequestTime = time();
+		}
+		return self::$nRequestTime;
+	}
+
 	/**
 	 * Cloudflare compatible.
 	 *

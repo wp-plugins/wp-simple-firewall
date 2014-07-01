@@ -17,34 +17,17 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_WPSF_LoginProtectProcessor_V3') ):
+if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_V3') ):
 
-class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
+class ICWP_WPSF_Processor_LoginProtect_V3 extends ICWP_WPSF_BaseDbProcessor {
 	
 	const TableName = 'login_auth';
 	const AuthActiveCookie = 'wpsf_auth';
-	const YubikeyVerifyApiUrl = 'https://api.yubico.com/wsapi/2.0/verify?id=%s&otp=%s&nonce=%s';
 
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_LoginProtect
 	 */
 	protected $oFeatureOptions;
-
-	/**
-	 * @var string
-	 */
-	static protected $sModeFile_LoginThrottled;
-	
-	/**
-	 * The number of seconds between each authenticated login
-	 * @var integer
-	 */
-	protected $m_nRequiredLoginInterval;
-
-	/**
-	 * @var integer
-	 */
-	protected $m_nLastLoginTime;
 	/**
 	 * @var string
 	 */
@@ -59,23 +42,6 @@ class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 		$this->reset();
 	}
 
-	/**
-	 * Resets the object values to be re-used anew
-	 */
-	public function reset() {
-		parent::reset();
-		self::$sModeFile_LoginThrottled = dirname( __FILE__ ).'/../mode.login_throttled';
-	}
-	
-	/**
-	 *
-	 * @param array $aOptions
-	 */
-	public function setOptions( &$aOptions ) {
-		parent::setOptions( $aOptions );
-		$this->setLoginCooldownInterval();
-	}
-	
 	/**
 	 * @return boolean
 	 */
@@ -123,7 +89,7 @@ class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
 
 		$aWhitelist = $this->getOption( 'ips_whitelist', array() );
-		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::GetVisitorIpAddress() ) ) {
+		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::$nRequestIp ) ) {
 			return true;
 		}
 
@@ -133,23 +99,23 @@ class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 		}
 
 		// Add GASP checking to the login form.
-		if ( $this->getIsOption('enable_login_gasp_check', 'Y') ) {
-			add_action( 'login_form',				array( $this, 'printGaspLoginCheck_Action' ) );
-			add_action( 'woocommerce_login_form',	array( $this, 'printGaspLoginCheck_Action' ) );
-			add_filter( 'login_form_middle',		array( $this, 'printGaspLoginCheck_Filter' ) );
-			add_filter( 'authenticate',				array( $this, 'checkLoginForGasp_Filter' ), 22, 3);
+		if ( $this->getIsOption( 'enable_login_gasp_check', 'Y' ) ) {
+			require_once('icwp-processor-loginprotect_gasp.php');
+			$oGaspProcessor = new ICWP_WPSF_Processor_LoginProtect_Gasp( $this->oFeatureOptions );
+			$oGaspProcessor->run();
 		}
 
-		// Do GASP checking if it's a form submit.
 		if ( $fIsPost && $this->getOption( 'login_limit_interval' ) > 0 ) {
-			// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
-			add_filter( 'authenticate', array( $this, 'checkLoginInterval_Filter' ), 10, 3);
+			require_once('icwp-processor-loginprotect_cooldown.php');
+			$oCooldownProcessor = new ICWP_WPSF_Processor_LoginProtect_Cooldown( $this->oFeatureOptions );
+			$oCooldownProcessor->run();
 		}
 
 		// check for Yubikey auth after user is authenticated with WordPress.
-		if ( $fIsPost && $this->getOption('enable_yubikey') && $this->getIsYubikeyConfigReady() ) {
-			add_filter( 'wp_authenticate_user', array( $this, 'checkYubikeyOtpAuth_Filter' ) );
-			add_action( 'login_form',			array( $this, 'printYubikeyOtp_Action' ) );
+		if ( $fIsPost && $this->getIsOption( 'enable_yubikey', 'Y' ) ) {
+			require_once('icwp-processor-loginprotect_yubikey.php');
+			$oYubikeyProcessor = new ICWP_WPSF_Processor_LoginProtect_Yubikey( $this->oFeatureOptions );
+			$oYubikeyProcessor->run();
 		}
 
 		if ( $this->getIsTwoFactorAuthOn() ) {
@@ -166,19 +132,6 @@ class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 			// is valid, the filter will have a valid WP_User object passed to it.
 			add_filter( 'authenticate', array( $this, 'checkUserAuthLogin_Filter' ), 30, 3);
 		}
-	}
-
-	/**
-	 */
-	public function printGaspLoginCheck_Action() {
-		echo $this->getGaspLoginHtml();
-	}
-
-	/**
-	 * @return string
-	 */
-	public function printGaspLoginCheck_Filter() {
-		return $this->getGaspLoginHtml();
 	}
 
 	/**
@@ -205,24 +158,6 @@ class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 			$this->doStatIncrement( 'login.remotepost.success' );
 		}
 		return $inoUser;
-	}
-
-	/**
-	 * @param $inoUser
-	 * @param $insUsername
-	 * @param $insPassword
-	 * @return WP_Error
-	 */
-	public function checkLoginForGasp_Filter( $inoUser, $insUsername, $insPassword ) {
-
-		if ( empty( $insUsername ) || is_wp_error( $inoUser ) ) {
-			return $inoUser;
-		}
-		if ( $this->doGaspChecks( $insUsername ) ) {
-			return $inoUser;
-		}
-		//This doesn't actually ever get returned because we die() within doGaspChecks()
-		return new WP_Error('wpsf_gaspfail', _wpsf__('G.A.S.P. Checking Failed.') );
 	}
 
 	/**
@@ -254,7 +189,7 @@ class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 	 * Should return false when logging is disabled.
 	 *
 	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_WPSF_BaseProcessor::getLogData()
+	 * @see ICWP_WPSF_Processor_Base::getLogData()
 	 */
 	public function flushLogData() {
 	
@@ -307,201 +242,124 @@ class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 	}
 
 	// WordPress Hooks and Filters:
+//
+//	/**
+//	 */
+//	public function printYubikeyOtp_Action() {
+//		$sHtml =
+//			'<p class="yubikey-otp">
+//				<label>%s<br />
+//					<input type="text" name="yubiotp" class="input" value="" size="20" />
+//				</label>
+//			</p>
+//		';
+//		echo sprintf( $sHtml, '<a href="http://icwp.io/4i" target="_blank">'._wpsf__('Yubikey OTP').'</a>' );
+//	}
 
-	/**
-	 * Should be a filter added to WordPress's "authenticate" filter, but before WordPress performs
-	 * it's own authentication (theirs is priority 30, so we could go in at around 20).
-	 * 
-	 * @param null|WP_User|WP_Error $inoUser
-	 * @param string $insUsername
-	 * @param string $insPassword
-	 * @return unknown|WP_Error
-	 */
-	public function checkLoginInterval_Filter( $inoUser, $insUsername, $insPassword ) {
-		// No login attempt was made.
-		if ( empty( $insUsername ) ) {
-			return $inoUser;
-		}
-
-		// Is there an interval set?
-		$this->setLoginCooldownInterval();
-		$nRequiredLoginInterval = $this->m_nRequiredLoginInterval;
-		if ( $nRequiredLoginInterval === false || $nRequiredLoginInterval == 0 ) {
-			return $inoUser;
-		}
-		
-		// Get the last login time (and update it also for the next time)
-		$this->m_nLastLoginTime = $this->getLastLoginTime();
-
-		if ( empty( $this->m_nLastLoginTime ) || $this->m_nLastLoginTime < 0 ) {
-			$this->updateLastLoginThrottleTime( self::$nRequestTimestamp );
-		}
-		
-		// If we're outside the interval, let the login process proceed as per normal and
-		// update our last login time.
-		$nLoginInterval = self::$nRequestTimestamp - $this->m_nLastLoginTime;
-		if ( $nLoginInterval > $nRequiredLoginInterval ) {
-			$this->updateLastLoginThrottleTime( self::$nRequestTimestamp );
-			$this->doStatIncrement( 'login.cooldown.success' );
-			return $inoUser;
-		}
-
-		// At this point someone has attempted to login within the previous login wait interval
-		// So we remove WordPress's authentication filter and our own user check authentication
-		// And finally return a WP_Error which will be reflected back to the user.
-		$this->doStatIncrement( 'login.cooldown.fail' );
-		remove_filter( 'authenticate', 'wp_authenticate_username_password', 20, 3 );  // wp-includes/user.php
-		remove_filter( 'authenticate', array( $this, 'checkUserAuthLogin_Filter' ), 30, 3);
-	
-		$sErrorString = sprintf( _wpsf__( "Login Cooldown in effect. You must wait %s seconds before attempting to login again." ), ($nRequiredLoginInterval - $nLoginInterval ) );
-		$oError = new WP_Error( 'wpsf_logininterval', $sErrorString );
-		return $oError;
-	}
-
-	/**
-	 * @return int
-	 */
-	protected function getLastLoginTime() {
-		$oWpFs = $this->loadFileSystemProcessor();
-		// Check that there is a login throttle file. If it exists and its modified time is greater than the 
-		// current $this->m_nLastLoginTime it suggests another process has touched the file and updated it
-		// concurrently. So, we update our $this->m_nEmailThrottleTime accordingly.
-		if ( $oWpFs->fileAction( 'file_exists', self::$sModeFile_LoginThrottled ) ) {
-			$nModifiedTime = filemtime( self::$sModeFile_LoginThrottled );
-			if ( $nModifiedTime > $this->m_nLastLoginTime ) {
-				$this->m_nLastLoginTime = $nModifiedTime;
-			}
-		}
-		else { }
-		return $this->m_nLastLoginTime;
-	}
-
-	/**
-	 * @param $innLastLoginTime
-	 */
-	public function updateLastLoginThrottleTime( $innLastLoginTime ) {
-		$oWpFs = $this->loadFileSystemProcessor();
-		$this->m_nLastLoginTime = $innLastLoginTime;
-		$oWpFs->fileAction( 'touch', array(self::$sModeFile_LoginThrottled, $innLastLoginTime) );
-	}
-
-	/**
-	 */
-	public function printYubikeyOtp_Action() {
-		$sHtml =
-			'<p class="yubikey-otp">
-				<label>%s<br />
-					<input type="text" name="yubiotp" class="input" value="" size="20" />
-				</label>
-			</p>
-		';
-		echo sprintf( $sHtml, '<a href="http://icwp.io/4i" target="_blank">'._wpsf__('Yubikey OTP').'</a>' );
-	}
-
-	/**
-	 * @param WP_User $inoUser
-	 * @return WP_User|WP_Error
-	 */
-	public function checkYubikeyOtpAuth_Filter( $inoUser ) {
-		$oError = new WP_Error();
-
-		// Before anything else we check that a Yubikey pair has been provided for this username (and that there are pairs in the first place!)
-		$aYubikeyUsernamePairs = $this->getOption('yubikey_unique_keys');
-		if ( !$this->getIsYubikeyConfigReady() ) { // configuration is clearly not completed yet.
-			return $inoUser;
-		}
-
-		$sOneTimePassword =  empty( $_POST['yubiotp'] )? '' : trim( $_POST['yubiotp'] );
-		$sAppId = $this->getOption('yubikey_app_id');
-		$sApiKey = $this->getOption('yubikey_api_key');
-
-		// check that if we have a list of permitted keys, that the one used is on that list connected with the username.
-		$sYubikey12 = substr( $sOneTimePassword, 0 , 12 );
-		$fUsernameFound = false; // if username is never found, it means there's no yubikey specified which means we can bypass this authentication method.
-		$fFoundMatch = false;
-		foreach( $aYubikeyUsernamePairs as $aUsernameYubikeyPair ) {
-			if ( isset( $aUsernameYubikeyPair[$inoUser->user_login] ) ) {
-				$fUsernameFound = true;
-				if ( $aUsernameYubikeyPair[$inoUser->user_login] == $sYubikey12 ) {
-					$fFoundMatch = true;
-					break;
-				}
-			}
-		}
-
-		// If no yubikey-username pair found for given username, we by-pass Yubikey auth.
-		if ( !$fUsernameFound ) {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" logged in without a Yubikey One Time Password because no username-yubikey pair was found for this user.'), $inoUser->user_login )
-			);
-			return $inoUser;
-		}
-
-		// Username was found in the list of key pairs, but the yubikey provided didn't match that username.
-		if ( !$fFoundMatch ) {
-			$oError->add(
-				'yubikey_not_allowed',
-				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey provided is not on the list of permitted keys for this user.') )
-			);
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but Yubikey ID used was not in list of authorised keys: "%s".'), $inoUser->user_login, $sYubikey12 )
-			);
-			return $oError;
-		}
-
-		$oFs = $this->loadFileSystemProcessor();
-
-		$sNonce = md5( uniqid( rand() ) );
-		$sUrl = sprintf( self::YubikeyVerifyApiUrl, $sAppId, $sOneTimePassword, $sNonce );
-		$sRawYubiRequest = $oFs->getUrlContent( $sUrl );
-
-		// Validate response.
-		// 1. Check OTP and Nonce
-		if ( !preg_match( '/otp='.$sOneTimePassword.'/', $sRawYubiRequest, $aMatches )
-			|| !preg_match( '/nonce='.$sNonce.'/', $sRawYubiRequest, $aMatches )
-		) {
-			$oError->add(
-				'yubikey_validate_fail',
-				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
-			);
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API.'), $inoUser->user_login )
-			);
-			return $oError;
-		}
-
-		// Optionally we can check the hash, but since we're using HTTPS, this isn't necessary and adds more PHP requirements
-
-		// 2. Check status directly within response
-		preg_match( '/status=([a-zA-Z0-9_]+)/', $sRawYubiRequest, $aMatches );
-		$sStatus = $aMatches[1];
-
-		if ( $sStatus != 'OK' && $sStatus != 'REPLAYED_OTP' ) {
-			$oError->add(
-				'yubikey_validate_fail',
-				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
-			);
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API response status: %s.'), $inoUser->user_login, $sStatus )
-			);
-			return $oError;
-		}
-
-		$this->logInfo(
-			sprintf( _wpsf__('User "%s" successfully logged in using a validated Yubikey One Time Password.'), $inoUser->user_login )
-		);
-		return $inoUser;
-	}
-
-	/**
-	 * @return bool
-	 */
-	protected function getIsYubikeyConfigReady() {
-		$sAppId = $this->getOption('yubikey_app_id');
-		$sApiKey = $this->getOption('yubikey_api_key');
-		$aYubikeyKeys = $this->getOption('yubikey_unique_keys');
-		return !empty($sAppId) && !empty($sApiKey) && !empty($aYubikeyKeys);
-	}
+//	/**
+//	 * @param WP_User $inoUser
+//	 * @return WP_User|WP_Error
+//	 */
+//	public function checkYubikeyOtpAuth_Filter( $inoUser ) {
+//		$oError = new WP_Error();
+//
+//		// Before anything else we check that a Yubikey pair has been provided for this username (and that there are pairs in the first place!)
+//		$aYubikeyUsernamePairs = $this->getOption('yubikey_unique_keys');
+//		if ( !$this->getIsYubikeyConfigReady() ) { // configuration is clearly not completed yet.
+//			return $inoUser;
+//		}
+//
+//		$sOneTimePassword =  empty( $_POST['yubiotp'] )? '' : trim( $_POST['yubiotp'] );
+//		$sAppId = $this->getOption('yubikey_app_id');
+//		$sApiKey = $this->getOption('yubikey_api_key');
+//
+//		// check that if we have a list of permitted keys, that the one used is on that list connected with the username.
+//		$sYubikey12 = substr( $sOneTimePassword, 0 , 12 );
+//		$fUsernameFound = false; // if username is never found, it means there's no yubikey specified which means we can bypass this authentication method.
+//		$fFoundMatch = false;
+//		foreach( $aYubikeyUsernamePairs as $aUsernameYubikeyPair ) {
+//			if ( isset( $aUsernameYubikeyPair[$inoUser->user_login] ) ) {
+//				$fUsernameFound = true;
+//				if ( $aUsernameYubikeyPair[$inoUser->user_login] == $sYubikey12 ) {
+//					$fFoundMatch = true;
+//					break;
+//				}
+//			}
+//		}
+//
+//		// If no yubikey-username pair found for given username, we by-pass Yubikey auth.
+//		if ( !$fUsernameFound ) {
+//			$this->logWarning(
+//				sprintf( _wpsf__('User "%s" logged in without a Yubikey One Time Password because no username-yubikey pair was found for this user.'), $inoUser->user_login )
+//			);
+//			return $inoUser;
+//		}
+//
+//		// Username was found in the list of key pairs, but the yubikey provided didn't match that username.
+//		if ( !$fFoundMatch ) {
+//			$oError->add(
+//				'yubikey_not_allowed',
+//				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey provided is not on the list of permitted keys for this user.') )
+//			);
+//			$this->logWarning(
+//				sprintf( _wpsf__('User "%s" attempted to login but Yubikey ID used was not in list of authorised keys: "%s".'), $inoUser->user_login, $sYubikey12 )
+//			);
+//			return $oError;
+//		}
+//
+//		$oFs = $this->loadFileSystemProcessor();
+//
+//		$sNonce = md5( uniqid( rand() ) );
+//		$sUrl = sprintf( self::YubikeyVerifyApiUrl, $sAppId, $sOneTimePassword, $sNonce );
+//		$sRawYubiRequest = $oFs->getUrlContent( $sUrl );
+//
+//		// Validate response.
+//		// 1. Check OTP and Nonce
+//		if ( !preg_match( '/otp='.$sOneTimePassword.'/', $sRawYubiRequest, $aMatches )
+//			|| !preg_match( '/nonce='.$sNonce.'/', $sRawYubiRequest, $aMatches )
+//		) {
+//			$oError->add(
+//				'yubikey_validate_fail',
+//				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
+//			);
+//			$this->logWarning(
+//				sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API.'), $inoUser->user_login )
+//			);
+//			return $oError;
+//		}
+//
+//		// Optionally we can check the hash, but since we're using HTTPS, this isn't necessary and adds more PHP requirements
+//
+//		// 2. Check status directly within response
+//		preg_match( '/status=([a-zA-Z0-9_]+)/', $sRawYubiRequest, $aMatches );
+//		$sStatus = $aMatches[1];
+//
+//		if ( $sStatus != 'OK' && $sStatus != 'REPLAYED_OTP' ) {
+//			$oError->add(
+//				'yubikey_validate_fail',
+//				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
+//			);
+//			$this->logWarning(
+//				sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API response status: %s.'), $inoUser->user_login, $sStatus )
+//			);
+//			return $oError;
+//		}
+//
+//		$this->logInfo(
+//			sprintf( _wpsf__('User "%s" successfully logged in using a validated Yubikey One Time Password.'), $inoUser->user_login )
+//		);
+//		return $inoUser;
+//	}
+//
+//	/**
+//	 * @return bool
+//	 */
+//	protected function getIsYubikeyConfigReady() {
+//		$sAppId = $this->getOption('yubikey_app_id');
+//		$sApiKey = $this->getOption('yubikey_api_key');
+//		$aYubikeyKeys = $this->getOption('yubikey_unique_keys');
+//		return !empty($sAppId) && !empty($sApiKey) && !empty($aYubikeyKeys);
+//	}
 
 	/**
 	 * If $inoUser is a valid WP_User object, then the user logged in correctly.
@@ -524,7 +382,6 @@ class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 	 * @return WP_Error|WP_User|null	- WP_User when the login success AND the IP is authenticated. null when login not successful but IP is valid. WP_Error otherwise.
 	 */
 	public function checkUserAuthLogin_Filter( $inoUser, $insUsername, $insPassword ) {
-	
 		if ( empty( $insUsername ) ) {
 			return $inoUser;
 		}
@@ -596,93 +453,7 @@ class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 		}
 		return false;
 	}
-	
-	public function getGaspLoginHtml() {
-	
-		$sLabel = _wpsf__("I'm a human.");
-		$sAlert = _wpsf__("Please check the box to show us you're a human.");
-	
-		$sUniqElem = 'icwp_wpsf_login_p'.uniqid();
-		
-		$sStyles = '
-			<style>
-				#'.$sUniqElem.' {
-					clear:both;
-					border: 1px solid #888;
-					padding: 6px 8px 4px 10px;
-					margin: 0 0px 12px !important;
-					border-radius: 2px;
-					background-color: #f9f9f9;
-				}
-				#'.$sUniqElem.' input {
-					margin-right: 5px;
-				}
-			</style>
-		';
-	
-		$sHtml =
-			$sStyles.
-			'<p id="'.$sUniqElem.'"></p>
-			<script type="text/javascript">
-				var icwp_wpsf_login_p		= document.getElementById("'.$sUniqElem.'");
-				var icwp_wpsf_login_cb		= document.createElement("input");
-				var icwp_wpsf_login_text	= document.createTextNode(" '.$sLabel.'");
-				icwp_wpsf_login_cb.type		= "checkbox";
-				icwp_wpsf_login_cb.id		= "'.$this->getGaspCheckboxName().'";
-				icwp_wpsf_login_cb.name		= "'.$this->getGaspCheckboxName().'";
-				icwp_wpsf_login_p.appendChild( icwp_wpsf_login_cb );
-				icwp_wpsf_login_p.appendChild( icwp_wpsf_login_text );
-				var frm = icwp_wpsf_login_cb.form;
-				frm.onsubmit = icwp_wpsf_login_it;
-				function icwp_wpsf_login_it(){
-					if(icwp_wpsf_login_cb.checked != true){
-						alert("'.$sAlert.'");
-						return false;
-					}
-					return true;
-				}
-			</script>
-			<noscript>'._wpsf__('You MUST enable Javascript to be able to login').'</noscript>
-			<input type="hidden" id="icwp_wpsf_login_email" name="icwp_wpsf_login_email" value="" />
-		';
 
-		return $sHtml;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getGaspCheckboxName() {
-		return $this->oFeatureOptions->doPluginPrefix( $this->oFeatureOptions->getGaspKey(), '_' );
-	}
-	
-	public function doGaspChecks( $insUsername ) {
-		if ( !isset( $_POST[ $this->getGaspCheckboxName() ] ) ) {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip(self::$nRequestIp) )
-			);
-			$this->doStatIncrement( 'login.gasp.checkbox.fail' );
-			wp_die( "You must check that box to say you're not a bot." );
-			return false;
-		}
-		else if ( isset( $_POST['icwp_wpsf_login_email'] ) && $_POST['icwp_wpsf_login_email'] !== '' ){
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".'), $insUsername, long2ip(self::$nRequestIp) )
-			);
-			$this->doStatIncrement( 'login.gasp.honeypot.fail' );
-			wp_die( _wpsf__('You appear to be a bot - terminating login attempt.') );
-			return false;
-		}
-		return true;
-	}
-	
-	/**
-	 */
-	public function setLoginCooldownInterval() {
-		$nInterval = intval( $this->getOption('login_limit_interval', 0) );
-		$this->m_nRequiredLoginInterval = ( $nInterval < 0 )? 0 : $nInterval;
-	}
-	
 	/**
 	 * @param string $sUsername
 	 * @return boolean
@@ -1025,6 +796,6 @@ class ICWP_WPSF_LoginProtectProcessor_V3 extends ICWP_WPSF_BaseDbProcessor {
 }
 endif;
 
-if ( !class_exists('ICWP_WPSF_LoginProtectProcessor') ):
-	class ICWP_WPSF_LoginProtectProcessor extends ICWP_WPSF_LoginProtectProcessor_V3 { }
+if ( !class_exists('ICWP_WPSF_Processor_LoginProtect') ):
+	class ICWP_WPSF_Processor_LoginProtect extends ICWP_WPSF_Processor_LoginProtect_V3 { }
 endif;

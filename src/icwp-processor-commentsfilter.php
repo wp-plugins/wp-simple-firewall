@@ -32,11 +32,6 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 	static protected $sSpamBlacklistFile;
 
 	/**
-	 * @var string
-	 */
-	static protected $sModeFile_LoginThrottled;
-
-	/**
 	 * The unique comment token assigned to this page
 	 * @var integer
 	 */
@@ -54,14 +49,6 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 	 * @var string
 	 */
 	protected $sCommentStatusExplanation;
-
-	/**
-	 * Flag as to whether Two Factor Authentication will be by-passed when sending the verification
-	 * email fails.
-	 * 
-	 * @var boolean
-	 */
-	protected $m_fAllowTwoFactorByPass;
 
 	/**
 	 * @param ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions
@@ -722,6 +709,6 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 }
 endif;
 
-if ( !class_exists('ICWP_WPSF_CommentsFilterProcessor') ):
-	class ICWP_WPSF_CommentsFilterProcessor extends ICWP_CommentsFilterProcessor_V2 { }
+if ( !class_exists('ICWP_WPSF_Processor_CommentsFilter') ):
+	class ICWP_WPSF_Processor_CommentsFilter extends ICWP_CommentsFilterProcessor_V2 { }
 endif;

@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
 if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 
-class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
+class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 
 	protected $m_aWhitelistPages;
 	protected $m_aWhitelistPagesPatterns;
@@ -73,14 +73,6 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 		$sMessage = _wpsf__( "You were blocked by the %sWordPress Simple Firewall%s." );
 		$this->m_sFirewallMessage = sprintf( $sMessage, '<a href="http://wordpress.org/plugins/wp-simple-firewall/" target="_blank">', '</a>');
 	}
-	
-	/**
-	 * @see ICWP_WPSF_BaseProcessor::setOptions()
-	 */
-	public function setOptions( &$aOptions ) {
-		parent::setOptions( $aOptions );
-		$this->m_aCustomWhitelistPageParams = is_array( $this->getOption( 'page_params_whitelist' )  )? $this->getOption( 'page_params_whitelist' ) : array();
-	}
 
 	/**
 	 * @return boolean
@@ -109,11 +101,11 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 	 * Should return false when logging is disabled.
 	 * 
 	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_WPSF_BaseProcessor::getLogData()
+	 * @see ICWP_WPSF_Processor_Base::getLogData()
 	 */
 	public function flushLogData() {
 		
-		if ( !$this->getIsLogging() || empty( $this->m_aLogMessages ) ) {
+		if ( !$this->getIsLogging() || empty( self::$m_aLogMessages ) ) {
 			return false;
 		}
 
@@ -591,7 +583,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 			)
 		);
 
-		$aCustomWhitelistPageParams = is_array( $this->getOption( 'page_params_whitelist' )  )? $this->getOption( 'page_params_whitelist' ) : array();
+		$aCustomWhitelistPageParams = is_array( $this->getOption( 'page_params_whitelist' ) )? $this->getOption( 'page_params_whitelist' ) : array();
 		$this->m_aWhitelistPages = array_merge( $aDefaultWlPages, $aCustomWhitelistPageParams );
 
 		$this->m_aWhitelistPagesPatterns = array(
@@ -637,6 +629,6 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_BaseProcessor {
 
 endif;
 
-if ( !class_exists('ICWP_WPSF_FirewallProcessor') ):
-	class ICWP_WPSF_FirewallProcessor extends ICWP_FirewallProcessor_V1 { }
+if ( !class_exists('ICWP_WPSF_Processor_Firewall') ):
+	class ICWP_WPSF_Processor_Firewall extends ICWP_FirewallProcessor_V1 { }
 endif;

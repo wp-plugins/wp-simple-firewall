@@ -24,7 +24,7 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	const Default_AccessKeyTimeout = 30;
 	
 	/**
-	 * @var ICWP_WPSF_PluginProcessor
+	 * @var ICWP_WPSF_Processor_Plugin
 	 */
 	protected $oFeatureProcessor;
 
@@ -38,12 +38,12 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	}
 
 	/**
-	 * @return ICWP_WPSF_PluginProcessor|null
+	 * @return ICWP_WPSF_Processor_Plugin|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-plugin.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_PluginProcessor( $this );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-plugin.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Plugin( $this );
 		}
 		return $this->oFeatureProcessor;
 	}

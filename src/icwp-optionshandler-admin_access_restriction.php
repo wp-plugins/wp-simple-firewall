@@ -53,7 +53,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-adminaccessrestriction.php' );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-adminaccessrestriction.php' );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_AdminAccessRestriction( $this );
 		}
 		return $this->oFeatureProcessor;

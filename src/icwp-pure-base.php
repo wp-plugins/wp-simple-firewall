@@ -900,8 +900,13 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		exit();
 	}
 
+	/**
+	 */
 	public function onWpAdminBar() {
 		$aNodes = $this->getAdminBarNodes();
+		if ( !is_array( $aNodes ) ) {
+			return;
+		}
 		foreach( $aNodes as $aNode )  {
 			$this->addAdminBarNode( $aNode );
 		}

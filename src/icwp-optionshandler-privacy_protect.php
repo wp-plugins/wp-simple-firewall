@@ -22,7 +22,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_PrivacyProtect') ):
 class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
-	 * @var ICWP_WPSF_PrivacyProtectProcessor
+	 * @var ICWP_WPSF_Processor_PrivacyProtect
 	 */
 	protected $oFeatureProcessor;
 
@@ -33,12 +33,12 @@ class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_B
 	}
 
 	/**
-	 * @return ICWP_WPSF_PrivacyProtectProcessor|null
+	 * @return ICWP_WPSF_Processor_PrivacyProtect|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-privacyprotect.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_PrivacyProtectProcessor( $this );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-privacyprotect.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_PrivacyProtect( $this );
 		}
 		return $this->oFeatureProcessor;
 	}

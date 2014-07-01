@@ -25,7 +25,7 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 	const DefaultCommentExpire		= 600; //seconds.
 	
 	/**
-	 * @var ICWP_WPSF_CommentsFilterProcessor
+	 * @var ICWP_WPSF_Processor_CommentsFilter
 	 */
 	protected $oFeatureProcessor;
 
@@ -36,12 +36,12 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 	}
 
 	/**
-	 * @return ICWP_WPSF_CommentsFilterProcessor|null
+	 * @return ICWP_WPSF_Processor_CommentsFilter|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-commentsfilter.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_CommentsFilterProcessor( $this );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-commentsfilter.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_CommentsFilter( $this );
 		}
 		return $this->oFeatureProcessor;
 	}

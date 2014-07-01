@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack, login
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 3.1.0
+Stable tag: 3.1.1
 
 Complete and Simple WordPress Security. Unrestricted, Easy, No Premium Features.
 
@@ -228,6 +228,13 @@ You can either manually upgrade, or WordPress will handle it in due course.
 = TODO =
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
+
+= 3.1.1 =
+
+*   KNOWN ISSUE:      Login Protection logs are not being properly created - this is temporary while fixing lock-outs
+*   FIX:        auto-updates feature not loading
+*   FIX:        simplified implementation of login protection feature to reduce possibility for bugs/lock-outs
+*   FIX:        auto-forwarding for wp-login.php was preventing user logout
 
 = 3.1.0 =
 

@@ -97,7 +97,7 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 	protected static $oLoggingHandler;
 
 	/**
-	 * @var ICWP_WPSF_BaseProcessor
+	 * @var ICWP_WPSF_Processor_Base
 	 */
 	protected $oFeatureProcessor;
 
@@ -160,7 +160,8 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 		}
 
 		$oProcessor = $this->loadFeatureProcessor();
-		if ( ! ( is_object( $oProcessor ) && $oProcessor instanceof ICWP_WPSF_BaseProcessor ) ) {
+		if ( ! ( is_object( $oProcessor ) && $oProcessor instanceof ICWP_WPSF_Processor_Base ) ) {
+			echo 'here';
 			return;
 		}
 
@@ -176,7 +177,7 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 	}
 
 	/**
-	 * @return ICWP_WPSF_BaseProcessor
+	 * @return ICWP_WPSF_Processor_Base
 	 */
 	public function getProcessor() {
 		return $this->loadFeatureProcessor();
@@ -193,7 +194,7 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 	}
 
 	/**
-	 * @return ICWP_WPSF_EmailProcessor
+	 * @return ICWP_WPSF_Processor_Email
 	 */
 	public function getEmailProcessor() {
 		return $this->GetEmailHandler()->getProcessor();
@@ -210,7 +211,7 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 	}
 
 	/**
-	 * @return ICWP_WPSF_LoggingProcessor
+	 * @return ICWP_WPSF_Processor_Logging
 	 */
 	public function getLoggingProcessor() {
 		return $this->GetLoggingHandler()->getProcessor();
@@ -401,13 +402,14 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 
 	/**
 	 * @param string $sOptionKey
+	 * @param mixed $mDefault
 	 * @return mixed
 	 */
-	public function getOpt( $sOptionKey ) {
+	public function getOpt( $sOptionKey, $mDefault = false ) {
 		if ( !isset( $this->m_aOptionsValues ) ) {
 			$this->loadStoredOptionsValues();
 		}
-		return ( isset( $this->m_aOptionsValues[ $sOptionKey ] )? $this->m_aOptionsValues[ $sOptionKey ] : false );
+		return ( isset( $this->m_aOptionsValues[ $sOptionKey ] )? $this->m_aOptionsValues[ $sOptionKey ] : $mDefault );
 	}
 
 	/**
@@ -804,11 +806,6 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 	//	return extension_loaded( 'mcrypt' );
 	}
 
-	protected function getVisitorIpAddress( $infAsLong = true ) {
-		$this->loadDataProcessor();
-		return ICWP_WPSF_DataProcessor::GetVisitorIpAddress( $infAsLong );
-	}
-
 	/**
 	 * Prefixes an option key only if it's needed
 	 *
@@ -970,7 +967,10 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 		return true;
 	}
 
-	protected function loadDataProcessor() {
+	/**
+	 *
+	 */
+	public function loadDataProcessor() {
 		if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
 			require_once( dirname(__FILE__).'/icwp-data-processor.php' );
 		}
@@ -979,20 +979,41 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 	/**
 	 * @return ICWP_WpFunctions_WPSF
 	 */
-	protected function loadWpFunctions() {
-		return ICWP_WpFunctions_WPSF::GetInstance();
+	public function loadWpFunctions() {
+		return $this->loadWpFunctionsProcessor();
 	}
 
 	/**
 	 * @return ICWP_WpFilesystem_WPSF
 	 */
-	protected function loadFileSystemProcessor() {
+	public function loadFileSystemProcessor() {
 		if ( !class_exists('ICWP_WpFilesystem_WPSF') ) {
 			require_once( dirname(__FILE__) . '/icwp-wpfilesystem.php' );
 		}
 		return ICWP_WpFilesystem_WPSF::GetInstance();
 	}
+	/**
+	 * @return ICWP_WpFunctions_WPSF
+	 */
+	public function loadWpFunctionsProcessor() {
+		require_once( dirname(__FILE__) . '/icwp-wpfunctions.php' );
+		return ICWP_WpFunctions_WPSF::GetInstance();
+	}
 
+	/**
+	 * @return ICWP_Stats_WPSF
+	 */
+	public function loadWpsfStatsProcessor() {
+		require_once( dirname(__FILE__) . '/icwp-wpsf-stats.php' );
+	}
+
+	/**
+	 * @param $sStatKey
+	 */
+	public function doStatIncrement( $sStatKey ) {
+		$this->loadWpsfStatsProcessor();
+		ICWP_Stats_WPSF::DoStatIncrement( $sStatKey );
+	}
 }
 
 endif;

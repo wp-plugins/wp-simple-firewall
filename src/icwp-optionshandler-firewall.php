@@ -22,7 +22,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Firewall') ):
 class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 	
 	/**
-	 * @var ICWP_WPSF_FirewallProcessor
+	 * @var ICWP_WPSF_Processor_Firewall
 	 */
 	protected $oFeatureProcessor;
 
@@ -33,12 +33,12 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 	}
 
 	/**
-	 * @return ICWP_WPSF_FirewallProcessor|null
+	 * @return ICWP_WPSF_Processor_Firewall|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-firewall.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_FirewallProcessor( $this );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-firewall.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Firewall( $this );
 		}
 		return $this->oFeatureProcessor;
 	}
@@ -212,7 +212,7 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 					'ip_addresses',
 					_wpsf__( 'Whitelist IP Addresses' ),
 					_wpsf__( 'Choose IP Addresses that are never subjected to Firewall Rules' ),
-					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
+					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.( ICWP_WPSF_DataProcessor::GetVisitorIpAddress(false) ).'</span>' )
 				),
 				array(
 					'page_params_whitelist',

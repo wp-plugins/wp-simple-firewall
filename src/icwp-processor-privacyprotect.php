@@ -170,6 +170,6 @@ class ICWP_PrivacyProtectProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 endif;
 
-if ( !class_exists('ICWP_WPSF_PrivacyProtectProcessor') ):
-	class ICWP_WPSF_PrivacyProtectProcessor extends ICWP_PrivacyProtectProcessor_V1 { }
+if ( !class_exists('ICWP_WPSF_Processor_PrivacyProtect') ):
+	class ICWP_WPSF_Processor_PrivacyProtect extends ICWP_PrivacyProtectProcessor_V1 { }
 endif;

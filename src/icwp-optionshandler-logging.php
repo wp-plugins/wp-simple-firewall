@@ -22,7 +22,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Logging') ):
 class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
-	 * @var ICWP_WPSF_LoggingProcessor
+	 * @var ICWP_WPSF_Processor_Logging
 	 */
 	protected $oFeatureProcessor;
 
@@ -37,12 +37,12 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 	}
 
 	/**
-	 * @return ICWP_WPSF_LoggingProcessor|null
+	 * @return ICWP_WPSF_Processor_Logging|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-logging.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_LoggingProcessor( $this );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-logging.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Logging( $this );
 		}
 		return $this->oFeatureProcessor;
 	}

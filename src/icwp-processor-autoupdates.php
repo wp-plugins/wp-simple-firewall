@@ -19,7 +19,7 @@ require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
 if ( !class_exists('ICWP_AutoupdatesProcessor_V5') ):
 
-class ICWP_AutoupdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
+class ICWP_AutoupdatesProcessor_V5 extends ICWP_WPSF_Processor_Base {
 
 	const FilterPriority = 1001;
 	
@@ -28,7 +28,7 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 	/**
 	 * @var boolean
 	 */
-	protected $m_fDoForceRunAutoupdates = false;
+	protected $fDoForceRunAutoupdates = false;
 
 	/**
 	 * @param ICWP_WPSF_FeatureHandler_Autoupdates $oFeatureOptions
@@ -42,18 +42,23 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 	 * @param boolean $infDoForceRun
 	 */
 	public function setForceRunAutoupdates( $infDoForceRun ) {
-		$this->m_fDoForceRunAutoupdates = $infDoForceRun;
+		$this->fDoForceRunAutoupdates = $infDoForceRun;
 	}
-	
+
 	/**
+	 * @return boolean
 	 */
 	public function getForceRunAutoupdates() {
-		return apply_filters( 'icwp_force_autoupdate', $this->m_fDoForceRunAutoupdates );
+		return apply_filters( $this->oFeatureOptions->doPluginPrefix( 'force_autoupdate' ), $this->fDoForceRunAutoupdates );
 	}
 	
 	/**
 	 */
 	public function run() {
+
+		if ( ICWP_WPSF_DataProcessor::FetchGet('forcerun') == 1 ) {
+			$this->setForceRunAutoupdates( true );
+		}
 
 		// When we force run we only want our filters.
 		if ( $this->getForceRunAutoupdates() ) {
@@ -292,6 +297,6 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_BaseProcessor_V3 {
 
 endif;
 
-if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor') ):
-	class ICWP_WPSF_AutoupdatesProcessor extends ICWP_AutoupdatesProcessor_V5 { }
+if ( !class_exists('ICWP_WPSF_Processor_Autoupdates') ):
+	class ICWP_WPSF_Processor_Autoupdates extends ICWP_AutoupdatesProcessor_V5 { }
 endif;

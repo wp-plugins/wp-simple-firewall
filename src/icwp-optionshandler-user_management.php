@@ -37,7 +37,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-usermanagement.php' );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-usermanagement.php' );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_UserManagement( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -89,7 +89,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					'integer',
 					_wpsf__( 'Session Timeout' ),
 					_wpsf__( 'Specify How Many Days After Login To Automatically Force Re-Login' ),
-					sprintf( _wpsf__( 'WordPress default is 2 days, or 14 days if you check the "Remember Me" box.' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' )
+					_wpsf__( 'WordPress default is 2 days, or 14 days if you check the "Remember Me" box.' )
 					.'<br />'. sprintf( _wpsf__( 'Set to %s to turn off this option.' ), '"<strong>0</strong>"' )
 				),
 				array(

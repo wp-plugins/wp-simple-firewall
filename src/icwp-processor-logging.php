@@ -118,6 +118,6 @@ class ICWP_LoggingProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 endif;
 
-if ( !class_exists('ICWP_WPSF_LoggingProcessor') ):
-	class ICWP_WPSF_LoggingProcessor extends ICWP_LoggingProcessor_V1 { }
+if ( !class_exists('ICWP_WPSF_Processor_Logging') ):
+	class ICWP_WPSF_Processor_Logging extends ICWP_LoggingProcessor_V1 { }
 endif;

@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-base-processor.php' );
 
-if ( !class_exists('ICWP_WPSF_PluginProcessor') ):
+if ( !class_exists('ICWP_WPSF_Processor_Plugin') ):
 
-class ICWP_WPSF_PluginProcessor extends ICWP_WPSF_BaseProcessor {
+class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 
 	/**
 	 * @param ICWP_WPSF_FeatureHandler_Plugin $oFeatureOptions

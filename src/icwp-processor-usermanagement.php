@@ -70,6 +70,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		// When we know user has successfully authenticated and we activate the session entry in the database
 		add_action( 'wp_login', array( $this, 'activateUserSession' ) );
 
+//		add_action( 'wp_loaded', array( $this, 'autoForwardFromLogin' ) );
+
 		add_action( 'wp_logout', array( $this, 'onWpLogout' ) );
 
 		add_filter( 'wp_login_errors', array( $this, 'addLoginMessage' ) );
@@ -119,11 +121,13 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 				$this->doVerifyCurrentUser( $oUser );
 			}
 
-			// At this point session is validated.
+			// At this point session is validated
+
 			if ( $this->getIsOption( 'session_auto_forward_to_admin_area', 'Y' ) ) {
-				global $pagenow;
+				$oWp = $this->loadWpFunctionsProcessor();
+				$this->loadDataProcessor();
 				$sWpLogin = 'wp-login.php';
-				if ( substr( $pagenow, -strlen( $sWpLogin ) ) === $sWpLogin ) {
+				if ( ICWP_WPSF_DataProcessor::FetchGet( 'action' ) != 'logout' && ( substr( $oWp->getCurrentPage(), -strlen( $sWpLogin ) ) === $sWpLogin ) ) {
 					$oWp = $this->loadWpFunctionsProcessor();
 					$oWp->redirectToAdmin();
 				}
@@ -197,7 +201,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 * Should return false when logging is disabled.
 	 *
 	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_WPSF_BaseProcessor::getLogData()
+	 * @see ICWP_WPSF_Processor_Base::getLogData()
 	 */
 	public function flushLogData() {
 	
@@ -245,15 +249,15 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 */
 	public function onWpLogout() {
 		$oUser = wp_get_current_user();
-		$this->doTerminateUserSession( $oUser->user_login );
+		$this->doTerminateUserSession( $oUser );
 	}
 
 	/**
-	 * @param $sUsername
+	 * @param WP_User
 	 * @return boolean
 	 */
-	protected function doTerminateUserSession( $sUsername ) {
-		if ( empty( $sUsername ) ) {
+	protected function doTerminateUserSession( $oUser ) {
+		if ( empty( $oUser->user_login ) ) {
 			return false;
 		}
 
@@ -262,7 +266,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		);
 		$aWhere = array(
 			'session_id'	=> $this->getSessionId(),
-			'wp_username'	=> $sUsername,
+			'wp_username'	=> $oUser->user_login,
 			'deleted_at'	=> 0
 		);
 		$mResult = $this->updateRowsFromTable( $aNewData, $aWhere );

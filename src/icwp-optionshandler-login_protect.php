@@ -22,7 +22,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_LoginProtect') ):
 class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Base {
 	
 	/**
-	 * @var ICWP_WPSF_LoginProtectProcessor
+	 * @var ICWP_WPSF_Processor_LoginProtect
 	 */
 	protected $oFeatureProcessor;
 
@@ -33,12 +33,12 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	}
 
 	/**
-	 * @return ICWP_WPSF_LoginProtectProcessor|null
+	 * @return ICWP_WPSF_Processor_LoginProtect|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( dirname(__FILE__).'/icwp-processor-loginprotect.php' );
-			$this->oFeatureProcessor = new ICWP_WPSF_LoginProtectProcessor( $this );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-loginprotect.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_LoginProtect( $this );
 		}
 		return $this->oFeatureProcessor;
 	}
@@ -56,7 +56,9 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 			$this->setOpt( 'two_factor_auth_user_roles', $this->getTwoFactorUserAuthRoles( true ) );
 		}
 
-		$this->setKeys(); // ensures they have values
+		// ensures they have values
+		$this->setKeys();
+		$this->getLastLoginTimeFilePath();
 	}
 
 	/**
@@ -89,7 +91,7 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 					'ip_addresses',
 					_wpsf__( 'Whitelist IP Addresses' ),
 					_wpsf__( 'Specify IP Addresses that by-pass all Login Protect rules' ),
-					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.$this->getVisitorIpAddress( false ).'</span>' ),
+					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.( ICWP_WPSF_DataProcessor::GetVisitorIpAddress(false) ).'</span>' ),
 					'<a href="http://icwp.io/52" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
@@ -271,7 +273,10 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	protected function getNonUiOptions() {
 		$aNonUiOptions = array(
 			'gasp_key',
-			'two_factor_secret_key'
+			'two_factor_secret_key',
+			'last_login_time',
+			'last_login_time_file_path',
+			'log_category'
 		);
 		return $aNonUiOptions;
 	}
@@ -312,6 +317,18 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 			return array_keys($aTwoAuthRoles);
 		}
 		return $aTwoAuthRoles;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getLastLoginTimeFilePath() {
+		$sPath = $this->getOpt( 'last_login_time_file_path' );
+		if ( empty( $sPath ) ) {
+			$sPath = $this->oPluginVo->getRootDir().'mode.login_throttled';
+			$this->setOpt( 'last_login_time_file_path', $sPath );
+		}
+		return $sPath;
 	}
 
 	/**

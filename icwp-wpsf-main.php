@@ -429,7 +429,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	}
 
 	/**
-	 * @return ICWP_WPSF_FirewallProcessor|null
+	 * @return ICWP_WPSF_Processor_Firewall|null
 	 */
 	public function getProcessor_Firewall() {
 		$this->loadFeatureHandler( 'firewall' );
@@ -437,7 +437,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	}
 
 	/**
-	 * @return ICWP_WPSF_LoginProtectProcessor|null
+	 * @return ICWP_WPSF_Processor_LoginProtect|null
 	 */
 	public function getProcessor_LoginProtect() {
 		$this->loadFeatureHandler( 'login_protect' );
@@ -445,7 +445,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	}
 
 	/**
-	 * @return ICWP_WPSF_AutoupdatesProcessor|null
+	 * @return ICWP_WPSF_Processor_Autoupdates|null
 	 */
 	public function getProcessor_Autoupdates() {
 		$this->loadFeatureHandler( 'autoupdates' );
@@ -453,7 +453,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	}
 
 	/**
-	 * @return ICWP_WPSF_PrivacyProtectProcessor|null
+	 * @return ICWP_WPSF_Processor_PrivacyProtect|null
 	 */
 	public function getProcessor_PrivacyProtect() {
 		$this->loadFeatureHandler( 'privacy_protect' );
@@ -461,7 +461,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	}
 
 	/**
-	 * @return ICWP_WPSF_LoggingProcessor|null
+	 * @return ICWP_WPSF_Processor_Logging|null
 	 */
 	public function getProcessor_Logging() {
 		$this->loadFeatureHandler( 'logging' );
@@ -469,7 +469,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	}
 
 	/**
-	 * @return ICWP_WPSF_EmailProcessor|null
+	 * @return ICWP_WPSF_Processor_Email|null
 	 */
 	public function getProcessor_Email() {
 		return $this->oPluginOptions->getEmailProcessor();
