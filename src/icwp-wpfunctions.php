@@ -17,6 +17,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+
 if ( !class_exists('ICWP_WpFunctions_V4') ):
 
 class ICWP_WpFunctions_V4 {
@@ -180,6 +182,16 @@ class ICWP_WpFunctions_V4 {
 	 */
 	public function getIsCurrentPage( $sPage ) {
 		return $sPage == $this->getCurrentPage();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getIsLoginRequest() {
+		return ICWP_WPSF_DataProcessor::GetIsRequestPost()
+			&& $this->getIsCurrentPage('wp-login.php')
+			&& !is_null( ICWP_WPSF_DataProcessor::FetchPost('log') )
+			&& !is_null( ICWP_WPSF_DataProcessor::FetchPost('pwd') );
 	}
 
 	/**

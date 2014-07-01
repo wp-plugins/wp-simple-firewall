@@ -85,8 +85,7 @@ class ICWP_WPSF_Processor_LoginProtect_V3 extends ICWP_WPSF_BaseDbProcessor {
 		$this->loadDataProcessor();
 //		$this->recreateTable();
 
-		$sRequestMethod = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'REQUEST_METHOD' );
-		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
+		$fIsPost = ICWP_WPSF_DataProcessor::GetIsRequestPost();
 
 		$aWhitelist = $this->getOption( 'ips_whitelist', array() );
 		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::$nRequestIp ) ) {

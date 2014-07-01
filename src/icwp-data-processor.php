@@ -406,6 +406,14 @@ class ICWP_DataProcessor_V1 {
 	}
 
 	/**
+	 * @return bool
+	 */
+	static public function GetIsRequestPost() {
+		$sRequestMethod = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'REQUEST_METHOD' );
+		return strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
+	}
+
+	/**
 	 * @return string|null
 	 */
 	static public function GetScriptName() {
