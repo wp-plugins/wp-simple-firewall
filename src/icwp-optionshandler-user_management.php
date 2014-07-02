@@ -76,7 +76,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					_wpsf__( 'Enable (or Disable) The User Accounts Management Feature' ),
 					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('User Accounts Management') ),
 				)
-			),
+			)
 		);
 
 		$aSessions = array(

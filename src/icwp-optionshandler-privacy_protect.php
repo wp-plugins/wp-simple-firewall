@@ -63,7 +63,7 @@ class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_B
 					_wpsf__( 'Regardless of any other settings, this option will turn off the Privacy Protection feature, or enable your selected Privacy Protection options' ),
 					'<a href="http://icwp.io/3y" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
-			),
+			)
 		);
 		$aFurtherOptions = array(
 			'section_title' => _wpsf__( 'Data Filtering and Logging Options' ),

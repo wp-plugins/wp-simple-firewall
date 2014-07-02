@@ -79,7 +79,7 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 					'<a href="http://icwp.io/51" target="_blank">'._wpsf__( 'more info' ).'</a>'
 					.' | <a href="http://icwp.io/wpsf03" target="_blank">'._wpsf__( 'blog' ).'</a>'
 				)
-			),
+			)
 		);
 		$aWhitelist = array(
 			'section_title' => _wpsf__( 'Whitelist IPs that by-pass Login Protect' ),
