@@ -42,7 +42,6 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_UserManagement $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
-		$this->createTable();
 	}
 
 	/**
@@ -50,6 +49,12 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	public function run() {
 		parent::run();
 		$this->loadDataProcessor();
+
+		if ( $this->oFeatureOptions->getOpt( 'user_management_table_created' ) !== true ) {
+			$this->createTable();
+//			$this->recreateTable();
+			$this->oFeatureOptions->setOpt( 'user_management_table_created', true );
+		}
 
 		$sRequestMethod = ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_METHOD' );
 		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';

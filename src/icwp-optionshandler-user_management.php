@@ -146,7 +146,9 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 	 * @return array
 	 */
 	protected function getNonUiOptions() {
-		$aNonUiOptions = array();
+		$aNonUiOptions = array(
+			'user_management_table_created'
+		);
 		return $aNonUiOptions;
 	}
 }

@@ -276,7 +276,8 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 			'two_factor_secret_key',
 			'last_login_time',
 			'last_login_time_file_path',
-			'log_category'
+			'log_category',
+			'two_factor_auth_table_created'
 		);
 		return $aNonUiOptions;
 	}

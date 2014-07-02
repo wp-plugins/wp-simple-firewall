@@ -38,8 +38,6 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions, self::TableName );
-		$this->createTable();
-		$this->reset();
 	}
 
 	/**
@@ -47,7 +45,12 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 	public function run() {
 		parent::run();
 		$this->loadDataProcessor();
-//		$this->recreateTable();
+
+		if ( $this->oFeatureOptions->getOpt( 'two_factor_auth_table_created' ) !== true ) {
+			$this->createTable();
+//			$this->recreateTable();
+			$this->oFeatureOptions->setOpt( 'two_factor_auth_table_created', true );
+		}
 
 		// User has clicked a link in their email to validate their IP address for login.
 		if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-action' ) == 'linkauth' ) {
@@ -429,9 +432,13 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 	 * @return string
 	 */
 	protected function generateTwoFactorVerifyLink( $sUser, $sUniqueId ) {
-		$sSiteUrl = home_url() . '?wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid=%s';
-		$sAction = 'linkauth';
-		return sprintf( $sSiteUrl, $this->oFeatureOptions->getTwoAuthSecretKey(), $sAction, $sUser, $sUniqueId );
+		$aQueryArgs = array(
+			'wpsfkey' 		=> $this->oFeatureOptions->getTwoAuthSecretKey(),
+			'wpsf-action'	=> 'linkauth',
+			'username'		=> $sUser,
+			'uniqueid'		=> $sUniqueId
+		);
+		return add_query_arg( $aQueryArgs, home_url() );
 	}
 
 	/**
