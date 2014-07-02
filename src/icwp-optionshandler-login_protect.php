@@ -362,6 +362,28 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 		}
 		return $sKey;
 	}
+
+	/**
+	 * @param string $sType		can be either 'ip' or 'cookie'. If empty, both are checked looking for either.
+	 * @return bool
+	 */
+	public function getIsTwoFactorAuthOn( $sType = '' ) {
+
+		$fIp = $this->getOptIs( 'enable_two_factor_auth_by_ip', 'Y' );
+		$fCookie = $this->getOptIs( 'enable_two_factor_auth_by_cookie', 'Y' );
+
+		switch( $sType ) {
+			case 'ip':
+				return $fIp;
+				break;
+			case 'cookie':
+				return $fCookie;
+				break;
+			default:
+				return $fIp || $fCookie;
+				break;
+		}
+	}
 }
 
 endif;

@@ -74,16 +74,6 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		$this->m_sFirewallMessage = sprintf( $sMessage, '<a href="http://wordpress.org/plugins/wp-simple-firewall/" target="_blank">', '</a>');
 	}
 
-	/**
-	 * @return boolean
-	 */
-	public function getNeedsEmailHandler() {
-		if ( $this->getIsOption( 'block_send_email', 'Y' ) ) {
-			return true;
-		}
-		return false;
-	}
-	
 	public function reset() {
 		parent::reset();
 		$this->m_nLoopProtect = 0;

@@ -337,7 +337,6 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			return false;
 		}
 
-		// First set any other entries for the given user to be deleted.
 		$aNewData = array(
 			'pending'			=> 0,
 			'logged_in_at'		=> self::$nRequestTimestamp,

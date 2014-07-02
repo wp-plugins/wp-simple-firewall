@@ -276,6 +276,30 @@ class ICWP_WpFunctions_V4 {
 		return empty($sCurrentPage)? '' : $sCurrentPage;
 	}
 
+	/**
+	 * @return null|WP_User
+	 */
+	public function getCurrentWpUser() {
+		if ( is_user_logged_in() ) {
+			$oUser = wp_get_current_user();
+			if ( is_object( $oUser ) && $oUser instanceof WP_User ) {
+				return $oUser;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @param $sUsername
+	 */
+	public function setUserLoggedIn( $sUsername ) {
+		$oUser = version_compare( $this->getWordpressVersion(), '2.8.0', '<' )? get_userdatabylogin( $sUsername ) : get_user_by( 'login', $sUsername );
+
+		wp_clear_auth_cookie();
+		wp_set_current_user ( $oUser->ID, $oUser->user_login );
+		wp_set_auth_cookie  ( $oUser->ID, true );
+		do_action( 'wp_login', $oUser->user_login, $oUser );
+	}
 }
 endif;
 

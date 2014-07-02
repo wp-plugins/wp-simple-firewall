@@ -413,6 +413,17 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 	}
 
 	/**
+	 * @param $sKey
+	 * @param mixed $mValueToTest
+	 * @param boolean $fStrict
+	 * @return bool
+	 */
+	public function getOptIs( $sKey, $mValueToTest, $fStrict = false ) {
+		$mOptionValue = $this->getOpt( $sKey );
+		return $fStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
+	}
+
+	/**
 	 * Retrieves the full array of options->values
 	 *
 	 * @return array
