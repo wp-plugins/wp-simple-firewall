@@ -68,16 +68,16 @@ class ICWP_WPSF_FeatureHandler_Autoupdates_V2 extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected function getOptionsDefinitions() {
 		$aAutoupdatesBase = array(
-			'section_title' => _wpsf__('Enable Automatic Updates Section'),
+			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Automatic Updates Control') ),
 			'section_options' => array(
 				array(
 					'enable_autoupdates',
 					'',
 					'Y',
 					'checkbox',
-					_wpsf__( 'Enable Auto Updates' ),
-					_wpsf__( 'Enable (or Disable) The Simple Firewall Automatic Updates Feature' ),
-					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('Automatic Updates') ),
+					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Auto Updates Control') ),
+					_wpsf__( 'Enable (or Disable) The Automatic Updates Control Feature' ),
+					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('Automatic Updates Control') ),
 					'<a href="http://icwp.io/3w" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)

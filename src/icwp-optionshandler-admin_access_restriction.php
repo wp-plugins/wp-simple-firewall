@@ -129,14 +129,14 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 		if ( $this->hasEncryptOption() ) {
 
 			$aAccessKey = array(
-				'section_title' => _wpsf__( 'Admin Access Restriction' ),
+				'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Admin Access Restriction') ),
 				'section_options' => array(
 					array(
 						'enable_admin_access_restriction',
 						'',
 						'N',
 						'checkbox',
-						_wpsf__( 'Enable Access Key' ),
+						sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Admin Access') ),
 						_wpsf__( 'Enforce Admin Access Restriction' ),
 						_wpsf__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.' ),
 						'<a href="http://icwp.io/40" target="_blank">'._wpsf__( 'more info' ).'</a>'

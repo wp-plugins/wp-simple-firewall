@@ -51,7 +51,7 @@ class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_B
 	protected function getOptionsDefinitions() {
 
 		$aOptionsBase = array(
-			'section_title' => _wpsf__( 'Enable Privacy Protection' ),
+			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Privacy Protection') ),
 			'section_options' => array(
 				array(
 					'enable_privacy_protect',

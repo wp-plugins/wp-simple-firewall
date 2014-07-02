@@ -59,7 +59,7 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 					'',
 					'N',
 					'checkbox',
-					_wpsf__( 'Enable Comments Filter' ),
+					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Comments Filter') ),
 					_wpsf__( 'Enable (or Disable) The SPAM Comments Protection Filter Feature' ),
 					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('SPAM Comments Protection Filter') ),
 					'<a href="http://icwp.io/3z" target="_blank">'._wpsf__( 'more info' ).'</a>'

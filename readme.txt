@@ -229,6 +229,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *	CHANGE:		Interface to give a better "At-A-Glance" Dashboard summary view, that also allows you to turn on/off core features.
 
+= 3.1.4 =
+
+*   CHANGED:    small optimizations and code refactoring.
+
 = 3.1.3 =
 
 *   FIX:        issue with login cooldown timeouts not being updated where admin access restriction is in place.

@@ -86,7 +86,7 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 					'',
 					'N',
 					'checkbox',
-					_wpsf__( 'Enable Firewall' ),
+					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Firewall') ),
 					_wpsf__( 'Enable (or Disable) The WordPress Firewall Feature' ),
 					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('WordPress Firewall') ),
 					'<a href="http://icwp.io/43" target="_blank">'._wpsf__( 'more info' ).'</a>'

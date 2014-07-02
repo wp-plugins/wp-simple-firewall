@@ -74,7 +74,7 @@ class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 					'',
 					'N',
 					'checkbox',
-					_wpsf__( 'Enable Lockdown' ),
+					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Lockdown') ),
 					_wpsf__( 'Enable (or Disable) The Lockdown Feature' ),
 					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('WordPress Lockdown') ),
 					'<a href="http://icwp.io/4r" target="_blank">'._wpsf__( 'more info' ).'</a>'

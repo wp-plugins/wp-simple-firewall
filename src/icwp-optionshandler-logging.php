@@ -52,14 +52,14 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected function getOptionsDefinitions() {
 		$aBase = array(
-			'section_title' => _wpsf__( 'Enable Logging' ),
+			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Logging') ),
 			'section_options' => array(
 				array(
 					'enable_logging',
 					'',
 					'Y',
 					'checkbox',
-					_wpsf__( 'Enable Logging' ),
+					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Logging') ),
 					_wpsf__( 'Enable (or Disable) The Plugin Logging Feature.' ),
 					_wpsf__( 'Regardless of any other settings, this option will turn off the Logging system, or enable your chosen Logging options.' )
 				)
