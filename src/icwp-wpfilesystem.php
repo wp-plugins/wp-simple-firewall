@@ -320,7 +320,7 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 			$aFunctionMap = array(
 				'file_exists'	=> 'exists',
 				'touch'			=> 'touch',
-				'is_file'			=> 'is_file'
+				'is_file'		=> 'is_file'
 			);
 
 			if ( !is_array( $aParams ) ) {

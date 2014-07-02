@@ -4,8 +4,6 @@
  * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
- * Version: 2013-08-27-A
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -19,9 +17,9 @@
  *
  */
 
-if ( !class_exists('ICWP_DataProcessor_V1') ):
+if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 
-	class ICWP_DataProcessor_V1 {
+	class ICWP_WPSF_DataProcessor_V2 {
 
 		public static $fUseFilter = false;
 
@@ -35,6 +33,9 @@ if ( !class_exists('ICWP_DataProcessor_V1') ):
 		 */
 		protected static $nRequestTime;
 
+		/**
+		 * @return int
+		 */
 		public static function GetRequestTime() {
 			if ( empty( self::$nRequestTime ) ) {
 				self::$nRequestTime = time();
@@ -409,7 +410,7 @@ if ( !class_exists('ICWP_DataProcessor_V1') ):
 		 * @return bool
 		 */
 		static public function GetIsRequestPost() {
-			$sRequestMethod = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'REQUEST_METHOD' );
+			$sRequestMethod = self::ArrayFetch( $_SERVER, 'REQUEST_METHOD' );
 			return strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
 		}
 
@@ -512,9 +513,8 @@ if ( !class_exists('ICWP_DataProcessor_V1') ):
 			return $inaArray[$insKey];
 		}
 	}
-
 endif;
 
 if ( !class_exists('ICWP_WPSF_DataProcessor') ):
-	class ICWP_WPSF_DataProcessor extends ICWP_DataProcessor_V1 { }
+	class ICWP_WPSF_DataProcessor extends ICWP_WPSF_DataProcessor_V2 { }
 endif;
