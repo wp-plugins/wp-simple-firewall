@@ -50,7 +50,16 @@ class ICWP_WpFilesystem_V2 {
 		$this->initFileSystem();
 // 		$this->setWpConfigPath();
 	}
-	
+
+	/**
+	 * @param string $sBase
+	 * @param string $sPath
+	 * @return string
+	 */
+	public function pathJoin( $sBase, $sPath ) {
+		return rtrim( $sBase, ICWP_DS ).ICWP_DS.ltrim( $sPath, ICWP_DS );
+	}
+
 	/**
 	 * @param $sPath
 	 * @return boolean	true/false whether file/directory exists
@@ -58,7 +67,33 @@ class ICWP_WpFilesystem_V2 {
 	public function exists( $sPath ) {
 		return $this->fileAction( 'file_exists', $sPath );
 	}
-	
+
+	/**
+	 * @param string $sNeedle
+	 * @param string $sDir
+	 * @param boolean $fCaseSensitive
+	 * @return boolean
+	 */
+	public function fileExistsInDir( $sNeedle, $sDir, $fCaseSensitive = true ) {
+		if ( $fCaseSensitive ) {
+			return $this->exists( $this->pathJoin( $sDir, $sNeedle ) );
+		}
+		$sNeedle = strtolower( $sNeedle );
+		if ( $oHandle = opendir( $sDir ) ) {
+
+			while ( false !== ( $sFileEntry = readdir( $oHandle ) ) ) {
+				if ( !$this->isFile( $this->pathJoin( $sDir, $sFileEntry ) ) ) {
+					continue;
+				}
+				if ( $sNeedle == strtolower( $sFileEntry ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	protected function setWpConfigPath() {
 		$this->m_sWpConfigPath = ABSPATH.'wp-config.php';
 		if ( !$this->exists($this->m_sWpConfigPath)  ) {
@@ -179,7 +214,6 @@ class ICWP_WpFilesystem_V2 {
 	 * @return int|null
 	 */
 	public function getTime( $sFilePath, $sProperty = 'modified' ) {
-
 		if ( !$this->exists($sFilePath) ) {
 			return null;
 		}
@@ -187,7 +221,6 @@ class ICWP_WpFilesystem_V2 {
 		$fUseWp = $this->m_oWpFilesystem ? true : false;
 
 		switch ( $sProperty ) {
-
 			case 'modified' :
 				return $fUseWp? $this->m_oWpFilesystem->mtime( $sFilePath ) : filemtime( $sFilePath );
 				break;
@@ -269,19 +302,28 @@ class ICWP_WpFilesystem_V2 {
 		}
 	}
 
-	public function fileAction( $insFunctionName, $inaParams ) {
+	/**
+	 * @param $sFilePath
+	 * @return bool|mixed
+	 */
+	public function isFile( $sFilePath ) {
+		return $this->fileAction( 'is_file', $sFilePath );
+	}
+
+	public function fileAction( $insFunctionName, $aParams ) {
 		$aFunctionMap = array(
 			'file_exists'	=> 'exists',
-			'touch'			=> 'touch'
+			'touch'			=> 'touch',
+			'is_file'			=> 'is_file'
 		);
 		
-		if ( !is_array($inaParams) ) {
-			$inaParams = array($inaParams);
+		if ( !is_array( $aParams ) ) {
+			$aParams = array( $aParams );
 		}
 		
 		if ( !$this->m_oWpFilesystem ) {
 			if ( function_exists( $insFunctionName ) ) {
-				call_user_func_array( $insFunctionName, $inaParams );
+				call_user_func_array( $insFunctionName, $aParams );
 			}
 			else {
 				return false;
@@ -291,7 +333,7 @@ class ICWP_WpFilesystem_V2 {
 			return false;
 		}
 		$sWpFunctionName = $aFunctionMap[$insFunctionName];
-		$sResult = call_user_func_array( array($this->m_oWpFilesystem, $sWpFunctionName), $inaParams );
+		$sResult = call_user_func_array( array($this->m_oWpFilesystem, $sWpFunctionName), $aParams );
 		return $sResult;
 	}
 }

@@ -123,10 +123,10 @@ class ICWP_WPSF_FeatureHandler_Base_V2 {
 
 	public function override() {
 		$oWpFs = $this->loadFileSystemProcessor();
-		if ( $oWpFs->exists( path_join( $this->oPluginVo->getRootDir(), 'forceOff') ) ) {
+		if ( $oWpFs->fileExistsInDir( 'forceOff', $this->oPluginVo->getRootDir(), false ) ) {
 			$this->setIsMainFeatureEnabled( false );
 		}
-		else if ( $oWpFs->exists( path_join( $this->oPluginVo->getRootDir(), 'forceOn') ) ) {
+		else if ( $oWpFs->fileExistsInDir( 'forceOn', $this->oPluginVo->getRootDir(), false ) ) {
 			$this->setIsMainFeatureEnabled( true );
 		}
 	}
