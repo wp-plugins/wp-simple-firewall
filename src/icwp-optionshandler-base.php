@@ -102,6 +102,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		protected $oFeatureProcessor;
 
 		public function __construct( $oPluginVo, $sOptionsStoreKey = null ) {
+			if ( empty( $oPluginVo ) ) {
+				throw new Exception();
+			}
 			$this->oPluginVo = $oPluginVo;
 			$this->sOptionsStoreKey = $this->prefixOptionKey(
 				( is_null( $sOptionsStoreKey ) ? $this->getFeatureSlug() : $sOptionsStoreKey )
@@ -148,10 +151,12 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		public function action_doFeatureShutdown() {
 			$this->savePluginOptions();
 
-			$aLogData = apply_filters( $this->doPluginPrefix( 'flush_logs' ), array() );
-			$oLoggingProcessor = $this->getLoggingProcessor();
-			$oLoggingProcessor->addDataToWrite( $aLogData );
-			$oLoggingProcessor->commitData();
+			if ( $this->oPluginVo->getIsLoggingEnabled() ) {
+				$aLogData = apply_filters( $this->doPluginPrefix( 'flush_logs' ), array() );
+				$oLoggingProcessor = $this->getLoggingProcessor();
+				$oLoggingProcessor->addDataToWrite( $aLogData );
+				$oLoggingProcessor->commitData();
+			}
 		}
 
 		protected function load() {
@@ -161,7 +166,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 			$oProcessor = $this->loadFeatureProcessor();
 			if ( ! ( is_object( $oProcessor ) && $oProcessor instanceof ICWP_WPSF_Processor_Base ) ) {
-				echo 'here';
 				return;
 			}
 
@@ -258,9 +262,62 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 		/**
 		 * with trailing slash
+		 * @param string $sSourceFile
+		 * @return string
 		 */
-		public function getResourcesDir() {
-			$this->oPluginVo->getRootDir().'resources'.ICWP_DS;
+		public function getResourcesDir( $sSourceFile = '' ) {
+			return $this->oPluginVo->getRootDir().'resources'.ICWP_DS.ltrim( $sSourceFile, ICWP_DS );
+		}
+
+		/**
+		 * with trailing slash
+		 * @param string $sSourceFile
+		 * @return string
+		 */
+		public function getPathToInc( $sSourceFile = '' ) {
+			return $this->oPluginVo->getRootDir().'inc'.ICWP_DS.ltrim( $sSourceFile, ICWP_DS );
+		}
+
+		/**
+		 * with trailing slash
+		 * @param string $sSourceFile
+		 * @return string
+		 */
+		public function getSrcFile( $sSourceFile = '' ) {
+			return $this->oPluginVo->getRootDir().'src'.ICWP_DS.ltrim( $sSourceFile, ICWP_DS );
+		}
+
+		/**
+		 * with trailing slash by default
+		 * @param string $sSubPath
+		 * @return string
+		 */
+		public function getPluginRootUrl( $sSubPath = '' ) {
+			return plugins_url( $sSubPath, $this->oPluginVo->getRootFile() );
+		}
+
+		/**
+		 * @param string $sResource
+		 * @return string
+		 */
+		public function getPathToCss( $sResource = '' ) {
+			return $this->getResourcesDir( 'css'.ICWP_DS.ltrim( $sResource, ICWP_DS ) );
+		}
+
+		/**
+		 * @param string $sResource
+		 * @return string
+		 */
+		public function getPathToJs( $sResource = '' ) {
+			return $this->getResourcesDir( 'js'.ICWP_DS.ltrim( $sResource, ICWP_DS ) );
+		}
+
+		/**
+		 * @param string $sResource
+		 * @return string
+		 */
+		public function getResourceUrl( $sResource = '' ) {
+			return $this->getPluginRootUrl( 'resources'.ICWP_DS.ltrim( $sResource, ICWP_DS ) );
 		}
 
 		/**
@@ -326,7 +383,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				return false;
 			}
 
-			$oWpFunc = $this->loadWpFunctions();
+			$oWpFunc = $this->loadWpFunctionsProcessor();
 			if ( is_admin() && !$oWpFunc->isMultisite() ) {
 				return true;
 			}
@@ -457,7 +514,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				return true;
 			}
 
-			$oWpFunc = $this->loadWpFunctions();
+			$oWpFunc = $this->loadWpFunctionsProcessor();
 			$oWpFunc->updateOption( $this->sOptionsStoreKey, $this->m_aOptionsValues );
 			$this->fNeedSave = false;
 			return true;
@@ -519,7 +576,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		protected function loadStoredOptionsValues() {
 			if ( empty( $this->m_aOptionsValues ) ) {
-				$oWpFunc = $this->loadWpFunctions();
+				$oWpFunc = $this->loadWpFunctionsProcessor();
 				$this->m_aOptionsValues = $oWpFunc->getOption( $this->sOptionsStoreKey, array() );
 				if ( empty( $this->m_aOptionsValues ) ) {
 					$this->fNeedSave = true;
@@ -674,7 +731,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function deletePluginOptions() {
 			if ( apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
-				$oWpFunc = $this->loadWpFunctions();
+				$oWpFunc = $this->loadWpFunctionsProcessor();
 				$oWpFunc->deleteOption( $this->sOptionsStoreKey );
 
 				$this->getProcessor()->deleteAndCleanUp(); // gets rid of the databases used by the processors.
@@ -803,7 +860,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		protected function updateHandler() {
 			if ( version_compare( $this->getVersion(), '3.0.0', '<' ) ) {
-				$oWpFunctions = $this->loadWpFunctions();
+				$oWpFunctions = $this->loadWpFunctionsProcessor();
 				$sKey = $this->doPluginPrefix( $this->getFeatureSlug().'_processor', '_' );
 				$oWpFunctions->deleteOption( $sKey );
 			}
@@ -908,7 +965,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		public function getIsCurrentPageConfig() {
-			$oWpFunctions = $this->loadWpFunctions();
+			$oWpFunctions = $this->loadWpFunctionsProcessor();
 			return $oWpFunctions->getCurrentWpAdminPage() == $this->doPluginPrefix( $this->sFeatureSlug );
 		}
 
@@ -930,6 +987,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				'fShowAds'			=> $this->getIsShowMarketing(),
 				'nonce_field'		=> $this->oPluginVo->getFullPluginPrefix(),
 				'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->sFeatureSlug ),
+				'nOptionsPerRow'	=> 1,
 
 				'aAllOptions'		=> $this->getOptions(),
 				'all_options_input'	=> $this->collateAllFormInputsForAllOptions()
@@ -944,11 +1002,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * @param array $inaData
+		 * @param array $aData
 		 * @param string $sView
 		 * @return bool
 		 */
-		protected function display( $inaData = array(), $sView = '' ) {
+		protected function display( $aData = array(), $sView = '' ) {
 
 			if ( empty( $sView ) ) {
 				$oWpFs = $this->loadFileSystemProcessor();
@@ -965,8 +1023,8 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				return false;
 			}
 
-			if ( count( $inaData ) > 0 ) {
-				extract( $inaData, EXTR_PREFIX_ALL, $this->oPluginVo->getParentSlug() ); //slug being 'icwp'
+			if ( count( $aData ) > 0 ) {
+				extract( $aData, EXTR_PREFIX_ALL, $this->oPluginVo->getParentSlug() ); //slug being 'icwp'
 			}
 
 			ob_start();
@@ -978,9 +1036,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			return true;
 		}
 
-		/**
-		 *
-		 */
 		public function loadDataProcessor() {
 			if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
 				require_once( dirname(__FILE__).'/icwp-data-processor.php' );
@@ -988,27 +1043,27 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * @return ICWP_WpFunctions_WPSF
+		 * @return ICWP_WPSF_WpFunctions
 		 */
 		public function loadWpFunctions() {
 			return $this->loadWpFunctionsProcessor();
 		}
 
 		/**
-		 * @return ICWP_WpFilesystem_WPSF
+		 * @return ICWP_WPSF_WpFilesystem
 		 */
 		public function loadFileSystemProcessor() {
-			if ( !class_exists('ICWP_WpFilesystem_WPSF') ) {
+			if ( !class_exists('ICWP_WPSF_WpFilesystem') ) {
 				require_once( dirname(__FILE__) . '/icwp-wpfilesystem.php' );
 			}
-			return ICWP_WpFilesystem_WPSF::GetInstance();
+			return ICWP_WPSF_WpFilesystem::GetInstance();
 		}
 		/**
-		 * @return ICWP_WpFunctions_WPSF
+		 * @return ICWP_WPSF_WpFunctions
 		 */
 		public function loadWpFunctionsProcessor() {
 			require_once( dirname(__FILE__) . '/icwp-wpfunctions.php' );
-			return ICWP_WpFunctions_WPSF::GetInstance();
+			return ICWP_WPSF_WpFunctions::GetInstance();
 		}
 
 		/**

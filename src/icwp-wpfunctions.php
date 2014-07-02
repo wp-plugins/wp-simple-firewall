@@ -303,11 +303,11 @@ class ICWP_WpFunctions_V4 {
 }
 endif;
 
-if ( !class_exists('ICWP_WpFunctions_WPSF') ):
+if ( !class_exists('ICWP_WPSF_WpFunctions') ):
 
-	class ICWP_WpFunctions_WPSF extends ICWP_WpFunctions_V4 {
+	class ICWP_WPSF_WpFunctions extends ICWP_WpFunctions_V4 {
 		/**
-		 * @return ICWP_WpFunctions_WPSF
+		 * @return ICWP_WPSF_WpFunctions
 		 */
 		public static function GetInstance() {
 			if ( is_null( self::$oInstance ) ) {

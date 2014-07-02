@@ -321,14 +321,14 @@ class ICWP_BaseProcessor_V3 {
 	}
 
 	/**
-	 * @return ICWP_WpFilesystem_WPSF
+	 * @return ICWP_WPSF_WpFilesystem
 	 */
 	protected function loadFileSystemProcessor() {
 		return $this->oFeatureOptions->loadFileSystemProcessor();
 	}
 
 	/**
-	 * @return ICWP_WpFunctions_WPSF
+	 * @return ICWP_WPSF_WpFunctions
 	 */
 	protected function loadWpFunctionsProcessor() {
 		return $this->oFeatureOptions->loadWpFunctionsProcessor();

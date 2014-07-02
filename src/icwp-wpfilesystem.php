@@ -17,12 +17,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_WpFilesystem_V2') ):
+if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 
-class ICWP_WpFilesystem_V2 {
+class ICWP_WPSF_WpFilesystem {
 
 	/**
-	 * @var ICWP_WpFilesystem_V2
+	 * @var ICWP_WPSF_WpFilesystem
 	 */
 	protected static $oInstance = NULL;
 
@@ -37,7 +37,7 @@ class ICWP_WpFilesystem_V2 {
 	protected $m_sWpConfigPath = null;
 	
 	/**
-	 * @return ICWP_WpFilesystem_V2
+	 * @return ICWP_WPSF_WpFilesystem
 	 */
 	public static function GetInstance() {
 		if ( is_null( self::$oInstance ) ) {
@@ -136,14 +136,18 @@ class ICWP_WpFilesystem_V2 {
 		$sUrl = ( strpos( $sUrl, 'http' ) !== 0 )? $sSchema.$sUrl : $sUrl;
 		return ( $this->getUrl( $sUrl ) != false );
 	}
-	
+
 	/**
 	 * @return string
 	 */
 	public function getWpConfigPath() {
 		return $this->m_sWpConfigPath;
 	}
-	
+
+	/**
+	 * @param $insUrl
+	 * @return bool
+	 */
 	public function getUrl( $insUrl ) {
 		$mResult = wp_remote_get( $insUrl );
 		if ( is_wp_error( $mResult ) ) {
@@ -214,6 +218,7 @@ class ICWP_WpFilesystem_V2 {
 	 * @return int|null
 	 */
 	public function getTime( $sFilePath, $sProperty = 'modified' ) {
+
 		if ( !$this->exists($sFilePath) ) {
 			return null;
 		}
@@ -221,6 +226,7 @@ class ICWP_WpFilesystem_V2 {
 		$fUseWp = $this->m_oWpFilesystem ? true : false;
 
 		switch ( $sProperty ) {
+
 			case 'modified' :
 				return $fUseWp? $this->m_oWpFilesystem->mtime( $sFilePath ) : filemtime( $sFilePath );
 				break;
@@ -337,19 +343,4 @@ class ICWP_WpFilesystem_V2 {
 		return $sResult;
 	}
 }
-endif;
-
-if ( !class_exists('ICWP_WpFilesystem_WPSF') ):
-
-	class ICWP_WpFilesystem_WPSF extends ICWP_WpFilesystem_V2 {
-		/**
-		 * @return ICWP_WpFilesystem_WPSF
-		 */
-		public static function GetInstance() {
-			if ( is_null( self::$oInstance ) ) {
-				self::$oInstance = new self();
-			}
-			return self::$oInstance;
-		}
-	}
 endif;

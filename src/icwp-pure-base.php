@@ -64,7 +64,7 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	protected $fShowMarketing;
 	
 	/**
-	 * @var ICWP_WpFunctions_WPSF;
+	 * @var ICWP_WPSF_WpFunctions;
 	 */
 	protected $oWpFunctions;
 
@@ -799,20 +799,20 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 	public function onWpUninstallPlugin() { }
 
 	/**
-	 * @return ICWP_WpFunctions_WPSF
+	 * @return ICWP_WPSF_WpFunctions
 	 */
 	protected function loadWpFunctions() {
 		if ( !isset( $this->oWpFunctions ) ) {
-			$this->oWpFunctions = ICWP_WpFunctions_WPSF::GetInstance();
+			$this->oWpFunctions = ICWP_WPSF_WpFunctions::GetInstance();
 		}
 		return $this->oWpFunctions;
 	}
 
 	/**
-	 * @return ICWP_WpFilesystem_WPSF
+	 * @return ICWP_WPSF_WpFilesystem
 	 */
 	protected function loadWpFilesystem() {
-		return ICWP_WpFilesystem_WPSF::GetInstance();;
+		return ICWP_WPSF_WpFilesystem::GetInstance();;
 	}
 
 	protected function flushCaches() {
