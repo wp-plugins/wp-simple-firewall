@@ -111,7 +111,7 @@ class ICWP_WPSF_Processor_LoginProtect_V3 extends ICWP_WPSF_BaseDbProcessor {
 		}
 
 		// check for Yubikey auth after user is authenticated with WordPress.
-		if ( $fIsPost && $this->getIsOption( 'enable_yubikey', 'Y' ) ) {
+		if ( $this->getIsOption( 'enable_yubikey', 'Y' ) ) {
 			require_once('icwp-processor-loginprotect_yubikey.php');
 			$oYubikeyProcessor = new ICWP_WPSF_Processor_LoginProtect_Yubikey( $this->oFeatureOptions );
 			$oYubikeyProcessor->run();
@@ -349,6 +349,7 @@ class ICWP_WPSF_Processor_LoginProtect_V3 extends ICWP_WPSF_BaseDbProcessor {
 //		);
 //		return $inoUser;
 //	}
+
 //
 //	/**
 //	 * @return bool
