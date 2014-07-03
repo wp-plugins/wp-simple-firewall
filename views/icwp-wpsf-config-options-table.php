@@ -8,7 +8,7 @@
 			?>
 			<div class="form-actions">
 				<input type="hidden" name="<?php echo $icwp_var_prefix; ?>all_options_input" value="<?php echo $icwp_all_options_input; ?>" />
-				<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
+				<input type="hidden" name="icwp-wpsf-plugin_form_submit" value="Y" />
 				<button type="submit" class="btn btn-primary btn-large" name="submit"><?php _wpsf_e( 'Save All Settings' ); ?></button>
 			</div>
 		</form>

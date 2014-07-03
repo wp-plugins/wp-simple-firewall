@@ -24,13 +24,12 @@ include_once( 'icwp-wpsf-config_header.php' );
 					<p><?php _wpsf_e( 'At some point you supplied an Admin Access Key - to manage this plugin, you must supply it here first.');?>.</p>
 				</div>
 				<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
-					<input type="hidden" name="icwp_wpsf_requested_page" value="<?php echo $icwp_requested_page; ?>" />
 					<div class="control-group">
-						<label class="control-label" for="icwp_wpsf_admin_access_key_request"><?php _wpsf_e( 'Enter Access Key');?><br></label>
+						<label class="control-label" for="icwp-wpsf-admin_access_key_request"><?php _wpsf_e( 'Enter Access Key');?><br></label>
 						<div class="controls">
 							<div class="option_section selected_item active" id="option_section_icwp_wpsf_admin_access_key">
 								<label>
-									<input type="text" name="icwp_wpsf_admin_access_key_request" value="" autocomplete="off" />
+									<input type="text" name="icwp-wpsf-admin_access_key_request" value="" autocomplete="off" />
 								</label>
 								<p class="help-block"><?php _wpsf_e( 'To manage this plugin you must enter the access key.');?></p>
 							</div>
@@ -38,7 +37,7 @@ include_once( 'icwp-wpsf-config_header.php' );
 					</div>
 					<div class="form-actions">
 						<?php wp_nonce_field( $icwp_nonce_field ); ?>
-						<input type="hidden" name="icwp_plugin_form_submit" value="Y" />
+						<input type="hidden" name="icwp-wpsf-plugin_form_submit" value="Y" />
 						<button type="submit" class="btn btn-primary" name="submit"><?php _wpsf_e( 'Submit Key' ); ?></button>
 					</div>
 				</form>

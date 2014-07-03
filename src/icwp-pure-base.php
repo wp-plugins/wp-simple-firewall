@@ -707,9 +707,8 @@ class ICWP_Pure_Base_V5 extends ICWP_WPSF_Once {
 		}
 
 		$aFormSubmitOptions = array(
-			'icwp_plugin_form_submit',
-			'icwp_link_action',
-			'icwp_wpsf_admin_access_key_request'
+			$this->doPluginPrefix( 'plugin_form_submit' ),
+			'icwp_link_action'
 		);
 		foreach( $aFormSubmitOptions as $sOption ) {
 			if ( !is_null( $this->fetchRequest( $sOption, false ) ) ) {

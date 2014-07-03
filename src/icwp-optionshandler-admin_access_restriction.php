@@ -65,7 +65,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	public function doCheckHasPermissionToSubmit( $fHasPermission = true ) {
 
 		$this->loadDataProcessor();
-		$sAccessKeyRequest = ICWP_WPSF_DataProcessor::FetchPost( $this->doPluginPrefix( 'admin_access_key_request', '_'  ) );
+		$sAccessKeyRequest = ICWP_WPSF_DataProcessor::FetchPost( $this->doPluginPrefix( 'admin_access_key_request' ) );
 		if ( !empty( $sAccessKeyRequest ) ) {
 			$sAccessKeyRequest = md5( trim( $sAccessKeyRequest ) );
 			if ( $sAccessKeyRequest === $this->getOpt( 'admin_access_key' ) ) {

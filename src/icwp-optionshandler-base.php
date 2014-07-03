@@ -972,10 +972,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 */
 		public function displayViewAccessRestrictedPage( ) {
-			$aData = array(
-				'requested_page'	=> $this->doPluginPrefix( $this->sFeatureSlug )
-			);
-			$aData = array_merge( $this->getBaseDisplayData(), $aData );
+			$aData = $this->getBaseDisplayData();
 			$this->display( $aData, 'access_restricted_index' );
 		}
 
