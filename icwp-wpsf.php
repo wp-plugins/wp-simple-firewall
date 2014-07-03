@@ -47,6 +47,11 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	/**
 	 * @var string
 	 */
+	protected static $fLoggingEnabled;
+
+	/**
+	 * @var string
+	 */
 	private static $sVersion	= '3.1.3';
 
 	/**
@@ -132,6 +137,7 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 		if ( empty( self::$sRootFile ) ) {
 			self::$sRootFile = __FILE__;
 		}
+		self::$fLoggingEnabled = true;
 	}
 
 	/**
@@ -177,6 +183,13 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	 */
 	public function getHumanName() {
 		return self::$sHumanName;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getIsLoggingEnabled() {
+		return self::$fLoggingEnabled;
 	}
 
 	/**

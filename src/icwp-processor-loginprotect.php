@@ -94,22 +94,27 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 	 */
 	public function checkRemotePostLogin_Filter( $oUser, $sUsername, $sPassword ) {
 		$this->loadDataProcessor();
-		$sHttpRef = ICWP_WPSF_DataProcessor::ArrayFetch( $_SERVER, 'HTTP_REFERER' );
-		$sHttpRef = is_null( $sHttpRef )? '' : $sHttpRef;
-		if ( empty($sHttpRef) || ( strpos($sHttpRef, home_url()) !== 0 ) ) {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but the HTTP REFERER was either empty or it was a remote login attempt. Bot Perhaps? HTTP REFERER: "%s".'), $sUsername, $sHttpRef )
-			);
-			$this->doStatIncrement( 'login.remotepost.fail' );
-			wp_die(
-				_wpsf__( 'Sorry, you must login directly from within the site.' )
-					.'<br /><a href="http://icwp.io/4n" target="_blank">&rarr;'._wpsf__('More Info').'</a>'
-			);
+		$sHttpRef = ICWP_WPSF_DataProcessor::FetchServer( 'HTTP_REFERER' );
+
+		if ( !empty( $sHttpRef ) ) {
+			$aHttpRefererParts = parse_url( $sHttpRef );
+			$aHomeUrlParts = parse_url( home_url() );
+
+			if ( !empty( $aHttpRefererParts['host'] ) && !empty( $aHomeUrlParts['host'] ) && ( $aHttpRefererParts['host'] === $aHomeUrlParts['host'] ) ) {
+				$this->doStatIncrement( 'login.remotepost.success' );
+				return $oUser;
+			}
 		}
-		else {
-			$this->doStatIncrement( 'login.remotepost.success' );
-		}
-		return $oUser;
+
+		$this->logWarning(
+			sprintf( _wpsf__('User "%s" attempted to login but the HTTP REFERER was either empty or it was a remote login attempt. Bot Perhaps? HTTP REFERER: "%s".'), $sUsername, $sHttpRef )
+		);
+		$this->doStatIncrement( 'login.remotepost.fail' );
+		wp_die(
+			_wpsf__( 'Sorry, you must login directly from within the site.' )
+			.' '._wpsf__( 'Remote login is not supported.' )
+			.'<br /><a href="http://icwp.io/4n" target="_blank">&rarr;'._wpsf__('More Info').'</a>'
+		);
 	}
 
 	/**
