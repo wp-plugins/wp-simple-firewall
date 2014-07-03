@@ -244,7 +244,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 	 * @param $sStatWord
 	 */
 	protected function doStatHumanSpamWords( $sStatWord = '' ) {
-		$this->loadWpsfStatsProcessor();
+		$this->loadStatsProcessor();
 		if ( !empty( $sStatWord ) ) {
 			ICWP_Stats_WPSF::DoStatIncrementKeyValue( 'spam.human.words', base64_encode( $sStatWord ) );
 		}

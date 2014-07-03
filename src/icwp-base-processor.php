@@ -2,8 +2,6 @@
 /**
  * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
- * 
- * Version: 2013-08-27-B
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -20,335 +18,334 @@
 
 if ( !class_exists('ICWP_BaseProcessor_V3') ):
 
-class ICWP_BaseProcessor_V3 {
+	class ICWP_BaseProcessor_V3 {
 
-	const PcreDelimiter = '/';
-	const LOG_MESSAGE_LEVEL_INFO = 0;
-	const LOG_MESSAGE_LEVEL_WARNING = 1;
-	const LOG_MESSAGE_LEVEL_CRITICAL = 2;
+		const PcreDelimiter = '/';
+		const LOG_MESSAGE_LEVEL_INFO = 0;
+		const LOG_MESSAGE_LEVEL_WARNING = 1;
+		const LOG_MESSAGE_LEVEL_CRITICAL = 2;
 
-	const LOG_CATEGORY_DEFAULT = 0;
-	const LOG_CATEGORY_FIREWALL = 1;
-	const LOG_CATEGORY_LOGINPROTECT = 2;
+		const LOG_CATEGORY_DEFAULT = 0;
+		const LOG_CATEGORY_FIREWALL = 1;
+		const LOG_CATEGORY_LOGINPROTECT = 2;
 
-	/**
-	 * @var array
-	 */
-	protected $m_aLog;
-	/**
-	 * @var array
-	 */
-	protected $m_aLogMessages;
+		/**
+		 * @var array
+		 */
+		protected $m_aLog;
+		/**
+		 * @var array
+		 */
+		protected $m_aLogMessages;
 
-	/**
-	 * @var long
-	 */
-	protected static $nRequestIp;
-	/**
-	 * @var long
-	 */
-	protected static $nRequestPostId;
-	/**
-	 * @var integer
-	 */
-	protected static $nRequestTimestamp;
+		/**
+		 * @var long
+		 */
+		protected static $nRequestIp;
+		/**
+		 * @var long
+		 */
+		protected static $nRequestPostId;
+		/**
+		 * @var integer
+		 */
+		protected static $nRequestTimestamp;
 
-	/**
-	 * @var ICWP_WPSF_FeatureHandler_Base
-	 */
-	protected $oFeatureOptions;
+		/**
+		 * @var ICWP_WPSF_FeatureHandler_Base
+		 */
+		protected $oFeatureOptions;
 
-	public function __construct( ICWP_WPSF_FeatureHandler_Base $oFeatureOptions ) {
-		$this->oFeatureOptions = $oFeatureOptions;
-		$this->reset();
-	}
-
-	/**
-	 * Resets the object values to be re-used anew
-	 */
-	public function reset() {
-		$this->loadDataProcessor();
-		if ( !isset( self::$nRequestIp ) ) {
-			self::$nRequestIp = ICWP_WPSF_DataProcessor::GetVisitorIpAddress();
+		public function __construct( ICWP_WPSF_FeatureHandler_Base $oFeatureOptions ) {
+			$this->oFeatureOptions = $oFeatureOptions;
+			$this->reset();
 		}
-		if ( !isset( self::$nRequestTimestamp ) ) {
-			self::$nRequestTimestamp = ICWP_WPSF_DataProcessor::GetRequestTime();
-		}
-		$this->resetLog();
-	}
-	
-	/**
-	 * Override to set what this processor does when it's "run"
-	 */
-	public function run() { }
 
-	/**
-	 */
-	public function deleteStore() {
-		delete_option( $this->constructStorageKey() );
-	}
-
-	/**
-	 * @param $sOptionKey
-	 * @param bool $mDefault
-	 * @return bool
-	 */
-	public function getOption( $sOptionKey, $mDefault = false ) {
-		return $this->oFeatureOptions->getOpt( $sOptionKey, $mDefault );
-	}
-
-	/**
-	 * @param $sKey
-	 * @param mixed $mValueToTest
-	 * @param boolean $fStrict
-	 * @return bool
-	 */
-	public function getIsOption( $sKey, $mValueToTest, $fStrict = false ) {
-		$mOptionValue = $this->getOption( $sKey );
-		return $fStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
-	}
-
-	/**
-	 * @return bool|long
-	 */
-	public function getRequestPostId() {
-		if ( !isset( self::$nRequestPostId ) ) {
-			global $post;
-			if ( empty( $post ) ) {
-				return false;
+		/**
+		 * Resets the object values to be re-used anew
+		 */
+		public function reset() {
+			$this->loadDataProcessor();
+			if ( !isset( self::$nRequestIp ) ) {
+				self::$nRequestIp = ICWP_WPSF_DataProcessor::GetVisitorIpAddress();
 			}
-			self::$nRequestPostId = $post->ID;
-		}
-		return self::$nRequestPostId;
-	}
-
-	/**
-	 * Resets the log
-	 */
-	public function resetLog() {
-		$this->m_aLogMessages = array();
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function getIsLogging() {
-		return false;
-	}
-
-	/**
-	 * Should return false when logging is disabled.
-	 *
-	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_WPSF_Processor_Base::getLogData()
-	 */
-	public function flushLogData() {
-		if ( !$this->getIsLogging() ) {
-			return false;
-		}
-		return false;
-	}
-	
-	/**
-	 * Builds and returns the full log.
-	 * 
-	 * @return array (associative)
-	 */
-	public function getLogData() {
-		
-		if ( $this->getIsLogging() ) {
-			$this->m_aLog = array( 'messages'			=> serialize( $this->m_aLogMessages ) );
-		}
-		else {
-			$this->m_aLog = false;
-		}
-		
-		return $this->m_aLog;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getLogMessages() {
-		if ( !is_array( $this->m_aLogMessages ) ) {
-			$this->m_aLogMessages = array();
-		}
-		return $this->m_aLogMessages;
-	}
-	
-	/**
-	 * @param string $sLogMessage
-	 * @param integer $sMessageType
-	 */
-	public function writeLog( $sLogMessage = '', $sMessageType = self::LOG_MESSAGE_LEVEL_INFO ) {
-		if ( !is_array( $this->m_aLogMessages ) ) {
+			if ( !isset( self::$nRequestTimestamp ) ) {
+				self::$nRequestTimestamp = ICWP_WPSF_DataProcessor::GetRequestTime();
+			}
 			$this->resetLog();
 		}
-		$this->m_aLogMessages[] = array( $sMessageType, $sLogMessage );
-	}
-	/**
-	 * @param string $insLogMessage
-	 */
-	public function logInfo( $insLogMessage ) {
-		$this->writeLog( $insLogMessage, self::LOG_MESSAGE_LEVEL_INFO );
-	}
-	/**
-	 * @param string $insLogMessage
-	 */
-	public function logWarning( $insLogMessage ) {
-		$this->writeLog( $insLogMessage, self::LOG_MESSAGE_LEVEL_WARNING );
-	}
-	/**
-	 * @param string $insLogMessage
-	 */
-	public function logCritical( $insLogMessage ) {
-		$this->writeLog( $insLogMessage, self::LOG_MESSAGE_LEVEL_CRITICAL );
-	}
 
-	/**
-	 * @param array $inaIpList
-	 * @param integer $innIpAddress
-	 * @param string $outsLabel
-	 * @return boolean
-	 */
-	public function isIpOnlist( $inaIpList, $innIpAddress = 0, &$outsLabel = '' ) {
+		/**
+		 * Override to set what this processor does when it's "run"
+		 */
+		public function run() { }
 
-		if ( empty( $innIpAddress ) || !isset( $inaIpList['ips'] ) ) {
+		/**
+		 */
+		public function deleteStore() {
+			delete_option( $this->constructStorageKey() );
+		}
+
+		/**
+		 * @param $sOptionKey
+		 * @param bool $mDefault
+		 * @return bool
+		 */
+		public function getOption( $sOptionKey, $mDefault = false ) {
+			return $this->oFeatureOptions->getOpt( $sOptionKey, $mDefault );
+		}
+
+		/**
+		 * @param $sKey
+		 * @param mixed $mValueToTest
+		 * @param boolean $fStrict
+		 * @return bool
+		 */
+		public function getIsOption( $sKey, $mValueToTest, $fStrict = false ) {
+			$mOptionValue = $this->getOption( $sKey );
+			return $fStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
+		}
+
+		/**
+		 * @return bool|long
+		 */
+		public function getRequestPostId() {
+			if ( !isset( self::$nRequestPostId ) ) {
+				global $post;
+				if ( empty( $post ) ) {
+					return false;
+				}
+				self::$nRequestPostId = $post->ID;
+			}
+			return self::$nRequestPostId;
+		}
+
+		/**
+		 * Resets the log
+		 */
+		public function resetLog() {
+			$this->m_aLogMessages = array();
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function getIsLogging() {
 			return false;
 		}
-	
-		$outsLabel = '';
-		foreach( $inaIpList['ips'] as $mWhitelistAddress ) {
-			
-			$aIps = $this->parseIpAddress( $mWhitelistAddress );
-			if ( count( $aIps ) === 1 ) { //not a range
-				if ( $innIpAddress == $aIps[0] ) {
-					$outsLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
-					return true;
-				}
+
+		/**
+		 * Should return false when logging is disabled.
+		 *
+		 * @return false|array	- false when logging is disabled, array with log data otherwise
+		 * @see ICWP_WPSF_Processor_Base::getLogData()
+		 */
+		public function flushLogData() {
+			if ( !$this->getIsLogging() ) {
+				return false;
 			}
-			else if ( count( $aIps ) == 2 ) {
-				if ( $aIps[0] <= $innIpAddress && $innIpAddress <= $aIps[1] ) {
-					$outsLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
-					return true;
-				}
-			}
+			return false;
 		}
-		return false;
-	}
-	
-	/**
-	 * @param string $sIpAddress	- an IP or IP address range in LONG format.
-	 * @return array				- with 1 ip address, or 2 addresses if it is a range.
-	 */
-	protected function parseIpAddress( $sIpAddress ) {
 
-		$aIps = array();
+		/**
+		 * Builds and returns the full log.
+		 *
+		 * @return array (associative)
+		 */
+		public function getLogData() {
 
-		if ( empty($sIpAddress) ) {
+			if ( $this->getIsLogging() ) {
+				$this->m_aLog = array( 'messages'			=> serialize( $this->m_aLogMessages ) );
+			}
+			else {
+				$this->m_aLog = false;
+			}
+
+			return $this->m_aLog;
+		}
+
+		/**
+		 * @return array
+		 */
+		public function getLogMessages() {
+			if ( !is_array( $this->m_aLogMessages ) ) {
+				$this->m_aLogMessages = array();
+			}
+			return $this->m_aLogMessages;
+		}
+
+		/**
+		 * @param string $sLogMessage
+		 * @param integer $sMessageType
+		 */
+		public function writeLog( $sLogMessage = '', $sMessageType = self::LOG_MESSAGE_LEVEL_INFO ) {
+			if ( !is_array( $this->m_aLogMessages ) ) {
+				$this->resetLog();
+			}
+			$this->m_aLogMessages[] = array( $sMessageType, $sLogMessage );
+		}
+		/**
+		 * @param string $insLogMessage
+		 */
+		public function logInfo( $insLogMessage ) {
+			$this->writeLog( $insLogMessage, self::LOG_MESSAGE_LEVEL_INFO );
+		}
+		/**
+		 * @param string $insLogMessage
+		 */
+		public function logWarning( $insLogMessage ) {
+			$this->writeLog( $insLogMessage, self::LOG_MESSAGE_LEVEL_WARNING );
+		}
+		/**
+		 * @param string $insLogMessage
+		 */
+		public function logCritical( $insLogMessage ) {
+			$this->writeLog( $insLogMessage, self::LOG_MESSAGE_LEVEL_CRITICAL );
+		}
+
+		/**
+		 * @param array $inaIpList
+		 * @param integer $innIpAddress
+		 * @param string $outsLabel
+		 * @return boolean
+		 */
+		public function isIpOnlist( $inaIpList, $innIpAddress = 0, &$outsLabel = '' ) {
+
+			if ( empty( $innIpAddress ) || !isset( $inaIpList['ips'] ) ) {
+				return false;
+			}
+
+			$outsLabel = '';
+			foreach( $inaIpList['ips'] as $mWhitelistAddress ) {
+
+				$aIps = $this->parseIpAddress( $mWhitelistAddress );
+				if ( count( $aIps ) === 1 ) { //not a range
+					if ( $innIpAddress == $aIps[0] ) {
+						$outsLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
+						return true;
+					}
+				}
+				else if ( count( $aIps ) == 2 ) {
+					if ( $aIps[0] <= $innIpAddress && $innIpAddress <= $aIps[1] ) {
+						$outsLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * @param string $sIpAddress	- an IP or IP address range in LONG format.
+		 * @return array				- with 1 ip address, or 2 addresses if it is a range.
+		 */
+		protected function parseIpAddress( $sIpAddress ) {
+
+			$aIps = array();
+
+			if ( empty($sIpAddress) ) {
+				return $aIps;
+			}
+
+			// offset=1 in the case that it's a range and the first number is negative on 32-bit systems
+			$mPos = strpos( $sIpAddress, '-', 1 );
+
+			if ( $mPos === false ) { //plain IP address
+				$aIps[] = $sIpAddress;
+			}
+			else {
+				//we remove the first character in case this is '-'
+				$aParts = array( substr( $sIpAddress, 0, 1 ), substr( $sIpAddress, 1 ) );
+				list( $sStart, $sEnd ) = explode( '-', $aParts[1], 2 );
+				$aIps[] = $aParts[0].$sStart;
+				$aIps[] = $sEnd;
+			}
 			return $aIps;
 		}
 
-		// offset=1 in the case that it's a range and the first number is negative on 32-bit systems
-		$mPos = strpos( $sIpAddress, '-', 1 );
-
-		if ( $mPos === false ) { //plain IP address
-			$aIps[] = $sIpAddress;
+		/**
+		 * @return ICWP_WPSF_Processor_Email
+		 */
+		public function getEmailProcessor() {
+			return $this->oFeatureOptions->getEmailProcessor();
 		}
-		else {
-			//we remove the first character in case this is '-'
-			$aParts = array( substr( $sIpAddress, 0, 1 ), substr( $sIpAddress, 1 ) );
-			list( $sStart, $sEnd ) = explode( '-', $aParts[1], 2 );
-			$aIps[] = $aParts[0].$sStart;
-			$aIps[] = $sEnd;
-		}
-		return $aIps;
-	}
-	
-	/**
-	 * @return ICWP_WPSF_Processor_Email
-	 */
-	public function getEmailProcessor() {
-		return $this->oFeatureOptions->getEmailProcessor();
-	}
 
-	/**
-	 * @return ICWP_WPSF_Processor_Logging
-	 */
-	public function getLoggingProcessor() {
-		return $this->oFeatureOptions->getLoggingProcessor();
-	}
-
-	/**
-	 * Checks the $inaData contains valid key values as laid out in $inaChecks
-	 *
-	 * @param array $aData
-	 * @param array $inaChecks
-	 * @return boolean
-	 */
-	protected function validateParameters( $aData, $inaChecks ) {
-	
-		if ( !is_array( $aData ) ) {
-			return false;
+		/**
+		 * @return ICWP_WPSF_Processor_Logging
+		 */
+		public function getLoggingProcessor() {
+			return $this->oFeatureOptions->getLoggingProcessor();
 		}
-	
-		foreach( $inaChecks as $sCheck ) {
-			if ( !array_key_exists( $sCheck, $aData ) || empty( $aData[ $sCheck ] ) ) {
+
+		/**
+		 * Checks the $inaData contains valid key values as laid out in $inaChecks
+		 *
+		 * @param array $aData
+		 * @param array $inaChecks
+		 * @return boolean
+		 */
+		protected function validateParameters( $aData, $inaChecks ) {
+
+			if ( !is_array( $aData ) ) {
 				return false;
 			}
+
+			foreach( $inaChecks as $sCheck ) {
+				if ( !array_key_exists( $sCheck, $aData ) || empty( $aData[ $sCheck ] ) ) {
+					return false;
+				}
+			}
+			return true;
 		}
-		return true;
-	}
 
-	/**
-	 * @return string
-	 */
-	protected function constructStorageKey() {
-		return sprintf( '%s%s_processor', $this->oFeatureOptions->getOptionStoragePrefix(), $this->oFeatureOptions->getFeatureSlug() );
-	}
-	
-	/**
-	 * Override this to provide custom cleanup.
-	 */
-	public function deleteAndCleanUp() {
-		$this->deleteStore();
-	}
+		/**
+		 * @return string
+		 */
+		protected function constructStorageKey() {
+			return sprintf( '%s%s_processor', $this->oFeatureOptions->getOptionStoragePrefix(), $this->oFeatureOptions->getFeatureSlug() );
+		}
 
-	/**
-	 */
-	protected function loadDataProcessor() {
-		$this->oFeatureOptions->loadDataProcessor();
-	}
+		/**
+		 * Override this to provide custom cleanup.
+		 */
+		public function deleteAndCleanUp() {
+			$this->deleteStore();
+		}
 
-	/**
-	 * @return ICWP_WPSF_WpFilesystem
-	 */
-	protected function loadFileSystemProcessor() {
-		return $this->oFeatureOptions->loadFileSystemProcessor();
-	}
+		/**
+		 */
+		protected function loadDataProcessor() {
+			$this->oFeatureOptions->loadDataProcessor();
+		}
 
-	/**
-	 * @return ICWP_WPSF_WpFunctions
-	 */
-	protected function loadWpFunctionsProcessor() {
-		return $this->oFeatureOptions->loadWpFunctionsProcessor();
-	}
+		/**
+		 * @return ICWP_WPSF_WpFilesystem
+		 */
+		protected function loadFileSystemProcessor() {
+			return $this->oFeatureOptions->loadFileSystemProcessor();
+		}
 
-	/**
-	 * @return ICWP_Stats_WPSF
-	 */
-	protected function loadWpsfStatsProcessor() {
-		return $this->oFeatureOptions->loadWpsfStatsProcessor();
-	}
+		/**
+		 * @return ICWP_WPSF_WpFunctions
+		 */
+		protected function loadWpFunctionsProcessor() {
+			return $this->oFeatureOptions->loadWpFunctionsProcessor();
+		}
 
-	/**
-	 * @param $sStatKey
-	 */
-	protected function doStatIncrement( $sStatKey ) {
-		$this->loadWpsfStatsProcessor();
-		ICWP_Stats_WPSF::DoStatIncrement( $sStatKey );
+		/**
+		 * @return ICWP_Stats_WPSF
+		 */
+		protected function loadStatsProcessor() {
+			return $this->oFeatureOptions->loadStatsProcessor();
+		}
+
+		/**
+		 * @param $sStatKey
+		 */
+		protected function doStatIncrement( $sStatKey ) {
+			$this->oFeatureOptions->doStatIncrement( $sStatKey );
+		}
 	}
-}
 
 endif;
 

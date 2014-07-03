@@ -780,7 +780,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			check_admin_referer( $this->oPluginVo->getFullPluginPrefix() );
 
 			$this->loadDataProcessor();
-			$sAllOptions = ICWP_WPSF_DataProcessor::FetchPost( $this->doPluginPrefix( 'all_options_input', '_' ) );
+			$sAllOptions = ICWP_WPSF_DataProcessor::FetchPost( $this->prefixOptionKey( 'all_options_input' ) );
 
 			if ( empty( $sAllOptions ) ) {
 				return true;
@@ -906,7 +906,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		public function getOptionStoragePrefix() {
-			return $this->oPluginVo->getFullPluginPrefix( '_' ).'_';
+			return $this->oPluginVo->getOptionStoragePrefix();
 		}
 
 		/**
@@ -1040,13 +1040,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * @return ICWP_WPSF_WpFunctions
-		 */
-		public function loadWpFunctions() {
-			return $this->loadWpFunctionsProcessor();
-		}
-
-		/**
 		 * @return ICWP_WPSF_WpFilesystem
 		 */
 		public function loadFileSystemProcessor() {
@@ -1066,7 +1059,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * @return ICWP_Stats_WPSF
 		 */
-		public function loadWpsfStatsProcessor() {
+		public function loadStatsProcessor() {
 			require_once( dirname(__FILE__) . '/icwp-wpsf-stats.php' );
 		}
 
@@ -1074,7 +1067,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @param $sStatKey
 		 */
 		public function doStatIncrement( $sStatKey ) {
-			$this->loadWpsfStatsProcessor();
+			$this->loadStatsProcessor();
 			ICWP_Stats_WPSF::DoStatIncrement( $sStatKey );
 		}
 	}
