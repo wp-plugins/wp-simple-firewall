@@ -191,24 +191,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		}
 	}
 
-	/**
-	 * @param string $sSubmenu
-	 * @return array
-	 */
-	protected function getBaseDisplayData( $sSubmenu = '' ) {
-		$aBaseData = parent::getBaseDisplayData( $sSubmenu );
-		$aBaseData['aMainOptions'] = $this->oPluginOptions->getPluginOptionsValues();
-		return $aBaseData;
-	}
-
 	protected function onDisplayPrivacyProtectLog() {
 
 		$oPrivacyProcessor = $this->getProcessor_PrivacyProtect();
 		$aData = array(
 			'urlrequests_log'	=> $oPrivacyProcessor->getLogs( true )
 		);
-		$aData = array_merge( $this->getBaseDisplayData('privacy_protect_log'), $aData );
-		$this->display( $this->doPluginPrefix( 'privacy_protect_log_index', '_' ), $aData );
+		$aData = array_merge( $this->getBaseDisplayData(), $aData );
+		$this->display( $this->doPluginPrefix( 'privacy_protect_log_index' ), $aData );
 	}
 
 	protected function onDisplayFirewallLog() {
@@ -225,8 +215,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 			'ip_whitelist'		=> isset( $aIpWhitelist['ips'] )? $aIpWhitelist['ips'] : array(),
 			'ip_blacklist'		=> isset( $aIpBlacklist['ips'] )? $aIpBlacklist['ips'] : array(),
 		);
-		$aData = array_merge( $this->getBaseDisplayData('firewall_log'), $aData );
-		$this->display( $this->doPluginPrefix( 'firewall_log_index', '_' ), $aData );
+		$aData = array_merge( $this->getBaseDisplayData(), $aData );
+		$this->display( $this->doPluginPrefix( 'firewall_log_index' ), $aData );
 	}
 
 	public function onWpAdminInit() {

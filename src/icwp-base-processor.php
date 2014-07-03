@@ -81,12 +81,6 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		public function run() { }
 
 		/**
-		 */
-		public function deleteStore() {
-			delete_option( $this->constructStorageKey() );
-		}
-
-		/**
 		 * @param $sOptionKey
 		 * @param bool $mDefault
 		 * @return bool
@@ -278,7 +272,7 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		}
 
 		/**
-		 * Checks the $inaData contains valid key values as laid out in $inaChecks
+		 * Checks the $aData contains valid key values as laid out in $inaChecks
 		 *
 		 * @param array $aData
 		 * @param array $inaChecks
@@ -299,18 +293,9 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		}
 
 		/**
-		 * @return string
-		 */
-		protected function constructStorageKey() {
-			return sprintf( '%s%s_processor', $this->oFeatureOptions->getOptionStoragePrefix(), $this->oFeatureOptions->getFeatureSlug() );
-		}
-
-		/**
 		 * Override this to provide custom cleanup.
 		 */
-		public function deleteAndCleanUp() {
-			$this->deleteStore();
-		}
+		public function deleteAndCleanUp() { }
 
 		/**
 		 */

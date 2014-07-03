@@ -134,8 +134,31 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			}
 		}
 
+		/**
+		 */
 		public function onWpPluginsLoaded() {
-			$this->load();
+
+			if ( $this->getIsMainFeatureEnabled() ) {
+				$oProcessor = $this->loadFeatureProcessor();
+				if ( is_object( $oProcessor ) && $oProcessor instanceof ICWP_WPSF_Processor_Base ) {
+					$oProcessor->run();
+				}
+			}
+		}
+
+		/**
+		 * A action added to WordPress 'plugins_loaded' hook
+		 */
+		public function onWpInit() {
+			$this->updateHandler();
+		}
+
+		/**
+		 * Override this and adapt per feature
+		 * @return null
+		 */
+		protected function loadFeatureProcessor() {
+			return null;
 		}
 
 		/**
@@ -157,27 +180,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				$oLoggingProcessor->addDataToWrite( $aLogData );
 				$oLoggingProcessor->commitData();
 			}
-		}
-
-		protected function load() {
-			if ( !$this->getIsMainFeatureEnabled() ) {
-				return;
-			}
-
-			$oProcessor = $this->loadFeatureProcessor();
-			if ( ! ( is_object( $oProcessor ) && $oProcessor instanceof ICWP_WPSF_Processor_Base ) ) {
-				return;
-			}
-
-			$oProcessor->run();
-		}
-
-		/**
-		 * Override this and adapt per feature
-		 * @return null
-		 */
-		protected function loadFeatureProcessor() {
-			return null;
 		}
 
 		/**
@@ -369,13 +371,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * A action added to WordPress 'plugins_loaded' hook
-		 */
-		public function onWpInit() {
-			$this->updateHandler();
-		}
-
-		/**
 		 * @return bool
 		 */
 		public function hasPluginManageRights() {
@@ -491,16 +486,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * Loads the options and their stored values from the WordPress Options store.
-		 *
-		 * @return array
-		 */
-		public function getPluginOptionsValues() {
-			$this->generateOptionsValues();
-			return $this->m_aOptionsValues;
-		}
-
-		/**
 		 * Saves the options to the WordPress Options store.
 		 *
 		 * It will also update the stored plugin options version.
@@ -549,18 +534,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				}
 			}
 			return implode( self::CollateSeparator, $aToJoin );
-		}
-
-		/**
-		 * @return array
-		 */
-		protected function generateOptionsValues() {
-			if ( !isset( $this->m_aOptionsValues ) ) {
-				$this->loadStoredOptionsValues();
-			}
-			if ( empty( $this->m_aOptionsValues ) ) {
-				$this->buildOptions();	// set the defaults
-			}
 		}
 
 		/**
