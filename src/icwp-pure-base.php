@@ -776,7 +776,6 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 				$this->doPreventDeactivation( $insPlugin );
 			}
 		}
-
 		/**
 		 * @param string $insPlugin - the path to the plugin file
 		 */
@@ -799,7 +798,13 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		}
 
 		public function onWpActivatePlugin() { }
-		public function onWpDeactivatePlugin() { }
+
+		public function onWpDeactivatePlugin() {
+			if ( current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
+				do_action( $this->doPluginPrefix( 'delete_plugin_options' ) );
+			}
+		}
+
 		public function onWpUninstallPlugin() { }
 
 		protected function flushCaches() {

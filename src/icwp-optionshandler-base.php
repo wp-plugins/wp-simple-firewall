@@ -956,6 +956,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				'sFeatureName'		=> $this->getMainFeatureName(),
 				'fShowAds'			=> $this->getIsShowMarketing(),
 				'nonce_field'		=> $this->oPluginVo->getFullPluginPrefix(),
+				'sFeatureSlug'		=> $this->doPluginPrefix( $this->sFeatureSlug ),
 				'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->sFeatureSlug ),
 				'nOptionsPerRow'	=> 1,
 
