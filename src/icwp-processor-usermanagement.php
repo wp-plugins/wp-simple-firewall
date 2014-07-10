@@ -151,27 +151,29 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			return false;
 		}
 
+		$oWp = $this->loadWpFunctionsProcessor();
+
 		$aLoginSessionData = $this->getUserSessionRecord( $oUser->user_login );
 		if ( !$aLoginSessionData ) {
-			$this->doLogout( array( 'wpsf-forcelogout', 4 ) );
+			$oWp->forceUserRelogin( array( 'wpsf-forcelogout' => 4 ) );
 		}
 
 		// check timeout interval
 		$nSessionTimeoutInterval = $this->getSessionTimeoutInterval();
 		if ( $nSessionTimeoutInterval > 0 && ( self::$nRequestTimestamp - $aLoginSessionData['logged_in_at'] > $nSessionTimeoutInterval ) ) {
-			$this->doLogout( array( 'wpsf-forcelogout', 1 ) );
+			$oWp->forceUserRelogin( array( 'wpsf-forcelogout' => 1 ) );
 		}
 
 		// check idle timeout interval
 		$nSessionIdleTimeoutInterval = $this->getOption( 'session_idle_timeout_interval', 0 ) * HOUR_IN_SECONDS;
 		if ( intval($nSessionIdleTimeoutInterval) > 0 && ( (self::$nRequestTimestamp - $aLoginSessionData['last_activity_at']) > $nSessionIdleTimeoutInterval ) ) {
-			$this->doLogout( array( 'wpsf-forcelogout', 2 ) );
+			$oWp->forceUserRelogin( array( 'wpsf-forcelogout' => 2 ) );
 		}
 
 		// check login ip address
 		$fLockToIp = $this->getIsOption( 'session_lock_location', 'Y' );
 		if ( $fLockToIp && self::$nRequestIp != $aLoginSessionData['ip_long'] ) {
-			$this->doLogout( array( 'wpsf-forcelogout', 3 ) );
+			$oWp->forceUserRelogin( array( 'wpsf-forcelogout' => 3 ) );
 		}
 
 		return true;
@@ -182,15 +184,6 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 */
 	protected function getSessionTimeoutInterval( ) {
 		return $this->getOption( 'session_timeout_interval', 0 ) * DAY_IN_SECONDS;
-	}
-
-	/**
-	 * @param array $aRedirectParams
-	 */
-	protected function doLogout( $aRedirectParams = array() ) {
-		$oWp = $this->loadWpFunctionsProcessor();
-		$oWp->logoutUser();
-		$oWp->redirectToLogin( $aRedirectParams );
 	}
 
 	/**

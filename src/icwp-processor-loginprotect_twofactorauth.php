@@ -87,8 +87,7 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 					);
 
 					$this->doStatIncrement( 'login.userverify.fail' );
-					wp_logout();
-					$oWp->redirectToLogin();
+					$oWp->forceUserRelogin();
 				}
 			}
 		}

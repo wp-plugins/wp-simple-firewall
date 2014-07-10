@@ -141,9 +141,8 @@ if ( !class_exists('ICWP_WpFunctions_V4') ):
 		 * @param array $aQueryParams
 		 */
 		public function redirectToLogin( $aQueryParams = array() ) {
-			$sLoginUrl = site_url() . '/wp-login.php';
+			$sLoginUrl = $this->getWpLoginUrl();
 			$this->doRedirect( $sLoginUrl, $aQueryParams );
-			exit();
 		}
 		/**
 		 * @param $aQueryParams
@@ -161,6 +160,7 @@ if ( !class_exists('ICWP_WpFunctions_V4') ):
 		/**
 		 * @param $sUrl
 		 * @param $aQueryParams
+		 * @uses exit()
 		 */
 		public function doRedirect( $sUrl, $aQueryParams = array() ) {
 			$sUrl = empty( $aQueryParams ) ? $sUrl : add_query_arg( $aQueryParams, $sUrl ) ;
@@ -212,6 +212,14 @@ if ( !class_exists('ICWP_WpFunctions_V4') ):
 		 */
 		public function getIsAjax() {
 			return defined( 'DOING_AJAX' ) && DOING_AJAX;
+		}
+
+		/**
+		 * @param array $aLoginUrlParams
+		 */
+		public function forceUserRelogin( $aLoginUrlParams = array() ) {
+			$this->logoutUser();
+			$this->redirectToLogin( $aLoginUrlParams );
 		}
 
 		/**
@@ -299,6 +307,13 @@ if ( !class_exists('ICWP_WpFunctions_V4') ):
 			wp_set_current_user ( $oUser->ID, $oUser->user_login );
 			wp_set_auth_cookie  ( $oUser->ID, true );
 			do_action( 'wp_login', $oUser->user_login, $oUser );
+		}
+
+		/**
+		 * @return string
+		 */
+		protected function getWpLoginUrl() {
+			return site_url() . '/wp-login.php';
 		}
 	}
 endif;
