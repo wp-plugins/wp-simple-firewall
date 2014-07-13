@@ -227,6 +227,11 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *   KNOWN ISSUE:      Login Protection logs are not being properly created - this is temporary while fixing lock-outs
 
+= 3.1.6 =
+
+*   UPDATED:    Login screen message when you're forced logged-out due to 2-factor auth failure on IP or cookie.
+*   CHANGED:    comment filtering code refactoring.
+
 = 3.1.5 =
 
 *   FIX:        Where some comments would fail GASP comment token checking.

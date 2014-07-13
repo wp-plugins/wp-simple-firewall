@@ -84,6 +84,26 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 			$oTwoFactorAuthProcessor = new ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth( $this->oFeatureOptions );
 			$oTwoFactorAuthProcessor->run();
 		}
+
+		add_filter( 'wp_login_errors', array( $this, 'addLoginMessage' ) );
+	}
+
+	/**
+	 * @param WP_Error $oError
+	 * @return WP_Error
+	 */
+	public function addLoginMessage( $oError ) {
+
+		if ( ! $oError instanceof WP_Error ) {
+			$oError = new WP_Error();
+		}
+
+		$this->loadDataProcessor();
+		$sForceLogout = ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-forcelogout' );
+		if ( $sForceLogout == 6 ) {
+			$oError->add( 'wpsf-forcelogout', _wpsf__('Your Two-Factor Authentication Was Verified.').'<br />'._wpsf__('Please login again.') );
+		}
+		return $oError;
 	}
 
 	/**

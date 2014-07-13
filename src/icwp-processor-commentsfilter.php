@@ -17,30 +17,10 @@
 
 require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 
-if ( !class_exists('ICWP_CommentsFilterProcessor_V2') ):
+if ( !class_exists('ICWP_WPSF_Processor_CommentsFilter_V2') ):
 
-class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
+class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 
-	const TableName = 'comments_filter';
-	const Spam_Blacklist_Source = 'https://raw.githubusercontent.com/splorp/wordpress-comment-blacklist/master/blacklist.txt';
-
-	const TWODAYS = 172800;
-
-	/**
-	 * @var string
-	 */
-	static protected $sSpamBlacklistFile;
-
-	/**
-	 * The unique comment token assigned to this page
-	 * @var integer
-	 */
-	protected $sUniqueCommentToken;
-	/**
-	 * The unique comment token assigned to this page
-	 * @var integer
-	 */
-	protected $m_sUniqueFormId;
 	/**
 	 * @var string
 	 */
@@ -54,8 +34,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 	 * @param ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions, self::TableName );
-		$this->createTable();
+		parent::__construct( $oFeatureOptions );
 		$this->reset();
 	}
 
@@ -64,10 +43,8 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 	 */
 	public function reset() {
 		parent::reset();
-		$this->sUniqueCommentToken = '';
 		$this->sCommentStatus = '';
 		$this->sCommentStatusExplanation = '';
-		self::$sSpamBlacklistFile = $this->oFeatureOptions->getResourcesDir().'spamblacklist.txt';
 	}
 	
 	/**
@@ -75,476 +52,23 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 	public function run() {
 		parent::run();
 
-		// Add GASP checking to the comment form.
-		if ( $this->getIsOption('enable_comments_gasp_protection', 'Y') ) {
-			add_action(	'comment_form',					array( $this, 'printGaspFormHook_Action' ), 1 );
-			add_action(	'comment_form',					array( $this, 'printGaspFormParts_Action' ), 2 );
+		// Add GASP checking to the login form.
+		if ( $this->getIsOption( 'enable_comments_gasp_protection', 'Y' ) ) {
+			require_once('icwp-processor-commentsfilter_antibotspam.php');
+			$oBotSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam( $this->oFeatureOptions );
+			$oBotSpamProcessor->run();
 		}
 
-		add_filter( 'preprocess_comment',			array( $this, 'doCommentPreProcess_Filter' ), 1, 1 );
-		add_filter( 'pre_comment_content',			array( $this, 'doCommentContentPreProcess_Filter' ), 1, 1 );
-		add_filter( 'pre_comment_approved',			array( $this, 'doSetCommentStatus_Filter' ), 1 );
-	}
-
-	/**
-	 * @param array $aCommentData
-	 * @return array
-	 */
-	public function doCommentPreProcess_Filter( $aCommentData ) {
-
-		if ( !$this->getIfDoCommentsCheck() ) {
-			return $aCommentData;
+		$oWp = $this->loadWpFunctionsProcessor();
+		if ( ICWP_WPSF_DataProcessor::GetIsRequestPost() && $oWp->getCurrentPage() == 'wp-comments-post.php' && $this->getIsOption( 'enable_comments_human_spam_filter', 'Y' ) ) {
+			require_once('icwp-processor-commentsfilter_humanspam.php');
+			$oHumanSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_HumanSpam( $this->oFeatureOptions );
+			$oHumanSpamProcessor->run();
 		}
 
-		$this->doGaspCommentCheck( $aCommentData['comment_post_ID'] );
-		$this->doBlacklistSpamCheck( $aCommentData );
-
-		// Now we check whether comment status is to completely reject and then we simply redirect to "home"
-		if ( $this->sCommentStatus == 'reject' ) {
-			$oWpFunctions = $this->loadWpFunctionsProcessor();
-			$oWpFunctions->redirectToHome();
-		}
-
-		return $aCommentData;
-	}
-
-	/**
-	 * @param string $sCommentContent
-	 * @return string
-	 */
-	public function doCommentContentPreProcess_Filter( $sCommentContent ) {
-		// If either spam filtering process left an explanation, we add it here
-		if ( !empty( $this->sCommentStatusExplanation ) ) {
-			$sCommentContent = $this->sCommentStatusExplanation.$sCommentContent;
-		}
-		return $sCommentContent;
-	}
-
-	/**
-	 * Performs the actual GASP comment checking
-	 *
-	 * @param $nPostId
-	 */
-	protected function doGaspCommentCheck( $nPostId ) {
-
-		if ( !$this->getIfDoGaspCheck() ) {
-			return;
-		}
-
-		// Check that we haven't already marked the comment through another scan
-		if ( !empty( $this->sCommentStatus ) || !$this->getIsOption( 'enable_comments_gasp_protection', 'Y' ) ) {
-			return;
-		}
-
-		$fIsSpam = true;
-		$sExplanation = '';
-
-		$this->loadDataProcessor();
-
-		$sFieldCheckboxName = ICWP_WPSF_DataProcessor::FetchPost( 'cb_nombre' );
-		$sFieldHoney = ICWP_WPSF_DataProcessor::FetchPost( 'sugar_sweet_email' );
-		$sFieldCommentToken = ICWP_WPSF_DataProcessor::FetchPost( 'comment_token' );
-
-		// we have the cb name, is it set?
-		if( !$sFieldCheckboxName || !ICWP_WPSF_DataProcessor::FetchPost( $sFieldCheckboxName ) ) {
-			$sExplanation = sprintf( _wpsf__('Failed GASP Bot Filter Test (%s)' ), _wpsf__('checkbox') );
-			$sStatKey = 'checkbox';
-		}
-		// honeypot check
-		else if ( !empty( $sFieldHoney ) ) {
-			$sExplanation = sprintf( _wpsf__('Failed GASP Bot Filter Test (%s)' ), _wpsf__('honeypot') );
-			$sStatKey = 'honeypot';
-		}
-		// check the unique comment token is present
-		else if ( empty( $sFieldCommentToken ) || !$this->checkCommentToken( $sFieldCommentToken, $nPostId ) ) {
-			$sExplanation = sprintf( _wpsf__('Failed GASP Bot Filter Test (%s)' ), _wpsf__('comment token failure') );
-			$sStatKey = 'token';
-		}
-		else {
-			$fIsSpam = false;
-		}
-
-		if ( $fIsSpam ) {
-			$this->doStatIncrement( sprintf( 'spam.gasp.%s', $sStatKey ) );
-			$this->sCommentStatus = $this->getOption( 'comments_default_action_spam_bot' );
-			$this->setCommentStatusExplanation( $sExplanation );
-		}
-	}
-
-	/**
-	 * @param $aCommentData
-	 */
-	protected function doBlacklistSpamCheck( $aCommentData ) {
-		$this->loadDataProcessor();
-		$this->doBlacklistSpamCheck_Action(
-			$aCommentData['comment_author'],
-			$aCommentData['comment_author_email'],
-			$aCommentData['comment_author_url'],
-			$aCommentData['comment_content'],
-			long2ip( self::$nRequestIp ),
-			isset( $_SERVER['HTTP_USER_AGENT'] ) ? substr( $_SERVER['HTTP_USER_AGENT'], 0, 254 ) : ''
-		);
-	}
-
-	/**
-	 * Does the same as the WordPress blacklist filter, but more intelligently and with a nod towards much higher performance.
-	 *
-	 * It also uses defined options for which fields are checked for SPAM instead of just checking EVERYTHING!
-	 *
-	 * @param string $sAuthor
-	 * @param string $sEmail
-	 * @param string $sUrl
-	 * @param string $sComment
-	 * @param string $sUserIp
-	 * @param string $sUserAgent
-	 */
-	public function doBlacklistSpamCheck_Action( $sAuthor, $sEmail, $sUrl, $sComment, $sUserIp, $sUserAgent ) {
-
-		// Check that we haven't already marked the comment through another scan, say GASP
-		if ( !empty( $this->sCommentStatus ) || !$this->getIsOption('enable_comments_human_spam_filter', 'Y') ) {
-			return;
-		}
-
-		// read the file of spam words
-		$sSpamWords = $this->getSpamBlacklist();
-		if ( empty($sSpamWords) ) {
-			return;
-		}
-		$aWords = explode( "\n", $sSpamWords );
-
-		$aItemsMap = array(
-			'comment_content'	=> $sComment,
-			'url'				=> $sUrl,
-			'author_name'		=> $sAuthor,
-			'author_email'		=> $sEmail,
-			'ip_address'		=> $sUserIp,
-			'user_agent'		=> $sUserAgent
-		);
-		$aDesiredItemsToCheck = $this->getOption('enable_comments_human_spam_filter_items');
-		$aItemsToCheck = array();
-		foreach( $aDesiredItemsToCheck as $sKey ) {
-			$aItemsToCheck[$sKey] = $aItemsMap[$sKey];
-		}
-
-		foreach( $aItemsToCheck as $sKey => $sItem ) {
-			foreach ( $aWords as $sWord ) {
-				if ( stripos( $sItem, $sWord ) !== false ) {
-					//mark as spam and exit;
-					$this->doStatIncrement( sprintf( 'spam.human.%s', $sKey ) );
-					$this->doStatHumanSpamWords( $sWord );
-					$this->sCommentStatus = $this->getOption('comments_default_action_human_spam');
-					$this->setCommentStatusExplanation( sprintf( _wpsf__('Human SPAM filter found "%s" in "%s"' ), $sWord, $sKey ) );
-					break 2;
-				}
-			}
-		}
-	}
-
-	/**
-	 * @param $sStatWord
-	 */
-	protected function doStatHumanSpamWords( $sStatWord = '' ) {
-		$this->loadStatsProcessor();
-		if ( !empty( $sStatWord ) ) {
-			ICWP_Stats_WPSF::DoStatIncrementKeyValue( 'spam.human.words', base64_encode( $sStatWord ) );
-		}
-	}
-
-	/**
-	 * @return null|string
-	 */
-	protected function getSpamBlacklist() {
-		$oFs = $this->loadFileSystemProcessor();
-
-		// first, does the file exist? If not import
-		if ( !$oFs->exists( self::$sSpamBlacklistFile ) ) {
-			$this->doSpamBlacklistImport();
-		}
-		// second, if it exists and it's older than 48hrs, update
-		else if ( self::$nRequestTimestamp - $oFs->getModifiedTime( self::$sSpamBlacklistFile ) > self::TWODAYS ) {
-			$this->doSpamBlacklistUpdate();
-		}
-
-		$sList = $oFs->getFileContent( self::$sSpamBlacklistFile );
-		return empty($sList)? '' : $sList;
-	}
-
-	/**
-	 */
-	protected function doSpamBlacklistUpdate() {
-		$oFs = $this->loadFileSystemProcessor();
-		$oFs->deleteFile( self::$sSpamBlacklistFile );
-		$this->doSpamBlacklistImport();
-	}
-
-	/**
-	 */
-	protected function doSpamBlacklistImport() {
-		$oFs = $this->loadFileSystemProcessor();
-		if ( !$oFs->exists( self::$sSpamBlacklistFile ) ) {
-
-			$sRawList = $this->doSpamBlacklistDownload();
-
-			if ( empty($sRawList) ) {
-				$sList = '';
-			}
-			else {
-				// filter out empty lines
-				$aWords = explode( "\n", $sRawList );
-				foreach ( $aWords as $nIndex => $sWord ) {
-					$sWord = trim($sWord);
-					if ( empty($sWord) ) {
-						unset( $aWords[$nIndex] );
-					}
-				}
-				$sList = implode( "\n", $aWords );
-			}
-
-			// save the list to disk for the future.
-			$oFs->putFileContent( self::$sSpamBlacklistFile, $sList );
-		}
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function doSpamBlacklistDownload() {
-		$oFs = $this->loadFileSystemProcessor();
-		return $oFs->getUrlContent( self::Spam_Blacklist_Source );
-	}
-	
-	/**
-	 * @return void
-	 */
-	public function printGaspFormHook_Action() {
-		
-		if ( !$this->getIfDoCommentsCheck() ) {
-			return;
-		}
-
-		$this->deleteOldPostCommentTokens();
-		$this->insertUniquePostCommentToken();
-
-		$this->loadDataProcessor();
-		$this->m_sUniqueFormId = ICWP_WPSF_DataProcessor::GenerateRandomString( rand(7, 23), true );
-		
-		echo $this->getGaspCommentsHookHtml();
-	}
-	
-	/**
-	 * Tells us whether, for this particular comment post, if we should do comments checking.
-	 * 
-	 * @return boolean
-	 */
-	protected function getIfDoCommentsCheck() {
-
-		// Compatibility with shoutbox WP Wall Plugin
-		// http://wordpress.org/plugins/wp-wall/
-		if ( function_exists( 'WPWall_Init' ) ) {
-			$this->loadDataProcessor();
-			if ( !is_null( ICWP_WPSF_DataProcessor::FetchPost('submit_wall_post') ) ) {
-				return false;
-			}
-		}
-
-		//First, are comments allowed on this post?
-		global $post;
-		if ( !isset( $post ) || $post->comment_status != 'open' ) {
-			return false;
-		}
-
-		if ( !is_user_logged_in() ) {
-			return true;
-		}
-		else if ( $this->getIsOption('enable_comments_gasp_protection_for_logged_in', 'Y') ) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Tells us whether, for this particular comment post, if we should do GASP comments checking.
-	 *
-	 * @return boolean
-	 */
-	protected function getIfDoGaspCheck() {
-
-		// Compatibility with shoutbox WP Wall Plugin
-		// http://wordpress.org/plugins/wp-wall/
-		if ( function_exists( 'WPWall_Init' ) ) {
-			$this->loadDataProcessor();
-			if ( !is_null( ICWP_WPSF_DataProcessor::FetchPost('submit_wall_post') ) ) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * @return void
-	 */
-	public function printGaspFormParts_Action() {
-		if ( $this->getIfDoCommentsCheck() ) {
-			echo $this->getGaspCommentsHtml();
-		}
-	}
-	
-	/**
-	 * @return string
-	 */
-	protected function getGaspCommentsHookHtml() {
-		$sId = $this->m_sUniqueFormId;
-		$sReturn = '<p id="'.$sId.'"></p>'; // we use this unique <p> to hook onto using javascript
-		$sReturn .= '<input type="hidden" id="_sugar_sweet_email" name="sugar_sweet_email" value="" />';
-		$sReturn .= '<input type="hidden" id="_comment_token" name="comment_token" value="'.$this->getUniqueCommentToken().'" />';
-		return $sReturn;
-	}
-	
-	protected function getGaspCommentsHtml() {
-
-		$sId			= $this->m_sUniqueFormId;
-		$sConfirm		= stripslashes( $this->getOption('custom_message_checkbox') );
-		$sAlert			= stripslashes( $this->getOption('custom_message_alert') );
-		$sCommentWait	= stripslashes( $this->getOption('custom_message_comment_wait') );
-		$nCooldown		= $this->getOption('comments_cooldown_interval');
-		$nExpire		= $this->getOption('comments_token_expire_interval');
-
-		if ( strpos( $sCommentWait, '%s' ) !== false ) {
-			$sCommentWait = sprintf( $sCommentWait, $nCooldown );
-			$sJsCommentWait = str_replace( '%s', '"+nRemaining+"', $this->getOption('custom_message_comment_wait') );
-			$sJsCommentWait = '"'.$sJsCommentWait.'"';
-		}
-		else {
-			$sJsCommentWait = '"'. $this->getOption('custom_message_comment_wait').'"';
-		}
-		$sCommentReload = $this->getOption('custom_message_comment_reload');
-
-		$sReturn = "
-			<script type='text/javascript'>
-				
-				function cb_click$sId() {
-					cb_name$sId.value=cb$sId.name;
-				}
-				function check$sId() {
-					if( cb$sId.checked != true ) {
-						alert( \"$sAlert\" ); return false;
-					}
-					return true;
-				}
-				function reenableButton$sId() {
-					nTimerCounter{$sId}++;
-					nRemaining = $nCooldown - nTimerCounter$sId;
-					subbutton$sId.value	= $sJsCommentWait;
-					if ( nTimerCounter$sId >= $nCooldown ) {
-						subbutton$sId.value = origButtonValue$sId;
-						subbutton$sId.disabled = false;
-						clearInterval( sCountdownTimer$sId );
-					}
-				}
-				function redisableButton$sId() {
-					subbutton$sId.value		= \"$sCommentReload\";
-					subbutton$sId.disabled	= true;
-				}
-				
-				var $sId				= document.getElementById('$sId');
-
-				var cb$sId				= document.createElement('input');
-				cb$sId.type				= 'checkbox';
-				cb$sId.id				= 'checkbox$sId';
-				cb$sId.name				= 'checkbox$sId';
-				cb$sId.style.width		= '25px';
-				cb$sId.onclick			= cb_click$sId;
-			
-				var label$sId			= document.createElement( 'label' );
-				label$sId.htmlFor		= 'checkbox$sId';
-				label$sId.innerHTML		= \"$sConfirm\";
-
-				var cb_name$sId			= document.createElement('input');
-				cb_name$sId.type		= 'hidden';
-				cb_name$sId.name		= 'cb_nombre';
-
-				$sId.appendChild( cb$sId );
-				$sId.appendChild( label$sId );
-				$sId.appendChild( cb_name$sId );
-
-				var frm$sId					= cb$sId.form;
-				frm$sId.onsubmit			= check$sId;
-
-				".(
-					( $nCooldown > 0 || $nExpire > 0 ) ?
-					"
-					var subbuttonList$sId = frm$sId.querySelectorAll( 'input[type=\"submit\"]' );
-					
-					if ( typeof( subbuttonList$sId ) != \"undefined\" ) {
-						subbutton$sId = subbuttonList{$sId}[0];
-						if ( typeof( subbutton$sId ) != \"undefined\" ) {
-						
-						".(
-							( $nCooldown > 0 )?
-							"
-							subbutton$sId.disabled		= true;
-							origButtonValue$sId			= subbutton$sId.value;
-							subbutton$sId.value			= \"$sCommentWait\";
-							nTimerCounter$sId			= 0;
-							sCountdownTimer$sId			= setInterval( reenableButton$sId, 1000 );
-							"
-							:''
-						).(
-							( $nExpire > 0 )? "sTimeoutTimer$sId			= setTimeout( redisableButton$sId, ".(1000 * $nExpire - 1000)." );" : ''
-						)."
-						}
-					}
-					":''
-				)."
-			</script>
-		";
-		return $sReturn;
-	}
-
-	/**
-	 * @param $sCommentToken
-	 * @param $sPostId
-	 * @return bool
-	 */
-	protected function checkCommentToken( $sCommentToken, $sPostId ) {
-
-		$sToken = esc_sql( $sCommentToken ); //just in-case someones tries to get all funky up in it
-		
-		// Try to get the database entry that corresponds to this set of data. If we get nothing, fail.
-		$sQuery = "
-			SELECT *
-				FROM `%s`
-			WHERE
-				`unique_token`		= '%s'
-				AND `post_id`		= '%s'
-				AND `ip_long`		= '%s'
-				AND `deleted_at`	= '0'
-		";
-		$sQuery = sprintf( $sQuery,
-			$this->getTableName(),
-			$sToken,
-			$sPostId,
-			self::$nRequestIp
-		);
-		$mResult = $this->selectCustomFromTable( $sQuery );
-
-		if ( empty( $mResult ) || !is_array($mResult) || count($mResult) != 1 ) {
-			return false;
-		}
-		else {
-			// Only 1 chance is given per token, so we delete it
-			$this->deleteUniquePostCommentToken( $sToken, $sPostId );
-			
-			// Did sufficient time pass, or has it expired?
-			$aRecord = $mResult[0];
-			$nInterval = self::$nRequestTimestamp - $aRecord['created_at'];
-			if ( $nInterval < $this->getOption( 'comments_cooldown_interval' )
-					|| ( $this->getOption( 'comments_token_expire_interval' ) > 0 && $nInterval > $this->getOption('comments_token_expire_interval') )
-				) {
-				return false;
-			}
-			return true;
-		}
+		add_filter( 'pre_comment_approved',				array( $this, 'doSetCommentStatus' ), 1 );
+		add_filter( 'pre_comment_content',				array( $this, 'doInsertCommentStatusExplanation' ), 1, 1 );
+		add_filter( 'comment_notification_recipients',	array( $this, 'doClearCommentNotificationEmail_Filter' ), 100, 1 );
 	}
 
 	/**
@@ -554,161 +78,44 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 	 * @param $sApprovalStatus
 	 * @return string
 	 */
-	public function doSetCommentStatus_Filter( $sApprovalStatus ) {
-		add_filter( 'comment_notification_recipients', array( $this, 'doClearCommentNotificationEmail_Filter' ), 100, 1 );
-		return empty( $this->sCommentStatus )? $sApprovalStatus : $this->sCommentStatus;
+	public function doSetCommentStatus( $sApprovalStatus ) {
+		$sStatus = apply_filters( $this->oFeatureOptions->doPluginPrefix( 'comments_filter_status' ), '' );
+		return empty( $sStatus ) ? $sApprovalStatus : $sStatus;
+	}
+
+	/**
+	 * @param string $sCommentContent
+	 * @return string
+	 */
+	public function doInsertCommentStatusExplanation( $sCommentContent ) {
+
+		$sExplanation = apply_filters( $this->oFeatureOptions->doPluginPrefix( 'comments_filter_status_explanation' ), '' );
+
+		// If either spam filtering process left an explanation, we add it here
+		if ( !empty( $sExplanation ) ) {
+			$sCommentContent = $sExplanation.$sCommentContent;
+		}
+		return $sCommentContent;
 	}
 
 	/**
 	 * When you set a new comment as anything but 'spam' a notification email is sent to the post author.
 	 * We suppress this for when we mark as trash by emptying the email notifications list.
 	 *
-	 * @param $aEmails
+	 * @param array $aEmails
 	 * @return array
 	 */
 	public function doClearCommentNotificationEmail_Filter( $aEmails ) {
-		if ( $this->sCommentStatus == 'trash' ) {
+		$sStatus = apply_filters( $this->oFeatureOptions->doPluginPrefix( 'comments_filter_status' ), '' );
+		if ( $sStatus == 'trash' ) {
 			$aEmails = array();
 		}
 		return $aEmails;
 	}
-	
-	public function createTable() {
-		// Set up comments ID table
-		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
-			`id` int(11) NOT NULL AUTO_INCREMENT,
-			`post_id` int(11) NOT NULL DEFAULT '0',
-			`unique_token` varchar(32) NOT NULL DEFAULT '',
-			`ip_long` bigint(20) NOT NULL DEFAULT '0',
-			`created_at` int(15) NOT NULL DEFAULT '0',
-			`deleted_at` int(15) NOT NULL DEFAULT '0',
- 			PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-		$sSqlTables = sprintf( $sSqlTables, $this->getTableName() );
-		return $this->doSql( $sSqlTables );
-	}
 
-	/**
-	 * @param string $insUniqueToken
-	 * @param string $insPostId
-	 * @param boolean $infSoftDelete
-	 */
-	protected function deleteUniquePostCommentToken( $insUniqueToken, $insPostId, $infSoftDelete = false ) {
-
-		if ( $infSoftDelete ) {
-			$sQuery = "
-					UPDATE `%s`
-						SET `deleted_at`	= '%s'
-					WHERE
-						`unique_token`		= '%s'
-						AND `post_id`		= '%s'
-				";
-			$sQuery = sprintf( $sQuery,
-				$this->getTableName(),
-				self::$nRequestTimestamp,
-				$insUniqueToken,
-				$insPostId
-			);
-			$this->doSql( $sQuery );
-		}
-		else {
-			$aWhere['unique_token']	= $insUniqueToken;
-			$aWhere['post_id']		= $insPostId;
-			$this->deleteRowsFromTable( $aWhere );
-		}
-	}
-
-	/**
-	 * @param bool $fSoftDelete
-	 * @param string $sPostId
-	 */
-	protected function deleteOldPostCommentTokens( $fSoftDelete = false, $sPostId = null ) {
-
-		$nPostIdToDelete = empty( $sPostId ) ? $this->getRequestPostId() : $sPostId;
-
-		if ( $fSoftDelete ) {
-			$sQuery = "
-					UPDATE `%s`
-						SET `deleted_at`	= '%s'
-					WHERE
-						`ip_long`			= '%s'
-						AND `post_id`		= '%s'
-				";
-			$sQuery = sprintf( $sQuery,
-				$this->getTableName(),
-				self::$nRequestTimestamp,
-				self::$nRequestIp,
-				$nPostIdToDelete
-			);
-			$this->doSql( $sQuery );
-		}
-		else {
-			$aWhere = array();
-			$aWhere['ip_long']		= self::$nRequestIp;
-			$aWhere['post_id']		= $nPostIdToDelete;
-			$this->deleteRowsFromTable( $aWhere );
-		}
-	}
-
-	/**
-	 * @return mixed
-	 */
-	protected function insertUniquePostCommentToken() {
-
-		$aData = array();
-		$aData[ 'post_id' ]			= $this->getRequestPostId();
-		$aData[ 'unique_token' ]	= $this->getUniqueCommentToken();
-		$aData[ 'ip_long' ]			= self::$nRequestIp;
-		$aData[ 'created_at' ]		= self::$nRequestTimestamp;
-		
-		$mResult = $this->insertIntoTable( $aData );
-		return $mResult;
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function generateUniqueToken() {
-		$sToken = uniqid( self::$nRequestIp.self::$nRequestTimestamp.$this->getRequestPostId() );
-		return md5( $sToken );
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function getUniqueCommentToken() {
-		if ( empty( $this->sUniqueCommentToken ) ) {
-			$this->sUniqueCommentToken = $this->generateUniqueToken();
-		}
-		return $this->sUniqueCommentToken;
-	}
-
-	/**
-	 * @param $sExplanation
-	 */
-	protected function setCommentStatusExplanation( $sExplanation ) {
-		$this->sCommentStatusExplanation =
-			'[* '.sprintf( _wpsf__('WordPress Simple Firewall plugin marked this comment as "%s" because: %s.'),
-				$this->sCommentStatus,
-				$sExplanation
-			)." *]\n";
-	}
-	
-	/**
-	 * This is hooked into a cron in the base class and overrides the parent method.
-	 * 
-	 * It'll delete everything older than 24hrs.
-	 */
-	public function cleanupDatabase() {
-		if ( !$this->getTableExists() ) {
-			return;
-		}
-		$nTimeStamp = self::$nRequestTimestamp - DAY_IN_SECONDS;
-		$this->deleteAllRowsOlderThan( $nTimeStamp );
-	}
 }
 endif;
 
 if ( !class_exists('ICWP_WPSF_Processor_CommentsFilter') ):
-	class ICWP_WPSF_Processor_CommentsFilter extends ICWP_CommentsFilterProcessor_V2 { }
+	class ICWP_WPSF_Processor_CommentsFilter extends ICWP_WPSF_Processor_CommentsFilter_V2 { }
 endif;
