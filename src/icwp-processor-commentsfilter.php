@@ -396,7 +396,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 		$sId = $this->m_sUniqueFormId;
 		$sReturn = '<p id="'.$sId.'"></p>'; // we use this unique <p> to hook onto using javascript
 		$sReturn .= '<input type="hidden" id="_sugar_sweet_email" name="sugar_sweet_email" value="" />';
-		$sReturn .= '<input type="hidden" id="_comment_token" name="comment_token" value="'.$this->sUniqueCommentToken.'" />';
+		$sReturn .= '<input type="hidden" id="_comment_token" name="comment_token" value="'.$this->getUniqueCommentToken().'" />';
 		return $sReturn;
 	}
 	
@@ -677,7 +677,7 @@ class ICWP_CommentsFilterProcessor_V2 extends ICWP_WPSF_BaseDbProcessor {
 	 * @return string
 	 */
 	protected function getUniqueCommentToken() {
-		if ( !isset( $this->sUniqueCommentToken ) ) {
+		if ( empty( $this->sUniqueCommentToken ) ) {
 			$this->sUniqueCommentToken = $this->generateUniqueToken();
 		}
 		return $this->sUniqueCommentToken;
