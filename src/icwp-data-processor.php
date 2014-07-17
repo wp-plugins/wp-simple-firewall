@@ -46,13 +46,13 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 		/**
 		 * Cloudflare compatible.
 		 *
-		 * @param boolean $infAsLong
+		 * @param boolean $fAsLong
 		 * @return bool|integer - visitor IP Address as IP2Long
 		 */
-		public static function GetVisitorIpAddress( $infAsLong = true ) {
+		public static function GetVisitorIpAddress( $fAsLong = true ) {
 
 			if ( !empty( self::$sIpAddress ) ) {
-				return $infAsLong? ip2long( self::$sIpAddress ) : self::$sIpAddress;
+				return $fAsLong? ip2long( self::$sIpAddress ) : self::$sIpAddress;
 			}
 
 			$aAddressSourceOptions = array(
@@ -66,10 +66,11 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 			$fCanUseFilter = function_exists( 'filter_var' ) && defined( 'FILTER_FLAG_NO_PRIV_RANGE' ) && defined( 'FILTER_FLAG_IPV4' );
 
 			foreach( $aAddressSourceOptions as $sOption ) {
-				if ( empty( $_SERVER[ $sOption ] ) ) {
+
+				$sIpAddressToTest = self::FetchServer( $sOption );
+				if ( empty( $sIpAddressToTest ) ) {
 					continue;
 				}
-				$sIpAddressToTest = $_SERVER[ $sOption ];
 
 				$aIpAddresses = explode( ',', $sIpAddressToTest ); //sometimes a comma-separated list is returned
 				foreach( $aIpAddresses as $sIpAddress ) {
@@ -79,7 +80,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 					}
 					else {
 						self::$sIpAddress = $sIpAddress;
-						return $infAsLong? ip2long( self::$sIpAddress ) : self::$sIpAddress;
+						return $fAsLong? ip2long( self::$sIpAddress ) : self::$sIpAddress;
 					}
 				}
 			}
@@ -87,24 +88,61 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 		}
 
 		/**
+		 * For now will return true when it's a valid IPv4 or IPv6 address and you have access to filter_var()
+		 *
+		 * otherwise, if it's Ipv6 it'll return false always or will attempt to manually parse IPv4.
+		 *
+		 * @param string
+		 * @return boolean
+		 */
+		public static function GetIsValidIpAddress( $sIpAddress ) {
+			if ( function_exists('filter_var') && defined('FILTER_VALIDATE_IP') && defined('FILTER_FLAG_IPV4') && defined('FILTER_FLAG_IPV6') ) {
+
+				if ( filter_var( $sIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+					return true;
+				}
+				else {
+					return filter_var( $sIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 );
+				}
+			}
+
+			if ( preg_match( '/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/', $sIpAddress ) ) { //It's a valid IPv4 format, now check components
+				$aParts = explode( '.', $sIpAddress );
+				foreach ( $aParts as $sPart ) {
+					$sPart = intval( $sPart );
+					if ( $sPart < 0 || $sPart > 255 ) {
+						return false;
+					}
+				}
+				return true;
+			}
+
+			return false;
+		}
+
+		/**
 		 * Assumes a valid IPv4 address is provided as we're only testing for a whether the IP is public or not.
 		 *
-		 * @param string $insIpAddress
+		 * @param string $sIpAddress
 		 * @uses filter_var
 		 * @return boolean
 		 */
-		public static function IsAddressInPublicIpRange( $insIpAddress ) {
-			return filter_var( $insIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE );
+		public static function IsAddressInPublicIpRange( $sIpAddress ) {
+			return function_exists('filter_var') && filter_var( $sIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE );
 		}
 
-		static public function ExtractIpAddresses( $insAddresses = '' ) {
+		/**
+		 * @param string $sAddresses
+		 * @return Ambigous|array|unknown
+		 */
+		static public function ExtractIpAddresses( $sAddresses = '' ) {
 
 			$aRawAddresses = array();
 
-			if ( empty( $insAddresses ) ) {
+			if ( empty( $sAddresses ) ) {
 				return $aRawAddresses;
 			}
-			$aRawList = array_map( 'trim', explode( "\n", $insAddresses ) );
+			$aRawList = array_map( 'trim', explode( "\n", $sAddresses ) );
 
 			self::$fUseFilter = function_exists('filter_var') && defined( FILTER_VALIDATE_IP );
 
@@ -124,14 +162,18 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 			return self::Add_New_Raw_Ips( array(), $aRawAddresses );
 		}
 
-		static public function ExtractCommaSeparatedList( $insRawList = '' ) {
+		/**
+		 * @param string $sRawList
+		 * @return array
+		 */
+		static public function ExtractCommaSeparatedList( $sRawList = '' ) {
 
 			$aRawList = array();
-			if ( empty( $insRawList ) ) {
+			if ( empty( $sRawList ) ) {
 				return $aRawList;
 			}
-// 		$aRawList = array_map( 'trim', explode( "\n", $insRawList ) );
-			$aRawList = array_map( 'trim', preg_split( '/\r\n|\r|\n/', $insRawList ) );
+
+			$aRawList = array_map( 'trim', preg_split( '/\r\n|\r|\n/', $sRawList ) );
 			$aNewList = array();
 			$fHadStar = false;
 			foreach( $aRawList as $sKey => $sRawLine ) {
@@ -254,94 +296,41 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 			return $insRawAddress;
 		}
 
-		public static function Verify_Ip_Address( $insIpAddress ) {
-			if ( self::$fUseFilter ) {
-				if ( filter_var( $insIpAddress, FILTER_VALIDATE_IP ) ) {
-					return ip2long( $insIpAddress );
-				}
-			}
-			else {
-				if ( preg_match( '/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/', $insIpAddress ) ) { //It's a valid IPv4 format, now check components
-					$aParts = explode( '.', $insIpAddress );
-					foreach ( $aParts as $sPart ) {
-						$sPart = intval( $sPart );
-						if ( $sPart < 0 || $sPart > 255 ) {
-							return false;
-						}
-					}
-					return ip2long( $insIpAddress );
-				}
-			}
-			return false;
-		}
-
 		/**
 		 * Taken from http://www.phacks.net/detecting-search-engine-bot-and-web-spiders/
 		 */
 		public static function IsSearchEngineBot() {
 
-			if ( empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
+			$sUserAgent = self::FetchServer( 'HTTP_USER_AGENT' );
+			if ( empty( $sUserAgent ) ) {
 				return false;
 			}
-			$sUserAgent = $_SERVER['HTTP_USER_AGENT'];
+
 			$sBots = 'Googlebot|bingbot|Twitterbot|Baiduspider|ia_archiver|R6_FeedFetcher|NetcraftSurveyAgent'
 				.'|Sogou web spider|Yahoo! Slurp|facebookexternalhit|PrintfulBot|msnbot|UnwindFetchor|urlresolver|Butterfly|TweetmemeBot';
 
 			return ( preg_match( "/$sBots/", $sUserAgent ) > 0 );
-//
-//		$aBots = array(
-//			'Googlebot',
-//			'bingbot',
-//			'Twitterbot',
-//			'Baiduspider',
-//			'ia_archiver',
-//			'R6_FeedFetcher',
-//			'NetcraftSurveyAgent',
-//			'Sogou web spider',
-//			'Yahoo! Slurp',
-//			'facebookexternalhit',
-//			'PrintfulBot',
-//			'msnbot',
-//			'UnwindFetchor',
-//			'urlresolver',
-//			'Butterfly',
-//			'TweetmemeBot'
-//		);
-			//
-//		$aCrawlers = array(
-//			'Google' => 'Google',
-//			'msnbot' => 'MSN',
-//			'Rambler' => 'Rambler',
-//			'Yahoo' => 'Yahoo',
-//			'AbachoBOT' => 'AbachoBOT',
-//			'accoona' => 'Accoona',
-//			'AcoiRobot' => 'AcoiRobot',
-//			'ASPSeek' => 'ASPSeek',
-//			'CrocCrawler' => 'CrocCrawler',
-//			'Dumbot' => 'Dumbot',
-//			'FAST-WebCrawler' => 'FAST-WebCrawler',
-//			'GeonaBot' => 'GeonaBot',
-//			'Gigabot' => 'Gigabot',
-//			'Lycos' => 'Lycos spider',
-//			'MSRBOT' => 'MSRBOT',
-//			'Scooter' => 'Altavista robot',
-//			'AltaVista' => 'Altavista robot',
-//			'IDBot' => 'ID-Search Bot',
-//			'eStyle' => 'eStyle Bot',
-//			'Scrubby' => 'Scrubby robot'
-//		);
+		}
 
-			return array_key_exists( $sUserAgent, $aCrawlers );
+		/**
+		 * Returns IP Address as long if verified.
+		 *
+		 * @param string $sIpAddress
+		 * @return bool|int
+		 */
+		public static function Verify_Ip_Address( $sIpAddress ) {
+			return self::GetIsValidIpAddress( $sIpAddress ) ? ip2long( $sIpAddress ) : false;
 		}
 
 		/**
 		 * The only ranges currently accepted are a.b.c.d-f.g.h.j
-		 * @param string $insIpAddressRange
+		 *
+		 * @param string $sIpAddressRange
 		 * @return string|boolean
 		 */
-		public static function Verify_Ip_Range( $insIpAddressRange ) {
+		public static function Verify_Ip_Range( $sIpAddressRange ) {
 
-			list( $sIpRangeStart, $sIpRangeEnd ) = explode( '-', $insIpAddressRange, 2 );
+			list( $sIpRangeStart, $sIpRangeEnd ) = explode( '-', $sIpAddressRange, 2 );
 
 			if ( $sIpRangeStart == $sIpRangeEnd ) {
 				return self::Verify_Ip_Address( $sIpRangeStart );
@@ -364,8 +353,12 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 			return false;
 		}
 
-		public static function CleanYubikeyUniqueKeys( $insRawKeys ) {
-			$aKeys = explode( "\n", $insRawKeys );
+		/**
+		 * @param $sRawKeys
+		 * @return array
+		 */
+		public static function CleanYubikeyUniqueKeys( $sRawKeys ) {
+			$aKeys = explode( "\n", $sRawKeys );
 			foreach( $aKeys as $nIndex => $sUsernameKey ) {
 				if ( empty( $sUsernameKey ) ) {
 					unset( $aKeys[$nIndex] );
@@ -383,16 +376,16 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 		}
 
 		/**
-		 * @param integer $innLength
-		 * @param boolean $infBeginLetter
+		 * @param integer $nLength
+		 * @param boolean $fBeginLetter
 		 * @return string
 		 */
-		static public function GenerateRandomString( $innLength = 10, $infBeginLetter = false ) {
+		static public function GenerateRandomString( $nLength = 10, $fBeginLetter = false ) {
 			$aChars = array( 'abcdefghijkmnopqrstuvwxyz' );
 			$aChars[] = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
 			$sCharset = implode( '', $aChars );
-			if ( $infBeginLetter ) {
+			if ( $fBeginLetter ) {
 				$sPassword = $sCharset[ ( rand() % strlen( $sCharset ) ) ];
 			}
 			else {
@@ -400,7 +393,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 			}
 			$sCharset .= '023456789';
 
-			for ( $i = $infBeginLetter? 1 : 0; $i < $innLength; $i++ ) {
+			for ( $i = $fBeginLetter? 1 : 0; $i < $nLength; $i++ ) {
 				$sPassword .= $sCharset[ ( rand() % strlen( $sCharset ) ) ];
 			}
 			return $sPassword;
@@ -410,8 +403,17 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 		 * @return bool
 		 */
 		static public function GetIsRequestPost() {
-			$sRequestMethod = self::ArrayFetch( $_SERVER, 'REQUEST_METHOD' );
-			return strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
+			return ( self::GetRequestMethod() == 'post' );
+		}
+
+		/**
+		 * Returns the current request method as an all-lower-case string
+		 *
+		 * @return bool|string
+		 */
+		static public function GetRequestMethod() {
+			$sRequestMethod = self::FetchServer( 'REQUEST_METHOD' );
+			return ( empty( $sRequestMethod ) ? false : strtolower( $sRequestMethod ) );
 		}
 
 		/**
@@ -424,93 +426,98 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 
 		/**
 		 * @param string $sKey
+		 * @param mixed $mDefault
 		 * @return mixed|null
 		 */
-		public static function FetchServer( $sKey ) {
-			if ( function_exists( 'filter_input' ) && defined( 'INPUT_SERVER' ) ) {
-				$sPossible = filter_input( INPUT_SERVER, $sKey );
-				if ( !empty( $sPossible ) ) {
-					return $sPossible;
-				}
-			}
-			return self::ArrayFetch( $_SERVER, $sKey );
-		}
-
-		/**
-		 * @param string $sKey
-		 * @return mixed|null
-		 */
-		public static function FetchEnv( $sKey ) {
+		public static function FetchEnv( $sKey, $mDefault = null ) {
 			if ( function_exists( 'filter_input' ) && defined( 'INPUT_ENV' ) ) {
 				$sPossible = filter_input( INPUT_ENV, $sKey );
 				if ( !empty( $sPossible ) ) {
 					return $sPossible;
 				}
 			}
-			return self::ArrayFetch( $_ENV, $sKey );
+			return self::ArrayFetch( $_ENV, $sKey, $mDefault );
 		}
 
 		/**
-		 * @param string $insKey
-		 * @param boolean $infIncludeCookie
+		 * @param string $sKey
+		 * @param mixed $mDefault
 		 * @return mixed|null
 		 */
-		public static function FetchRequest( $insKey, $infIncludeCookie = true ) {
-			$mFetchVal = self::FetchPost( $insKey );
-			if ( is_null( $mFetchVal ) ) {
-				$mFetchVal = self::FetchGet( $insKey );
-				if ( is_null( $mFetchVal && $infIncludeCookie ) ) {
-					$mFetchVal = self::FetchCookie( $insKey );
+		public static function FetchServer( $sKey, $mDefault = null ) {
+			if ( function_exists( 'filter_input' ) && defined( 'INPUT_SERVER' ) ) {
+				$sPossible = filter_input( INPUT_SERVER, $sKey );
+				if ( !empty( $sPossible ) ) {
+					return $sPossible;
 				}
 			}
-			return $mFetchVal;
-		}
-		/**
-		 * @param string $insKey
-		 * @return mixed|null
-		 */
-		public static function FetchGet( $insKey ) {
-			if ( function_exists( 'filter_input' ) && defined( 'INPUT_GET' ) ) {
-				return filter_input( INPUT_GET, $insKey );
-			}
-			return self::ArrayFetch( $_GET, $insKey );
-		}
-		/**
-		 * @param string $insKey		The $_POST key
-		 * @return mixed|null
-		 */
-		public static function FetchPost( $insKey ) {
-			if ( function_exists( 'filter_input' ) && defined( 'INPUT_POST' ) ) {
-				return filter_input( INPUT_POST, $insKey );
-			}
-			return self::ArrayFetch( $_POST, $insKey );
-		}
-		/**
-		 * @param string $insKey		The $_POST key
-		 * @param mixed $mDefault
-		 * @return mixed|null
-		 */
-		public static function FetchCookie( $insKey, $mDefault = null ) {
-			if ( function_exists( 'filter_input' ) && defined( 'INPUT_COOKIE' ) ) {
-				return filter_input( INPUT_COOKIE, $insKey );
-			}
-			return self::ArrayFetch( $_COOKIE, $insKey, $mDefault );
+			return self::ArrayFetch( $_SERVER, $sKey, $mDefault );
 		}
 
 		/**
-		 * @param array $inaArray
-		 * @param string $insKey		The array key
+		 * @param string $sKey
+		 * @param boolean $infIncludeCookie
 		 * @param mixed $mDefault
 		 * @return mixed|null
 		 */
-		public static function ArrayFetch( &$inaArray, $insKey, $mDefault = null ) {
-			if ( empty( $inaArray ) ) {
+		public static function FetchRequest( $sKey, $infIncludeCookie = true, $mDefault = null ) {
+			$mFetchVal = self::FetchPost( $sKey );
+			if ( is_null( $mFetchVal ) ) {
+				$mFetchVal = self::FetchGet( $sKey );
+				if ( is_null( $mFetchVal && $infIncludeCookie ) ) {
+					$mFetchVal = self::FetchCookie( $sKey );
+				}
+			}
+			return is_null( $mFetchVal )? $mDefault : $mFetchVal;
+		}
+		/**
+		 * @param string $sKey
+		 * @param mixed $mDefault
+		 * @return mixed|null
+		 */
+		public static function FetchGet( $sKey, $mDefault = null ) {
+			if ( function_exists( 'filter_input' ) && defined( 'INPUT_GET' ) ) {
+				return filter_input( INPUT_GET, $sKey );
+			}
+			return self::ArrayFetch( $_GET, $sKey, $mDefault );
+		}
+		/**
+		 * @param string $sKey		The $_POST key
+		 * @param mixed $mDefault
+		 * @return mixed|null
+		 */
+		public static function FetchPost( $sKey, $mDefault = null ) {
+			if ( function_exists( 'filter_input' ) && defined( 'INPUT_POST' ) ) {
+				return filter_input( INPUT_POST, $sKey );
+			}
+			return self::ArrayFetch( $_POST, $sKey, $mDefault );
+		}
+		/**
+		 * @param string $sKey		The $_COOKIE key
+		 * @param mixed $mDefault
+		 * @return mixed|null
+		 */
+		public static function FetchCookie( $sKey, $mDefault = null ) {
+			if ( function_exists( 'filter_input' ) && defined( 'INPUT_COOKIE' ) ) {
+				return filter_input( INPUT_COOKIE, $sKey );
+			}
+			return self::ArrayFetch( $_COOKIE, $sKey, $mDefault );
+		}
+
+		/**
+		 * @param array $aArray
+		 * @param string $sKey		The array key to fetch
+		 * @param mixed $mDefault
+		 * @return mixed|null
+		 */
+		public static function ArrayFetch( &$aArray, $sKey, $mDefault = null ) {
+			if ( empty( $aArray ) ) {
 				return $mDefault;
 			}
-			if ( !isset( $inaArray[$insKey] ) ) {
+			if ( !isset( $aArray[$sKey] ) ) {
 				return $mDefault;
 			}
-			return $inaArray[$insKey];
+			return $aArray[$sKey];
 		}
 	}
 endif;

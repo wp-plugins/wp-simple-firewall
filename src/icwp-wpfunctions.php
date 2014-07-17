@@ -41,7 +41,7 @@ if ( !class_exists('ICWP_WpFunctions_V4') ):
 		/**
 		 * @var string
 		 */
-		protected $m_sWpVersion;
+		protected $sWpVersion;
 
 		/**
 		 * @var boolean
@@ -126,15 +126,15 @@ if ( !class_exists('ICWP_WpFunctions_V4') ):
 		public function getWordpressVersion() {
 			global $wp_version;
 
-			if ( empty( $this->m_sWpVersion ) ) {
+			if ( empty( $this->sWpVersion ) ) {
 				$sVersionFile = ABSPATH.WPINC.'/version.php';
 				$sVersionContents = file_get_contents( $sVersionFile );
 
 				if ( preg_match( '/wp_version\s=\s\'([^(\'|")]+)\'/i', $sVersionContents, $aMatches ) ) {
-					$this->m_sWpVersion = $aMatches[1];
+					$this->sWpVersion = $aMatches[1];
 				}
 			}
-			return empty( $this->m_sWpVersion )? $wp_version : $this->m_sWpVersion;
+			return empty( $this->sWpVersion )? $wp_version : $this->sWpVersion;
 		}
 
 		/**
