@@ -79,6 +79,21 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 			)
 		);
 
+		$aWhitelist = array(
+			'section_title' => sprintf( _wpsf__( 'By-Pass %s' ), _wpsf__('User Accounts Management') ),
+			'section_options' => array(
+				array(
+					'enable_xmlrpc_compatibility',
+					'',
+					'Y',
+					'checkbox',
+					_wpsf__( 'XML-RPC Compatibility' ),
+					_wpsf__( 'Allow Login Through XML-RPC To By-Pass Accounts Management Rules' ),
+					_wpsf__( 'Enable this if you need XML-RPC functionality e.g. if you use the WordPress iPhone/Android App.' )
+				)
+			)
+		);
+
 		$aSessions = array(
 			'section_title' => _wpsf__( 'User Session Management' ),
 			'section_options' => array(
@@ -137,6 +152,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 
 		$aOptionsDefinitions = array(
 			$aOptionsBase,
+			$aWhitelist,
 			$aSessions
 		);
 		return $aOptionsDefinitions;

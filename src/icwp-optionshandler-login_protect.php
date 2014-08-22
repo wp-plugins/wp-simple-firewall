@@ -82,8 +82,17 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 			)
 		);
 		$aWhitelist = array(
-			'section_title' => _wpsf__( 'Whitelist IPs that by-pass Login Protect' ),
+			'section_title' => sprintf( _wpsf__( 'By-Pass %s' ), _wpsf__('Login Protection') ),
 			'section_options' => array(
+				array(
+					'enable_xmlrpc_compatibility',
+					'',
+					'Y',
+					'checkbox',
+					_wpsf__( 'XML-RPC Compatibility' ),
+					_wpsf__( 'Allow Login Through XML-RPC To By-Pass Login Protection Rules' ),
+					_wpsf__( 'Enable this if you need XML-RPC functionality e.g. if you use the WordPress iPhone/Android App.' )
+				),
 				array(
 					'ips_whitelist',
 					'',

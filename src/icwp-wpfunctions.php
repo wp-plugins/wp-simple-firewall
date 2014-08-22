@@ -19,17 +19,17 @@
 
 require_once( dirname(__FILE__).'/icwp-data-processor.php' );
 
-if ( !class_exists('ICWP_WpFunctions_V4') ):
+if ( !class_exists('ICWP_WpFunctions_V5') ):
 
-	class ICWP_WpFunctions_V4 {
+	class ICWP_WpFunctions_V5 {
 
 		/**
-		 * @var ICWP_WpFunctions_V4
+		 * @var ICWP_WpFunctions_V5
 		 */
 		protected static $oInstance = NULL;
 
 		/**
-		 * @return ICWP_WpFunctions_V4
+		 * @return ICWP_WpFunctions_V5
 		 */
 		public static function GetInstance() {
 			if ( is_null( self::$oInstance ) ) {
@@ -195,6 +195,14 @@ if ( !class_exists('ICWP_WpFunctions_V4') ):
 		}
 
 		/**
+		 * @return bool
+		 */
+		public function getIsXmlrpc() {
+			// XML-RPC Compatibility
+			return ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST );
+		}
+
+		/**
 		 * @return string
 		 */
 		public function getSiteName() {
@@ -320,7 +328,7 @@ endif;
 
 if ( !class_exists('ICWP_WPSF_WpFunctions') ):
 
-	class ICWP_WPSF_WpFunctions extends ICWP_WpFunctions_V4 {
+	class ICWP_WPSF_WpFunctions extends ICWP_WpFunctions_V5 {
 		/**
 		 * @return ICWP_WPSF_WpFunctions
 		 */

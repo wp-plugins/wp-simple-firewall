@@ -509,6 +509,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 *
 		 */
 		protected function cleanOptions() {
+			if ( empty( $this->m_aOptionsValues ) || !is_array( $this->m_aOptionsValues ) ) {
+				return;
+			}
 			foreach( $this->m_aOptionsValues as $sKey => $mValue ) {
 				if ( !$this->getIsOptionKey( $sKey ) ) {
 					unset( $this->m_aOptionsValues[$sKey] );

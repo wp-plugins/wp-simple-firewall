@@ -56,6 +56,12 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			$this->oFeatureOptions->setOpt( 'user_management_table_created', true );
 		}
 
+		$oWp = $this->oFeatureOptions->loadWpFunctionsProcessor();
+		// XML-RPC Compatibility
+		if ( $oWp->getIsXmlrpc() && $this->getIsOption( 'enable_xmlrpc_compatibility', 'Y' ) ) {
+			return true;
+		}
+
 		$sRequestMethod = ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_METHOD' );
 		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
 

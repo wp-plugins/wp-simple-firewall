@@ -62,6 +62,8 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	
 	/**
 	 * Loads our WPDB object if required.
+	 *
+	 * @return wpdb
 	 */
 	protected function loadWpdb() {
 		if ( is_null( $this->oWpdb ) ) {
@@ -135,33 +137,59 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 		$oDb = $this->loadWpdb();
 		return $oDb->insert( $this->getTableName(), $aData );
 	}
-	
-	public function selectAllFromTable( $innFormat = ARRAY_A ) {
+
+	/**
+	 * @param $nFormat
+	 * @return array|boolean
+	 */
+	public function selectAllFromTable( $nFormat = ARRAY_A ) {
 		$oDb = $this->loadWpdb();
 		$sQuery = sprintf( "SELECT * FROM `%s` WHERE `deleted_at` = '0'", $this->getTableName() );
-		return $oDb->get_results( $sQuery, $innFormat );
+		return $oDb->get_results( $sQuery, $nFormat );
 	}
-	
-	public function selectCustomFromTable( $sQuery ) {
+
+	/**
+	 * @param string $sQuery
+	 * @param $nFormat
+	 * @return array|boolean
+	 */
+	public function selectCustomFromTable( $sQuery, $nFormat = ARRAY_A ) {
 		$oDb = $this->loadWpdb();
-		return $oDb->get_results( $sQuery, ARRAY_A );
+		return $oDb->get_results( $sQuery, $nFormat );
 	}
-	
-	public function selectRowFromTable( $sQuery ) {
+
+	/**
+	 * @param string $sQuery
+	 * @param $nFormat
+	 * @return array|boolean
+	 */
+	public function selectRowFromTable( $sQuery, $nFormat = ARRAY_A ) {
 		$oDb = $this->loadWpdb();
-		return $oDb->get_row( $sQuery, ARRAY_A );
+		return $oDb->get_row( $sQuery, $nFormat );
 	}
-	
+
+	/**
+	 * @param array $aData - new insert data (associative array, column=>data)
+	 * @param array $aWhere - insert where (associative array)
+	 * @return integer|boolean (number of rows affected)
+	 */
 	public function updateRowsFromTable( $aData, $aWhere ) {
 		$oDb = $this->loadWpdb();
 		return $oDb->update( $this->getTableName(), $aData, $aWhere );
 	}
-	
+
+	/**
+	 * @param array $aWhere - delete where (associative array)
+	 * @return integer|boolean (number of rows affected)
+	 */
 	public function deleteRowsFromTable( $aWhere ) {
 		$oDb = $this->loadWpdb();
 		return $oDb->delete( $this->getTableName(), $aWhere );
 	}
-	
+
+	/**
+	 * @param integer $nTime
+	 */
 	protected function deleteAllRowsOlderThan( $nTime ) {
 		$sQuery = "
 			DELETE from `%s`
@@ -173,7 +201,7 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 			$this->getTableName(),
 			$nTime
 		);
-		$this->doSql( $sQuery );
+		return $this->doSql( $sQuery );
 	}
 
 	public function createTable() {
@@ -207,28 +235,36 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	/**
 	 * Given any SQL query, will perform it using the WordPress database object.
 	 * 
-	 * @param string $insSql
+	 * @param string $sSqlQuery
+	 * @return integer|boolean (number of rows affected or just true/false)
 	 */
-	public function doSql( $insSql ) {
+	public function doSql( $sSqlQuery ) {
 		$oDb = $this->loadWpdb();
-		$fResult = $oDb->query( $insSql );
-		return $fResult;
-	}
-	
-	private function setTableName( $sTableName = null ) {
-		$oDb = $this->loadWpdb();
-		$sTableString =
-			$oDb->prefix
-			. self::DB_TABLE_PREFIX
-			. ( is_null( $sTableName ) ? $this->oFeatureOptions->getFeatureSlug() : $sTableName );
-		$this->sFullTableName = esc_sql( $sTableString );
-		return $this->sFullTableName;
+		$mResult = $oDb->query( $sSqlQuery );
+		return $mResult;
 	}
 
+	/**
+	 * @return string
+	 */
 	protected function getTableName() {
 		if ( empty( $this->sFullTableName ) ) {
 			return $this->setTableName();
 		}
+		return $this->sFullTableName;
+	}
+
+	/**
+	 * @param string $sTableName
+	 * @return mixed
+	 */
+	private function setTableName( $sTableName = '' ) {
+		$oDb = $this->loadWpdb();
+		$sTableString =
+			$oDb->prefix
+			. self::DB_TABLE_PREFIX
+			. ( empty( $sTableName ) ? '' : $sTableName );
+		$this->sFullTableName = esc_sql( $sTableString );
 		return $this->sFullTableName;
 	}
 

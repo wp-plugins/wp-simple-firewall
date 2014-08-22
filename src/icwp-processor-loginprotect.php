@@ -54,8 +54,14 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 			return true;
 		}
 
+		$oWp = $this->oFeatureOptions->loadWpFunctionsProcessor();
+		// XML-RPC Compatibility
+		if ( $oWp->getIsXmlrpc() && $this->getIsOption( 'enable_xmlrpc_compatibility', 'Y' ) ) {
+			return true;
+		}
+
 		// check for remote posting before anything else.
-		if ( $fIsPost && $this->getIsOption('enable_prevent_remote_post', 'Y') ) {
+		if ( $fIsPost && $this->getIsOption( 'enable_prevent_remote_post', 'Y' ) ) {
 			add_filter( 'authenticate',			array( $this, 'checkRemotePostLogin_Filter' ), 9, 3);
 		}
 
