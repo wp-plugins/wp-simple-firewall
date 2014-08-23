@@ -20,6 +20,8 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 if ( !class_exists('ICWP_WPSF_FeatureHandler_UserManagement') ):
 
 class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_Base {
+
+	const UserManagementTableName = 'user_management';
 	
 	/**
 	 * @var ICWP_WPSF_Processor_UserManagement
@@ -163,9 +165,22 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected function getNonUiOptions() {
 		$aNonUiOptions = array(
+			'user_sessions_table_name',
 			'user_management_table_created'
 		);
 		return $aNonUiOptions;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getUserSessionsTablename() {
+		$sName = $this->getOpt( 'user_sessions_table_name' );
+//		if ( empty( $sName ) ) {
+			$sName = self::UserManagementTableName;
+			$this->setOpt( 'user_sessions_table_name', $sName );
+//		}
+		return $sName;
 	}
 }
 

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.

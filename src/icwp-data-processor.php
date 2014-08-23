@@ -477,7 +477,10 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 		 */
 		public static function FetchGet( $sKey, $mDefault = null ) {
 			if ( function_exists( 'filter_input' ) && defined( 'INPUT_GET' ) ) {
-				return filter_input( INPUT_GET, $sKey );
+				$mPossible = filter_input( INPUT_GET, $sKey );
+				if ( !empty( $mPossible ) ) {
+					return $mPossible;
+				}
 			}
 			return self::ArrayFetch( $_GET, $sKey, $mDefault );
 		}
@@ -488,7 +491,10 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 		 */
 		public static function FetchPost( $sKey, $mDefault = null ) {
 			if ( function_exists( 'filter_input' ) && defined( 'INPUT_POST' ) ) {
-				return filter_input( INPUT_POST, $sKey );
+				$mPossible = filter_input( INPUT_POST, $sKey );
+				if ( !empty( $mPossible ) ) {
+					return $mPossible;
+				}
 			}
 			return self::ArrayFetch( $_POST, $sKey, $mDefault );
 		}
@@ -499,7 +505,10 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 		 */
 		public static function FetchCookie( $sKey, $mDefault = null ) {
 			if ( function_exists( 'filter_input' ) && defined( 'INPUT_COOKIE' ) ) {
-				return filter_input( INPUT_COOKIE, $sKey );
+				$mPossible = filter_input( INPUT_COOKIE, $sKey );
+				if ( !empty( $mPossible ) ) {
+					return $mPossible;
+				}
 			}
 			return self::ArrayFetch( $_COOKIE, $sKey, $mDefault );
 		}

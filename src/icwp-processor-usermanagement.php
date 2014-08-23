@@ -41,7 +41,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 * @param ICWP_WPSF_FeatureHandler_UserManagement $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_UserManagement $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions );
+		parent::__construct( $oFeatureOptions, $oFeatureOptions->getUserSessionsTablename() );
 	}
 
 	/**

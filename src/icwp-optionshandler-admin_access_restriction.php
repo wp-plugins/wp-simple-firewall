@@ -83,9 +83,9 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 			$sAccessKey = $this->getOpt( 'admin_access_key' );
 			if ( !empty( $sAccessKey ) ) {
 				$this->loadDataProcessor();
-				$sHash = md5( $sAccessKey.ICWP_WPSF_DataProcessor::GetVisitorIpAddress() );
+				$sHash = md5( $sAccessKey );
 				$sCookieValue = ICWP_WPSF_DataProcessor::FetchCookie( self::AdminAccessKeyCookieName );
-				$this->fHasPermissionToSubmit = $sCookieValue === $sHash;
+				$this->fHasPermissionToSubmit = ( $sCookieValue === $sHash );
 			}
 		}
 		return $this->fHasPermissionToSubmit;
@@ -110,11 +110,13 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	 */
 	protected function setPermissionToSubmit( $fPermission = false ) {
 		if ( $fPermission ) {
-			$this->loadDataProcessor();
-			$sValue = md5( $this->getOpt( 'admin_access_key' ).ICWP_WPSF_DataProcessor::GetVisitorIpAddress() );
-			$sTimeout = $this->getOpt( 'admin_access_timeout' ) * 60;
-			$_COOKIE[ self::AdminAccessKeyCookieName ] = $sValue;
-			setcookie( self::AdminAccessKeyCookieName, $sValue, time()+$sTimeout, COOKIEPATH, COOKIE_DOMAIN, false );
+			$sAccessKey = $this->getOpt( 'admin_access_key' );
+			if ( !empty( $sAccessKey ) ) {
+				$sValue = md5( $sAccessKey );
+				$sTimeout = $this->getOpt( 'admin_access_timeout' ) * 60;
+				$_COOKIE[ self::AdminAccessKeyCookieName ] = $sValue;
+				setcookie( self::AdminAccessKeyCookieName, $sValue, time()+$sTimeout, COOKIEPATH, COOKIE_DOMAIN, false );
+			}
 		}
 		else {
 			unset( $_COOKIE[ self::AdminAccessKeyCookieName ] );

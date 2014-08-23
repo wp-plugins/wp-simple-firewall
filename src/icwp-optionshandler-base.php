@@ -519,26 +519,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			}
 		}
 
-		public function collateAllFormInputsForAllOptions() {
-
-			if ( !isset( $this->aOptions ) ) {
-				$this->buildOptions();
-			}
-
-			$aToJoin = array();
-			foreach ( $this->aOptions as $aOptionsSection ) {
-
-				if ( empty( $aOptionsSection ) ) {
-					continue;
-				}
-				foreach ( $aOptionsSection['section_options'] as $aOption ) {
-					list($sKey, $fill1, $fill2, $sType) =  $aOption;
-					$aToJoin[] = $sType.':'.$sKey;
-				}
-			}
-			return implode( self::CollateSeparator, $aToJoin );
-		}
-
 		/**
 		 * @param $aAggregatedOptions
 		 * @return array
@@ -743,12 +723,34 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			return $aDisplay;
 		}
 
+		public function collateAllFormInputsForAllOptions() {
+
+			if ( !isset( $this->aOptions ) ) {
+				$this->buildOptions();
+			}
+
+			$aToJoin = array();
+			foreach ( $this->aOptions as $aOptionsSection ) {
+
+				if ( empty( $aOptionsSection ) ) {
+					continue;
+				}
+				foreach ( $aOptionsSection['section_options'] as $aOption ) {
+					list($sKey, $fill1, $fill2, $sType) =  $aOption;
+					if ( is_array( $sType ) ) {
+						$sType = isset( $sType['type'] ) ? $sType['type'] : $sType[0];
+					}
+					$aToJoin[] = $sType.':'.$sKey;
+				}
+			}
+			return implode( self::CollateSeparator, $aToJoin );
+		}
+
 		/**
-		 *
 		 */
 		public function handleFormSubmit() {
 			if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
-//			TODO: manage how we react to prohibited submissions
+//				TODO: manage how we react to prohibited submissions
 				return false;
 			}
 
@@ -786,8 +788,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 					continue;
 				}
 
+
 				$sOptionValue = ICWP_WPSF_DataProcessor::FetchPost( $this->prefixOptionKey( $sOptionKey ) );
-				if ( is_null($sOptionValue) ) {
+				if ( is_null( $sOptionValue ) ) {
 
 					if ( $sOptionType == 'text' || $sOptionType == 'email' ) { //if it was a text box, and it's null, don't update anything
 						continue;
@@ -822,6 +825,8 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 					}
 					else if ( $sOptionType == 'comma_separated_lists' ) {
 						$sOptionValue = ICWP_WPSF_DataProcessor::ExtractCommaSeparatedList( $sOptionValue );
+					}
+					else if ( $sOptionType == 'multiple_select' ) {
 					}
 				}
 				$this->setOpt( $sOptionKey, $sOptionValue );

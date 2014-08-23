@@ -20,7 +20,9 @@ require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 if ( !class_exists('ICWP_WPSF_FeatureHandler_LoginProtect') ):
 
 class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Base {
-	
+
+	const TwoFactorAuthTableName = 'login_auth';
+
 	/**
 	 * @var ICWP_WPSF_Processor_LoginProtect
 	 */
@@ -286,7 +288,8 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 			'last_login_time',
 			'last_login_time_file_path',
 			'log_category',
-			'two_factor_auth_table_created'
+			'two_factor_auth_table_name',
+			'two_factor_auth_table_created',
 		);
 		return $aNonUiOptions;
 	}
@@ -324,7 +327,7 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 		if ( $fAsDefaults ) {
 			unset($aTwoAuthRoles['type']);
 			unset($aTwoAuthRoles[0]);
-			return array_keys($aTwoAuthRoles);
+			return array_keys( $aTwoAuthRoles );
 		}
 		return $aTwoAuthRoles;
 	}
@@ -359,6 +362,18 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 			$this->setOpt( 'gasp_key', $sKey );
 		}
 		return $sKey;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getTwoFactorAuthTableName() {
+		$sName = $this->getOpt( 'two_factor_auth_table_name' );
+		if ( empty( $sName ) ) {
+			$sName = self::TwoFactorAuthTableName;
+			$this->setOpt( 'two_factor_auth_table_name', $sName );
+		}
+		return $sName;
 	}
 
 	/**

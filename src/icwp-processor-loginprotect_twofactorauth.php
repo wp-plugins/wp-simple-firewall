@@ -20,8 +20,7 @@ require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
 if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 
 class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbProcessor {
-	
-	const TableName = 'login_auth';
+
 	const AuthActiveCookie = 'wpsf_auth';
 
 	/**
@@ -37,7 +36,7 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 	 * @param ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions, self::TableName );
+		parent::__construct( $oFeatureOptions, $oFeatureOptions->getTwoFactorAuthTableName() );
 	}
 
 	/**
@@ -175,10 +174,10 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 	 *
 	 * @param WP_User|string $oUser	- the docs say the first parameter a string, WP actually gives a WP_User object (or null)
 	 * @param string $sUsername
-	 * @param string $insPassword
+	 * @param string $sPassword
 	 * @return WP_Error|WP_User|null	- WP_User when the login success AND the IP is authenticated. null when login not successful but IP is valid. WP_Error otherwise.
 	 */
-	public function doUserTwoFactorAuth( $oUser, $sUsername, $insPassword ) {
+	public function doUserTwoFactorAuth( $oUser, $sUsername, $sPassword ) {
 
 		if ( empty( $sUsername ) ) {
 			return $oUser;

@@ -67,7 +67,7 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 
 		// Add GASP checking to the login form.
 		if ( $this->getIsOption( 'enable_login_gasp_check', 'Y' ) ) {
-			require_once('icwp-processor-loginprotect_gasp.php');
+			require_once( 'icwp-processor-loginprotect_gasp.php' );
 			$oGaspProcessor = new ICWP_WPSF_Processor_LoginProtect_Gasp( $this->oFeatureOptions );
 			$oGaspProcessor->run();
 		}

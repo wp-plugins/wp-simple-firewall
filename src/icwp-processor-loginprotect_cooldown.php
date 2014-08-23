@@ -63,7 +63,7 @@ class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base
 	 */
 	public function run() {
 		// We give it a priority of 10 so that we can jump in before WordPress does its own validation.
-		add_filter( 'authenticate', array( $this, 'checkLoginInterval' ), 10, 3);
+		add_filter( 'authenticate', array( $this, 'checkLoginInterval' ), 10, 3 );
 	}
 
 	/**
