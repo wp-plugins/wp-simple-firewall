@@ -804,6 +804,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				}
 				else { //handle any pre-processing we need to.
 
+					if ( $sOptionType == 'text' || $sOptionType == 'email' ) {
+						$sOptionValue = trim( $sOptionValue );
+					}
 					if ( $sOptionType == 'integer' ) {
 						$sOptionValue = intval( $sOptionValue );
 					}

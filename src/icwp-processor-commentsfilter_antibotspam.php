@@ -260,18 +260,13 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 		$nCooldown		= $this->getOption('comments_cooldown_interval');
 		$nExpire		= $this->getOption('comments_token_expire_interval');
 
-		if ( strpos( $sCommentWait, '%s' ) !== false ) {
-			$sCommentWait = sprintf( $sCommentWait, $nCooldown );
-			$sJsCommentWait = str_replace( '%s', '"+nRemaining+"', $this->getOption('custom_message_comment_wait') );
-			$sJsCommentWait = '"'.$sJsCommentWait.'"';
-		}
-		else {
-			$sJsCommentWait = '"'. $this->getOption('custom_message_comment_wait').'"';
-		}
+		$sJsCommentWait = '"'.str_replace( '%s', '"+nRemaining+"', $sCommentWait ).'"';
+		$sCommentWait = str_replace( '%s', $nCooldown, $sCommentWait );
+
 		$sCommentReload = $this->getOption('custom_message_comment_reload');
 
 		$sReturn = "
-			<script type='text/javascript'>
+			<script type=\"text/javascript\">
 				
 				function cb_click$sId() {
 					cb_name$sId.value=cb$sId.name;
