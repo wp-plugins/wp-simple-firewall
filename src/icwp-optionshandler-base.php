@@ -3,8 +3,6 @@
  * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
- * Version: 2013-11-15-V1
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -135,6 +133,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
+		 * A action added to WordPress 'plugins_loaded' hook
 		 */
 		public function onWpPluginsLoaded() {
 
@@ -147,7 +146,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * A action added to WordPress 'plugins_loaded' hook
+		 * A action added to WordPress 'init' hook
 		 */
 		public function onWpInit() {
 			$this->updateHandler();
@@ -235,7 +234,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function getIsMainFeatureEnabled() {
 			$this->override();
-			return $this->getOpt( 'enable_'.$this->getFeatureSlug() ) == 'Y';
+			return $this->getOptIs( 'enable_'.$this->getFeatureSlug(), 'Y' );
 		}
 
 		/**
@@ -530,7 +529,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * Loads the options and their stored values from the WordPress Options store.
 		 */
-		protected function loadStoredOptionsValues() {
+		public function loadStoredOptionsValues() {
 			if ( empty( $this->m_aOptionsValues ) ) {
 				$oWpFunc = $this->loadWpFunctionsProcessor();
 				$this->m_aOptionsValues = $oWpFunc->getOption( $this->sOptionsStoreKey, array() );
@@ -723,7 +722,10 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			return $aDisplay;
 		}
 
-		public function collateAllFormInputsForAllOptions() {
+		/**
+		 * @return string
+		 */
+		protected function collateAllFormInputsForAllOptions() {
 
 			if ( !isset( $this->aOptions ) ) {
 				$this->buildOptions();
