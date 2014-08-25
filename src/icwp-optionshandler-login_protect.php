@@ -67,6 +67,9 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	 * @return array
 	 */
 	protected function getOptionsDefinitions() {
+
+		$oDp = $this->loadDataProcessor();
+
 		$aOptionsBase = array(
 			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Login Protection') ),
 			'section_options' => array(
@@ -102,7 +105,9 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 					'ip_addresses',
 					_wpsf__( 'Whitelist IP Addresses' ),
 					_wpsf__( 'Specify IP Addresses that by-pass all Login Protect rules' ),
-					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.( ICWP_WPSF_DataProcessor::GetVisitorIpAddress(false) ).'</span>' ),
+					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ),
+						'<span class="code">'.( $oDp->GetVisitorIpAddress( false ) ).'</span>'
+					),
 					'<a href="http://icwp.io/52" target="_blank">'._wpsf__( 'more info' ).'</a>'
 				)
 			)
@@ -304,7 +309,8 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 		}
 
 		// When they've clicked to terminate all logged in authenticated users.
-		if ( ICWP_WPSF_DataProcessor::FetchPost( 'terminate-all-logins' ) ) {
+		$oDp = $this->loadDataProcessor();
+		if ( $oDp->FetchPost( 'terminate-all-logins' ) ) {
 			$oProc = $this->getProcessor();
 			$oProc->doTerminateAllVerifiedLogins();
 			return;

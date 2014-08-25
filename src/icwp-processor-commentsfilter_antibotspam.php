@@ -135,14 +135,13 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 		$fIsSpam = true;
 		$sExplanation = '';
 
-		$this->loadDataProcessor();
-
-		$sFieldCheckboxName = ICWP_WPSF_DataProcessor::FetchPost( 'cb_nombre' );
-		$sFieldHoney = ICWP_WPSF_DataProcessor::FetchPost( 'sugar_sweet_email' );
-		$sFieldCommentToken = ICWP_WPSF_DataProcessor::FetchPost( 'comment_token' );
+		$oDp = $this->loadDataProcessor();
+		$sFieldCheckboxName = $oDp->FetchPost( 'cb_nombre' );
+		$sFieldHoney = $oDp->FetchPost( 'sugar_sweet_email' );
+		$sFieldCommentToken = $oDp->FetchPost( 'comment_token' );
 
 		// we have the cb name, is it set?
-		if( !$sFieldCheckboxName || !ICWP_WPSF_DataProcessor::FetchPost( $sFieldCheckboxName ) ) {
+		if( !$sFieldCheckboxName || !$oDp->FetchPost( $sFieldCheckboxName ) ) {
 			$sExplanation = sprintf( _wpsf__('Failed GASP Bot Filter Test (%s)' ), _wpsf__('checkbox') );
 			$sStatKey = 'checkbox';
 		}
@@ -179,8 +178,8 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 		$this->deleteOldPostCommentTokens();
 		$this->insertUniquePostCommentToken();
 
-		$this->loadDataProcessor();
-		$this->m_sUniqueFormId = ICWP_WPSF_DataProcessor::GenerateRandomString( rand(7, 23), true );
+		$oDp = $this->loadDataProcessor();
+		$this->m_sUniqueFormId = $oDp->GenerateRandomString( rand(7, 23), true );
 		
 		echo $this->getGaspCommentsHookHtml();
 	}
@@ -223,8 +222,8 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 		// Compatibility with shoutbox WP Wall Plugin
 		// http://wordpress.org/plugins/wp-wall/
 		if ( function_exists( 'WPWall_Init' ) ) {
-			$this->loadDataProcessor();
-			if ( !is_null( ICWP_WPSF_DataProcessor::FetchPost('submit_wall_post') ) ) {
+			$oDp = $this->loadDataProcessor();
+			if ( !is_null( $oDp->FetchPost( 'submit_wall_post' ) ) ) {
 				return false;
 			}
 		}

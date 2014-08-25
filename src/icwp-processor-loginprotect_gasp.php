@@ -137,13 +137,16 @@ class ICWP_WPSF_Processor_LoginProtect_Gasp extends ICWP_WPSF_Processor_Base {
 	 * @return bool
 	 */
 	public function doGaspChecks( $sUsername ) {
-		$this->loadDataProcessor();
-		$sGaspCheckBox = ICWP_WPSF_DataProcessor::FetchPost( $this->getGaspCheckboxName() );
-		$sHoney = ICWP_WPSF_DataProcessor::FetchPost( 'icwp_wpsf_login_email' );
+		$oDp = $this->loadDataProcessor();
+		$sGaspCheckBox = $oDp->FetchPost( $this->getGaspCheckboxName() );
+		$sHoney = $oDp->FetchPost( 'icwp_wpsf_login_email' );
 
 		if ( empty( $sGaspCheckBox ) ) {
 			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".'), $sUsername, ICWP_WPSF_DataProcessor::GetVisitorIpAddress(false) )
+				sprintf( _wpsf__('User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".'),
+					$sUsername,
+					$oDp->FetchPost( false )
+				)
 			);
 			$this->doStatIncrement( 'login.gasp.checkbox.fail' );
 			wp_die( "You must check that box to say you're not a bot." );
@@ -151,7 +154,10 @@ class ICWP_WPSF_Processor_LoginProtect_Gasp extends ICWP_WPSF_Processor_Base {
 		}
 		else if ( !empty( $sHoney ) ) {
 			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".'), $sUsername, ICWP_WPSF_DataProcessor::GetVisitorIpAddress(false) )
+				sprintf( _wpsf__('User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".'),
+					$sUsername,
+					$oDp->FetchPost( false )
+				)
 			);
 			$this->doStatIncrement( 'login.gasp.honeypot.fail' );
 			wp_die( _wpsf__('You appear to be a bot - terminating login attempt.') );

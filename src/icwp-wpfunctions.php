@@ -188,10 +188,12 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 * @return bool
 		 */
 		public function getIsLoginRequest() {
-			return ICWP_WPSF_DataProcessor::GetIsRequestPost()
-			&& $this->getIsCurrentPage('wp-login.php')
-			&& !is_null( ICWP_WPSF_DataProcessor::FetchPost('log') )
-			&& !is_null( ICWP_WPSF_DataProcessor::FetchPost('pwd') );
+			$oDp = $this->loadDataProcessor();
+			return
+				$oDp->GetIsRequestPost()
+				&& $this->getIsCurrentPage( 'wp-login.php' )
+				&& !is_null( $oDp->FetchPost( 'log' ) )
+				&& !is_null( $oDp->FetchPost( 'pwd' ) );
 		}
 
 		/**
@@ -285,11 +287,16 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		/**
 		 */
 		public function getCurrentWpAdminPage() {
-			$sScript = isset( $_SERVER['SCRIPT_NAME'] )? $_SERVER['SCRIPT_NAME'] : $_SERVER['PHP_SELF'];
-			if ( is_admin() && !empty( $sScript ) && basename( $sScript ) == 'admin.php' && isset( $_GET['page'] ) ) {
-				$sCurrentPage = $_GET['page'];
+
+			$oDp = $this->loadDataProcessor();
+			$sScript = $oDp->FetchServer( 'SCRIPT_NAME' );
+			if ( empty( $sScript ) ) {
+				$sScript = $oDp->FetchServer( 'PHP_SELF' );
 			}
-			return empty($sCurrentPage)? '' : $sCurrentPage;
+			if ( is_admin() && !empty( $sScript ) && basename( $sScript ) == 'admin.php' ) {
+				$sCurrentPage = $oDp->FetchGet( 'page' );
+			}
+			return empty( $sCurrentPage ) ? '' : $sCurrentPage;
 		}
 
 		/**
@@ -322,6 +329,16 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 */
 		protected function getWpLoginUrl() {
 			return site_url() . '/wp-login.php';
+		}
+
+		/**
+		 * @return ICWP_WPSF_DataProcessor
+		 */
+		public function loadDataProcessor() {
+			if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
+				require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+			}
+			return ICWP_WPSF_DataProcessor::GetInstance();
 		}
 	}
 endif;

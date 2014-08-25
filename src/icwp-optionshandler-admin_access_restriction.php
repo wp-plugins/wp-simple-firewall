@@ -64,8 +64,8 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	 */
 	public function doCheckHasPermissionToSubmit( $fHasPermission = true ) {
 
-		$this->loadDataProcessor();
-		$sAccessKeyRequest = ICWP_WPSF_DataProcessor::FetchPost( $this->doPluginPrefix( 'admin_access_key_request', '_' ) );
+		$oDp = $this->loadDataProcessor();
+		$sAccessKeyRequest = $oDp->FetchPost( $this->doPluginPrefix( 'admin_access_key_request', '_' ) );
 		if ( !empty( $sAccessKeyRequest ) ) {
 			$sAccessKeyRequest = md5( trim( $sAccessKeyRequest ) );
 			if ( $sAccessKeyRequest === $this->getOpt( 'admin_access_key' ) ) {
@@ -84,7 +84,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 			if ( !empty( $sAccessKey ) ) {
 				$this->loadDataProcessor();
 				$sHash = md5( $sAccessKey );
-				$sCookieValue = ICWP_WPSF_DataProcessor::FetchCookie( self::AdminAccessKeyCookieName );
+				$sCookieValue = $oDp->FetchCookie( self::AdminAccessKeyCookieName );
 				$this->fHasPermissionToSubmit = ( $sCookieValue === $sHash );
 			}
 		}
@@ -100,7 +100,8 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 			return $fSuccess;
 		}
 
-		if ( $this->getIsCurrentPageConfig() && is_null( ICWP_WPSF_DataProcessor::FetchPost( $this->doPluginPrefix( 'enable_admin_access_restriction', '_' ) ) ) ) {
+		$oDp = $this->loadDataProcessor();
+		if ( $this->getIsCurrentPageConfig() && is_null( $oDp->FetchPost( $this->doPluginPrefix( 'enable_admin_access_restriction', '_' ) ) ) ) {
 			$this->setPermissionToSubmit( false );
 		}
 	}

@@ -56,7 +56,8 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_WPSF_Processor_Base {
 	 */
 	public function run() {
 
-		if ( ICWP_WPSF_DataProcessor::FetchGet('forcerun') == 1 ) {
+		$oDp = $this->loadDataProcessor();
+		if ( $oDp->FetchGet( 'forcerun' ) == 1 ) {
 			$this->setForceRunAutoupdates( true );
 		}
 

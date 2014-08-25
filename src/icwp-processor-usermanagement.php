@@ -48,7 +48,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 */
 	public function run() {
 		parent::run();
-		$this->loadDataProcessor();
+		$oDp = $this->loadDataProcessor();
 
 		if ( $this->oFeatureOptions->getOpt( 'user_management_table_created' ) !== true ) {
 			$this->createTable();
@@ -62,7 +62,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			return true;
 		}
 
-		$sRequestMethod = ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_METHOD' );
+		$sRequestMethod = $oDp->FetchServer( 'REQUEST_METHOD' );
 		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
 
 		// Check the current logged-in user every page load.
@@ -98,8 +98,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			$oError = new WP_Error();
 		}
 
-		$this->loadDataProcessor();
-		$sForceLogout = ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-forcelogout' );
+		$oDp = $this->loadDataProcessor();
+		$sForceLogout = $oDp->FetchGet( 'wpsf-forcelogout' );
 		if ( $sForceLogout == 1 ) {
 			$oError->add( 'wpsf-forcelogout', _wpsf__('Your session has expired.').'<br />'._wpsf__('Please login again.') );
 		}
@@ -136,9 +136,9 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 			if ( $this->getIsOption( 'session_auto_forward_to_admin_area', 'Y' ) ) {
 				$oWp = $this->loadWpFunctionsProcessor();
-				$this->loadDataProcessor();
+				$oDp = $this->loadDataProcessor();
 				$sWpLogin = 'wp-login.php';
-				if ( ICWP_WPSF_DataProcessor::FetchGet( 'action' ) != 'logout' && ( substr( $oWp->getCurrentPage(), -strlen( $sWpLogin ) ) === $sWpLogin ) ) {
+				if ( $oDp->FetchGet( 'action' ) != 'logout' && ( substr( $oWp->getCurrentPage(), -strlen( $sWpLogin ) ) === $sWpLogin ) ) {
 					$oWp = $this->loadWpFunctionsProcessor();
 					$oWp->redirectToAdmin();
 				}
@@ -290,7 +290,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			return false;
 		}
 
-		$this->loadDataProcessor();
+		$oDp = $this->loadDataProcessor();
 		// Add new session entry
 		// set attempts = 1 and then when we know it's a valid login, we zero it.
 		// First set any other entries for the given user to be deleted.
@@ -302,7 +302,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		$aNewData[ 'pending' ]				= 1;
 		$aNewData[ 'logged_in_at' ]			= self::$nRequestTimestamp;
 		$aNewData[ 'last_activity_at' ]		= self::$nRequestTimestamp;
-		$aNewData[ 'last_activity_uri' ]	= ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_URI' );
+		$aNewData[ 'last_activity_uri' ]	= $oDp->FetchServer( 'REQUEST_URI' );
 		$aNewData[ 'created_at' ]			= self::$nRequestTimestamp;
 		$mResult = $this->insertIntoTable( $aNewData );
 
@@ -370,11 +370,11 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			return false;
 		}
 
-		$this->loadDataProcessor();
+		$oDp = $this->loadDataProcessor();
 		// First set any other entries for the given user to be deleted.
 		$aNewData = array(
 			'last_activity_at'	=> self::$nRequestTimestamp,
-			'last_activity_uri'	=> ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_URI' )
+			'last_activity_uri'	=> $oDp->FetchServer( 'REQUEST_URI' )
 		);
 		return $this->updateCurrentSession( $oUser->user_login, $aNewData );
 	}
@@ -404,10 +404,10 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			return false;
 		}
 
-		$this->loadDataProcessor();
+		$oDp = $this->loadDataProcessor();
 		// First set any other entries for the given user to be deleted.
 		$aNewData = array(
-			'last_activity_uri'	=> ICWP_WPSF_DataProcessor::FetchServer( 'REQUEST_URI' )
+			'last_activity_uri'	=> $oDp->FetchServer( 'REQUEST_URI' )
 		);
 		$mResult = $this->updateCurrentSession( $oUser->user_login, $aNewData );
 		return $mResult;
@@ -538,8 +538,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 */
 	protected function getSessionId() {
 		if ( empty( $this->sSessionId ) ) {
-			$this->loadDataProcessor();
-			$this->sSessionId = ICWP_WPSF_DataProcessor::FetchCookie( self::Session_Cookie );
+			$oDp = $this->loadDataProcessor();
+			$this->sSessionId = $oDp->FetchCookie( self::Session_Cookie );
 			if ( is_null( $this->sSessionId ) ) {
 				$this->sSessionId = md5( uniqid() );
 				$this->setSessionCookie();

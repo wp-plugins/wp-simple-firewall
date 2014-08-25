@@ -53,10 +53,10 @@ class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base
 	 *
 	 */
 	protected function updateLastLoginTime() {
-		$this->loadDataProcessor();
-		$this->oFeatureOptions->setOpt( 'last_login_time', ICWP_WPSF_DataProcessor::GetRequestTime() );
+		$oDp = $this->loadDataProcessor();
+		$this->oFeatureOptions->setOpt( 'last_login_time', $oDp->GetRequestTime() );
 		$oWpFs = $this->loadFileSystemProcessor();
-		$oWpFs->fileAction( 'touch', array( $this->oFeatureOptions->getLastLoginTimeFilePath(), ICWP_WPSF_DataProcessor::GetRequestTime() ) );
+		$oWpFs->fileAction( 'touch', array( $this->oFeatureOptions->getLastLoginTimeFilePath(), $oDp->GetRequestTime() ) );
 	}
 
 	/**
@@ -89,8 +89,8 @@ class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base
 
 		// If we're outside the interval, let the login process proceed as per normal and
 		// update our last login time.
-		$this->loadDataProcessor();
-		$nCurrentLoginInterval = ICWP_WPSF_DataProcessor::GetRequestTime() - $this->getLastLoginTime();
+		$oDp = $this->loadDataProcessor();
+		$nCurrentLoginInterval = $oDp->GetRequestTime() - $this->getLastLoginTime();
 		if ( $nCurrentLoginInterval > $nRequiredLoginInterval ) {
 			$this->updateLastLoginTime();
 			$this->doStatIncrement( 'login.cooldown.success' );

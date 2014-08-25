@@ -45,9 +45,8 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 	 */
 	public function run() {
 		parent::run();
-		$this->loadDataProcessor();
-
-		$fIsPost = ICWP_WPSF_DataProcessor::GetIsRequestPost();
+		$oDp = $this->loadDataProcessor();
+		$fIsPost = $oDp->GetIsRequestPost();
 
 		$aWhitelist = $this->getOption( 'ips_whitelist', array() );
 		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::$nRequestIp ) ) {
@@ -104,8 +103,8 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 			$oError = new WP_Error();
 		}
 
-		$this->loadDataProcessor();
-		$sForceLogout = ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-forcelogout' );
+		$oDp = $this->loadDataProcessor();
+		$sForceLogout = $oDp->FetchGet( 'wpsf-forcelogout' );
 		if ( $sForceLogout == 6 ) {
 			$oError->add( 'wpsf-forcelogout', _wpsf__('Your Two-Factor Authentication Was Verified.').'<br />'._wpsf__('Please login again.') );
 		}
@@ -119,8 +118,8 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 	 * @return mixed
 	 */
 	public function checkRemotePostLogin_Filter( $oUser, $sUsername, $sPassword ) {
-		$this->loadDataProcessor();
-		$sHttpRef = ICWP_WPSF_DataProcessor::FetchServer( 'HTTP_REFERER' );
+		$oDp = $this->loadDataProcessor();
+		$sHttpRef = $oDp->FetchServer( 'HTTP_REFERER' );
 
 		if ( !empty( $sHttpRef ) ) {
 			$aHttpRefererParts = parse_url( $sHttpRef );

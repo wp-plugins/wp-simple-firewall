@@ -17,10 +17,18 @@
  *
  */
 
-if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
+if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 
-	class ICWP_WPSF_DataProcessor_V2 {
+	class ICWP_WPSF_DataProcessor_V3 {
 
+		/**
+		 * @var ICWP_WPSF_DataProcessor_V3
+		 */
+		protected static $oInstance = NULL;
+
+		/**
+		 * @var bool
+		 */
 		public static $fUseFilterInput = false;
 
 		/**
@@ -451,6 +459,21 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 		}
 
 		/**
+		 * @param string $sKey		The $_COOKIE key
+		 * @param mixed $mDefault
+		 * @return mixed|null
+		 */
+		public static function FetchCookie( $sKey, $mDefault = null ) {
+			if ( self::GetUseFilterInput() && defined( 'INPUT_COOKIE' ) ) {
+				$mPossible = filter_input( INPUT_COOKIE, $sKey );
+				if ( !empty( $mPossible ) ) {
+					return $mPossible;
+				}
+			}
+			return self::ArrayFetch( $_COOKIE, $sKey, $mDefault );
+		}
+
+		/**
 		 * @param string $sKey
 		 * @param mixed $mDefault
 		 * @return mixed|null
@@ -464,7 +487,6 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 			}
 			return self::ArrayFetch( $_ENV, $sKey, $mDefault );
 		}
-
 		/**
 		 * @param string $sKey
 		 * @param mixed $mDefault
@@ -509,6 +531,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 			}
 			return is_null( $mFetchVal )? $mDefault : $mFetchVal;
 		}
+
 		/**
 		 * @param string $sKey
 		 * @param mixed $mDefault
@@ -523,24 +546,20 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V2') ):
 			}
 			return self::ArrayFetch( $_SERVER, $sKey, $mDefault );
 		}
-
-		/**
-		 * @param string $sKey		The $_COOKIE key
-		 * @param mixed $mDefault
-		 * @return mixed|null
-		 */
-		public static function FetchCookie( $sKey, $mDefault = null ) {
-			if ( self::GetUseFilterInput() && defined( 'INPUT_COOKIE' ) ) {
-				$mPossible = filter_input( INPUT_COOKIE, $sKey );
-				if ( !empty( $mPossible ) ) {
-					return $mPossible;
-				}
-			}
-			return self::ArrayFetch( $_COOKIE, $sKey, $mDefault );
-		}
 	}
 endif;
 
 if ( !class_exists('ICWP_WPSF_DataProcessor') ):
-	class ICWP_WPSF_DataProcessor extends ICWP_WPSF_DataProcessor_V2 { }
+
+	class ICWP_WPSF_DataProcessor extends ICWP_WPSF_DataProcessor_V3 {
+		/**
+		 * @return ICWP_WPSF_DataProcessor
+		 */
+		public static function GetInstance() {
+			if ( is_null( self::$oInstance ) ) {
+				self::$oInstance = new self();
+			}
+			return self::$oInstance;
+		}
+	}
 endif;

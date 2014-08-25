@@ -759,8 +759,8 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			// Now verify this is really a valid submission.
 			check_admin_referer( $this->oPluginVo->getFullPluginPrefix() );
 
-			$this->loadDataProcessor();
-			$sAllOptions = ICWP_WPSF_DataProcessor::FetchPost( $this->prefixOptionKey( 'all_options_input' ) );
+			$oDp = $this->loadDataProcessor();
+			$sAllOptions = $oDp->FetchPost( $this->prefixOptionKey( 'all_options_input' ) );
 
 			if ( empty( $sAllOptions ) ) {
 				return true;
@@ -790,8 +790,8 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 					continue;
 				}
 
-
-				$sOptionValue = ICWP_WPSF_DataProcessor::FetchPost( $this->prefixOptionKey( $sOptionKey ) );
+				$oDp = $this->loadDataProcessor();
+				$sOptionValue = $oDp->FetchPost( $this->prefixOptionKey( $sOptionKey ) );
 				if ( is_null( $sOptionValue ) ) {
 
 					if ( $sOptionType == 'text' || $sOptionType == 'email' ) { //if it was a text box, and it's null, don't update anything
@@ -820,16 +820,16 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 						$sOptionValue = md5( $sTempValue );
 					}
 					else if ( $sOptionType == 'ip_addresses' ) { //ip addresses are textareas, where each is separated by newline
-						$sOptionValue = ICWP_WPSF_DataProcessor::ExtractIpAddresses( $sOptionValue );
+						$sOptionValue = $oDp->ExtractIpAddresses( $sOptionValue );
 					}
 					else if ( $sOptionType == 'yubikey_unique_keys' ) { //ip addresses are textareas, where each is separated by newline and are 12 chars long
-						$sOptionValue = ICWP_WPSF_DataProcessor::CleanYubikeyUniqueKeys( $sOptionValue );
+						$sOptionValue = $oDp->CleanYubikeyUniqueKeys( $sOptionValue );
 					}
 					else if ( $sOptionType == 'email' && function_exists( 'is_email' ) && !is_email( $sOptionValue ) ) {
 						$sOptionValue = '';
 					}
 					else if ( $sOptionType == 'comma_separated_lists' ) {
-						$sOptionValue = ICWP_WPSF_DataProcessor::ExtractCommaSeparatedList( $sOptionValue );
+						$sOptionValue = $oDp->ExtractCommaSeparatedList( $sOptionValue );
 					}
 					else if ( $sOptionType == 'multiple_select' ) {
 					}
@@ -925,9 +925,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				$aExistingIpList = array();
 			}
 
-			$this->loadDataProcessor();
+			$oDp = $this->loadDataProcessor();
 			$nNewAddedCount = 0;
-			$aNewList = ICWP_WPSF_DataProcessor::Add_New_Raw_Ips( $aExistingIpList, $aNewIps, $nNewAddedCount );
+			$aNewList = $oDp->Add_New_Raw_Ips( $aExistingIpList, $aNewIps, $nNewAddedCount );
 			if ( $nNewAddedCount > 0 ) {
 				$this->setOpt( $insExistingListKey, $aNewList );
 			}
@@ -1020,10 +1020,14 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			return true;
 		}
 
+		/**
+		 * @return ICWP_WPSF_DataProcessor
+		 */
 		public function loadDataProcessor() {
 			if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
 				require_once( dirname(__FILE__).'/icwp-data-processor.php' );
 			}
+			return ICWP_WPSF_DataProcessor::GetInstance();
 		}
 
 		/**

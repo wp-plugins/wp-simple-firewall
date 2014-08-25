@@ -227,6 +227,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *   KNOWN ISSUE:      Login Protection logs are not being properly created - this is temporary while fixing lock-outs
 
+= 3.2.2 =
+
+*   CHANGED:    Refactoring for how GET and POST data is retrieved
+
 = 3.2.1 =
 
 *   FIXED:      Custom Comment Filter message problem when using more than one substitution. [ref](http://wordpress.org/support/topic/warning-sprintf-too-few-arguments-in-hometnrastropublic_htmlwpwp-conten?replies=8#post-5927337)

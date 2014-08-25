@@ -43,7 +43,7 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 	 */
 	public function run() {
 		parent::run();
-		$this->loadDataProcessor();
+		$oDp = $this->loadDataProcessor();
 
 		if ( $this->oFeatureOptions->getOpt( 'two_factor_auth_table_created' ) !== true ) {
 			$this->createTable();
@@ -52,7 +52,7 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 		}
 
 		// User has clicked a link in their email to validate their IP address for login.
-		if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsf-action' ) == 'linkauth' ) {
+		if ( $oDp->FetchGet( 'wpsf-action' ) == 'linkauth' ) {
 			add_action( 'init', array( $this, 'validateUserAuthLink' ), 10 );
 		}
 
@@ -129,15 +129,15 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 	 * Checks the link details to ensure all is valid before authorizing the user.
 	 */
 	public function validateUserAuthLink() {
-		$this->loadDataProcessor();
+		$oDp = $this->loadDataProcessor();
 		// wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid
 
-		if ( ICWP_WPSF_DataProcessor::FetchGet( 'wpsfkey' ) !== $this->oFeatureOptions->getTwoAuthSecretKey() ) {
+		if ( $oDp->FetchGet( 'wpsfkey' ) !== $this->oFeatureOptions->getTwoAuthSecretKey() ) {
 			return false;
 		}
 
-		$sUsername = ICWP_WPSF_DataProcessor::FetchGet( 'username' );
-		$sUniqueId = ICWP_WPSF_DataProcessor::FetchGet( 'uniqueid' );
+		$sUsername = $oDp->FetchGet( 'username' );
+		$sUniqueId = $oDp->FetchGet( 'uniqueid' );
 
 		if ( empty( $sUsername ) || empty( $sUniqueId ) ) {
 			return false;
@@ -418,8 +418,8 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 	 * @return bool
 	 */
 	protected function getIsAuthCookieValid( $sUniqueId ) {
-		$this->loadDataProcessor();
-		return ICWP_WPSF_DataProcessor::FetchCookie( self::AuthActiveCookie ) == $sUniqueId;
+		$oDp = $this->loadDataProcessor();
+		return $oDp->FetchCookie( self::AuthActiveCookie ) == $sUniqueId;
 	}
 
 	/**

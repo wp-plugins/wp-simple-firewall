@@ -78,6 +78,9 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 	 * @return array
 	 */
 	protected function getOptionsDefinitions() {
+
+		$oDp = $this->loadDataProcessor();
+
 		$aFirewallBase = 	array(
 			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('WordPress Firewall') ),
 			'section_options' => array(
@@ -201,7 +204,7 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 				)
 			)
 		);
-		
+
 		$aWhitelistSection = array(
 			'section_title' => _wpsf__( 'Whitelists - IPs, Pages, Parameters, and Users that by-pass the Firewall' ),
 			'section_options' => array(
@@ -212,7 +215,9 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 					'ip_addresses',
 					_wpsf__( 'Whitelist IP Addresses' ),
 					_wpsf__( 'Choose IP Addresses that are never subjected to Firewall Rules' ),
-					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ), '<span class="code">'.( ICWP_WPSF_DataProcessor::GetVisitorIpAddress(false) ).'</span>' )
+					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ),
+						'<span class="code">'.( $oDp->GetVisitorIpAddress( false ) ).'</span>'
+					)
 				),
 				array(
 					'page_params_whitelist',
@@ -292,18 +297,18 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 		if ( !parent::handleFormSubmit() ) {
 			return false;
 		}
-		$this->loadDataProcessor();
+		$oDp = $this->loadDataProcessor();
 
-		if ( ICWP_WPSF_DataProcessor::FetchPost( 'clear_log_submit' ) ) {
+		if ( $oDp->FetchPost( 'clear_log_submit' ) ) {
 			$oLoggingProcessor = $this->getLoggingProcessor();
 			$oLoggingProcessor->recreateTable();
 			return true;
 		}
 
-		$this->addRawIpsToFirewallList( 'ips_whitelist', array( ICWP_WPSF_DataProcessor::FetchGet( 'whiteip' ) ) );
-		$this->removeRawIpsFromFirewallList( 'ips_whitelist', array( ICWP_WPSF_DataProcessor::FetchGet( 'unwhiteip' ) ) );
-		$this->addRawIpsToFirewallList( 'ips_blacklist', array( ICWP_WPSF_DataProcessor::FetchGet( 'blackip' ) ) );
-		$this->removeRawIpsFromFirewallList( 'ips_blacklist', array( ICWP_WPSF_DataProcessor::FetchGet( 'unblackip' ) ) );
+		$this->addRawIpsToFirewallList( 'ips_whitelist', array( $oDp->FetchGet( 'whiteip' ) ) );
+		$this->removeRawIpsFromFirewallList( 'ips_whitelist', array( $oDp->FetchGet( 'unwhiteip' ) ) );
+		$this->addRawIpsToFirewallList( 'ips_blacklist', array( $oDp->FetchGet( 'blackip' ) ) );
+		$this->removeRawIpsFromFirewallList( 'ips_blacklist', array( $oDp->FetchGet( 'unblackip' ) ) );
 
 		return true;
 	}
@@ -325,7 +330,8 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 		foreach( $inaNewIps as $sAddress ) {
 			$aNewList[ $sAddress ] = '';
 		}
-		$this->setOpt( $insListName, ICWP_WPSF_DataProcessor::Add_New_Raw_Ips( $aIplist, $aNewList ) );
+		$oDp = $this->loadDataProcessor();
+		$this->setOpt( $insListName, $oDp->Add_New_Raw_Ips( $aIplist, $aNewList ) );
 	}
 
 	public function removeRawIpsFromFirewallList( $insListName, $inaRemoveIps ) {
@@ -337,7 +343,8 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 		if ( empty( $aIplist ) || empty( $inaRemoveIps ) ) {
 			return;
 		}
-		$this->setOpt( $insListName, ICWP_WPSF_DataProcessor::Remove_Raw_Ips( $aIplist, $inaRemoveIps ) );
+		$oDp = $this->loadDataProcessor();
+		$this->setOpt( $insListName, $oDp->Remove_Raw_Ips( $aIplist, $inaRemoveIps ) );
 	}
 	
 }

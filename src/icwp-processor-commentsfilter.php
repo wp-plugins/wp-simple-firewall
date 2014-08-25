@@ -60,7 +60,8 @@ class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 		}
 
 		$oWp = $this->loadWpFunctionsProcessor();
-		if ( ICWP_WPSF_DataProcessor::GetIsRequestPost() && $oWp->getCurrentPage() == 'wp-comments-post.php' && $this->getIsOption( 'enable_comments_human_spam_filter', 'Y' ) ) {
+		$oDp = $this->loadDataProcessor();
+		if ( $oDp->GetIsRequestPost() && $oWp->getCurrentPage() == 'wp-comments-post.php' && $this->getIsOption( 'enable_comments_human_spam_filter', 'Y' ) ) {
 			require_once('icwp-processor-commentsfilter_humanspam.php');
 			$oHumanSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_HumanSpam( $this->oFeatureOptions );
 			$oHumanSpamProcessor->run();

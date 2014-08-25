@@ -221,10 +221,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	public function onWpAdminInit() {
 		parent::onWpAdminInit();
 
+		$oDp = $this->loadDataProcessor();
 		if ( $this->isValidAdminArea() ) {
 			//Someone clicked the button to acknowledge the update
 			$sMetaFlag = $this->doPluginPrefix( 'hide_update_notice' );
-			if ( $this->fetchRequest( $sMetaFlag ) == 1 ) {
+			if ( $oDp->FetchRequest( $sMetaFlag ) == 1 ) {
 				$this->updateVersionUserMeta();
 				if ( $this->isShowMarketing() ) {
 					wp_redirect( $this->getUrl_PluginDashboard() );
@@ -235,13 +236,13 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 			}
 
 			$sMetaFlag = $this->doPluginPrefix( 'hide_translation_notice' );
-			if ( $this->fetchRequest( $sMetaFlag ) == 1 ) {
+			if ( $oDp->FetchRequest( $sMetaFlag ) == 1 ) {
 				$this->updateTranslationNoticeShownUserMeta();
 				wp_redirect( network_admin_url( $_POST['redirect_page'] ) );
 			}
 
 			$sMetaFlag = $this->doPluginPrefix( 'hide_mailing_list_signup' );
-			if ( $this->fetchRequest( $sMetaFlag ) == 1 ) {
+			if ( $oDp->FetchRequest( $sMetaFlag ) == 1 ) {
 				$this->updateMailingListSignupShownUserMeta();
 			}
 		}

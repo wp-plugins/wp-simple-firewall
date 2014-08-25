@@ -112,9 +112,9 @@ class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_B
 		if ( !parent::handleFormSubmit() ) {
 			return false;
 		}
-		$this->loadDataProcessor();
 
-		if ( ICWP_WPSF_DataProcessor::FetchPost( 'clear_log_submit' ) ) {
+		$oDp = $this->loadDataProcessor();
+		if ( $oDp->FetchPost( 'clear_log_submit' ) ) {
 			$oLoggingProcessor = $this->getLoggingProcessor();
 			$oLoggingProcessor->recreateTable();
 			return true;

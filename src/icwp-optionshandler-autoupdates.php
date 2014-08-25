@@ -53,8 +53,8 @@ class ICWP_WPSF_FeatureHandler_Autoupdates_V2 extends ICWP_WPSF_FeatureHandler_B
 		}
 
 		// Force run automatic updates
-		$this->loadDataProcessor();
-		if ( ICWP_WPSF_DataProcessor::FetchGet( 'force_run_auto_updates' ) == 'now' ) {
+		$oDp = $this->loadDataProcessor();
+		if ( $oDp->FetchGet( 'force_run_auto_updates' ) == 'now' ) {
 			$oProc = $this->getProcessor();
 			$oProc->setForceRunAutoupdates( true );
 			return;

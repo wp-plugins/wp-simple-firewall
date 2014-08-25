@@ -65,12 +65,12 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 * Resets the object values to be re-used anew
 		 */
 		public function reset() {
-			$this->loadDataProcessor();
+			$oDp = $this->loadDataProcessor();
 			if ( !isset( self::$nRequestIp ) ) {
-				self::$nRequestIp = ICWP_WPSF_DataProcessor::GetVisitorIpAddress();
+				self::$nRequestIp = $oDp->GetVisitorIpAddress();
 			}
 			if ( !isset( self::$nRequestTimestamp ) ) {
-				self::$nRequestTimestamp = ICWP_WPSF_DataProcessor::GetRequestTime();
+				self::$nRequestTimestamp = $oDp->GetRequestTime();
 			}
 			$this->resetLog();
 		}
@@ -298,9 +298,10 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		public function deleteAndCleanUp() { }
 
 		/**
+		 * @return ICWP_WPSF_DataProcessor
 		 */
 		protected function loadDataProcessor() {
-			$this->oFeatureOptions->loadDataProcessor();
+			return $this->oFeatureOptions->loadDataProcessor();
 		}
 
 		/**

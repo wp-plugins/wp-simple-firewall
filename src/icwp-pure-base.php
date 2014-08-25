@@ -86,13 +86,11 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 				add_action( 'admin_menu',				array( $this, 'onWpAdminMenu' ) );
 				add_action(	'network_admin_menu',		array( $this, 'onWpAdminMenu' ) );
 				add_action( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
-//			add_action( 'deactivate_plugin',		array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
 				add_action( 'wp_before_admin_bar_render',		array( $this, 'onWpAdminBar' ), 1, 9999 );
 			}
 			add_action( 'in_plugin_update_message-'.$this->getPluginBaseFile(), array( $this, 'onWpPluginUpdateMessage' ) );
 			add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 			add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'doPluginShutdown' ) );
-
 			$this->registerActivationHooks();
 		}
 
@@ -385,36 +383,31 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		}
 
 		protected function getBaseDisplayData() {
+			$oWp = $this->loadWpFunctions();
 			return array(
 				'plugin_url'		=> $this->sPluginUrl,
-				'var_prefix'		=> self::$sOptionPrefix,
+				'var_prefix'		=> $this->oPluginVo->getOptionStoragePrefix(),
 				'sPluginName'		=> $this->oPluginVo->getHumanName(),
 				'fShowAds'			=> $this->isShowMarketing(),
 				'nonce_field'		=> $this->getPluginPrefix(),
-				'form_action'		=> 'admin.php?page='.$this->getCurrentWpAdminPage()
+				'form_action'		=> 'admin.php?page='.$oWp->getCurrentWpAdminPage()
 			);
 		}
 
 		/**
-		 */
-		protected function getCurrentWpAdminPage() {
-			$sScript = isset( $_SERVER['SCRIPT_NAME'] )? $_SERVER['SCRIPT_NAME'] : $_SERVER['PHP_SELF'];
-			if ( is_admin() && !empty( $sScript ) && basename( $sScript ) == 'admin.php' ) {
-				$sCurrentPage = $this->fetchGet('page');
-			}
-			return empty($sCurrentPage)? '' : $sCurrentPage;
-		}
-
-		/**
+		 * @return bool
 		 */
 		protected function getIsPage_PluginMainDashboard() {
-			return ( $this->getCurrentWpAdminPage() ==  $this->getPluginPrefix() );
+			$oWp = $this->loadWpFunctions();
+			return ( $oWp->getCurrentWpAdminPage() ==  $this->getPluginPrefix() );
 		}
 
 		/**
+		 * @return bool
 		 */
 		protected function getIsPage_PluginAdmin() {
-			return ( strpos( $this->getCurrentWpAdminPage(), $this->getPluginPrefix() ) === 0 );
+			$oWp = $this->loadWpFunctions();
+			return ( strpos( $oWp->getCurrentWpAdminPage(), $this->getPluginPrefix() ) === 0 );
 		}
 
 		/**
@@ -535,7 +528,7 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		/**
 		 *
 		 */
-		protected function doAdminNoticeTranslations(){
+		protected function doAdminNoticeTranslations() {
 
 			$sCurrentMetaValue = $this->getUserMeta( 'plugin_translation_notice' );
 			if ( $sCurrentMetaValue === 'Y' ) {
@@ -698,7 +691,8 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 			do_action( $this->doPluginPrefix( 'form_submit' ) );
 
 			if ( $this->getIsPage_PluginAdmin() ) {
-				wp_safe_redirect( $this->getUrl_PluginDashboard( $this->getCurrentWpAdminPage() ) );
+				$oWp = $this->loadWpFunctions();
+				wp_safe_redirect( $this->getUrl_PluginDashboard( $oWp->getCurrentWpAdminPage() ) );
 				return true;
 			}
 		}
@@ -715,8 +709,10 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 				$this->doPluginOptionPrefix( 'plugin_form_submit' ),
 				'icwp_link_action'
 			);
+
+			$oDp = $this->loadDataProcessor();
 			foreach( $aFormSubmitOptions as $sOption ) {
-				if ( !is_null( $this->fetchRequest( $sOption, false ) ) ) {
+				if ( !is_null( $oDp->FetchRequest( $sOption ) ) ) {
 					return true;
 				}
 			}
@@ -740,7 +736,7 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		}
 
 		public function enqueuePluginAdminCss() {
-			$sUnique = $this->doPluginPrefix( 'plugin_css', '_' );
+			$sUnique = $this->doPluginPrefix( 'plugin_css' );
 			wp_register_style( $sUnique, $this->getCssUrl('plugin.css'), array( $this->doPluginPrefix( 'bootstrap_wpadmin_css_fixes' ) ), $this->oPluginVo->getVersion() );
 			wp_enqueue_style( $sUnique );
 		}
@@ -776,6 +772,7 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 				$this->doPreventDeactivation( $insPlugin );
 			}
 		}
+
 		/**
 		 * @param string $insPlugin - the path to the plugin file
 		 */
@@ -824,43 +821,6 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		}
 
 		/**
-		 * @param string $insKey
-		 * @param boolean $infIncludeCookie
-		 * @return mixed|null
-		 */
-		protected function fetchRequest( $insKey, $infIncludeCookie = true ) {
-			$this->loadDataProcessor();
-			return ICWP_WPSF_DataProcessor::FetchRequest( $insKey, $infIncludeCookie );
-		}
-
-		/**
-		 * @param string $sKey
-		 * @return mixed|null
-		 */
-		protected function fetchGet( $sKey ) {
-			$this->loadDataProcessor();
-			return ICWP_WPSF_DataProcessor::FetchGet( $sKey );
-		}
-
-		/**
-		 * @param string $sKey		The $_POST key
-		 * @return mixed|null
-		 */
-		protected function fetchPost( $sKey ) {
-			$this->loadDataProcessor();
-			return ICWP_WPSF_DataProcessor::FetchPost( $sKey );
-		}
-
-		/**
-		 * @param string $sKey		The $_COOKIE key
-		 * @return mixed|null
-		 */
-		protected function fetchCookie( $sKey ) {
-			$this->loadDataProcessor();
-			return ICWP_WPSF_DataProcessor::FetchCookie( $sKey );
-		}
-
-		/**
 		 */
 		public function onWpAdminBar() {
 			$aNodes = $this->getAdminBarNodes();
@@ -872,7 +832,7 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 			}
 		}
 
-		protected function getAdminBarNodes() {	}
+		protected function getAdminBarNodes() { }
 
 		protected function addAdminBarNode( $aNode ) {
 			global $wp_admin_bar;
@@ -900,9 +860,13 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		}
 
 		/**
+		 * @return ICWP_WPSF_DataProcessor
 		 */
 		protected function loadDataProcessor() {
-			require_once( dirname(__FILE__) . '/icwp-data-processor.php' );
+			if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
+				require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+			}
+			return ICWP_WPSF_DataProcessor::GetInstance();
 		}
 
 		/**
@@ -919,6 +883,6 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 			return ICWP_WPSF_WpFilesystem::GetInstance();
 		}
 
-	}//CLASS
+	}
 
 endif;
