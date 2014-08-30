@@ -42,8 +42,10 @@ include_once( 'icwp-wpsf-config_header.php' );
 				</div>
 			</div><!-- / row -->
 		<?php endif; ?>
-		
+
 		<div class="row" id="tbs_docs">
+		<h2><?php _wpsf_e( 'Plugin Change Log Summary'); ?></h2>
+			<?php /*
 			<h2><?php _wpsf_e( 'Plugin Configuration Summary'); ?></h2>
 			<div class="span6" id="tbs_docs_shortcodes">
 			  <div class="well">
@@ -91,7 +93,7 @@ include_once( 'icwp-wpsf-config_header.php' );
 								<?php endforeach; ?>
 							</li>
 						<?php endif; ?>
-						
+
 						<li><?php printf( _wpsf__('Firewall blocks Directory Traversals: %s'), ($icwp_aFirewallOptions['block_dir_traversal'] == 'Y')? $sOn : $sOff ); ?></li>
 						<li><?php printf( _wpsf__('Firewall blocks SQL Queries: %s'), ($icwp_aFirewallOptions['block_sql_queries'] == 'Y')? $sOn : $sOff ); ?></li>
 						<li><?php printf( _wpsf__('Firewall blocks WordPress Specific Terms: %s'), ($icwp_aFirewallOptions['block_wordpress_terms'] == 'Y')? $sOn : $sOff ); ?></li>
@@ -150,7 +152,7 @@ include_once( 'icwp-wpsf-config_header.php' );
 					<?php printf( _wpsf__('Auto Updates is %s'), $fAutoupdatesOn ? $sOn : $sOff ); ?>
 					[ <a href="admin.php?page=icwp-wpsf-autoupdates"><?php _wpsf_e('Configure Now'); ?></a> ]</h4>
 				<?php if ( $fAutoupdatesOn ) :
-					
+
 					if ( $icwp_aAutoupdatesOptions['autoupdate_core'] == 'core_never' ) {
 						$sAutoCoreUpdateOption = $sOff;
 					}
@@ -172,6 +174,7 @@ include_once( 'icwp-wpsf-config_header.php' );
 				<?php endif; ?>
 			  </div>
 		  </div><!-- / span6 -->
+ */ ?>
 		  <div class="span6" id="tbs_docs_examples">
 			  <div class="well">
 				<h3><?php printf( _wpsf__('Release v%s'), $sLatestVersionBranch ) ; ?></h3>

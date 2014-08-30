@@ -53,7 +53,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-adminaccessrestriction.php' );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-admin_access_restriction.php' );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_AdminAccessRestriction( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -184,7 +184,12 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 		if ( $this->getOpt( 'admin_access_key_timeout' ) <= 0 ) {
 			$this->setOpt( 'admin_access_key_timeout', self::Default_AccessKeyTimeout );
 		}
-		
+
+		$sNotificationEmail = $this->getOpt( 'enable_admin_login_email_notification' );
+		if ( !empty( $sNotificationEmail ) && !is_email( $sNotificationEmail ) ) {
+			$this->setOpt( 'enable_admin_login_email_notification', '' );
+		}
+
 		$sAccessKey = $this->getOpt( 'admin_access_key');
 		if ( empty( $sAccessKey ) ) {
 			$this->setOpt( 'enable_admin_access_restriction', 'N' );

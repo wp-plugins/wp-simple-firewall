@@ -52,7 +52,6 @@ class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 	public function run() {
 		parent::run();
 
-		// Add GASP checking to the login form.
 		if ( $this->getIsOption( 'enable_comments_gasp_protection', 'Y' ) ) {
 			require_once('icwp-processor-commentsfilter_antibotspam.php');
 			$oBotSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam( $this->oFeatureOptions );

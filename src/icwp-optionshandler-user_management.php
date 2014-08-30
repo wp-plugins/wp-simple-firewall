@@ -96,6 +96,22 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 			)
 		);
 
+		$aAdminLogin = array(
+			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Admin Login Notification') ),
+			'section_options' => array(
+				array(
+					'enable_admin_login_email_notification',
+					'',
+					'',
+					'email',
+					_wpsf__( 'Admin Login Notification Email' ),
+					_wpsf__( 'Send Email When Administrator Logs In' ),
+					_wpsf__( 'If you would like to be notified every time an administrator user logs into this WordPress site, enter a notification email address.' )
+					.'<br />'._wpsf__( 'No email address - No Notification.' ),
+				)
+			)
+		);
+
 		$aSessions = array(
 			'section_title' => _wpsf__( 'User Session Management' ),
 			'section_options' => array(
@@ -154,6 +170,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 
 		$aOptionsDefinitions = array(
 			$aOptionsBase,
+			$aAdminLogin,
 			$aWhitelist,
 			$aSessions
 		);

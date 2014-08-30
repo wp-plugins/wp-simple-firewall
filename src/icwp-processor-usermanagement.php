@@ -62,6 +62,12 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			return true;
 		}
 
+		if ( is_email( $this->getOption( 'enable_admin_login_email_notification' ) ) ) {
+			require_once('icwp-processor-usermanagement_adminloginnotification.php');
+			$oNotificationProcessor = new ICWP_WPSF_Processor_UserManagement_AdminLoginNotification( $this->oFeatureOptions );
+			$oNotificationProcessor->run();
+		}
+
 		$sRequestMethod = $oDp->FetchServer( 'REQUEST_METHOD' );
 		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
 
