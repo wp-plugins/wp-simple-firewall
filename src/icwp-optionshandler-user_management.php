@@ -97,7 +97,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 		);
 
 		$aAdminLogin = array(
-			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Admin Login Notification') ),
+			'section_title' => _wpsf__( 'Admin Login Notification' ),
 			'section_options' => array(
 				array(
 					'enable_admin_login_email_notification',
@@ -144,6 +144,17 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					_wpsf__( 'Locks A User Session To IP address' ),
 					_wpsf__( 'When selected, a session is restricted to the same IP address as when the user logged in.' )
 					.' '._wpsf__( "If a logged-in user's IP address changes, the session will be invalidated and they'll be forced to re-login to WordPress." )
+				),
+				array(
+					'session_username_concurrent_limit',
+					'',
+					'0',
+					'integer',
+					_wpsf__( 'Max Simultaneous Sessions' ),
+					_wpsf__( 'Limit Simultaneous Sessions For The Same Username' ),
+					_wpsf__( 'The number provided here is the maximum number of simultaneous, distinct, sessions allowed for any given username.' )
+					.'<br />'._wpsf__( "Zero (0) will allow unlimited simultaneous sessions." )
+					.'<br />'._wpsf__( "The oldest used (activity) session(s) will be logged-out." )
 				),
 				array(
 					'session_check_admin_area_only',

@@ -85,7 +85,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		add_filter( 'authenticate', array( $this, 'createNewUserSession_Filter' ), 30, 3);
 
 		// When we know user has successfully authenticated and we activate the session entry in the database
-		add_action( 'wp_login', array( $this, 'activateUserSession' ) );
+		add_action( 'wp_login', array( $this, 'handleUserSession' ) );
 
 //		add_action( 'wp_loaded', array( $this, 'autoForwardFromLogin' ) );
 
@@ -93,6 +93,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 		add_filter( 'wp_login_errors', array( $this, 'addLoginMessage' ) );
 	}
+
 
 	/**
 	 * @param WP_Error $oError
@@ -130,18 +131,16 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	public function checkCurrentUser_Action() {
 		$this->getSessionId();
 		if ( is_user_logged_in() ) {
-			$oUser = wp_get_current_user();
+			$oWp = $this->loadWpFunctionsProcessor();
+			$oUser = $oWp->getCurrentWpUser();
 
 			// only check the non-admin areas if specified to do so and it's not AJAX
-			$oWp = $this->loadWpFunctionsProcessor();
 			if ( !$oWp->getIsAjax() && ( is_admin() || !$this->getIsOption( 'session_check_admin_area_only', 'Y' ) ) ) {
 				$this->doVerifyCurrentUser( $oUser );
 			}
 
 			// At this point session is validated
-
 			if ( $this->getIsOption( 'session_auto_forward_to_admin_area', 'Y' ) ) {
-				$oWp = $this->loadWpFunctionsProcessor();
 				$oDp = $this->loadDataProcessor();
 				$sWpLogin = 'wp-login.php';
 				if ( $oDp->FetchGet( 'action' ) != 'logout' && ( substr( $oWp->getCurrentPage(), -strlen( $sWpLogin ) ) === $sWpLogin ) ) {
@@ -258,33 +257,41 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 *
 	 */
 	public function onWpLogout() {
-		$oUser = wp_get_current_user();
-		$this->doTerminateUserSession( $oUser );
+		$this->doTerminateCurrentUserSession();
 	}
 
 	/**
-	 * @param WP_User
 	 * @return boolean
 	 */
-	protected function doTerminateUserSession( $oUser ) {
+	protected function doTerminateCurrentUserSession() {
+		$oWp = $this->loadWpFunctionsProcessor();
+		$oUser = $oWp->getCurrentWpUser();
 		if ( empty( $oUser->user_login ) ) {
 			return false;
 		}
+
+		$mResult = $this->doTerminateUserSession( $oUser->user_login, $this->getSessionId() );
+		unset( $_COOKIE[ self::Session_Cookie ] );
+		setcookie( self::Session_Cookie, "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
+		return $mResult;
+	}
+
+	/**
+	 * @param string $sUsername
+	 * @param string $sSessionId
+	 * @return boolean
+	 */
+	protected function doTerminateUserSession( $sUsername, $sSessionId ) {
 
 		$aNewData = array(
 			'deleted_at'	=> self::$nRequestTimestamp
 		);
 		$aWhere = array(
-			'session_id'	=> $this->getSessionId(),
-			'wp_username'	=> $oUser->user_login,
+			'session_id'	=> $sSessionId,
+			'wp_username'	=> $sUsername,
 			'deleted_at'	=> 0
 		);
-		$mResult = $this->updateRowsFromTable( $aNewData, $aWhere );
-
-		unset( $_COOKIE[ self::Session_Cookie ] );
-		setcookie( self::Session_Cookie, "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
-
-		return $mResult;
+		return $this->updateRowsFromTable( $aNewData, $aWhere );
 	}
 
 	/**
@@ -335,17 +342,25 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			'login_attempts'	=> $aSessionData['login_attempts'] + 1
 		);
 		return $this->updateCurrentSession( $sUsername, $aNewData );
-		return $mResult;
 	}
 
 	/**
 	 * @param string $sUsername
 	 * @return boolean
 	 */
-	public function activateUserSession( $sUsername ) {
+	public function handleUserSession( $sUsername ) {
 		if ( empty( $sUsername ) ) {
 			return false;
 		}
+		$this->activateUserSession( $sUsername );
+		$this->doLimitUserSession( $sUsername );
+	}
+
+	/**
+	 * @param string $sUsername
+	 * @return boolean
+	 */
+	protected function activateUserSession( $sUsername ) {
 
 		$aNewData = array(
 			'pending'			=> 0,
@@ -366,6 +381,29 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	}
 
 	/**
+	 * @param string $sUsername
+	 * @return boolean
+	 */
+	protected function doLimitUserSession( $sUsername ) {
+
+		$nSessionLimit = $this->getOption( 'session_username_concurrent_limit', 1 );
+		if ( $nSessionLimit <= 0 ) {
+			return true;
+		}
+
+		$aSessions = $this->getActiveSessionRecordsForUser( $sUsername );
+		$nSessionsToKill = count( $aSessions ) - $nSessionLimit;
+		if ( $nSessionsToKill < 1 ) {
+			return true;
+		}
+
+		for( $nCount = 0; $nCount < $nSessionsToKill; $nCount++ ) {
+			$mResult = $this->doTerminateUserSession( $aSessions[$nCount]['wp_username'], $aSessions[$nCount]['session_id'] );
+		}
+		return $mResult;
+	}
+
+	/**
 	 * This is the same as both updateSessionLastActivityAt() and updateSessionLastActivityUri()
 	 *
 	 * @param WP_User $oUser
@@ -377,7 +415,6 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		}
 
 		$oDp = $this->loadDataProcessor();
-		// First set any other entries for the given user to be deleted.
 		$aNewData = array(
 			'last_activity_at'	=> self::$nRequestTimestamp,
 			'last_activity_uri'	=> $oDp->FetchServer( 'REQUEST_URI' )
@@ -394,7 +431,6 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			return false;
 		}
 
-		// First set any other entries for the given user to be deleted.
 		$aNewData = array(
 			'last_activity_at'	=> self::$nRequestTimestamp
 		);
@@ -411,7 +447,6 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		}
 
 		$oDp = $this->loadDataProcessor();
-		// First set any other entries for the given user to be deleted.
 		$aNewData = array(
 			'last_activity_uri'	=> $oDp->FetchServer( 'REQUEST_URI' )
 		);
@@ -425,8 +460,18 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 * @return boolean
 	 */
 	protected function updateCurrentSession( $sUsername, $aUpdateData ) {
+		return $this->updateSession( $this->getSessionId(), $sUsername, $aUpdateData );
+	}
+
+	/**
+	 * @param string $sSessionId
+	 * @param string $sUsername
+	 * @param array $aUpdateData
+	 * @return boolean
+	 */
+	protected function updateSession( $sSessionId, $sUsername, $aUpdateData ) {
 		$aWhere = array(
-			'session_id'	=> $this->getSessionId(),
+			'session_id'	=> $sSessionId,
 			'deleted_at'	=> 0,
 			'wp_username'	=> $sUsername
 		);
@@ -453,6 +498,31 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			$this->getTableName()
 		);
 
+		return $this->selectCustomFromTable( $sQuery );
+	}
+
+	/**
+	 * Checks for and gets a user session.
+	 *
+	 * @param string $sUsername
+	 * @return array|boolean
+	 */
+	public function getActiveSessionRecordsForUser( $sUsername ) {
+
+		$sQuery = "
+			SELECT *
+			FROM `%s`
+			WHERE
+				`wp_username`		= '%s'
+				AND `pending`		= '0'
+				AND `deleted_at`	= '0'
+			ORDER BY `last_activity_at` ASC
+		";
+		$sQuery = sprintf(
+			$sQuery,
+			$this->getTableName(),
+			$sUsername
+		);
 		return $this->selectCustomFromTable( $sQuery );
 	}
 

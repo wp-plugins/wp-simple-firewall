@@ -34,7 +34,9 @@ function printSessionTable( $aSessionsData ) {
 ?>
 	<div class="row">
 		<div class="span12">
-			<h2><?php _wpsf_e('Current User Sessions');?></h2>
+			<h2><?php _wpsf_e('Current User Sessions'); ?>
+				<small>(<?php echo sprintf( _wpsf__( 'now: %s' ), date( 'Y/m/d H:i:s', time() ) ) ?>)</small>
+			</h2>
 			<?php if ( !empty($icwp_aActiveSessions) ) : ?>
 				<?php printSessionTable($icwp_aActiveSessions); ?>
 			<?php else : ?>
