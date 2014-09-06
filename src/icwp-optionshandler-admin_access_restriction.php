@@ -126,54 +126,108 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	}
 
 	/**
+	 * @param array $aOptionsParams
+	 * @return array
+	 * @throws Exception
+	 */
+	protected function loadStrings_SectionTitles( $aOptionsParams ) {
+
+		switch( $aOptionsParams['slug'] ) {
+
+			case 'section_enable_plugin_feature_admin_access_restriction' :
+				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Admin Access Restriction') );
+				break;
+
+			default:
+				throw new Exception('A section slug defined but with no strings');
+		}
+		$aOptionsParams['section_title'] = $sTitle;
+		return $aOptionsParams;
+	}
+
+	/**
+	 * @param $aOptionsParams
+	 */
+	protected function loadStrings_Options( $aOptionsParams ) {
+
+		switch( $aOptionsParams[0] ) {
+
+			case 'enable_admin_access_restriction' :
+				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Admin Access') );
+				$sSummary = _wpsf__( 'Enforce Admin Access Restriction' );
+				$sDescription = _wpsf__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.' );
+				break;
+
+			case 'admin_access_key' :
+				$sName = _wpsf__( 'Admin Access Key' );
+				$sSummary = _wpsf__( 'Specify Your Plugin Access Key' );
+				$sDescription = _wpsf__( 'If you forget this, you could potentially lock yourself out from using this plugin.' );
+				break;
+
+			case 'admin_access_timeout' :
+				$sName = _wpsf__( 'Admin Access Timeout' );
+				$sSummary = _wpsf__( 'Specify An Automatic Timeout Interval For Admin Access' );
+				$sDescription = _wpsf__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again.')
+					.'<br />'.sprintf(_wpsf__( 'Default: %s minutes.' ), self::Default_AccessKeyTimeout );
+				break;
+		}
+
+		$aOptionsParams['name'] = $sName;
+		$aOptionsParams['summary'] = $sSummary;
+		$aOptionsParams['description'] = $sDescription;
+		return $aOptionsParams;
+	}
+
+
+	/**
 	 * @return bool|void
 	 */
 	protected function getOptionsDefinitions() {
-
-		if ( $this->hasEncryptOption() ) {
-
-			$aAccessKey = array(
-				'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Admin Access Restriction') ),
-				'section_options' => array(
-					array(
-						'enable_admin_access_restriction',
-						'',
-						'N',
-						'checkbox',
-						sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Admin Access') ),
-						_wpsf__( 'Enforce Admin Access Restriction' ),
-						_wpsf__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.' ),
-						'<a href="http://icwp.io/40" target="_blank">'._wpsf__( 'more info' ).'</a>'
-						.' | <a href="http://icwp.io/wpsf02" target="_blank">'._wpsf__( 'blog' ).'</a>'
-					),
-					array(
-						'admin_access_key',
-						'',
-						'',
-						'password',
-						_wpsf__( 'Admin Access Key' ),
-						_wpsf__( 'Specify Your Plugin Access Key' ),
-						_wpsf__( 'If you forget this, you could potentially lock yourself out from using this plugin.' )
-						.' <strong>'._wpsf__( 'Leave it blank to not update it' ).'</strong>',
-						'<a href="http://icwp.io/42" target="_blank">'._wpsf__( 'more info' ).'</a>'
-					),
-					array(
-						'admin_access_timeout',
-						'',
-						self::Default_AccessKeyTimeout,
-						'integer',
-						_wpsf__( 'Access Key Timeout' ),
-						_wpsf__( 'Specify A Timeout For Plugin Admin Access' ),
-						_wpsf__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again.').'<br />'.sprintf(_wpsf__( 'Default: %s minutes.' ), self::Default_AccessKeyTimeout ),
-						'<a href="http://icwp.io/41" target="_blank">'._wpsf__( 'more info' ).'</a>'
-					)
-				)
-			);
-		}
-		$aOptionsDefinitions = array(
-			$aAccessKey
-		);
-		return $aOptionsDefinitions;
+//
+//		if ( $this->hasEncryptOption() ) {
+//
+//			$aAccessKey = array(
+//				'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Admin Access Restriction') ),
+//				'section_options' => array(
+//					array(
+//						'enable_admin_access_restriction',
+//						'',
+//						'N',
+//						'checkbox',
+//						sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Admin Access') ),
+//						_wpsf__( 'Enforce Admin Access Restriction' ),
+//						_wpsf__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.' ),
+//						'<a href="http://icwp.io/40" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//						.' | <a href="http://icwp.io/wpsf02" target="_blank">'._wpsf__( 'blog' ).'</a>'
+//					),
+//					array(
+//						'admin_access_key',
+//						'',
+//						'',
+//						'password',
+//						_wpsf__( 'Admin Access Key' ),
+//						_wpsf__( 'Specify Your Plugin Access Key' ),
+//						_wpsf__( 'If you forget this, you could potentially lock yourself out from using this plugin.' )
+//						.' <strong>'._wpsf__( 'Leave it blank to not update it' ).'</strong>',
+//						'<a href="http://icwp.io/42" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//					),
+//					array(
+//						'admin_access_timeout',
+//						'',
+//						self::Default_AccessKeyTimeout,
+//						'integer',
+//						_wpsf__( 'Access Key Timeout' ),
+//						_wpsf__( 'Specify A Timeout For Plugin Admin Access' ),
+//						_wpsf__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again.').'<br />'.sprintf(_wpsf__( 'Default: %s minutes.' ), self::Default_AccessKeyTimeout ),
+//						'<a href="http://icwp.io/41" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//					)
+//				)
+//			);
+//		}
+//		$aOptionsDefinitions = array(
+//			$aAccessKey
+//		);
+//		return $aOptionsDefinitions;
 	}
 	
 	/**

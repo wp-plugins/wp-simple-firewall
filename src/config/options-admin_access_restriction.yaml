@@ -1,0 +1,37 @@
+---
+name: 'admin_access_restriction'
+# Options Sections
+sections:
+  -
+    slug: 'section_enable_plugin_feature_admin_access_restriction'
+    primary: true
+  -
+    slug: 'section_non_ui'
+    hidden: true
+
+# Define Options
+options:
+  -
+    key: 'enable_admin_access_restriction'
+    section: 'section_enable_plugin_feature_admin_access_restriction'
+    default: 'N'
+    type: 'checkbox'
+    link_info: 'http://icwp.io/40'
+    link_blog: 'http://icwp.io/wpsf02'
+  -
+    key: 'admin_access_key'
+    section: 'section_enable_plugin_feature_admin_access_restriction'
+    default: ''
+    type: 'password'
+    link_info: 'http://icwp.io/42'
+    link_blog: ''
+  -
+    key: 'admin_access_timeout'
+    section: 'section_enable_plugin_feature_admin_access_restriction'
+    default: ''
+    type: 'integer'
+    link_info: 'http://icwp.io/41'
+    link_blog: ''
+  -
+    key: 'current_plugin_version'
+    section: 'section_non_ui'
