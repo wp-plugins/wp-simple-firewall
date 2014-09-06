@@ -299,7 +299,7 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 				$sTitle = _wpsf__('Yubikey Authentication');
 				break;
 
-			case 'section_logging' :
+			case 'section_login_logging' :
 				$sTitle = _wpsf__('Logging');
 				break;
 
