@@ -106,62 +106,115 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	}
 
 	/**
+	 * @param array $aOptionsParams
 	 * @return array
+	 * @throws Exception
 	 */
-	protected function getOptionsDefinitions() {
-		$aGeneral = array(
-			'section_title' => _wpsf__( 'General Plugin Options' ),
-			'section_options' => array(
-				array(
-					'block_send_email_address',
-					'',
-					'',
-					'email',
-					_wpsf__( 'Report Email' ),
-					_wpsf__( 'Where to send email reports from the Firewall' ),
-					_wpsf__( 'If this is empty, it will default to the blog admin email address' )
-				),
-				array(
-					'enable_upgrade_admin_notice',
-					'',
-					'Y',
-					'checkbox',
-					_wpsf__( 'Plugin Notices' ),
-					_wpsf__( 'Display Notices For Updates' ),
-					_wpsf__( 'Disable this option to hide certain plugin admin notices about available updates and post-update notices' )
-				),
-				array(
-					'delete_on_deactivate',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'Delete Plugin Settings' ),
-					_wpsf__( 'Delete All Plugin Settings Upon Plugin Deactivation' ),
-					_wpsf__( 'Careful: Removes all plugin options when you deactivate the plugin' )
-				)
-			)
-		);
+	protected function loadStrings_SectionTitles( $aOptionsParams ) {
 
-		$aOptionsDefinitions = array(
-			$aGeneral
-		);
-		return $aOptionsDefinitions;
+		switch( $aOptionsParams['slug'] ) {
+
+			case 'section_general_plugin_options' :
+				$sTitle = _wpsf__( 'General Plugin Options' );
+				break;
+
+			default:
+				throw new Exception('A section slug defined but with no strings');
+		}
+		$aOptionsParams['section_title'] = $sTitle;
+		return $aOptionsParams;
 	}
+
+	/**
+	 * @param $aOptionsParams
+	 */
+	protected function loadStrings_Options( $aOptionsParams ) {
+
+		switch( $aOptionsParams[0] ) {
+
+			case 'block_send_email_address' :
+				$sName = _wpsf__( 'Report Email' );
+				$sSummary = _wpsf__( 'Where to send email reports' );
+				$sDescription = _wpsf__( 'If this is empty, it will default to the blog admin email address.' );
+				break;
+
+			case 'enable_upgrade_admin_notice' :
+				$sName = _wpsf__( 'Plugin Notices' );
+				$sSummary = _wpsf__( 'Display Notices For Updates' );
+				$sDescription = _wpsf__( 'Disable this option to hide certain plugin admin notices about available updates and post-update notices' );
+				break;
+
+			case 'delete_on_deactivate' :
+				$sName = _wpsf__( 'Delete Plugin Settings' );
+				$sSummary = _wpsf__( 'Delete All Plugin Settings Upon Plugin Deactivation' );
+				$sDescription = _wpsf__( 'Careful: Removes all plugin options when you deactivate the plugin' );
+				break;
+		}
+
+		$aOptionsParams['name'] = $sName;
+		$aOptionsParams['summary'] = $sSummary;
+		$aOptionsParams['description'] = $sDescription;
+		return $aOptionsParams;
+	}
+
 
 	/**
 	 * @return array
 	 */
-	protected function getNonUiOptions() {
-		$aNonUiOptions = array(
-			'installation_time',
-			'secret_key',
-			'feedback_admin_notice',
-			'update_success_tracker',
-			'capability_can_disk_write',
-			'capability_can_remote_get'
-		);
-		return $aNonUiOptions;
-	}
+//	protected function getOptionsDefinitions() {
+//		$aGeneral = array(
+//			'section_title' => _wpsf__( 'General Plugin Options' ),
+//			'section_options' => array(
+//				array(
+//					'block_send_email_address',
+//					'',
+//					'',
+//					'email',
+//					_wpsf__( 'Report Email' ),
+//					_wpsf__( 'Where to send email reports from the Firewall' ),
+//					_wpsf__( 'If this is empty, it will default to the blog admin email address' )
+//				),
+//				array(
+//					'enable_upgrade_admin_notice',
+//					'',
+//					'Y',
+//					'checkbox',
+//					_wpsf__( 'Plugin Notices' ),
+//					_wpsf__( 'Display Notices For Updates' ),
+//					_wpsf__( 'Disable this option to hide certain plugin admin notices about available updates and post-update notices' )
+//				),
+//				array(
+//					'delete_on_deactivate',
+//					'',
+//					'N',
+//					'checkbox',
+//					_wpsf__( 'Delete Plugin Settings' ),
+//					_wpsf__( 'Delete All Plugin Settings Upon Plugin Deactivation' ),
+//					_wpsf__( 'Careful: Removes all plugin options when you deactivate the plugin' )
+//				)
+//			)
+//		);
+//
+//		$aOptionsDefinitions = array(
+//			$aGeneral
+//		);
+//		return $aOptionsDefinitions;
+//	}
+//
+//	/**
+//	 * @return array
+//	 */
+//	protected function getNonUiOptions() {
+//		$aNonUiOptions = array(
+//			'installation_time',
+//			'secret_key',
+//			'feedback_admin_notice',
+//			'update_success_tracker',
+//			'capability_can_disk_write',
+//			'capability_can_remote_get'
+//		);
+//		return $aNonUiOptions;
+//	}
 	
 	/**
 	 * This is the point where you would want to do any options verification
