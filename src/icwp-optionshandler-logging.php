@@ -72,10 +72,6 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 		return $aOptionsDefinitions;
 	}
 
-	/**
-	 * This is the point where you would want to do any options verification
-	 */
-	protected function doPrePluginOptionsSave() { }
 }
 
 endif;

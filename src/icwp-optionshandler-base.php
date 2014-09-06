@@ -15,6 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+require_once( 'icwp-options-vo.php' );
 if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 	class ICWP_WPSF_FeatureHandler_Base_V2 {
@@ -23,6 +24,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @var ICWP_Wordpress_Simple_Firewall_Plugin
 		 */
 		protected $oPluginVo;
+
+		/**
+		 * @var ICWP_WPSF_OptionsVO
+		 */
+		protected $oOptions;
 
 		/**
 		 * @var string
@@ -36,7 +42,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * @var boolean
 		 */
-		protected $fNeedSave;
+		protected $fDoPluginOptionsDelete = false;
 
 		/**
 		 * @var array
@@ -122,16 +128,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			add_filter( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array( $this, 'aggregateOptionsValues' ) );
 		}
 
-		public function override() {
-			$oWpFs = $this->loadFileSystemProcessor();
-			if ( $oWpFs->fileExistsInDir( 'forceOff', $this->oPluginVo->getRootDir(), false ) ) {
-				$this->setIsMainFeatureEnabled( false );
-			}
-			else if ( $oWpFs->fileExistsInDir( 'forceOn', $this->oPluginVo->getRootDir(), false ) ) {
-				$this->setIsMainFeatureEnabled( true );
-			}
-		}
-
 		/**
 		 * A action added to WordPress 'plugins_loaded' hook
 		 */
@@ -161,6 +157,17 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
+		 * @return ICWP_WPSF_OptionsVO
+		 */
+		public function getOptionsVo() {
+			if ( !isset( $this->oOptions ) ) {
+				$this->oOptions = new ICWP_WPSF_OptionsVO( $this->getFeatureSlug() );
+				$this->oOptions->setOptionsStorageKey( $this->getOptionsStorageKey() );
+			}
+			return $this->oOptions;
+		}
+
+		/**
 		 * @return bool
 		 */
 		public function getIsUpgrading() {
@@ -171,7 +178,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * Hooked to the plugin's main plugin_shutdown action
 		 */
 		public function action_doFeatureShutdown() {
-			$this->savePluginOptions();
 
 			if ( $this->oPluginVo->getIsLoggingEnabled() ) {
 				$aLogData = apply_filters( $this->doPluginPrefix( 'flush_logs' ), array() );
@@ -179,6 +185,25 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				$oLoggingProcessor->addDataToWrite( $aLogData );
 				$oLoggingProcessor->commitData();
 			}
+
+			if ( $this->fDoPluginOptionsDelete ) {
+				$this->getOptionsVo()->doOptionsDelete();
+				$this->getProcessor()->deleteAndCleanUp();
+			}
+			else {
+				$this->savePluginOptions();
+			}
+		}
+
+		/**
+		 * @return string
+		 */
+		protected function getOptionsStorageKey() {
+			if ( !isset( $this->sOptionsStoreKey ) ) {
+				// not ideal as it doesn't take into account custom storage keys as when passed into the constructor
+				$this->sOptionsStoreKey = $this->prefixOptionKey( $this->getFeatureSlug().'_options' );
+			}
+			return $this->sOptionsStoreKey;
 		}
 
 		/**
@@ -235,6 +260,16 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		public function getIsMainFeatureEnabled() {
 			$this->override();
 			return $this->getOptIs( 'enable_'.$this->getFeatureSlug(), 'Y' );
+		}
+
+		protected function override() {
+			$oWpFs = $this->loadFileSystemProcessor();
+			if ( $oWpFs->fileExistsInDir( 'forceOff', $this->oPluginVo->getRootDir(), false ) ) {
+				$this->setIsMainFeatureEnabled( false );
+			}
+			else if ( $oWpFs->fileExistsInDir( 'forceOn', $this->oPluginVo->getRootDir(), false ) ) {
+				$this->setIsMainFeatureEnabled( true );
+			}
 		}
 
 		/**
@@ -345,7 +380,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			$sMenuPageTitle = $this->oPluginVo->getHumanName().' - '.$this->getMainFeatureName();
 			$aItems[ $sMenuPageTitle ] = array(
 				$this->getMainFeatureName(),
-				$this->sFeatureSlug,
+				$this->getFeatureSlug(),
 				array( $this, 'displayFeatureConfigPage' )
 			);
 			return $aItems;
@@ -363,7 +398,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			$aSummaryData[] = array(
 				$this->getIsMainFeatureEnabled(),
 				$this->getMainFeatureName(),
-				$this->doPluginPrefix( $this->sFeatureSlug )
+				$this->doPluginPrefix( $this->getFeatureSlug() )
 			);
 
 			return $aSummaryData;
@@ -396,59 +431,14 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * Gets the array of all possible options keys
-		 *
-		 * @return array
-		 */
-		public function getOptionsKeys() {
-			$this->setOptionsKeys();
-			return $this->aOptionsKeys;
-		}
-
-		/**
-		 * @return void
-		 */
-		public function setOptionsKeys() {
-			if ( !empty( $this->aOptionsKeys ) ) {
-				return;
-			}
-			$this->buildOptions();
-		}
-
-		/**
-		 * Determines whether the given option key is a valid option
-		 *
-		 * @param string
-		 * @return boolean
-		 */
-		public function getIsOptionKey( $sOptionKey ) {
-			$this->setOptionsKeys();
-			return ( in_array( $sOptionKey, $this->aOptionsKeys ) );
-		}
-
-		/**
 		 * Sets the value for the given option key
 		 *
-		 * @param string $insKey
-		 * @param mixed $inmValue
+		 * @param string $sKey
+		 * @param mixed $mValue
 		 * @return boolean
 		 */
-		public function setOpt( $insKey, $inmValue ) {
-
-			if ( !$this->getIsOptionKey( $insKey ) ) {
-				return false;
-			}
-
-			if ( !isset( $this->m_aOptionsValues ) ) {
-				$this->loadStoredOptionsValues();
-			}
-
-			if ( $this->getOpt( $insKey ) === $inmValue ) {
-				return true;
-			}
-			$this->m_aOptionsValues[ $insKey ] = $inmValue;
-			$this->fNeedSave = true;
-			return true;
+		public function setOpt( $sKey, $mValue ) {
+			return $this->getOptionsVo()->setOpt( $sKey, $mValue );
 		}
 
 		/**
@@ -457,10 +447,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return mixed
 		 */
 		public function getOpt( $sOptionKey, $mDefault = false ) {
-			if ( !isset( $this->m_aOptionsValues ) ) {
-				$this->loadStoredOptionsValues();
-			}
-			return ( isset( $this->m_aOptionsValues[ $sOptionKey ] )? $this->m_aOptionsValues[ $sOptionKey ] : $mDefault );
+			return $this->getOptionsVo()->getOpt( $sOptionKey, $mDefault );
 		}
 
 		/**
@@ -480,8 +467,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return array
 		 */
 		public function getOptions() {
-			$this->buildOptions();
-			return $this->aOptions;
+			return $this->buildOptions();
 		}
 
 		/**
@@ -490,32 +476,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * It will also update the stored plugin options version.
 		 */
 		public function savePluginOptions() {
-
 			$this->doPrePluginOptionsSave();
-			$this->cleanOptions();
 			$this->updateOptionsVersion();
-			if ( !$this->fNeedSave ) {
-				return true;
-			}
-
-			$oWpFunc = $this->loadWpFunctionsProcessor();
-			$oWpFunc->updateOption( $this->sOptionsStoreKey, $this->m_aOptionsValues );
-			$this->fNeedSave = false;
-			return true;
-		}
-
-		/**
-		 *
-		 */
-		protected function cleanOptions() {
-			if ( empty( $this->m_aOptionsValues ) || !is_array( $this->m_aOptionsValues ) ) {
-				return;
-			}
-			foreach( $this->m_aOptionsValues as $sKey => $mValue ) {
-				if ( !$this->getIsOptionKey( $sKey ) ) {
-					unset( $this->m_aOptionsValues[$sKey] );
-				}
-			}
+			$this->getOptionsVo()->doOptionsSave();
 		}
 
 		/**
@@ -523,65 +486,14 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return array
 		 */
 		public function aggregateOptionsValues( $aAggregatedOptions ) {
-			return array_merge( $aAggregatedOptions, $this->loadStoredOptionsValues() );
-		}
-
-		/**
-		 * Loads the options and their stored values from the WordPress Options store.
-		 */
-		public function loadStoredOptionsValues() {
-			if ( empty( $this->m_aOptionsValues ) ) {
-				$oWpFunc = $this->loadWpFunctionsProcessor();
-				$this->m_aOptionsValues = $oWpFunc->getOption( $this->sOptionsStoreKey, array() );
-				if ( empty( $this->m_aOptionsValues ) ) {
-					$this->fNeedSave = true;
-				}
-			}
-			return $this->m_aOptionsValues;
-		}
-
-		/**
-		 */
-		protected function defineOptions() {
-			$this->aOptions = $this->getOptionsDefinitions();
-
-			// All features store the current plugin version.
-			$this->aNonUiOptions = array( self::PluginVersionKey );
-			$aNonUiOptions = $this->getNonUiOptions();
-			if ( !empty( $aNonUiOptions ) || is_array( $aNonUiOptions ) ) {
-				$this->aNonUiOptions = array_merge( $this->aNonUiOptions, $aNonUiOptions );
-			}
-		}
-
-		/**
-		 * @return array
-		 */
-		protected function getOptionsDefinitions() {
-			$aMisc = array(
-				'section_title' => 'Miscellaneous Plugin Options',
-				'section_options' => array(
-					array(
-						'delete_on_deactivate',
-						'',
-						'N',
-						'checkbox',
-						'Delete Plugin Settings',
-						'Delete All Plugin Settings Upon Plugin Deactivation',
-						'Careful: Removes all plugin options when you deactivite the plugin.'
-					),
-				),
-			);
-			$aOptionsDefinitions = array(
-				$aMisc
-			);
-			return $aOptionsDefinitions;
+			return array_merge( $aAggregatedOptions, $this->getOptionsVo()->getAllOptionsValues() );
 		}
 
 		/**
 		 * @return array
 		 */
 		protected function getNonUiOptions() {
-			return array();
+			return $this->getOptionsVo()->getLegacyOptionsNonUi();
 		}
 
 		/**
@@ -596,21 +508,19 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function buildOptions() {
 
-			$this->defineOptions();
-			$this->loadStoredOptionsValues();
-
-			$this->aOptionsKeys = array();
-			foreach ( $this->aOptions as &$aOptionsSection ) {
+			$aOptions = $this->getOptionsVo()->getLegacyOptionsConfigData();
+			foreach ( $aOptions as $nSectionKey => $aOptionsSection ) {
 
 				if ( empty( $aOptionsSection ) || !isset( $aOptionsSection['section_options'] ) ) {
 					continue;
 				}
 
-				foreach ( $aOptionsSection['section_options'] as &$aOptionParams ) {
+				unset( $aOptions[$nSectionKey] );
+				$aOptionsSection[$nSectionKey] = $this->loadStrings_SectionTitles( $aOptionsSection );
+
+				foreach ( $aOptionsSection['section_options'] as $nKey => $aOptionParams ) {
 
 					list( $sOptionKey, $sOptionValue, $sOptionDefault, $sOptionType ) = $aOptionParams;
-
-					$this->aOptionsKeys[] = $sOptionKey;
 
 					if ( $this->getOpt( $sOptionKey ) === false ) {
 						$this->setOpt( $sOptionKey, $sOptionDefault );
@@ -656,18 +566,28 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 						}
 					}
 					$aOptionParams[1] = $mCurrentOptionVal;
+
+					// Build strings
+					unset( $aOptionsSection['section_options'][$nKey] );
+					$aOptionsSection['section_options'][$nKey] = $this->loadStrings_Options( $aOptionParams );
 				}
 			}
 
-			// Cater for Non-UI options that don't necessarily go through the UI
-			if ( isset( $this->aNonUiOptions ) && is_array( $this->aNonUiOptions ) ) {
-				foreach( $this->aNonUiOptions as $sOption ) {
-					$this->aOptionsKeys[] = $sOption;
-					if ( !$this->getOpt( $sOption ) ) {
-						$this->setOpt( $sOption, '' );
-					}
-				}
-			}
+			return $aOptions;
+		}
+
+		/**
+		 * @param $aOptionsParams
+		 */
+		protected function loadStrings_Options( $aOptionsParams ) {
+			return $aOptionsParams;
+		}
+
+		/**
+		 * @param $aOptionsParams
+		 */
+		protected function loadStrings_SectionTitles( $aOptionsParams ) {
+			return $aOptionsParams;
 		}
 
 		/**
@@ -686,13 +606,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function deletePluginOptions() {
 			if ( apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
-				$oWpFunc = $this->loadWpFunctionsProcessor();
-				$oWpFunc->deleteOption( $this->sOptionsStoreKey );
-
-				$this->getProcessor()->deleteAndCleanUp(); // gets rid of the databases used by the processors.
-
-				//prevents resaving
-				remove_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
+				$this->fDoPluginOptionsDelete = true;
 			}
 		}
 
@@ -727,12 +641,10 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		protected function collateAllFormInputsForAllOptions() {
 
-			if ( !isset( $this->aOptions ) ) {
-				$this->buildOptions();
-			}
+			$aOptions = $this->getOptions();
 
 			$aToJoin = array();
-			foreach ( $this->aOptions as $aOptionsSection ) {
+			foreach ( $aOptions as $aOptionsSection ) {
 
 				if ( empty( $aOptionsSection ) ) {
 					continue;
@@ -778,19 +690,13 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			if ( empty( $sAllOptionsInput ) ) {
 				return;
 			}
-			$this->loadDataProcessor();
-			$this->loadStoredOptionsValues();
+			$oDp = $this->loadDataProcessor();
 
 			$aAllInputOptions = explode( self::CollateSeparator, $sAllOptionsInput );
 			foreach ( $aAllInputOptions as $sInputKey ) {
 				$aInput = explode( ':', $sInputKey );
 				list( $sOptionType, $sOptionKey ) = $aInput;
 
-				if ( !$this->getIsOptionKey( $sOptionKey ) ) {
-					continue;
-				}
-
-				$oDp = $this->loadDataProcessor();
 				$sOptionValue = $oDp->FetchPost( $this->prefixOptionKey( $sOptionKey ) );
 				if ( is_null( $sOptionValue ) ) {
 
@@ -952,7 +858,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 		public function getIsCurrentPageConfig() {
 			$oWpFunctions = $this->loadWpFunctionsProcessor();
-			return $oWpFunctions->getCurrentWpAdminPage() == $this->doPluginPrefix( $this->sFeatureSlug );
+			return $oWpFunctions->getCurrentWpAdminPage() == $this->doPluginPrefix( $this->getFeatureSlug() );
 		}
 
 		/**
@@ -969,8 +875,8 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				'sFeatureName'		=> $this->getMainFeatureName(),
 				'fShowAds'			=> $this->getIsShowMarketing(),
 				'nonce_field'		=> $this->oPluginVo->getFullPluginPrefix(),
-				'sFeatureSlug'		=> $this->doPluginPrefix( $this->sFeatureSlug ),
-				'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->sFeatureSlug ),
+				'sFeatureSlug'		=> $this->doPluginPrefix( $this->getFeatureSlug() ),
+				'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->getFeatureSlug() ),
 				'nOptionsPerRow'	=> 1,
 
 				'aAllOptions'		=> $this->getOptions(),
@@ -994,7 +900,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 			if ( empty( $sView ) ) {
 				$oWpFs = $this->loadFileSystemProcessor();
-				$sCustomViewSource = $this->oPluginVo->getViewDir().$this->doPluginPrefix( 'config_'.$this->sFeatureSlug.'_index' ).'.php';
+				$sCustomViewSource = $this->oPluginVo->getViewDir().$this->doPluginPrefix( 'config_'.$this->getFeatureSlug().'_index' ).'.php';
 				$sNormalViewSource = $this->oPluginVo->getViewDir().$this->doPluginPrefix( 'config_index' ).'.php';
 				$sFile = $oWpFs->exists( $sCustomViewSource ) ? $sCustomViewSource : $sNormalViewSource;
 			}
@@ -1039,12 +945,21 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			}
 			return ICWP_WPSF_WpFilesystem::GetInstance();
 		}
+
 		/**
 		 * @return ICWP_WPSF_WpFunctions
 		 */
 		public function loadWpFunctionsProcessor() {
 			require_once( dirname(__FILE__) . '/icwp-wpfunctions.php' );
 			return ICWP_WPSF_WpFunctions::GetInstance();
+		}
+
+		/**
+		 * @return ICWP_WPSF_YamlProcessor
+		 */
+		public function loadYamlProcessor() {
+			require_once( dirname(__FILE__) . '/icwp-processor-yaml.php' );
+			return ICWP_WPSF_YamlProcessor::GetInstance();
 		}
 
 		/**

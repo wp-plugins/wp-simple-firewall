@@ -69,9 +69,14 @@ function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $i
 
 }
 
-function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
+function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 	
-	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $mOptionType, $sOptionHumanName, $sOptionTitle, $sOptionHelpText, $sHelpLink ) = array_pad( $inaOption, 8, '' );
+//	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $mOptionType, $sOptionHumanName, $sOptionTitle, $sOptionHelpText, $sHelpLink ) = array_pad( $inaOption, 8, '' );
+	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $mOptionType, $sHelpLink ) = $aOption;
+	$sOptionHumanName = $aOption['name'];
+	$sOptionTitle = $aOption['summary'];
+	$sOptionHelpText = $aOption['description'];
+
 	if ( $sOptionKey == 'spacer' ) {
 		$sHtml = '
 			<div class="span'.$iSpanSize.'">

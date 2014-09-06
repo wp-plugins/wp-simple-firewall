@@ -68,219 +68,361 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	 */
 	protected function getOptionsDefinitions() {
 
+//		$aOptionsBase = array(
+//			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Login Protection') ),
+//			'section_options' => array(
+//				array(
+//					'enable_login_protect',
+//					'',
+//					'N',
+//					'checkbox',
+//					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Login Protection') ),
+//					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
+//					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('Login Protection') ),
+//					'<a href="http://icwp.io/51" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//					.' | <a href="http://icwp.io/wpsf03" target="_blank">'._wpsf__( 'blog' ).'</a>'
+//				)
+//			)
+//		);
+//		$aWhitelist = array(
+//
+//			'section_title' => sprintf( _wpsf__( 'By-Pass %s' ), _wpsf__('Login Protection') ),
+//			'section_options' => array(
+//				array(
+//					'enable_xmlrpc_compatibility',
+//					'',
+//					'Y',
+//					'checkbox',
+//					_wpsf__( 'XML-RPC Compatibility' ),
+//					_wpsf__( 'Allow Login Through XML-RPC To By-Pass Login Protection Rules' ),
+//					_wpsf__( 'Enable this if you need XML-RPC functionality e.g. if you use the WordPress iPhone/Android App.' )
+//				),
+//				array(
+//					'ips_whitelist',
+//					'',
+//					'',
+//					'ip_addresses',
+//					_wpsf__( 'Whitelist IP Addresses' ),
+//					_wpsf__( 'Specify IP Addresses that by-pass all Login Protect rules' ),
+//					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ),
+//						'<span class="code">'.( $oDp->GetVisitorIpAddress( false ) ).'</span>'
+//					),
+//					'<a href="http://icwp.io/52" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				)
+//			)
+//		);
+//
+//		$aTwoFactorAuth = array(
+//
+//			'section_title' => _wpsf__( 'Two-Factor Authentication Protection Options' ),
+//			'section_options' => array(
+//				array(
+//					'two_factor_auth_user_roles',
+//					'',
+//					$this->getTwoFactorUserAuthRoles( true ), // default is Contributors, Authors, Editors and Administrators
+//					$this->getTwoFactorUserAuthRoles(),
+//					_wpsf__( 'Two-Factor Auth User Roles' ),
+//					_wpsf__( 'All User Roles Subject To Two-Factor Authentication' ),
+//					_wpsf__( '.' ),
+//					'<a href="http://icwp.io/4v" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'enable_two_factor_auth_by_ip',
+//					'',
+//					'N',
+//					'checkbox',
+//					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('IP') ),
+//					sprintf( _wpsf__( 'Two-Factor Login Authentication By %s' ), _wpsf__('IP Address') ),
+//					_wpsf__( 'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address' ),
+//					'<a href="http://icwp.io/3s" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'enable_two_factor_auth_by_cookie',
+//					'',
+//					'N',
+//					'checkbox',
+//					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('Cookie') ),
+//					sprintf( _wpsf__( 'Two-Factor Login Authentication By %s' ), _wpsf__('Cookie') ),
+//					_wpsf__( 'This will restrict all user login sessions to a single browser. Use this if your users have dynamic IP addresses.' ),
+//					'<a href="http://icwp.io/3t" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'enable_two_factor_bypass_on_email_fail',
+//					'',
+//					'N',
+//					'checkbox',
+//					_wpsf__( 'By-Pass On Failure' ),
+//					_wpsf__( 'If Sending Verification Email Sending Fails, Two-Factor Login Authentication Is Ignored' ),
+//					_wpsf__( 'If you enable two-factor authentication and sending the email with the verification link fails, turning this setting on will by-pass the verification step. Use with caution' )
+//				)
+//			)
+//		);
+//		$aLoginProtect = array(
+//			'section_title' => _wpsf__( 'Login Protection Options' ),
+//			'section_options' => array(
+//				array(
+//					'login_limit_interval',
+//					'',
+//					'10',
+//					'integer',
+//					_wpsf__('Login Cooldown Interval'),
+//					_wpsf__('Limit login attempts to every X seconds'),
+//					_wpsf__('WordPress will process only ONE login attempt for every number of seconds specified. Zero (0) turns this off. Suggested: 5'),
+//					'<a href="http://icwp.io/3q" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'enable_login_gasp_check',
+//					'',
+//					'Y',
+//					'checkbox',
+//					_wpsf__( 'G.A.S.P Protection' ),
+//					_wpsf__( 'Use G.A.S.P. Protection To Prevent Login Attempts By Bots' ),
+//					_wpsf__( 'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques. Recommended: ON' ),
+//					'<a href="http://icwp.io/3r" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'enable_prevent_remote_post',
+//					'',
+//					'Y',
+//					'checkbox',
+//					_wpsf__( 'Prevent Remote Login' ),
+//					_wpsf__( 'Prevents Remote Login Attempts From Other Locations' ),
+//					_wpsf__( 'Prevents any login attempts that do not originate from your website. This prevent bots from attempting to login remotely. Recommended: ON' ),
+//					'<a href="http://icwp.io/4n" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				)
+//			)
+//		);
+//
+//		$aYubikeyProtect = array(
+//			'section_title' => _wpsf__( 'Yubikey Authentication' ),
+//			'section_options' => array(
+//				array(
+//					'enable_yubikey',
+//					'',
+//					'N',
+//					'checkbox',
+//					_wpsf__('Enable Yubikey Authentication'),
+//					_wpsf__('Turn On / Off Yubikey Authentication On This Site'),
+//					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication'),
+//					'<a href="http://icwp.io/4f" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'yubikey_app_id',
+//					'',
+//					'',
+//					'text',
+//					_wpsf__('Yubikey App ID'),
+//					_wpsf__('Your Unique Yubikey App ID'),
+//					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication')
+//					. _wpsf__( 'Please review the [more info] link on how to get your own Yubikey App ID and API Key.' ),
+//					'<a href="http://icwp.io/4g" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'yubikey_api_key',
+//					'',
+//					'',
+//					'text',
+//					_wpsf__( 'Yubikey API Key' ),
+//					_wpsf__( 'Your Unique Yubikey App API Key' ),
+//					_wpsf__( 'Combined with your Yubikey App ID (above) this will form the basis of your Yubikey Authentication.' )
+//					. _wpsf__( 'Please review the [more info] link on how to get your own Yubikey App ID and API Key.' ),
+//					'<a href="http://icwp.io/4g" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'yubikey_unique_keys',
+//					'',
+//					'',
+//					'yubikey_unique_keys',
+//					_wpsf__( 'Yubikey Unique Keys' ),
+//					_wpsf__( 'Permitted Username - Yubikey Pairs For This Site' ),
+//					'<strong>'. sprintf( _wpsf__( 'Format: %s' ), 'Username,Yubikey').'</strong>'
+//					.'<br />- '. _wpsf__( 'Provide Username<->Yubikey Pairs that are usable on this site.')
+//					.'<br />- '. _wpsf__( 'If a Username if not assigned a Yubikey, Yubikey Authentication is OFF for that user.')
+//					.'<br />- '. _wpsf__( 'Each [Username,Key] pair should be separated by a new line: you only need to provide the first 12 characters of the yubikey.' ),
+//					'<a href="http://icwp.io/4h" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				)
+//			)
+//		);
+//
+//		$aLoggingSection = array(
+//			'section_title' => _wpsf__( 'Logging Options' ),
+//			'section_options' => array(
+//				array(
+//					'enable_login_protect_log',
+//					'',
+//					'N',
+//					'checkbox',
+//					_wpsf__( 'Login Protect Logging' ),
+//					_wpsf__( 'Turn on a detailed Login Protect Log' ),
+//					_wpsf__( 'Will log every event related to login protection and how it is processed. Not recommended to leave on unless you want to debug something and check the login protection is working as you expect.' )
+//				)
+//			)
+//		);
+//
+//		$aOptionsDefinitions = array(
+//			$aOptionsBase,
+//			$aWhitelist,
+//			$aLoginProtect,
+//			$aTwoFactorAuth,
+//			$aYubikeyProtect,
+//			$aLoggingSection
+//		);
+//		return $aOptionsDefinitions;
+	}
+
+	/**
+	 * @param array $aOptionsParams
+	 * @return array
+	 * @throws Exception
+	 */
+	protected function loadStrings_SectionTitles( $aOptionsParams ) {
+
+		switch( $aOptionsParams['slug'] ) {
+
+			case 'section_enable_plugin_feature_login_protection' :
+				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), _wpsf__('Login Protection') );
+				break;
+
+			case 'section_bypass_login_protection' :
+				$sTitle = _wpsf__('By-Pass Login Protection');
+				break;
+
+			case 'section_two_factor_authentication' :
+				$sTitle = _wpsf__('Two-Factor Authentication');
+				break;
+
+			case 'section_brute_force_login_protection' :
+				$sTitle = _wpsf__('Brute Force Login Protection');
+				break;
+
+			case 'section_yubikey_authentication' :
+				$sTitle = _wpsf__('Yubikey Authentication');
+				break;
+
+			case 'section_logging' :
+				$sTitle = _wpsf__('Logging');
+				break;
+
+			default:
+				throw new Exception('A section slug title defined but with no strings');
+		}
+		$aOptionsParams['section_title'] = $sTitle;
+		return $aOptionsParams;
+	}
+
+	/**
+	 * @param $aOptionsParams
+	 */
+	protected function loadStrings( $aOptionsParams ) {
+
 		$oDp = $this->loadDataProcessor();
 
-		$aOptionsBase = array(
-			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Login Protection') ),
-			'section_options' => array(
-				array(
-					'enable_login_protect',
-					'',
-					'N',
-					'checkbox',
-					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Login Protection') ),
-					_wpsf__( 'Enable (or Disable) The Login Protection Feature' ),
-					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('Login Protection') ),
-					'<a href="http://icwp.io/51" target="_blank">'._wpsf__( 'more info' ).'</a>'
-					.' | <a href="http://icwp.io/wpsf03" target="_blank">'._wpsf__( 'blog' ).'</a>'
-				)
-			)
-		);
-		$aWhitelist = array(
-			'section_title' => sprintf( _wpsf__( 'By-Pass %s' ), _wpsf__('Login Protection') ),
-			'section_options' => array(
-				array(
-					'enable_xmlrpc_compatibility',
-					'',
-					'Y',
-					'checkbox',
-					_wpsf__( 'XML-RPC Compatibility' ),
-					_wpsf__( 'Allow Login Through XML-RPC To By-Pass Login Protection Rules' ),
-					_wpsf__( 'Enable this if you need XML-RPC functionality e.g. if you use the WordPress iPhone/Android App.' )
-				),
-				array(
-					'ips_whitelist',
-					'',
-					'',
-					'ip_addresses',
-					_wpsf__( 'Whitelist IP Addresses' ),
-					_wpsf__( 'Specify IP Addresses that by-pass all Login Protect rules' ),
-					sprintf( _wpsf__( 'Take a new line per address. Your IP address is: %s' ),
-						'<span class="code">'.( $oDp->GetVisitorIpAddress( false ) ).'</span>'
-					),
-					'<a href="http://icwp.io/52" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				)
-			)
-		);
+		switch( $aOptionsParams[0] ) {
 
-		$aTwoFactorAuth = array(
-			'section_title' => _wpsf__( 'Two-Factor Authentication Protection Options' ),
-			'section_options' => array(
-				array(
-					'two_factor_auth_user_roles',
-					'',
-					$this->getTwoFactorUserAuthRoles( true ), // default is Contributors, Authors, Editors and Administrators
-					$this->getTwoFactorUserAuthRoles(),
-					_wpsf__( 'Two-Factor Auth User Roles' ),
-					_wpsf__( 'All User Roles Subject To Two-Factor Authentication' ),
-					_wpsf__( 'Select which types of users/roles will be subject to two-factor login authentication.' ),
-					'<a href="http://icwp.io/4v" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'enable_two_factor_auth_by_ip',
-					'',
-					'N',
-					'checkbox',
-					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('IP') ),
-					sprintf( _wpsf__( 'Two-Factor Login Authentication By %s' ), _wpsf__('IP Address') ),
-					_wpsf__( 'All users will be required to authenticate their logins by email-based two-factor authentication when logging in from a new IP address' ),
-					'<a href="http://icwp.io/3s" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'enable_two_factor_auth_by_cookie',
-					'',
-					'N',
-					'checkbox',
-					sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('Cookie') ),
-					sprintf( _wpsf__( 'Two-Factor Login Authentication By %s' ), _wpsf__('Cookie') ),
-					_wpsf__( 'This will restrict all user login sessions to a single browser. Use this if your users have dynamic IP addresses.' ),
-					'<a href="http://icwp.io/3t" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'enable_two_factor_bypass_on_email_fail',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'By-Pass On Failure' ),
-					_wpsf__( 'If Sending Verification Email Sending Fails, Two-Factor Login Authentication Is Ignored' ),
-					_wpsf__( 'If you enable two-factor authentication and sending the email with the verification link fails, turning this setting on will by-pass the verification step. Use with caution' )
-				)
-			)
-		);
-		$aLoginProtect = array(
-			'section_title' => _wpsf__( 'Login Protection Options' ),
-			'section_options' => array(
-				array(
-					'login_limit_interval',
-					'',
-					'10',
-					'integer',
-					_wpsf__('Login Cooldown Interval'),
-					_wpsf__('Limit login attempts to every X seconds'),
-					_wpsf__('WordPress will process only ONE login attempt for every number of seconds specified. Zero (0) turns this off. Suggested: 5'),
-					'<a href="http://icwp.io/3q" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'enable_login_gasp_check',
-					'',
-					'Y',
-					'checkbox',
-					_wpsf__( 'G.A.S.P Protection' ),
-					_wpsf__( 'Use G.A.S.P. Protection To Prevent Login Attempts By Bots' ),
-					_wpsf__( 'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques. Recommended: ON' ),
-					'<a href="http://icwp.io/3r" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'enable_prevent_remote_post',
-					'',
-					'Y',
-					'checkbox',
-					_wpsf__( 'Prevent Remote Login' ),
-					_wpsf__( 'Prevents Remote Login Attempts From Other Locations' ),
-					_wpsf__( 'Prevents any login attempts that do not originate from your website. This prevent bots from attempting to login remotely. Recommended: ON' ),
-					'<a href="http://icwp.io/4n" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				)
-			)
-		);
+			case 'enable_login_protect' :
+				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Login Protection') );
+				$sSummary = _wpsf__( 'Enable (or Disable) The Login Protection Feature' );
+				$sDescription = sprintf( _wpsf__( 'Checking/Un-checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('Login Protection') );
+				break;
 
-		$aYubikeyProtect = array(
-			'section_title' => _wpsf__( 'Yubikey Authentication' ),
-			'section_options' => array(
-				array(
-					'enable_yubikey',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__('Enable Yubikey Authentication'),
-					_wpsf__('Turn On / Off Yubikey Authentication On This Site'),
-					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication'),
-					'<a href="http://icwp.io/4f" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'yubikey_app_id',
-					'',
-					'',
-					'text',
-					_wpsf__('Yubikey App ID'),
-					_wpsf__('Your Unique Yubikey App ID'),
-					_wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication')
-					. _wpsf__( 'Please review the [more info] link on how to get your own Yubikey App ID and API Key.' ),
-					'<a href="http://icwp.io/4g" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'yubikey_api_key',
-					'',
-					'',
-					'text',
-					_wpsf__( 'Yubikey API Key' ),
-					_wpsf__( 'Your Unique Yubikey App API Key' ),
-					_wpsf__( 'Combined with your Yubikey App ID (above) this will form the basis of your Yubikey Authentication.' )
-					. _wpsf__( 'Please review the [more info] link on how to get your own Yubikey App ID and API Key.' ),
-					'<a href="http://icwp.io/4g" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'yubikey_unique_keys',
-					'',
-					'',
-					'yubikey_unique_keys',
-					_wpsf__( 'Yubikey Unique Keys' ),
-					_wpsf__( 'Permitted Username - Yubikey Pairs For This Site' ),
-					'<strong>'. sprintf( _wpsf__( 'Format: %s' ), 'Username,Yubikey').'</strong>'
-					.'<br />- '. _wpsf__( 'Provide Username<->Yubikey Pairs that are usable on this site.')
-					.'<br />- '. _wpsf__( 'If a Username if not assigned a Yubikey, Yubikey Authentication is OFF for that user.')
-					.'<br />- '. _wpsf__( 'Each [Username,Key] pair should be separated by a new line: you only need to provide the first 12 characters of the yubikey.' ),
-					'<a href="http://icwp.io/4h" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				/*
-				array(
-					'enable_yubikey_only',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__('Enable Yubikey Only'),
-					_wpsf__('Turn On / Off Yubikey Only Authentication'),
-					_wpsf__('Yubikey Only Authentication is where you can login into your WordPress site with just a Yubikey OTP.')
-					.'<br />- '. _wpsf__("You don't need to enter a username or a password, just a valid Yubikey OTP.")
-					.'<br />- '. _wpsf__("Check your list of Yubikeys as only 1 WordPress username may be assigned to a given Yubikey ID (but you may have multiple Yubikeys for a given username)."),
-					sprintf( _wpsf__( '%smore info%s' ), '<a href="http://icwp.io/4f" target="_blank">', '</a>' )
-				),*/
-			)
-		);
-		
-		$aLoggingSection = array(
-			'section_title' => _wpsf__( 'Logging Options' ),
-			'section_options' => array(
-				array(
-					'enable_login_protect_log',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'Login Protect Logging' ),
-					_wpsf__( 'Turn on a detailed Login Protect Log' ),
-					_wpsf__( 'Will log every event related to login protection and how it is processed. Not recommended to leave on unless you want to debug something and check the login protection is working as you expect.' )
-				)
-			)
-		);
+			case 'enable_xmlrpc_compatibility' :
+				$sName = _wpsf__( 'XML-RPC Compatibility' );
+				$sSummary = _wpsf__( 'Allow Login Through XML-RPC To By-Pass Login Protection Rules' );
+				$sDescription = _wpsf__( 'Enable this if you need XML-RPC functionality e.g. if you use the WordPress iPhone/Android App.' );
+				break;
 
-		$aOptionsDefinitions = array(
-			$aOptionsBase,
-			$aWhitelist,
-			$aLoginProtect,
-			$aTwoFactorAuth,
-			$aYubikeyProtect,
-			$aLoggingSection
-		);
-		return $aOptionsDefinitions;
+			case 'ips_whitelist' :
+				$sName = _wpsf__( 'Whitelist IP Addresses' );
+				$sSummary = _wpsf__( 'Specify IP Addresses that by-pass all Login Protect rules' );
+				$sDescription = sprintf(
+					_wpsf__( 'Take a new line per address. Your IP address is: %s' ),
+					'<span class="code">'.( $oDp->GetVisitorIpAddress( false ) ).'</span>'
+				);
+				break;
+
+			case 'two_factor_auth_user_roles' :
+				$sName = _wpsf__( 'Two-Factor Auth User Roles' );
+				$sSummary = _wpsf__( 'All User Roles Subject To Two-Factor Authentication' );
+				$sDescription = _wpsf__( 'Select which types of users/roles will be subject to two-factor login authentication.' );
+				break;
+
+			case 'enable_two_factor_auth_by_ip' :
+				$sName = sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('IP') );
+				$sSummary = sprintf( _wpsf__( 'Two-Factor Login Authentication By %s' ), _wpsf__('IP Address') );
+				$sDescription = _wpsf__( 'All users will be required to authenticate their login by email-based two-factor authentication, when logging in from a new IP address' );
+				break;
+
+			case 'enable_two_factor_auth_by_cookie' :
+				$sName = sprintf( _wpsf__( 'Two-Factor Authentication (%s)' ), _wpsf__('Cookie') );
+				$sSummary = sprintf( _wpsf__( 'Two-Factor Login Authentication By %s' ), _wpsf__('Cookie') );
+				$sDescription = _wpsf__( 'This will restrict all user login sessions to a single browser. Use this if your users have dynamic IP addresses.' );
+				break;
+
+			case 'enable_two_factor_bypass_on_email_fail' :
+				$sName = _wpsf__( 'By-Pass On Failure' );
+				$sSummary = _wpsf__( 'If Sending Verification Email Sending Fails, Two-Factor Login Authentication Is Ignored' );
+				$sDescription = _wpsf__( 'If you enable two-factor authentication and sending the email with the verification link fails, turning this setting on will by-pass the verification step. Use with caution.' );
+				break;
+
+			case 'login_limit_interval' :
+				$sName = _wpsf__('Login Cooldown Interval');
+				$sSummary = _wpsf__('Limit login attempts to every X seconds');
+				$sDescription = _wpsf__('WordPress will process only ONE login attempt for every number of seconds specified. Zero (0) turns this off. Suggested: 5');
+				break;
+
+			case 'enable_login_gasp_check' :
+				$sName = _wpsf__( 'G.A.S.P Protection' );
+				$sSummary = _wpsf__( 'Use G.A.S.P. Protection To Prevent Login Attempts By Bots' );
+				$sDescription = _wpsf__( 'Adds a dynamically (Javascript) generated checkbox to the login form that prevents bots using automated login techniques. Recommended: ON' );
+				break;
+
+			case 'enable_prevent_remote_post' :
+				$sName = _wpsf__( 'Prevent Remote Login' );
+				$sSummary = _wpsf__( 'Prevents Remote Login Attempts From Anywhere Except Your Site' );
+				$sDescription = _wpsf__( 'Prevents any login attempts that do not originate from your website. This prevent bots from attempting to login remotely. Recommended: ON' );
+				break;
+
+			case 'enable_yubikey' :
+				$sName = _wpsf__('Enable Yubikey Authentication');
+				$sSummary = _wpsf__('Turn On / Off Yubikey Authentication On This Site');
+				$sDescription = _wpsf__('Combined with your Yubikey API Key (below) this will form the basis of your Yubikey Authentication');
+				break;
+
+			case 'yubikey_app_id' :
+				$sName = _wpsf__( 'Yubikey App ID' );
+				$sSummary = _wpsf__( 'Your Unique Yubikey App ID' );
+				$sDescription = _wpsf__( 'Combined with your Yubikey API Key this will form the basis of your Yubikey Authentication' )
+					. _wpsf__( 'Please review the info link on how to obtain your own Yubikey App ID and API Key.' );
+				break;
+
+			case 'yubikey_api_key' :
+				$sName = _wpsf__( 'Yubikey API Key' );
+				$sSummary = _wpsf__( 'Your Unique Yubikey App API Key' );
+				$sDescription = _wpsf__( 'Combined with your Yubikey App ID this will form the basis of your Yubikey Authentication.' )
+					. _wpsf__( 'Please review the info link on how to get your own Yubikey App ID and API Key.' );
+				break;
+
+			case 'yubikey_unique_keys' :
+				$sName = _wpsf__( 'Yubikey Unique Keys' );
+				$sSummary = _wpsf__( 'Permitted "Username - Yubikey" Pairs For This Site' );
+				$sDescription = '<strong>'. sprintf( _wpsf__( 'Format: %s' ), 'Username,Yubikey' ).'</strong>'
+					.'<br />- '. _wpsf__( 'Provide Username<->Yubikey Pairs that are usable for this site.')
+					.'<br />- '. _wpsf__( 'If a Username if not assigned a Yubikey, Yubikey Authentication is OFF for that user.' )
+					.'<br />- '. _wpsf__( 'Each [Username,Key] pair should be separated by a new line: you only need to provide the first 12 characters of the yubikey.' );
+				break;
+
+			case 'enable_login_protect_log' :
+				$sName = _wpsf__( 'Login Protect Logging' );
+				$sSummary = _wpsf__( 'Turn on a detailed Login Protect Log' );
+				$sDescription = _wpsf__( 'Will log every event related to login protection and how it is processed. ' )
+				.'<br />'. _wpsf__( 'Not recommended to leave on unless you want to debug something and check the login protection is working as you expect.' );
+				break;
+		}
+
+		$aOptionsParams['name'] = $sName;
+		$aOptionsParams['summary'] = $sSummary;
+		$aOptionsParams['description'] = $sDescription;
+		return $aOptionsParams;
 	}
 
 	/**

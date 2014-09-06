@@ -75,8 +75,6 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 		$aPluginSummaryData = apply_filters( $this->doPluginPrefix( 'get_feature_summary_data' ), array() );
 
 		$aData = array(
-			'aAllOptions'		=> $this->getOptions(),
-			'all_options_input'	=> $this->collateAllFormInputsForAllOptions(),
 			'aSummaryData'		=> $aPluginSummaryData
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );

@@ -62,113 +62,195 @@ class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 	}
 
 	/**
+	 * @param array $aOptionsParams
+	 * @return array
+	 * @throws Exception
+	 */
+	protected function loadStrings_SectionTitles( $aOptionsParams ) {
+
+		switch( $aOptionsParams['slug'] ) {
+
+			case 'section_enable_plugin_feature_wordpress_lockdown' :
+				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), _wpsf__('WordPress Lockdown') );
+				break;
+
+			case 'section_permission_access_options' :
+				$sTitle = _wpsf__('Permissions and Access Options');
+				break;
+
+			case 'section_wordpress_obscurity_options' :
+				$sTitle = _wpsf__('WordPress Obscurity Options');
+				break;
+
+			default:
+				throw new Exception('A section slug defined but with no strings');
+		}
+		$aOptionsParams['section_title'] = $sTitle;
+		return $aOptionsParams;
+	}
+
+	/**
+	 * @param $aOptionsParams
+	 */
+	protected function loadStrings_Options( $aOptionsParams ) {
+
+		switch( $aOptionsParams[0] ) {
+
+			case 'enable_lockdown' :
+				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Lockdown') );
+				$sSummary = _wpsf__( 'Enable (or Disable) The Lockdown Feature' );
+				$sDescription = sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('WordPress Lockdown') );
+				break;
+
+			case 'disable_file_editing' :
+				$sName = _wpsf__( 'Disable File Editing' );
+				$sSummary = _wpsf__( 'Disable Ability To Edit Files From Within WordPress' );
+				$sDescription = _wpsf__( 'Removes the option to directly edit any files from within the WordPress admin area.' )
+					.'<br />'._wpsf__( 'Equivalent to setting "DISALLOW_FILE_EDIT" to TRUE.' );
+				break;
+
+			case 'force_ssl_login' :
+				$sName = _wpsf__( 'Force SSL Login' );
+				$sSummary = _wpsf__( 'Forces Login Form To Be Submitted Over SSL' );
+				$sDescription = _wpsf__( 'Please only enable this option if you have a valid SSL certificate installed.' )
+					.'<br />'._wpsf__( 'Equivalent to setting FORCE_SSL_LOGIN to TRUE.' );
+				break;
+
+			case 'force_ssl_admin' :
+				$sName = _wpsf__( 'Force SSL Admin' );
+				$sSummary = _wpsf__( 'Forces WordPress Admin Dashboard To Be Delivered Over SSL' );
+				$sDescription = _wpsf__( 'Please only enable this option if you have a valid SSL certificate installed.' )
+					.'<br />'._wpsf__( 'Equivalent to setting "FORCE_SSL_ADMIN" to TRUE.' );
+				break;
+
+			case 'mask_wordpress_version' :
+				$sName = _wpsf__( 'Mask WordPress Version' );
+				$sSummary = _wpsf__( 'Prevents Public Display Of Your WordPress Version' );
+				$sDescription = _wpsf__( 'Enter how you would like your WordPress version displayed publicly. Leave blank to disable this feature.' )
+					.'<br />'._wpsf__( 'Warning: This may interfere with WordPress plugins that rely on the $wp_version variable.' );
+				break;
+
+			case 'hide_wordpress_generator_tag' :
+				$sName = _wpsf__( 'WP Generator Tag' );
+				$sSummary = _wpsf__( 'Remove WP Generator Meta Tag' );
+				$sDescription = _wpsf__( 'Remove a meta tag from your WordPress pages that publicly displays that your site is WordPress and its current version.' );
+				break;
+		}
+
+		$aOptionsParams['name'] = $sName;
+		$aOptionsParams['summary'] = $sSummary;
+		$aOptionsParams['description'] = $sDescription;
+		return $aOptionsParams;
+	}
+
+	/**
 	 * @return array
 	 */
 	protected function getOptionsDefinitions() {
 
-		$aBase = array(
-			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('WordPress Lockdown') ),
-			'section_options' => array(
-				array(
-					'enable_lockdown',
-					'',
-					'N',
-					'checkbox',
-					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Lockdown') ),
-					_wpsf__( 'Enable (or Disable) The Lockdown Feature' ),
-					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('WordPress Lockdown') ),
-					'<a href="http://icwp.io/4r" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				)
-			)
-		);
-		$aAccess = array(
-			'section_title' => _wpsf__( 'Access Options' ),
-			'section_options' => array(
-				array(
-					'disable_file_editing',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'Disable File Editing' ),
-					_wpsf__( 'Disable Ability To Edit Files' ),
-					_wpsf__( 'Removes the option to directly edit any files from within the WordPress admin area.' )
-					.'<br />'._wpsf__( 'Equivalent to setting DISALLOW_FILE_EDIT to TRUE.' ),
-					'<a href="http://icwp.io/4q" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'force_ssl_login',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'Force SSL Login' ),
-					_wpsf__( 'Forces Login Form To Be Submitted Over SSL' ),
-					_wpsf__( 'Please only enable this option if you have a valid SSL certificate installed.' )
-					.'<br />'._wpsf__( 'Equivalent to setting FORCE_SSL_LOGIN to TRUE.' ),
-					'<a href="http://icwp.io/4s" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'force_ssl_admin',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'Force SSL Admin' ),
-					_wpsf__( 'Forces WordPress Admin Dashboard To Be Delivered Over SSL' ),
-					_wpsf__( 'Please only enable this option if you have a valid SSL certificate installed.' )
-					.'<br />'._wpsf__( 'Equivalent to setting FORCE_SSL_ADMIN to TRUE.' ),
-					'<a href="http://icwp.io/4t" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				)
-			)
-		);
-		$aObscurity = array(
-			'section_title' => _wpsf__( 'WordPress Obscurity Options' ),
-			'section_options' => array(
-				array(
-					'mask_wordpress_version',
-					'',
-					'',
-					'text',
-					_wpsf__( 'Mask WordPress Version' ),
-					_wpsf__( 'Prevents Public Display Of Your WordPress Version' ),
-					_wpsf__( 'Enter how you would like your WordPress version displayed publicly. Leave blank to disable this feature.' )
-						.'<br />'._wpsf__( 'Warning: This may interfere with WordPress plugins that rely on the $wp_version variable.' ),
-					'<a href="http://icwp.io/43" target="_blank">'._wpsf__( 'more info' ).'</a>'
-				),
-				array(
-					'hide_wordpress_generator_tag',
-					'',
-					'N',
-					'checkbox',
-					_wpsf__( 'WP Generator Tag' ),
-					_wpsf__( 'Remove WP Generator Meta Tag' ),
-					_wpsf__( 'Remove a meta tag from your WordPress pages that publicly displays that your site is WordPress and its current version.' )
-				)
-			)
-		);
-
-		$aOptionsDefinitions = array(
-			$aBase,
-			$aAccess,
-			$aObscurity
-		);
-		return $aOptionsDefinitions;
-
-		if ( false && $this->getCanDoAuthSalts() ) {
-			$this->aOptions[] = array(
-				'section_title' => _wpsf__( 'Security Actions' ),
-				'section_options' => array(
-					array(
-						'action_reset_auth_salts',
-						'',
-						'N',
-						'checkbox',
-						_wpsf__( 'Reset Auth Keys/Salts' ),
-						_wpsf__( 'Reset WordPress Authentication Keys and Salts' ),
-						_wpsf__( 'Selecting this will reset the WordPress Authentication Keys and Salts in your wp-config.php file.' )
-						.'<br /><strong>'._wpsf__( 'Note: This will log you and all other users out of their current session.' ).'</strong>'
-					)
-				)
-			);
-		}
+//		$aBase = array(
+//			'section_title' => sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('WordPress Lockdown') ),
+//			'section_options' => array(
+//				array(
+//					'enable_lockdown',
+//					'',
+//					'N',
+//					'checkbox',
+//					sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Lockdown') ),
+//					_wpsf__( 'Enable (or Disable) The Lockdown Feature' ),
+//					sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('WordPress Lockdown') ),
+//					'<a href="http://icwp.io/4r" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				)
+//			)
+//		);
+//		$aAccess = array(
+//			'section_title' => _wpsf__( 'Access Options' ),
+//			'section_options' => array(
+//				array(
+//					'disable_file_editing',
+//					'',
+//					'N',
+//					'checkbox',
+//					_wpsf__( 'Disable File Editing' ),
+//					_wpsf__( 'Disable Ability To Edit Files' ),
+//					_wpsf__( 'Removes the option to directly edit any files from within the WordPress admin area.' )
+//					.'<br />'._wpsf__( 'Equivalent to setting DISALLOW_FILE_EDIT to TRUE.' ),
+//					'<a href="http://icwp.io/4q" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'force_ssl_login',
+//					'',
+//					'N',
+//					'checkbox',
+//					_wpsf__( 'Force SSL Login' ),
+//					_wpsf__( 'Forces Login Form To Be Submitted Over SSL' ),
+//					_wpsf__( 'Please only enable this option if you have a valid SSL certificate installed.' )
+//					.'<br />'._wpsf__( 'Equivalent to setting FORCE_SSL_LOGIN to TRUE.' ),
+//					'<a href="http://icwp.io/4s" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'force_ssl_admin',
+//					'',
+//					'N',
+//					'checkbox',
+//					_wpsf__( 'Force SSL Admin' ),
+//					_wpsf__( 'Forces WordPress Admin Dashboard To Be Delivered Over SSL' ),
+//					_wpsf__( 'Please only enable this option if you have a valid SSL certificate installed.' )
+//					.'<br />'._wpsf__( 'Equivalent to setting FORCE_SSL_ADMIN to TRUE.' ),
+//					'<a href="http://icwp.io/4t" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				)
+//			)
+//		);
+//		$aObscurity = array(
+//			'section_title' => _wpsf__( 'WordPress Obscurity Options' ),
+//			'section_options' => array(
+//				array(
+//					'mask_wordpress_version',
+//					'',
+//					'',
+//					'text',
+//					_wpsf__( 'Mask WordPress Version' ),
+//					_wpsf__( 'Prevents Public Display Of Your WordPress Version' ),
+//					_wpsf__( 'Enter how you would like your WordPress version displayed publicly. Leave blank to disable this feature.' )
+//						.'<br />'._wpsf__( 'Warning: This may interfere with WordPress plugins that rely on the $wp_version variable.' ),
+//					'<a href="http://icwp.io/43" target="_blank">'._wpsf__( 'more info' ).'</a>'
+//				),
+//				array(
+//					'hide_wordpress_generator_tag',
+//					'',
+//					'N',
+//					'checkbox',
+//					_wpsf__( 'WP Generator Tag' ),
+//					_wpsf__( 'Remove WP Generator Meta Tag' ),
+//					_wpsf__( 'Remove a meta tag from your WordPress pages that publicly displays that your site is WordPress and its current version.' )
+//				)
+//			)
+//		);
+//
+//		$aOptionsDefinitions = array(
+//			$aBase,
+//			$aAccess,
+//			$aObscurity
+//		);
+//		return $aOptionsDefinitions;
+//
+//		if ( false && $this->getCanDoAuthSalts() ) {
+//			$this->aOptions[] = array(
+//				'section_title' => _wpsf__( 'Security Actions' ),
+//				'section_options' => array(
+//					array(
+//						'action_reset_auth_salts',
+//						'',
+//						'N',
+//						'checkbox',
+//						_wpsf__( 'Reset Auth Keys/Salts' ),
+//						_wpsf__( 'Reset WordPress Authentication Keys and Salts' ),
+//						_wpsf__( 'Selecting this will reset the WordPress Authentication Keys and Salts in your wp-config.php file.' )
+//						.'<br /><strong>'._wpsf__( 'Note: This will log you and all other users out of their current session.' ).'</strong>'
+//					)
+//				)
+//			);
+//		}
 	}
 	
 	protected function getCanDoAuthSalts() {

@@ -43,8 +43,6 @@ class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_B
 		return $this->oFeatureProcessor;
 	}
 	
-	public function doPrePluginOptionsSave() { }
-
 	/**
 	 * @return array
 	 */

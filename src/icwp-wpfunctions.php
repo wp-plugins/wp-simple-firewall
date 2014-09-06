@@ -261,7 +261,7 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		/**
 		 * @param string $sKey
 		 * @param $sValue
-		 * @return mixed
+		 * @return boolean
 		 */
 		public function updateOption( $sKey, $sValue ) {
 			return $this->isMultisite() ? update_site_option( $sKey, $sValue ) : update_option( $sKey, $sValue );

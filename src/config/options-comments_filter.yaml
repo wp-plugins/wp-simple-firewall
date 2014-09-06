@@ -1,0 +1,146 @@
+---
+name: 'comments_filter'
+slug: 'comments_filter'
+storage_key: 'commentsfilter'
+# Options Sections
+sections:
+  -
+    slug: 'section_enable_plugin_feature_spam_comments_protection_filter'
+    primary: true
+  -
+    slug: 'section_enable_human_comment_spam_protection_filter'
+  -
+    slug: 'section_enable_automatic_bot_comment_spam_protection_filter'
+  -
+    slug: 'section_customize_messages_shown_to_user'
+  -
+    slug: 'section_non_ui'
+    hidden: true
+
+# Define Options and assign to section slug
+options:
+  -
+    key: 'enable_comments_filter'
+    section: 'section_enable_plugin_feature_spam_comments_protection_filter'
+    default: 'N'
+    type: 'checkbox'
+    link_info: 'http://icwp.io/3z'
+    link_blog: 'http://icwp.io/wpsf04'
+  -
+    key: 'enable_comments_human_spam_filter'
+    section: 'section_enable_human_comment_spam_protection_filter'
+    default: 'N'
+    type: 'checkbox'
+    link_info: 'http://icwp.io/57'
+    link_blog: ''
+  -
+    key: 'enable_comments_human_spam_filter_items'
+    section: 'section_enable_human_comment_spam_protection_filter'
+    default:
+      - 'author_name'
+      - 'author_email'
+      - 'comment_content'
+      - 'url'
+      - 'ip_address'
+      - 'user_agent'
+    type: 'multiple_select'
+    value-options:
+      -
+        value-key: 'author_name'
+        text: 'Author Name'
+      -
+        value-key: 'author_email'
+        text: 'Author Email'
+      -
+        value-key: 'comment_content'
+        text: 'Comment Content'
+      -
+        value-key: 'url'
+        text: 'URL'
+      -
+        value-key: 'ip_address'
+        text: 'IP Address'
+      -
+        value-key: 'user_agent'
+        text: 'Browser User Agent'
+    link_info: 'http://icwp.io/58'
+    link_blog: ''
+  -
+    key: 'comments_default_action_human_spam'
+    section: 'section_enable_human_comment_spam_protection_filter'
+    default: 'spam'
+    type: 'select'
+    value-options:
+      -
+        value-key: 0
+        text: 'Mark As Pending Moderation'
+      -
+        value-key: 'spam'
+        text: 'Mark As SPAM'
+      -
+        value-key: 'trash'
+        text: 'Move To Trash'
+      -
+        value-key: 'reject'
+        text: 'Reject And Redirect'
+    link_info: 'http://icwp.io/3x'
+    link_blog: ''
+  -
+    key: 'enable_comments_gasp_protection'
+    section: 'section_enable_automatic_bot_comment_spam_protection_filter'
+    default: 'Y'
+    type: 'checkbox'
+    link_info: 'http://icwp.io/3n'
+    link_blog: 'http://icwp.io/2n'
+  -
+    key: 'enable_comments_gasp_protection_for_logged_in'
+    section: 'section_enable_automatic_bot_comment_spam_protection_filter'
+    default: 'N'
+    type: 'checkbox'
+    link_info: ''
+    link_blog: ''
+  -
+    key: 'comments_cooldown_interval'
+    section: 'section_enable_automatic_bot_comment_spam_protection_filter'
+    default: 30
+    type: 'integer'
+    link_info: 'http://icwp.io/3o'
+    link_blog: ''
+  -
+    key: 'comments_token_expire_interval'
+    section: 'section_enable_automatic_bot_comment_spam_protection_filter'
+    default: 600
+    type: 'integer'
+    link_info: 'http://icwp.io/3o'
+    link_blog: ''
+  -
+    key: 'custom_message_checkbox'
+    section: 'section_customize_messages_shown_to_user'
+    default: "I'm not a spammer"
+    type: 'text'
+    link_info: 'http://icwp.io/3p'
+    link_blog: ''
+  -
+    key: 'custom_message_alert'
+    section: 'section_customize_messages_shown_to_user'
+    default: "Please check the box to confirm you're not a spammer"
+    type: 'text'
+    link_info: 'http://icwp.io/3p'
+    link_blog: ''
+  -
+    key: 'custom_message_comment_wait'
+    section: 'section_customize_messages_shown_to_user'
+    default: "Please wait %s seconds before posting your comment"
+    type: 'text'
+    link_info: 'http://icwp.io/3p'
+    link_blog: ''
+  -
+    key: 'custom_message_comment_reload'
+    section: 'section_customize_messages_shown_to_user'
+    default: "Please reload this page to post a comment"
+    type: 'text'
+    link_info: 'http://icwp.io/3p'
+    link_blog: ''
+  -
+    key: 'current_plugin_version'
+    section: 'section_non_ui'
