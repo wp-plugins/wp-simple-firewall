@@ -54,25 +54,29 @@ class ICWP_WPSF_FeatureHandler_Email extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected function loadStrings_SectionTitles( $aOptionsParams ) {
 
-		switch( $aOptionsParams['slug'] ) {
+		$sSectionSlug = $aOptionsParams['section_slug'];
+		switch( $aOptionsParams['section_slug'] ) {
 
 			case 'section_email_options' :
 				$sTitle = _wpsf__( 'Email Options' );
 				break;
 
 			default:
-				throw new Exception('A section slug defined but with no strings');
+				throw new Exception( sprintf( 'A section slug was defined but with no associated strings. Slug: "%s".', $sSectionSlug ) );
 		}
 		$aOptionsParams['section_title'] = $sTitle;
 		return $aOptionsParams;
 	}
 
 	/**
-	 * @param $aOptionsParams
+	 * @param array $aOptionsParams
+	 * @return array
+	 * @throws Exception
 	 */
 	protected function loadStrings_Options( $aOptionsParams ) {
 
-		switch( $aOptionsParams[0] ) {
+		$sKey = $aOptionsParams['key'];
+		switch( $sKey ) {
 
 			case 'block_send_email_address' :
 				$sName = _wpsf__( 'Report Email' );
@@ -85,6 +89,9 @@ class ICWP_WPSF_FeatureHandler_Email extends ICWP_WPSF_FeatureHandler_Base {
 				$sSummary = _wpsf__( 'Limit Emails Per Second' );
 				$sDescription = _wpsf__( 'You throttle emails sent by this plugin by limiting the number of emails sent every second. This is useful in case you get hit by a bot attack. Zero (0) turns this off. Suggested: 10' );
 				break;
+
+			default:
+				throw new Exception( sprintf( 'An option has been defined but without strings assigned to it. Option key: "%s".', $sKey ) );
 		}
 
 		$aOptionsParams['name'] = $sName;

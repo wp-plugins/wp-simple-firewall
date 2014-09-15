@@ -53,7 +53,8 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected function loadStrings_SectionTitles( $aOptionsParams ) {
 
-		switch( $aOptionsParams['slug'] ) {
+		$sSectionSlug = $aOptionsParams['section_slug'];
+		switch( $aOptionsParams['section_slug'] ) {
 
 			case 'section_enable_plugin_feature_spam_comments_protection_filter' :
 				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), _wpsf__('SPAM Comments Protection Filter') );
@@ -72,18 +73,21 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 				break;
 
 			default:
-				throw new Exception('A section slug defined but with no strings');
+				throw new Exception( sprintf( 'A section slug was defined but with no associated strings. Slug: "%s".', $sSectionSlug ) );
 		}
 		$aOptionsParams['section_title'] = $sTitle;
 		return $aOptionsParams;
 	}
 
 	/**
-	 * @param $aOptionsParams
+	 * @param array $aOptionsParams
+	 * @return array
+	 * @throws Exception
 	 */
 	protected function loadStrings_Options( $aOptionsParams ) {
 
-		switch( $aOptionsParams[0] ) {
+		$sKey = $aOptionsParams['key'];
+		switch( $sKey ) {
 
 			case 'enable_comments_filter' :
 				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Comments Filter') );
@@ -166,6 +170,9 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 				$sDescription = _wpsf__( 'This message is displayed on the submit-button when the comment token is expired' )
 					.'<br />'.sprintf( _wpsf__( 'Default Message: %s' ), _wpsf__("Please reload this page to post a comment") );
 				break;
+
+			default:
+				throw new Exception( sprintf( 'An option has been defined but without strings assigned to it. Option key: "%s".', $sKey ) );
 		}
 
 		$aOptionsParams['name'] = $sName;

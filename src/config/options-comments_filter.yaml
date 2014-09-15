@@ -36,6 +36,7 @@ options:
   -
     key: 'enable_comments_human_spam_filter_items'
     section: 'section_enable_human_comment_spam_protection_filter'
+    type: 'multiple_select'
     default:
       - 'author_name'
       - 'author_email'
@@ -43,26 +44,26 @@ options:
       - 'url'
       - 'ip_address'
       - 'user_agent'
-    type: 'multiple_select'
-    value-options:
+    value_options:
       -
-        value-key: 'author_name'
+        value_key: 'author_name'
         text: 'Author Name'
       -
-        value-key: 'author_email'
+        value_key: 'author_email'
         text: 'Author Email'
       -
-        value-key: 'comment_content'
+        value_key: 'comment_content'
         text: 'Comment Content'
       -
-        value-key: 'url'
+        value_key: 'url'
         text: 'URL'
       -
-        value-key: 'ip_address'
+        value_key: 'ip_address'
         text: 'IP Address'
       -
-        value-key: 'user_agent'
+        value_key: 'user_agent'
         text: 'Browser User Agent'
+
     link_info: 'http://icwp.io/58'
     link_blog: ''
   -
@@ -70,21 +71,19 @@ options:
     section: 'section_enable_human_comment_spam_protection_filter'
     default: 'spam'
     type: 'select'
-    value-options:
+    value_options:
       -
-        value-key: 0
+        value_key: 0
         text: 'Mark As Pending Moderation'
       -
-        value-key: 'spam'
+        value_key: 'spam'
         text: 'Mark As SPAM'
       -
-        value-key: 'trash'
+        value_key: 'trash'
         text: 'Move To Trash'
       -
-        value-key: 'reject'
+        value_key: 'reject'
         text: 'Reject And Redirect'
-    link_info: 'http://icwp.io/3x'
-    link_blog: ''
   -
     key: 'enable_comments_gasp_protection'
     section: 'section_enable_automatic_bot_comment_spam_protection_filter'
@@ -98,6 +97,27 @@ options:
     default: 'N'
     type: 'checkbox'
     link_info: ''
+    link_blog: ''
+  -
+    key: 'comments_default_action_spam_bot'
+    section: 'section_enable_automatic_bot_comment_spam_protection_filter'
+    default: 'trash'
+    type: 'select'
+    value_options:
+      -
+        value_key: 0
+        text: 'Mark As Pending Moderation'
+      -
+        value_key: 'spam'
+        text: 'Mark As SPAM'
+      -
+        value_key: 'trash'
+        text: 'Move To Trash'
+      -
+        value_key: 'reject'
+        text: 'Reject And Redirect'
+
+    link_info: 'http://icwp.io/3x'
     link_blog: ''
   -
     key: 'comments_cooldown_interval'

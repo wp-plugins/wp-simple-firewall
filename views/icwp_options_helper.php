@@ -72,7 +72,13 @@ function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $i
 function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 	
 //	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $mOptionType, $sOptionHumanName, $sOptionTitle, $sOptionHelpText, $sHelpLink ) = array_pad( $inaOption, 8, '' );
-	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $mOptionType, $sHelpLink ) = $aOption;
+//	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $sOptionType, $sHelpLink ) = $aOption;
+	$sOptionKey = $aOption['key'];
+	$sOptionSaved = $aOption['value'];
+	$sOptionDefault = $aOption['default'];
+	$sOptionType = $aOption['type'];
+	$aPossibleOptions = $aOption['value_options'];
+	$sHelpLink = $aOption['info_link'];
 	$sOptionHumanName = $aOption['name'];
 	$sOptionTitle = $aOption['summary'];
 	$sOptionHelpText = $aOption['description'];
@@ -82,7 +88,8 @@ function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 			<div class="span'.$iSpanSize.'">
 			</div>
 		';
-	} else {
+	}
+	else {
 
 		$sHelpLink = !empty($sHelpLink)? '<span>['.$sHelpLink.']</span>' : '';
 		$sSpanId = 'span_'.$insVarPrefix.$sOptionKey;
@@ -97,7 +104,7 @@ function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 		$sAdditionalClass = '';
 		$sHelpSection = '';
 		
-		if ( $mOptionType === 'checkbox' ) {
+		if ( $sOptionType === 'checkbox' ) {
 			
 			$sChecked = ( $sOptionSaved == 'Y' )? 'checked="checked"' : '';
 			
@@ -111,7 +118,7 @@ function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 						'.$sOptionTitle;
 
 		}
-		else if ( $mOptionType === 'text' ) {
+		else if ( $sOptionType === 'text' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$sHtml .= '
 				<p>'.$sOptionTitle.'</p>
@@ -122,7 +129,7 @@ function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 						id="'.$insVarPrefix.$sOptionKey.'"
 						class="span5" />';
 		}
-		else if ( $mOptionType === 'password' ) {
+		else if ( $sOptionType === 'password' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$sHtml .= '
 				<p>'.$sOptionTitle.'</p>
@@ -133,7 +140,7 @@ function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 						id="'.$insVarPrefix.$sOptionKey.'"
 						class="span5" />';
 		}
-		else if ( $mOptionType === 'email' ) {
+		else if ( $sOptionType === 'email' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$sHtml .= '
 				<p>'.$sOptionTitle.'</p>
@@ -145,60 +152,44 @@ function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 						class="span5" />';
 
 		}
-		else if ( is_array($mOptionType) ) { //it's a select, or radio
+		else if ( $sOptionType === 'select' ) {
 
-			if ( isset( $mOptionType['type'] ) ) {
-				$sInputType = $mOptionType['type'];
-				unset( $mOptionType['type'] );
-			}
-			else {
-				$sInputType =  array_shift($mOptionType);
-			}
-
-			if ( $sInputType == 'select' ) {
-
-				$sFragment = '<p>'.$sOptionTitle.'</p>
+			$sFragment = '<p>'.$sOptionTitle.'</p>
 				<select
 				id="'.$insVarPrefix.$sOptionKey.'"
 				name="'.$insVarPrefix.$sOptionKey.'">';
 
-				foreach( $mOptionType as $aInput ) {
+			foreach( $aPossibleOptions as $mOptionValue => $sOptionName ) {
 
-					list( $mOptionValue, $sOptionName ) = $aInput;
-					$fSelected = $sOptionSaved == $mOptionValue;
-
-					$sFragment .= '
+				$fSelected = $sOptionSaved == $mOptionValue;
+				$sFragment .= '
 					<option
 					value="'.$mOptionValue.'"
 					id="'.$insVarPrefix.$sOptionKey.'_'.$mOptionValue.'"'
-						.( $fSelected? ' selected="selected"' : '') .'>'. $sOptionName.'</option>';
-				}
-				$sFragment .= '</select>';
-
+					.( $fSelected? ' selected="selected"' : '') .'>'. $sOptionName.'</option>';
 			}
-			if ( $sInputType == 'multiple_select' ) {
-
-				$sFragment = '<p>'.$sOptionTitle.'</p>
-				<select
-				id="'.$insVarPrefix.$sOptionKey.'"
-				name="'.$insVarPrefix.$sOptionKey.'[]" multiple multiple="multiple" size="'.count($mOptionType).'">';
-
-				foreach( $mOptionType as $mOptionValue => $sOptionName ) {
-
-					$fSelected = in_array( $mOptionValue, $sOptionSaved );
-
-					$sFragment .= '
-					<option
-					value="'.$mOptionValue.'"
-					id="'.$insVarPrefix.$sOptionKey.'_'.$mOptionValue.'"'
-						.( $fSelected? ' selected="selected"' : '') .'>'. $sOptionName.'</option>';
-				}
-				$sFragment .= '</select>';
-			}
-
+			$sFragment .= '</select>';
 			$sHtml .= $sFragment;
 		}
-		else if ( $mOptionType === 'ip_addresses' ) {
+		else if ( $sOptionType === 'multiple_select' ) {
+
+			$sFragment = '<p>'.$sOptionTitle.'</p>
+				<select
+				id="'.$insVarPrefix.$sOptionKey.'"
+				name="'.$insVarPrefix.$sOptionKey.'[]" multiple multiple="multiple" size="'.count( $aPossibleOptions ).'">';
+
+			foreach( $aPossibleOptions as $mOptionValue => $sOptionName ) {
+
+				$fSelected = in_array( $mOptionValue, $sOptionSaved );
+				$sFragment .= '<option
+					value="'.$mOptionValue.'"
+					id="'.$insVarPrefix.$sOptionKey.'_'.$mOptionValue.'"'
+					.( $fSelected? ' selected="selected"' : '') .'>'. $sOptionName.'</option>';
+			}
+			$sFragment .= '</select>';
+			$sHtml .= $sFragment;
+		}
+		else if ( $sOptionType === 'ip_addresses' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$nRows = substr_count( $sTextInput, "\n" ) + 1;
 			$sHtml .= '
@@ -213,7 +204,7 @@ function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 
 		}
-		else if ( $mOptionType === 'yubikey_unique_keys' ) {
+		else if ( $sOptionType === 'yubikey_unique_keys' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$nRows = substr_count( $sTextInput, "\n" ) + 1;
 			$sHtml .= '
@@ -228,7 +219,7 @@ function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 
 		}
-		else if ( $mOptionType === 'comma_separated_lists' ) {
+		else if ( $sOptionType === 'comma_separated_lists' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$nRows = substr_count( $sTextInput, "\n" ) + 1;
 			$sHtml .= '
@@ -240,7 +231,7 @@ function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 						rows="'.$nRows.'"
 						class="span5">'.$sTextInput.'</textarea>';
 		}
-		else if ( $mOptionType === 'integer' ) {
+		else if ( $sOptionType === 'integer' ) {
 			$sTextInput = esc_attr( $sOptionSaved );
 			$sHtml .= '
 				<p>'.$sOptionTitle.'</p>

@@ -201,7 +201,8 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected function loadStrings_SectionTitles( $aOptionsParams ) {
 
-		switch( $aOptionsParams['slug'] ) {
+		$sSectionSlug = $aOptionsParams['section_slug'];
+		switch( $aOptionsParams['section_slug'] ) {
 
 			case 'section_enable_plugin_feature_user_accounts_management' :
 				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), _wpsf__('User Accounts Management') );
@@ -224,18 +225,21 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 				break;
 
 			default:
-				throw new Exception('A section slug defined but with no strings');
+				throw new Exception( sprintf( 'A section slug was defined but with no associated strings. Slug: "%s".', $sSectionSlug ) );
 		}
 		$aOptionsParams['section_title'] = $sTitle;
 		return $aOptionsParams;
 	}
 
 	/**
-	 * @param $aOptionsParams
+	 * @param array $aOptionsParams
+	 * @return array
+	 * @throws Exception
 	 */
-	protected function loadStrings( $aOptionsParams ) {
+	protected function loadStrings_Options( $aOptionsParams ) {
 
-		switch( $aOptionsParams[0] ) {
+		$sKey = $aOptionsParams['key'];
+		switch( $sKey ) {
 
 			case 'enable_user_management' :
 				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('User Accounts Management') );
@@ -297,11 +301,8 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 					.'<br />'. _wpsf__( 'It removes the extra step to get to the admin screen for already-authenticated users.' );
 				break;
 
-//			case 'enable_autoupdates' :
-//				$sName =
-//				$sSummary =
-//				$sDescription =
-//				break;
+			default:
+				throw new Exception( sprintf( 'An option has been defined but without strings assigned to it. Option key: "%s".', $sKey ) );
 		}
 
 		$aOptionsParams['name'] = $sName;

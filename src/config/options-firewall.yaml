@@ -12,7 +12,7 @@ sections:
   -
     slug: 'section_whitelist'
   -
-    slug: 'section_blacklists'
+    slug: 'section_blacklist'
   -
     slug: 'section_firewall_logging'
   -
@@ -82,18 +82,18 @@ options:
     section: 'section_choose_firewall_block_response'
     default: 'redirect_die_message'
     type: 'select'
-    value-options:
+    value_options:
       -
-        value-key: 'redirect_die_message'
+        value_key: 'redirect_die_message'
         text: 'Die With Message'
       -
-        value-key: 'redirect_die'
+        value_key: 'redirect_die'
         text: 'Die'
       -
-        value-key: 'redirect_home'
+        value_key: 'redirect_home'
         text: 'Redirect To Home Page'
       -
-        value-key: 'redirect_404'
+        value_key: 'redirect_404'
         text: 'Return 404'
     link_info: ''
     link_blog: ''

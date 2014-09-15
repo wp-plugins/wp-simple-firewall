@@ -45,15 +45,15 @@ options:
     section: 'section_automatic_updates_for_wordpress_components'
     default: 'core_minor'
     type: 'select'
-    value-options:
+    value_options:
       -
-        value-key: 'core_never'
+        value_key: 'core_never'
         text: 'Never'
       -
-        value-key: 'core_minor'
+        value_key: 'core_minor'
         text: 'Minor Versions Only'
       -
-        value-key: 'core_major'
+        value_key: 'core_major'
         text: 'Major and Minor Versions'
     link_info: 'http://icwp.io/3x'
     link_blog: ''

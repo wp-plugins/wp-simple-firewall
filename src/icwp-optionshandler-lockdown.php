@@ -68,7 +68,8 @@ class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected function loadStrings_SectionTitles( $aOptionsParams ) {
 
-		switch( $aOptionsParams['slug'] ) {
+		$sSectionSlug = $aOptionsParams['section_slug'];
+		switch( $aOptionsParams['section_slug'] ) {
 
 			case 'section_enable_plugin_feature_wordpress_lockdown' :
 				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), _wpsf__('WordPress Lockdown') );
@@ -83,18 +84,21 @@ class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 				break;
 
 			default:
-				throw new Exception('A section slug defined but with no strings');
+				throw new Exception( sprintf( 'A section slug was defined but with no associated strings. Slug: "%s".', $sSectionSlug ) );
 		}
 		$aOptionsParams['section_title'] = $sTitle;
 		return $aOptionsParams;
 	}
 
 	/**
-	 * @param $aOptionsParams
+	 * @param array $aOptionsParams
+	 * @return array
+	 * @throws Exception
 	 */
 	protected function loadStrings_Options( $aOptionsParams ) {
 
-		switch( $aOptionsParams[0] ) {
+		$sKey = $aOptionsParams['key'];
+		switch( $sKey ) {
 
 			case 'enable_lockdown' :
 				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Lockdown') );
@@ -135,6 +139,9 @@ class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 				$sSummary = _wpsf__( 'Remove WP Generator Meta Tag' );
 				$sDescription = _wpsf__( 'Remove a meta tag from your WordPress pages that publicly displays that your site is WordPress and its current version.' );
 				break;
+
+			default:
+				throw new Exception( sprintf( 'An option has been defined but without strings assigned to it. Option key: "%s".', $sKey ) );
 		}
 
 		$aOptionsParams['name'] = $sName;

@@ -112,25 +112,29 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected function loadStrings_SectionTitles( $aOptionsParams ) {
 
-		switch( $aOptionsParams['slug'] ) {
+		$sSectionSlug = $aOptionsParams['section_slug'];
+		switch( $aOptionsParams['section_slug'] ) {
 
 			case 'section_general_plugin_options' :
 				$sTitle = _wpsf__( 'General Plugin Options' );
 				break;
 
 			default:
-				throw new Exception('A section slug defined but with no strings');
+				throw new Exception( sprintf( 'A section slug was defined but with no associated strings. Slug: "%s".', $sSectionSlug ) );
 		}
 		$aOptionsParams['section_title'] = $sTitle;
 		return $aOptionsParams;
 	}
 
 	/**
-	 * @param $aOptionsParams
+	 * @param array $aOptionsParams
+	 * @return array
+	 * @throws Exception
 	 */
 	protected function loadStrings_Options( $aOptionsParams ) {
 
-		switch( $aOptionsParams[0] ) {
+		$sKey = $aOptionsParams['key'];
+		switch( $sKey ) {
 
 			case 'block_send_email_address' :
 				$sName = _wpsf__( 'Report Email' );
@@ -149,6 +153,9 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 				$sSummary = _wpsf__( 'Delete All Plugin Settings Upon Plugin Deactivation' );
 				$sDescription = _wpsf__( 'Careful: Removes all plugin options when you deactivate the plugin' );
 				break;
+
+			default:
+				throw new Exception( sprintf( 'An option has been defined but without strings assigned to it. Option key: "%s".', $sKey ) );
 		}
 
 		$aOptionsParams['name'] = $sName;

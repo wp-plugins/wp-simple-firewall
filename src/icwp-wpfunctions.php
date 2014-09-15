@@ -51,73 +51,85 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		public function __construct() {}
 
 		/**
-		 * @param string $insPluginFile
+		 * @param string $sPluginFile
 		 * @return boolean|stdClass
 		 */
-		public function getIsPluginUpdateAvailable( $insPluginFile ) {
+		public function getIsPluginUpdateAvailable( $sPluginFile ) {
 			$aUpdates = $this->getWordpressUpdates();
 			if ( empty( $aUpdates ) ) {
 				return false;
 			}
-			if ( isset( $aUpdates[ $insPluginFile ] ) ) {
-				return $aUpdates[ $insPluginFile ];
+			if ( isset( $aUpdates[ $sPluginFile ] ) ) {
+				return $aUpdates[ $sPluginFile ];
 			}
 			return false;
 		}
 
-		public function getPluginUpgradeLink( $insPluginFile ) {
+		/**
+		 * @param $sPluginFile
+		 * @return mixed
+		 */
+		public function getPluginUpgradeLink( $sPluginFile ) {
 			$sUrl = self_admin_url( 'update.php' ) ;
 			$aQueryArgs = array(
 				'action' 	=> 'upgrade-plugin',
-				'plugin'	=> urlencode( $insPluginFile ),
-				'_wpnonce'	=> wp_create_nonce( 'upgrade-plugin_' . $insPluginFile )
+				'plugin'	=> urlencode( $sPluginFile ),
+				'_wpnonce'	=> wp_create_nonce( 'upgrade-plugin_' . $sPluginFile )
 			);
 			return add_query_arg( $aQueryArgs, $sUrl );
 		}
 
+		/**
+		 * @return array
+		 */
 		public function getWordpressUpdates() {
 			$oCurrent = $this->getTransient( 'update_plugins' );
-			return $oCurrent->response;
+			return ( is_object( $oCurrent ) && isset( $oCurrent->response ) ) ? $oCurrent->response : array();
 		}
 
 		/**
 		 * The full plugin file to be upgraded.
 		 *
-		 * @param string $insPluginFile
+		 * @param string $sPluginFile
 		 * @return boolean
 		 */
-		public function doPluginUpgrade( $insPluginFile ) {
+		public function doPluginUpgrade( $sPluginFile ) {
 
-			if ( !$this->getIsPluginUpdateAvailable($insPluginFile)
+			if ( !$this->getIsPluginUpdateAvailable( $sPluginFile )
 				|| ( isset( $GLOBALS['pagenow'] ) && $GLOBALS['pagenow'] == 'update.php' ) ) {
 				return true;
 			}
-			$sUrl = $this->getPluginUpgradeLink( $insPluginFile );
+			$sUrl = $this->getPluginUpgradeLink( $sPluginFile );
 			wp_redirect( $sUrl );
 			exit();
 		}
 
 		/**
-		 * @param string $insKey
+		 * @param string $sKey
 		 * @return object
 		 */
-		protected function getTransient( $insKey ) {
+		protected function getTransient( $sKey ) {
 
 			// TODO: Handle multisite
 
 			if ( version_compare( $this->getWordpressVersion(), '2.7.9', '<=' ) ) {
-				return get_option( $insKey );
+				return get_option( $sKey );
 			}
 
 			if ( function_exists( 'get_site_transient' ) ) {
-				return get_site_transient( $insKey );
+				$mResult = get_site_transient( $sKey );
+				if ( empty( $mResult ) ) {
+					remove_all_filters( 'pre_site_transient_'.$sKey );
+					$mResult = get_site_transient( $sKey );
+				}
+				return $mResult;
 			}
 
 			if ( version_compare( $this->getWordpressVersion(), '2.9.9', '<=' ) ) {
-				return apply_filters( 'transient_'.$insKey, get_option( '_transient_'.$insKey ) );
+				return apply_filters( 'transient_'.$sKey, get_option( '_transient_'.$sKey ) );
 			}
 
-			return apply_filters( 'site_transient_'.$insKey, get_option( '_site_transient_'.$insKey ) );
+			return apply_filters( 'site_transient_'.$sKey, get_option( '_site_transient_'.$sKey ) );
 		}
 
 		/**

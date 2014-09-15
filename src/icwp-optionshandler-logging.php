@@ -48,6 +48,53 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 	}
 
 	/**
+	 * @param array $aOptionsParams
+	 * @return array
+	 * @throws Exception
+	 */
+	protected function loadStrings_SectionTitles( $aOptionsParams ) {
+
+		$sSectionSlug = $aOptionsParams['section_slug'];
+		switch( $aOptionsParams['section_slug'] ) {
+
+			case 'section_logging_options' :
+				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Logging') );
+				break;
+
+			default:
+				throw new Exception( sprintf( 'A section slug was defined but with no associated strings. Slug: "%s".', $sSectionSlug ) );
+		}
+		$aOptionsParams['section_title'] = $sTitle;
+		return $aOptionsParams;
+	}
+
+	/**
+	 * @param array $aOptionsParams
+	 * @return array
+	 * @throws Exception
+	 */
+	protected function loadStrings_Options( $aOptionsParams ) {
+
+		$sKey = $aOptionsParams['key'];
+		switch( $sKey ) {
+
+			case 'enable_logging' :
+				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Logging') );
+				$sSummary = _wpsf__( 'Enable (or Disable) The Plugin Logging Feature.' );
+				$sDescription = _wpsf__( 'Regardless of any other settings, this option will turn off the Logging system, or enable your chosen Logging options.' );
+				break;
+
+			default:
+				throw new Exception( sprintf( 'An option has been defined but without strings assigned to it. Option key: "%s".', $sKey ) );
+		}
+
+		$aOptionsParams['name'] = $sName;
+		$aOptionsParams['summary'] = $sSummary;
+		$aOptionsParams['description'] = $sDescription;
+		return $aOptionsParams;
+	}
+
+	/**
 	 * @return array
 	 */
 	protected function getOptionsDefinitions() {

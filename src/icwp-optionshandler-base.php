@@ -515,12 +515,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 					continue;
 				}
 
-				unset( $aOptions[$nSectionKey] );
-				$aOptionsSection[$nSectionKey] = $this->loadStrings_SectionTitles( $aOptionsSection );
-
 				foreach ( $aOptionsSection['section_options'] as $nKey => $aOptionParams ) {
 
-					list( $sOptionKey, $sOptionValue, $sOptionDefault, $sOptionType ) = $aOptionParams;
+					$sOptionKey = $aOptionParams['key'];
+					$sOptionDefault = $aOptionParams['default'];
+					$sOptionType = $aOptionParams['type'];
 
 					if ( $this->getOpt( $sOptionKey ) === false ) {
 						$this->setOpt( $sOptionKey, $sOptionDefault );
@@ -565,12 +564,14 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 							$mCurrentOptionVal = implode( "\n", $aNewValues );
 						}
 					}
-					$aOptionParams[1] = $mCurrentOptionVal;
+					$aOptionParams['value'] = $mCurrentOptionVal;
 
 					// Build strings
-					unset( $aOptionsSection['section_options'][$nKey] );
-					$aOptionsSection['section_options'][$nKey] = $this->loadStrings_Options( $aOptionParams );
+					$aParamsWithStrings = $this->loadStrings_Options( $aOptionParams );
+					$aOptionsSection['section_options'][$nKey] = $aParamsWithStrings;
 				}
+
+				$aOptions[$nSectionKey] = $this->loadStrings_SectionTitles( $aOptionsSection );
 			}
 
 			return $aOptions;
@@ -650,11 +651,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 					continue;
 				}
 				foreach ( $aOptionsSection['section_options'] as $aOption ) {
-					list($sKey, $fill1, $fill2, $sType) =  $aOption;
-					if ( is_array( $sType ) ) {
-						$sType = isset( $sType['type'] ) ? $sType['type'] : $sType[0];
-					}
-					$aToJoin[] = $sType.':'.$sKey;
+					$aToJoin[] = $aOption['type'].':'.$aOption['key'];
 				}
 			}
 			return implode( self::CollateSeparator, $aToJoin );
