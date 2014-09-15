@@ -28,7 +28,7 @@ options:
   -
     key: 'admin_access_timeout'
     section: 'section_enable_plugin_feature_admin_access_restriction'
-    default: ''
+    default: 30
     type: 'integer'
     link_info: 'http://icwp.io/41'
     link_blog: ''

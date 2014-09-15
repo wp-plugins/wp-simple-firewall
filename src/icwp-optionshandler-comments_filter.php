@@ -360,26 +360,22 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected function doPrePluginOptionsSave() {
 
-		$nCommentCooldown = $this->getOpt( 'comments_cooldown_interval' );
-		if ( $nCommentCooldown < 0 ) {
-			$nCommentCooldown = 0;
+		if ( $this->getOpt( 'comments_cooldown_interval' ) < 0 ) {
+			$this->getOptionsVo()->resetOptToDefault( 'comments_cooldown_interval' );
 		}
 		
-		$nCommentTokenExpire = $this->getOpt( 'comments_token_expire_interval' );
-		if ( $nCommentTokenExpire < 0 ) {
-			$nCommentTokenExpire = 0;
+		if ( $this->getOpt( 'comments_token_expire_interval' ) < 0 ) {
+			$this->getOptionsVo()->resetOptToDefault( 'comments_token_expire_interval' );
 		}
 		
-		if ( $nCommentTokenExpire != 0 && $nCommentCooldown > $nCommentTokenExpire ) {
-			$nCommentCooldown = self::DefaultCommentCooldown;
-			$nCommentTokenExpire = self::DefaultCommentExpire;
+		if ( $this->getOpt( 'comments_token_expire_interval' ) != 0 && $this->getOpt( 'comments_cooldown_interval' ) > $this->getOpt( 'comments_token_expire_interval' ) ) {
+			$this->getOptionsVo()->resetOptToDefault( 'comments_cooldown_interval' );
+			$this->getOptionsVo()->resetOptToDefault( 'comments_token_expire_interval' );
 		}
-		$this->setOpt( 'comments_cooldown_interval', $nCommentCooldown );
-		$this->setOpt( 'comments_token_expire_interval', $nCommentTokenExpire );
 
 		$aCommentsFilters = $this->getOpt( 'enable_comments_human_spam_filter_items' );
-		if ( empty($aCommentsFilters) || !is_array( $aCommentsFilters ) ) {
-			$this->setOpt( 'enable_comments_human_spam_filter_items', $this->getHumanSpamFilterItems( true ) );
+		if ( empty( $aCommentsFilters ) || !is_array( $aCommentsFilters ) ) {
+			$this->getOptionsVo()->resetOptToDefault( 'enable_comments_human_spam_filter_items' );
 		}
 	}
 

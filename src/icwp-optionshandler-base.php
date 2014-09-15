@@ -262,6 +262,8 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			return $this->getOptIs( 'enable_'.$this->getFeatureSlug(), 'Y' );
 		}
 
+		/**
+		 */
 		protected function override() {
 			$oWpFs = $this->loadFileSystemProcessor();
 			if ( $oWpFs->fileExistsInDir( 'forceOff', $this->oPluginVo->getRootDir(), false ) ) {

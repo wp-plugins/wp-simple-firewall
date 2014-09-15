@@ -241,9 +241,9 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	 * This is the point where you would want to do any options verification
 	 */
 	protected function doPrePluginOptionsSave() {
-		
-		if ( $this->getOpt( 'admin_access_key_timeout' ) <= 0 ) {
-			$this->setOpt( 'admin_access_key_timeout', self::Default_AccessKeyTimeout );
+
+		if ( $this->getOpt( 'admin_access_timeout' ) < 1 ) {
+			$this->getOptionsVo()->resetOptToDefault( 'admin_access_timeout' );
 		}
 
 		$sNotificationEmail = $this->getOpt( 'enable_admin_login_email_notification' );
@@ -251,7 +251,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 			$this->setOpt( 'enable_admin_login_email_notification', '' );
 		}
 
-		$sAccessKey = $this->getOpt( 'admin_access_key');
+		$sAccessKey = $this->getOpt( 'admin_access_key' );
 		if ( empty( $sAccessKey ) ) {
 			$this->setOpt( 'enable_admin_access_restriction', 'N' );
 		}

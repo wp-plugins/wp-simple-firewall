@@ -97,27 +97,13 @@ class ICWP_WPSF_OptionsVO {
 	}
 
 	/**
-	 * @return boolean
-	 */
-	public function getIsYaml() {
-		if ( !isset( $this->fIsYaml ) ) {
-			$aRawData = $this->getRawOptionsConfigData();
-			$this->setIsYaml( !empty( $aRawData['name'] ) );
-		}
-		return $this->fIsYaml;
-	}
-
-	/**
 	 * @return array
 	 */
 	public function getLegacyOptionsConfigData() {
+
 		$aRawData = $this->getRawOptionsConfigData();
-
-		if ( !$this->getIsYaml() ) {
-			return $aRawData;
-		}
-
 		$aLegacyData = array();
+
 		foreach( $aRawData['sections'] as $nPosition => $aRawSection ) {
 
 			if ( isset( $aRawSection['hidden'] ) && $aRawSection['hidden'] ) {
@@ -192,10 +178,27 @@ class ICWP_WPSF_OptionsVO {
 	 * @return mixed
 	 */
 	public function getOpt( $sOptionKey, $mDefault = false ) {
-		if ( !isset( $this->aOptionsValues ) ) {
-			$this->loadStoredOptionsValues();
+		$aOptionsValues = $this->getAllOptionsValues();
+		if ( !isset( $aOptionsValues[ $sOptionKey ] ) ) {
+			$this->setOpt( $sOptionKey, $this->getOptDefault( $sOptionKey, $mDefault ), true );
 		}
-		return ( isset( $this->aOptionsValues[ $sOptionKey ] )? $this->aOptionsValues[ $sOptionKey ] : $mDefault );
+		return $this->aOptionsValues[ $sOptionKey ];
+	}
+
+	/**
+	 * @param string $sOptionKey
+	 * @param mixed $mDefault
+	 * @return mixed|null
+	 */
+	public function getOptDefault( $sOptionKey, $mDefault = null ) {
+		$aRawOptionsData = $this->getRawOptionsConfigData();
+		$aOptions = $aRawOptionsData['options'];
+		foreach( $aOptions as $aOption ) {
+			if ( $aOption['key'] == $sOptionKey ) {
+				return isset( $aOption['default'] ) ? $aOption['default'] : $mDefault;
+			}
+		}
+		return $mDefault;
 	}
 
 	/**
@@ -217,22 +220,9 @@ class ICWP_WPSF_OptionsVO {
 
 			$this->aOptionsKeys = array();
 			$aRawData = $this->getRawOptionsConfigData();
-			if ( $this->getIsYaml() ) {
-				foreach( $aRawData['options'] as $aOption ) {
-					$this->aOptionsKeys[] = $aOption['key'];
-				}
+			foreach( $aRawData['options'] as $aOption ) {
+				$this->aOptionsKeys[] = $aOption['key'];
 			}
-			else {
-				foreach ( $aRawData as &$aOptionsSection ) {
-					if ( empty( $aOptionsSection ) || !isset( $aOptionsSection['section_options'] ) ) {
-						continue;
-					}
-					foreach ( $aOptionsSection['section_options'] as &$aOptionParams ) {
-						$this->aOptionsKeys[] = $aOptionParams[0];
-					}
-				}
-			}
-
 		}
 		return $this->aOptionsKeys;
 	}
@@ -255,10 +245,11 @@ class ICWP_WPSF_OptionsVO {
 	}
 
 	/**
-	 * @param boolean $fIsYaml
+	 * @param string $sOptionKey
+	 * @return boolean
 	 */
-	public function setIsYaml( $fIsYaml = true ) {
-		$this->fIsYaml = $fIsYaml;
+	public function resetOptToDefault( $sOptionKey ) {
+		return $this->setOpt( $sOptionKey, $this->getOptDefault( $sOptionKey ) );
 	}
 
 	/**
@@ -278,11 +269,12 @@ class ICWP_WPSF_OptionsVO {
 	/**
 	 * @param string $sOptionKey
 	 * @param mixed $mValue
+	 * @param boolean $fForce
 	 * @return mixed
 	 */
-	public function setOpt( $sOptionKey, $mValue ) {
+	public function setOpt( $sOptionKey, $mValue, $fForce = false ) {
 
-		if ( $this->getOpt( $sOptionKey ) !== $mValue ) {
+		if ( $fForce || $this->getOpt( $sOptionKey ) !== $mValue ) {
 			$this->aOptionsValues[ $sOptionKey ] = $mValue;
 			$this->setNeedSave( true );
 		}
@@ -294,6 +286,17 @@ class ICWP_WPSF_OptionsVO {
 	 */
 	public function setRawOptionsConfigData( $aOptions ) {
 		$this->aRawOptionsConfigData = $aOptions;
+	}
+
+	/**
+	 * @param string $sOptionKey
+	 * @return mixed
+	 */
+	public function unsetOpt( $sOptionKey ) {
+
+		unset( $this->aOptionsValues[$sOptionKey] );
+		$this->setNeedSave( true );
+		return true;
 	}
 
 	/** PRIVATE STUFF */

@@ -71,8 +71,6 @@ function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $i
 
 function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 	
-//	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $mOptionType, $sOptionHumanName, $sOptionTitle, $sOptionHelpText, $sHelpLink ) = array_pad( $inaOption, 8, '' );
-//	list( $sOptionKey, $sOptionSaved, $sOptionDefault, $sOptionType, $sHelpLink ) = $aOption;
 	$sOptionKey = $aOption['key'];
 	$sOptionSaved = $aOption['value'];
 	$sOptionDefault = $aOption['default'];

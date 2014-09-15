@@ -21,8 +21,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 
 class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 
-	const Default_AccessKeyTimeout = 30;
-	
 	/**
 	 * @var ICWP_WPSF_Processor_Plugin
 	 */
@@ -227,15 +225,6 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	 * This is the point where you would want to do any options verification
 	 */
 	protected function doPrePluginOptionsSave() {
-		
-		if ( $this->getOpt( 'admin_access_key_timeout' ) <= 0 ) {
-			$this->setOpt( 'admin_access_key_timeout', self::Default_AccessKeyTimeout );
-		}
-		
-		$sAccessKey = $this->getOpt( 'admin_access_key');
-		if ( empty( $sAccessKey ) ) {
-			$this->setOpt( 'enable_admin_access_restriction', 'N' );
-		}
 
 		$this->setOpt( 'enable_logging', 'Y' );
 
