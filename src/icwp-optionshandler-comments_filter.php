@@ -57,7 +57,7 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 		switch( $aOptionsParams['section_slug'] ) {
 
 			case 'section_enable_plugin_feature_spam_comments_protection_filter' :
-				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), _wpsf__('SPAM Comments Protection Filter') );
+				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('SPAM Comments Protection Filter') );
 				break;
 
 			case 'section_enable_human_comment_spam_protection_filter' :

@@ -45,26 +45,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		protected $fDoPluginOptionsDelete = false;
 
 		/**
-		 * @var array
-		 */
-		protected $aOptions;
-
-		/**
-		 * These are options that need to be stored, but are never set by the UI.
-		 *
-		 * @var array
-		 */
-		protected $aNonUiOptions;
-
-		/**
 		 * @var string
 		 */
 		protected $sOptionsStoreKey;
-
-		/**
-		 * @var array
-		 */
-		protected $aOptionsKeys;
 
 		/**
 		 * @var string
@@ -80,11 +63,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @var string
 		 */
 		protected static $sPluginBaseFile;
-
-		/**
-		 * @var boolean
-		 */
-		protected $fShowFeatureMenuItem = true;
 
 		/**
 		 * @var ICWP_WPSF_FeatureHandler_Email
@@ -119,7 +97,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			add_filter( $this->doPluginPrefix( 'get_feature_summary_data' ), array( $this, 'filter_getFeatureSummaryData' ) );
 			add_filter( $this->doPluginPrefix( 'flush_logs' ), array( $this, 'filter_flushFeatureLogs' ) );
 			add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
-
 			add_action( $this->doPluginPrefix( 'delete_plugin_options' ), array( $this, 'deletePluginOptions' )  );
 			add_filter( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array( $this, 'aggregateOptionsValues' ) );
 		}
@@ -440,12 +417,12 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * Sets the value for the given option key
 		 *
-		 * @param string $sKey
+		 * @param string $sOptionKey
 		 * @param mixed $mValue
 		 * @return boolean
 		 */
-		public function setOpt( $sKey, $mValue ) {
-			return $this->getOptionsVo()->setOpt( $sKey, $mValue );
+		public function setOpt( $sOptionKey, $mValue ) {
+			return $this->getOptionsVo()->setOpt( $sOptionKey, $mValue );
 		}
 
 		/**
@@ -458,13 +435,13 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * @param $sKey
+		 * @param string $sOptionKey
 		 * @param mixed $mValueToTest
 		 * @param boolean $fStrict
 		 * @return bool
 		 */
-		public function getOptIs( $sKey, $mValueToTest, $fStrict = false ) {
-			$mOptionValue = $this->getOpt( $sKey );
+		public function getOptIs( $sOptionKey, $mValueToTest, $fStrict = false ) {
+			$mOptionValue = $this->getOpt( $sOptionKey );
 			return $fStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
 		}
 

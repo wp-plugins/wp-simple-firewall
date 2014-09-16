@@ -100,40 +100,6 @@ class ICWP_WPSF_FeatureHandler_Email extends ICWP_WPSF_FeatureHandler_Base {
 	}
 
 	/**
-	 * @return array
-	 */
-	protected function getOptionsDefinitions() {
-//		$aEmail = array(
-//			'section_title' => _wpsf__( 'Email Options' ),
-//			'section_options' => array(
-//				array(
-//					'block_send_email_address',
-//					'',
-//					'',
-//					'email',
-//					_wpsf__( 'Report Email' ),
-//					_wpsf__( 'Where to send email reports' ),
-//					_wpsf__( 'If this is empty, it will default to the blog admin email address' )
-//				),
-//				array(
-//					'send_email_throttle_limit',
-//					'',
-//					'10',
-//					'integer',
-//					_wpsf__( 'Email Throttle Limit' ),
-//					_wpsf__( 'Limit Emails Per Second' ),
-//					_wpsf__( 'You throttle emails sent by this plugin by limiting the number of emails sent every second. This is useful in case you get hit by a bot attack. Zero (0) turns this off. Suggested: 10' )
-//				)
-//			)
-//		);
-//
-//		$aOptionsDefinitions = array(
-//			$aEmail
-//		);
-//		return $aOptionsDefinitions;
-	}
-	
-	/**
 	 * This is the point where you would want to do any options verification
 	 */
 	protected function doPrePluginOptionsSave() {
