@@ -45,6 +45,8 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 		return $this->oFeatureProcessor;
 	}
 
+	/**
+	 */
 	public function doPrePluginOptionsSave() {
 
 		if ( !is_email( $this->getOpt( 'enable_admin_login_email_notification' ) ) ) {
@@ -195,26 +197,10 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 	}
 
 	/**
-	 * @return array
-	 */
-	protected function getNonUiOptions() {
-		$aNonUiOptions = array(
-			'user_sessions_table_name',
-			'user_management_table_created'
-		);
-		return $aNonUiOptions;
-	}
-
-	/**
 	 * @return string
 	 */
-	public function getUserSessionsTablename() {
-		$sName = $this->getOpt( 'user_sessions_table_name' );
-//		if ( empty( $sName ) ) {
-			$sName = self::UserManagementTableName;
-			$this->setOpt( 'user_sessions_table_name', $sName );
-//		}
-		return $sName;
+	public function getUserSessionsTableName() {
+		return $this->doPluginPrefix( $this->getOpt( 'user_sessions_table_name' ), '_' );
 	}
 }
 

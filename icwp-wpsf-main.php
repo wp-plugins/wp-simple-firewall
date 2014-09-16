@@ -362,6 +362,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		return $sNotice;
 	}
 
+	/**
+	 * @return string|void
+	 */
 	protected function getAdminNoticeHtml_OptionsUpdated() {
 		$sAdminFeedbackNotice = $this->oPluginOptions->getOpt( 'feedback_admin_notice' );
 		if ( !empty( $sAdminFeedbackNotice ) ) {
@@ -372,7 +375,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	}
 
 	/**
-	 *
+	 * @return bool
 	 */
 	protected function getShowAdminNotices() {
 		return $this->oPluginOptions->getOpt('enable_upgrade_admin_notice') == 'Y';
@@ -401,7 +404,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 
 	public function onWpDeactivatePlugin() {
 		if ( $this->getFeatureHandler_MainPlugin()->getOpt( 'delete_on_deactivate' ) == 'Y' && current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
-			do_action( $this->doPluginPrefix( 'delete_plugin_options' ) );
+			do_action( $this->doPluginPrefix( 'delete_plugin' ) );
 		}
 	}
 

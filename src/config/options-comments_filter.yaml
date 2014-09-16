@@ -166,3 +166,7 @@ options:
   -
     key: 'current_plugin_version'
     section: 'section_non_ui'
+  -
+    key: 'spambot_comments_filter_table_name'
+    section: 'section_non_ui'
+    value: 'spambot_comments_filter'

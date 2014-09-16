@@ -23,7 +23,7 @@ if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	
 	const DB_TABLE_PREFIX	= 'icwp_';
-	
+
 	/**
 	 */
 	const CleanupCronActionHook = 'icwp_wpsf_cron_cleanupactionhook';
@@ -48,6 +48,7 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 		parent::__construct( $oFeatureOptions );
 		$this->setTableName( $sTableName );
 		$this->createCleanupCron();
+		add_action( $this->oFeatureOptions->doPluginPrefix( 'delete_plugin' ), array( $this, 'deleteDatabase' )  );
 	}
 
 	/**
@@ -57,6 +58,17 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 		if ( $this->getTableExists() ) {
 			$sFullHookName = $this->oFeatureOptions->doPluginPrefix( self::CleanupCronActionHook, '_' );
 			add_action( $sFullHookName, array( $this, 'cleanupDatabase' ) );
+		}
+		else {
+			$this->createTable();
+		}
+	}
+
+	/**
+	 */
+	public function deleteDatabase() {
+		if ( apply_filters( $this->oFeatureOptions->doPluginPrefix( 'has_permission_to_submit' ), true ) && $this->getTableExists() ) {
+			$this->dropTable();
 		}
 	}
 	
@@ -123,7 +135,6 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	}
 	
 	/**
-	 * 
 	 */
 	protected function flushData() {
 		$this->m_aDataToWrite = null;
@@ -204,8 +215,22 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 		return $this->doSql( $sQuery );
 	}
 
+	/**
+	 * @return bool|int
+	 */
 	public function createTable() {
-		//Override this function to create the Table you want.
+		$sSql = $this->getCreateTableSql();
+		if ( !empty( $sSql ) ) {
+			return $this->doSql( $sSql );
+		}
+		return true;
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function getCreateTableSql() {
+		return '';
 	}
 	
 	/**
@@ -256,24 +281,19 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 
 	/**
 	 * @param string $sTableName
-	 * @return mixed
+	 * @return string
+	 * @throws Exception
 	 */
 	private function setTableName( $sTableName = '' ) {
+		if ( empty( $sTableName ) ) {
+			throw new Exception( 'Database Table Name is EMPTY' );
+		}
 		$oDb = $this->loadWpdb();
 		$sTableString =
 			$oDb->prefix
-			. self::DB_TABLE_PREFIX
-			. ( empty( $sTableName ) ? '' : $sTableName );
+			. $sTableName;
 		$this->sFullTableName = esc_sql( $sTableString );
 		return $this->sFullTableName;
-	}
-
-	/**
-	 * Override this to provide custom cleanup.
-	 */
-	public function deleteAndCleanUp() {
-		parent::deleteAndCleanUp();
-		$this->dropTable();
 	}
 
 	/**

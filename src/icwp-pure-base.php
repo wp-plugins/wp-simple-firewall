@@ -798,7 +798,7 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 
 		public function onWpDeactivatePlugin() {
 			if ( current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
-				do_action( $this->doPluginPrefix( 'delete_plugin_options' ) );
+				do_action( $this->doPluginPrefix( 'delete_plugin' ) );
 			}
 		}
 

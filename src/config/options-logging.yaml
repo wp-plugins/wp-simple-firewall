@@ -13,5 +13,15 @@ sections:
 # Define Options
 options:
   -
+    key: 'enable_logging'
+    section: 'section_non_ui'
+    type: 'boolean'
+    default: true
+  -
+    key: 'general_logging_table_name'
+    section: 'section_non_ui'
+    type: 'text'
+    value: 'general_logging'
+  -
     key: 'current_plugin_version'
     section: 'section_non_ui'

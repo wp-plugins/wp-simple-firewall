@@ -21,7 +21,6 @@ if ( !class_exists('ICWP_LoggingProcessor_V1') ):
 
 class ICWP_LoggingProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 	
-	const TableName = 'wpsf_log';
 	const DaysToKeepLog = 7;
 
 	protected $sVisitorRequestId;
@@ -30,10 +29,8 @@ class ICWP_LoggingProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 * @param ICWP_WPSF_FeatureHandler_Logging $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_Logging $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions, self::TableName );
-		$this->createTable();
+		parent::__construct( $oFeatureOptions, $oFeatureOptions->getGeneralLoggingTableName() );
 	}
-
 
 	public function reset() {
 		parent::reset();
@@ -77,8 +74,11 @@ class ICWP_LoggingProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 		}
 		return $inaLogData;
 	}
-	
-	public function createTable() {
+
+	/**
+	 * @return string
+	 */
+	public function getCreateTableSql() {
 		// Set up log table
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
 			`id` int(11) NOT NULL AUTO_INCREMENT,
@@ -91,8 +91,7 @@ class ICWP_LoggingProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 			`deleted_at` int(15) NOT NULL DEFAULT '0',
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-		$sSqlTables = sprintf( $sSqlTables, $this->getTableName() );
-		return $this->doSql( $sSqlTables );
+		return sprintf( $sSqlTables, $this->getTableName() );
 	}
 	
 	public function handleInstallUpgrade( $insCurrentVersion = '' ) {

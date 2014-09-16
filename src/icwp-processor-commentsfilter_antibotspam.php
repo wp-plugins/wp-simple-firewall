@@ -46,8 +46,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	 * @param ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions, self::TableName );
-		$this->createTable();
+		parent::__construct( $oFeatureOptions, $oFeatureOptions->getCommentsFilterTableName() );
 		$this->reset();
 	}
 
@@ -392,7 +391,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 		}
 	}
 
-	public function createTable() {
+	public function getCreateTableSql() {
 		// Set up comments ID table
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
 			`id` int(11) NOT NULL AUTO_INCREMENT,
@@ -403,8 +402,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 			`deleted_at` int(15) NOT NULL DEFAULT '0',
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-		$sSqlTables = sprintf( $sSqlTables, $this->getTableName() );
-		return $this->doSql( $sSqlTables );
+		return sprintf( $sSqlTables, $this->getTableName() );
 	}
 
 	/**

@@ -42,7 +42,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * @var boolean
 		 */
-		protected $fDoPluginOptionsDelete = false;
+		protected $fPreventPluginOptionsSave = false;
 
 		/**
 		 * @var string
@@ -97,7 +97,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			add_filter( $this->doPluginPrefix( 'get_feature_summary_data' ), array( $this, 'filter_getFeatureSummaryData' ) );
 			add_filter( $this->doPluginPrefix( 'flush_logs' ), array( $this, 'filter_flushFeatureLogs' ) );
 			add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
-			add_action( $this->doPluginPrefix( 'delete_plugin_options' ), array( $this, 'deletePluginOptions' )  );
+			add_action( $this->doPluginPrefix( 'delete_plugin' ), array( $this, 'deletePluginOptions' )  );
 			add_filter( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array( $this, 'aggregateOptionsValues' ) );
 		}
 
@@ -107,7 +107,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		public function onWpPluginsLoaded() {
 
 			if ( $this->getIsMainFeatureEnabled() ) {
-				$oProcessor = $this->loadFeatureProcessor();
+				$oProcessor = $this->getProcessor();
 				if ( is_object( $oProcessor ) && $oProcessor instanceof ICWP_WPSF_Processor_Base ) {
 					$oProcessor->run();
 				}
@@ -159,11 +159,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				$oLoggingProcessor->commitData();
 			}
 
-			if ( $this->fDoPluginOptionsDelete ) {
-				$this->getOptionsVo()->doOptionsDelete();
-				$this->getProcessor()->deleteAndCleanUp();
-			}
-			else {
+			if ( ! $this->fPreventPluginOptionsSave ) {
 				$this->savePluginOptions();
 			}
 		}
@@ -232,7 +228,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function getIsMainFeatureEnabled() {
 			$this->override();
-			return $this->getOptIs( 'enable_'.$this->getFeatureSlug(), 'Y' );
+			return $this->getOptIs( 'enable_'.$this->getFeatureSlug(), 'Y' ) || $this->getOptIs( 'enable_'.$this->getFeatureSlug(), true ) ;
 		}
 
 		/**
@@ -441,7 +437,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return bool
 		 */
 		public function getOptIs( $sOptionKey, $mValueToTest, $fStrict = false ) {
-			$mOptionValue = $this->getOpt( $sOptionKey );
+			$mOptionValue = $this->getOptionsVo()->getOpt( $sOptionKey );
 			return $fStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
 		}
 
@@ -471,13 +467,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function aggregateOptionsValues( $aAggregatedOptions ) {
 			return array_merge( $aAggregatedOptions, $this->getOptionsVo()->getAllOptionsValues() );
-		}
-
-		/**
-		 * @return array
-		 */
-		protected function getNonUiOptions() {
-			return $this->getOptionsVo()->getLegacyOptionsNonUi();
 		}
 
 		/**
@@ -589,7 +578,8 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function deletePluginOptions() {
 			if ( apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
-				$this->fDoPluginOptionsDelete = true;
+				$this->getOptionsVo()->doOptionsDelete();
+				$this->fPreventPluginOptionsSave = true;
 			}
 		}
 
@@ -847,6 +837,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			$this->display( $aData, 'access_restricted_index' );
 		}
 
+		/**
+		 * @return array
+		 */
 		protected function getBaseDisplayData() {
 			return array(
 				'var_prefix'		=> $this->oPluginVo->getOptionStoragePrefix(),

@@ -380,34 +380,10 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 	}
 
 	/**
-	 * @return array
+	 * @return string
 	 */
-	protected function getSpamHandlingResponses() {
-		return array( 'select',
-			array( 0, 				_wpsf__( 'Mark As Pending Moderation' ) ),
-			array( 'spam', 			_wpsf__( 'Mark As SPAM' ) ),
-			array( 'trash', 		_wpsf__( 'Move To Trash' ) ),
-			array( 'reject', 		_wpsf__( 'Reject And Redirect' ) )
-		);
-	}
-
-	/**
-	 *
-	 */
-	protected function getHumanSpamFilterItems( $fAsDefaults = false ) {
-		$aFilterItems = array( 'type' => 'multiple_select',
-			'author_name'		=> _wpsf__('Author Name'),
-			'author_email'		=> _wpsf__('Author Email'),
-			'comment_content'	=> _wpsf__('Comment Content'),
-			'url'				=> _wpsf__('URL'),
-			'ip_address'		=> _wpsf__('IP Address'),
-			'user_agent'		=> _wpsf__('Browser User Agent')
-		);
-		if ( $fAsDefaults ) {
-			unset($aFilterItems['type']);
-			return array_keys($aFilterItems);
-		}
-		return $aFilterItems;
+	public function getCommentsFilterTableName() {
+		return $this->doPluginPrefix( $this->getOpt( 'spambot_comments_filter_table_name' ), '_' );
 	}
 }
 

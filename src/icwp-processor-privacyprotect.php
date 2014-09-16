@@ -28,19 +28,9 @@ class ICWP_PrivacyProtectProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions, self::TableName );
-		$this->createTable();
 		$this->reset();
 	}
 
-	/**
-	 * Resets the object values to be re-used anew
-	 */
-	public function reset() {
-		parent::reset();
-		$this->m_sUniqueToken = '';
-		$this->m_sCommentStatus = '';
-	}
-	
 	/**
 	 */
 	public function run() {
@@ -150,7 +140,10 @@ class ICWP_PrivacyProtectProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 		return $aLogData;
 	}
 
-	public function createTable() {
+	/**
+	 * @return string
+	 */
+	public function getCreateTableSql() {
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
 			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`request_url` varchar(255) NOT NULL DEFAULT '',
@@ -163,8 +156,7 @@ class ICWP_PrivacyProtectProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 			`deleted_at` int(15) NOT NULL DEFAULT 0,
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-		$sSqlTables = sprintf( $sSqlTables, $this->getTableName() );
-		$mResult = $this->doSql( $sSqlTables );
+		return sprintf( $sSqlTables, $this->getTableName() );
 	}
 }
 

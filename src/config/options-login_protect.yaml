@@ -146,6 +146,7 @@ options:
   -
     key: 'enable_login_protect_log'
     section: 'section_login_logging'
+    hidden: true
     default: 'N'
     type: 'checkbox'
     link_info: 'http://icwp.io/4h'
@@ -172,6 +173,10 @@ options:
     key: 'two_factor_auth_table_name'
     section: 'section_non_ui'
     value: 'login_auth'
+  -
+    key: 'two_factor_auth_cookie_name'
+    section: 'section_non_ui'
+    value: 'wpsf_auth'
   -
     key: 'two_factor_auth_table_created'
     section: 'section_non_ui'

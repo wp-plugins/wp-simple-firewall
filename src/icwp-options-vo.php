@@ -83,7 +83,7 @@ class ICWP_WPSF_OptionsVO {
 	 * @return null|mixed
 	 */
 	public function getFeatureProperty( $sProperty ) {
-		$aRawConfig = $this->getRawOptionsConfigData();
+		$aRawConfig = $this->getRawData_FullFeatureConfig();
 		return ( isset( $aRawConfig['properties'] ) && isset( $aRawConfig['properties'][$sProperty] ) ) ? $aRawConfig['properties'][$sProperty] : null;
 	}
 
@@ -110,7 +110,7 @@ class ICWP_WPSF_OptionsVO {
 	 */
 	public function getLegacyOptionsConfigData() {
 
-		$aRawData = $this->getRawOptionsConfigData();
+		$aRawData = $this->getRawData_FullFeatureConfig();
 		$aLegacyData = array();
 
 		foreach( $aRawData['sections'] as $nPosition => $aRawSection ) {
@@ -150,7 +150,9 @@ class ICWP_WPSF_OptionsVO {
 				$aLegacySection['section_options'][] = $aLegacyRawOption;
 			}
 
-			$aLegacyData[ $nPosition ] = $aLegacySection;
+			if ( count( $aLegacySection['section_options'] ) > 0 ) {
+				$aLegacyData[ $nPosition ] = $aLegacySection;
+			}
 		}
 		return $aLegacyData;
 	}
@@ -159,7 +161,7 @@ class ICWP_WPSF_OptionsVO {
 	 * @return array
 	 */
 	public function getLegacyOptionsNonUi() {
-		$aRawData = $this->getRawOptionsConfigData();
+		$aRawData = $this->getRawData_FullFeatureConfig();
 		foreach( $aRawData['sections'] as $aRawSection ) {
 
 			if ( !isset( $aRawSection['hidden'] ) || !$aRawSection['hidden'] ) {
@@ -204,11 +206,16 @@ class ICWP_WPSF_OptionsVO {
 	 * @return mixed|null
 	 */
 	public function getOptDefault( $sOptionKey, $mDefault = null ) {
-		$aRawOptionsData = $this->getRawOptionsConfigData();
+		$aRawOptionsData = $this->getRawData_FullFeatureConfig();
 		$aOptions = $aRawOptionsData['options'];
 		foreach( $aOptions as $aOption ) {
 			if ( $aOption['key'] == $sOptionKey ) {
-				return isset( $aOption['default'] ) ? $aOption['default'] : $mDefault;
+				if ( isset( $aOption['value'] ) ) {
+					return $aOption['value'];
+				}
+				else if ( isset( $aOption['value'] ) ) {
+					return $aOption['default'];
+				}
 			}
 		}
 		return $mDefault;
@@ -230,7 +237,7 @@ class ICWP_WPSF_OptionsVO {
 	 * @return null|array
 	 */
 	public function getOptionRawConfig( $sOptionKey ) {
-		foreach( $this->getAllRawOptions() as $aOption ) {
+		foreach( $this->getRawData_AllOptions() as $aOption ) {
 			if ( $sOptionKey == $aOption['key'] ) {
 				return $aOption;
 			}
@@ -244,7 +251,7 @@ class ICWP_WPSF_OptionsVO {
 	public function getOptionsKeys() {
 		if ( !isset( $this->aOptionsKeys ) ) {
 			$this->aOptionsKeys = array();
-			foreach( $this->getAllRawOptions() as $aOption ) {
+			foreach( $this->getRawData_AllOptions() as $aOption ) {
 				$this->aOptionsKeys[] = $aOption['key'];
 			}
 		}
@@ -261,7 +268,7 @@ class ICWP_WPSF_OptionsVO {
 	/**
 	 * @return array
 	 */
-	public function getRawOptionsConfigData() {
+	public function getRawData_FullFeatureConfig() {
 		if ( empty( $this->aRawOptionsConfigData ) ) {
 			$this->aRawOptionsConfigData = $this->readYamlConfiguration( $this->sOptionsName );
 		}
@@ -273,9 +280,25 @@ class ICWP_WPSF_OptionsVO {
 	 *
 	 * @return array
 	 */
-	protected function getAllRawOptions() {
-		$aAllRawOptions = $this->getRawOptionsConfigData();
+	protected function getRawData_AllOptions() {
+		$aAllRawOptions = $this->getRawData_FullFeatureConfig();
 		return isset( $aAllRawOptions['options'] ) ? $aAllRawOptions['options'] : array();
+	}
+
+	/**
+	 * Return the section of the Raw config that is the "options" key only.
+	 *
+	 * @param string $sOptionKey
+	 * @return array
+	 */
+	protected function getRawData_SingleOption( $sOptionKey ) {
+		$aAllRawOptions = $this->getRawData_AllOptions();
+		foreach( $aAllRawOptions as $aOption ) {
+			if ( $sOptionKey == $aOption['key'] ) {
+				return $aOption;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -283,7 +306,7 @@ class ICWP_WPSF_OptionsVO {
 	 * @return boolean
 	 */
 	public function resetOptToDefault( $sOptionKey ) {
-		return $this->setOpt( $sOptionKey, $this->getOptDefault( $sOptionKey ) );
+		return $this->setOpt( $sOptionKey, $this->getOptDefault( $sOptionKey ), true );
 	}
 
 	/**
@@ -309,8 +332,17 @@ class ICWP_WPSF_OptionsVO {
 	public function setOpt( $sOptionKey, $mValue, $fForce = false ) {
 
 		if ( $fForce || $this->getOpt( $sOptionKey ) !== $mValue ) {
-			$this->aOptionsValues[ $sOptionKey ] = $mValue;
 			$this->setNeedSave( true );
+
+			//Load the config and do some pre-set verification where possible. This will slowly grow.
+			$aOption = $this->getRawData_SingleOption( $sOptionKey );
+			if ( !empty( $aOption['type'] ) ) {
+				if ( $aOption['type'] == 'boolean' && !is_bool( $mValue ) ) {
+					return $this->resetOptToDefault( $sOptionKey );
+				}
+			}
+
+			$this->aOptionsValues[ $sOptionKey ] = $mValue;
 		}
 		return true;
 	}

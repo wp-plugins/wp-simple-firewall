@@ -95,7 +95,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	 */
 	public function flushLogData() {
 		
-		if ( !$this->getIsLogging() || empty( self::$m_aLogMessages ) ) {
+		if ( !$this->getIsLogging() || empty( $this->m_aLogMessages ) ) {
 			return false;
 		}
 

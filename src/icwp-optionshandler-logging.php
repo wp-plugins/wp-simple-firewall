@@ -39,8 +39,9 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 	 * @return ICWP_WPSF_Processor_Logging|null
 	 */
 	protected function loadFeatureProcessor() {
+
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-logging.php' );
+			require_once( $this->oPluginVo->getSourceDir().sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Logging( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -93,6 +94,12 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 		return $aOptionsParams;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getGeneralLoggingTableName() {
+		return $this->doPluginPrefix( $this->getOpt( 'general_logging_table_name' ), '_' );
+	}
 }
 
 endif;

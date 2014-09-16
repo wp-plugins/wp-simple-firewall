@@ -41,7 +41,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 * @param ICWP_WPSF_FeatureHandler_UserManagement $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_UserManagement $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions, $oFeatureOptions->getUserSessionsTablename() );
+		parent::__construct( $oFeatureOptions, $oFeatureOptions->getUserSessionsTableName() );
 	}
 
 	/**
@@ -49,12 +49,6 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	public function run() {
 		parent::run();
 		$oDp = $this->loadDataProcessor();
-
-		if ( $this->oFeatureOptions->getOpt( 'user_management_table_created' ) !== true ) {
-			$this->createTable();
-//			$this->recreateTable();
-			$this->oFeatureOptions->setOpt( 'user_management_table_created', true );
-		}
 
 		$oWp = $this->oFeatureOptions->loadWpFunctionsProcessor();
 		// XML-RPC Compatibility
@@ -628,9 +622,11 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		return $this->sSessionId;
 	}
 
-	public function createTable() {
+	/**
+	 * @return string
+	 */
+	public function getCreateTableSql() {
 
-		// Set up login processor table
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
 			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`session_id` varchar(32) NOT NULL DEFAULT '',
@@ -646,8 +642,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			`deleted_at` int(15) NOT NULL DEFAULT '0',
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-		$sSqlTables = sprintf( $sSqlTables, $this->getTableName() );
-		$mResult = $this->doSql( $sSqlTables );
+		return sprintf( $sSqlTables, $this->getTableName() );
 	}
 
 	/**

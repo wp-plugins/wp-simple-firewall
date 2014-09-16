@@ -45,12 +45,6 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 		parent::run();
 		$oDp = $this->loadDataProcessor();
 
-		if ( $this->oFeatureOptions->getOpt( 'two_factor_auth_table_created' ) !== true ) {
-			$this->createTable();
-//			$this->recreateTable();
-			$this->oFeatureOptions->setOpt( 'two_factor_auth_table_created', true );
-		}
-
 		// User has clicked a link in their email to validate their IP address for login.
 		if ( $oDp->FetchGet( 'wpsf-action' ) == 'linkauth' ) {
 			add_action( 'init', array( $this, 'validateUserAuthLink' ), 10 );
@@ -387,7 +381,7 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 	 */
 	public function setAuthActiveCookie( $sUniqueId ) {
 		$nWeek = defined( 'WEEK_IN_SECONDS' )? WEEK_IN_SECONDS : 24*60*60;
-		setcookie( self::AuthActiveCookie, $sUniqueId, self::$nRequestTimestamp+$nWeek, COOKIEPATH, COOKIE_DOMAIN, false );
+		setcookie( $this->oFeatureOptions->getTwoFactorAuthCookieName(), $sUniqueId, self::$nRequestTimestamp+$nWeek, COOKIEPATH, COOKIE_DOMAIN, false );
 	}
 
 	/**
@@ -419,7 +413,7 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 	 */
 	protected function getIsAuthCookieValid( $sUniqueId ) {
 		$oDp = $this->loadDataProcessor();
-		return $oDp->FetchCookie( self::AuthActiveCookie ) == $sUniqueId;
+		return $oDp->FetchCookie( $this->oFeatureOptions->getTwoFactorAuthCookieName() ) == $sUniqueId;
 	}
 
 	/**
@@ -487,10 +481,11 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 		}
 		return $aMessage;
 	}
-	
-	public function createTable() {
 
-		// Set up login processor table
+	/**
+	 * @return string
+	 */
+	public function getCreateTableSql() {
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
 			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`unique_id` varchar(20) NOT NULL DEFAULT '',
@@ -503,8 +498,7 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 			`expired_at` int(15) NOT NULL DEFAULT '0',
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-		$sSqlTables = sprintf( $sSqlTables, $this->getTableName() );
-		$mResult = $this->doSql( $sSqlTables );
+		return sprintf( $sSqlTables, $this->getTableName() );
 	}
 	
 	/**

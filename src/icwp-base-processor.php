@@ -293,11 +293,6 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		}
 
 		/**
-		 * Override this to provide custom cleanup.
-		 */
-		public function deleteAndCleanUp() { }
-
-		/**
 		 * @return ICWP_WPSF_DataProcessor
 		 */
 		protected function loadDataProcessor() {
