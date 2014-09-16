@@ -15,7 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
+require_once( dirname(__FILE__).'/icwp-processor-basedb.php' );
 
 if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 

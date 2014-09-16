@@ -15,7 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-base-processor.php' );
+require_once( dirname(__FILE__).'/icwp-processor-base.php' );
 
 if ( !class_exists('ICWP_EmailProcessor_V1') ):
 

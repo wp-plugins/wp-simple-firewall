@@ -79,7 +79,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 			if ( !empty( $sAccessKey ) ) {
 				$this->loadDataProcessor();
 				$sHash = md5( $sAccessKey );
-				$sCookieValue = $oDp->FetchCookie( self::AdminAccessKeyCookieName );
+				$sCookieValue = $oDp->FetchCookie( $this->getAdminAccessKeyCookieName() );
 				$this->fHasPermissionToSubmit = ( $sCookieValue === $sHash );
 			}
 		}
@@ -101,21 +101,30 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getAdminAccessKeyCookieName() {
+		return $this->getOpt( 'admin_access_key_cookie_name' );
+	}
+
+	/**
 	 * @param bool $fPermission
 	 */
 	protected function setPermissionToSubmit( $fPermission = false ) {
+		$sCookieName = $this->getAdminAccessKeyCookieName();
 		if ( $fPermission ) {
 			$sAccessKey = $this->getOpt( 'admin_access_key' );
+
 			if ( !empty( $sAccessKey ) ) {
 				$sValue = md5( $sAccessKey );
 				$sTimeout = $this->getOpt( 'admin_access_timeout' ) * 60;
-				$_COOKIE[ self::AdminAccessKeyCookieName ] = $sValue;
-				setcookie( self::AdminAccessKeyCookieName, $sValue, time()+$sTimeout, COOKIEPATH, COOKIE_DOMAIN, false );
+				$_COOKIE[ $sCookieName ] = $sValue;
+				setcookie( $sCookieName, $sValue, time()+$sTimeout, COOKIEPATH, COOKIE_DOMAIN, false );
 			}
 		}
 		else {
-			unset( $_COOKIE[ self::AdminAccessKeyCookieName ] );
-			setcookie( self::AdminAccessKeyCookieName, "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
+			unset( $_COOKIE[ $sCookieName ] );
+			setcookie( $sCookieName, "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
 		}
 	}
 
@@ -158,8 +167,8 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 
 			case 'admin_access_key' :
 				$sName = _wpsf__( 'Admin Access Key' );
-				$sSummary = _wpsf__( 'Specify Your Plugin Access Key' );
-				$sDescription = _wpsf__( 'If you forget this, you could potentially lock yourself out from using this plugin.' );
+				$sSummary = _wpsf__( 'Provide/Update Admin Access Key' );
+				$sDescription = sprintf( _wpsf__( 'Careful: %s' ), _wpsf__( 'If you forget this, you could potentially lock yourself out from using this plugin.' ) );
 				break;
 
 			case 'admin_access_timeout' :

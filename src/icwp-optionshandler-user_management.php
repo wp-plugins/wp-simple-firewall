@@ -202,6 +202,13 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 	public function getUserSessionsTableName() {
 		return $this->doPluginPrefix( $this->getOpt( 'user_sessions_table_name' ), '_' );
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getUserSessionCookieName() {
+		return $this->getOpt( 'user_session_cookie_name' );
+	}
 }
 
 endif;

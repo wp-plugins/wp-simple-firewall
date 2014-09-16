@@ -16,14 +16,12 @@
  *
  */
 
-require_once( dirname(__FILE__).'/icwp-base-processor.php' );
+require_once( dirname(__FILE__).'/icwp-processor-base.php' );
 
 if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 
 class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	
-	const DB_TABLE_PREFIX	= 'icwp_';
-
 	/**
 	 */
 	const CleanupCronActionHook = 'icwp_wpsf_cron_cleanupactionhook';
@@ -118,7 +116,7 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * @return boolean - whether the write to the DB was successful.
 	 */
 	public function commitData() {
-		if ( empty( $this->m_aDataToWrite ) ) {
+		if ( empty( $this->m_aDataToWrite ) || !$this->getTableExists() ) {
 			return;
 		}
 		$fSuccess = true;

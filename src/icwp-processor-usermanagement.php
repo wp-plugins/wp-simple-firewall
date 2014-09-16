@@ -15,7 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-basedb-processor.php' );
+require_once( dirname(__FILE__).'/icwp-processor-basedb.php' );
 
 if ( !class_exists('ICWP_WPSF_Processor_UserManagement_V1') ):
 
@@ -267,8 +267,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		}
 
 		$mResult = $this->doTerminateUserSession( $oUser->user_login, $this->getSessionId() );
-		unset( $_COOKIE[ self::Session_Cookie ] );
-		setcookie( self::Session_Cookie, "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
+		unset( $_COOKIE[ $this->oFeatureOptions->getUserSessionCookieName() ] );
+		setcookie( $this->oFeatureOptions->getUserSessionCookieName(), "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
 		return $mResult;
 	}
 
@@ -322,7 +322,15 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 */
 	protected function setSessionCookie() {
 		if ( $this->getSessionTimeoutInterval() > 0 ) {
-			setcookie( self::Session_Cookie, $this->getSessionId(), time()+$this->getSessionTimeoutInterval(), COOKIEPATH, COOKIE_DOMAIN, false );
+			$oWp = $this->loadWpFunctionsProcessor();
+			setcookie(
+				$this->oFeatureOptions->getUserSessionCookieName(),
+				$this->getSessionId(),
+				self::$nRequestTimestamp + $this->getSessionTimeoutInterval(),
+				$oWp->getCookiePath(),
+				$oWp->getCookieDomain(),
+				false
+			);
 		}
 	}
 
@@ -613,7 +621,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	protected function getSessionId() {
 		if ( empty( $this->sSessionId ) ) {
 			$oDp = $this->loadDataProcessor();
-			$this->sSessionId = $oDp->FetchCookie( self::Session_Cookie );
+			$this->sSessionId = $oDp->FetchCookie( $this->oFeatureOptions->getUserSessionCookieName() );
 			if ( is_null( $this->sSessionId ) ) {
 				$this->sSessionId = md5( uniqid() );
 				$this->setSessionCookie();

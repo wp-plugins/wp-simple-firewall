@@ -94,5 +94,9 @@ options:
     section: 'section_non_ui'
     value: 'user_management'
   -
+    key: 'user_session_cookie_name'
+    section: 'section_non_ui'
+    value: 'wpsf_sesh_id'
+  -
     key: 'user_management_table_created'
     section: 'section_non_ui'

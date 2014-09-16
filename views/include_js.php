@@ -34,7 +34,7 @@
 				}
 			);
 
-			jQuery( 'select[name=<?php echo $worpit_var_prefix; ?>option]' ).trigger( 'change' );
+			jQuery( 'select[name=<?php echo $icwp_var_prefix; ?>option]' ).trigger( 'change' );
 		}
 	);
 

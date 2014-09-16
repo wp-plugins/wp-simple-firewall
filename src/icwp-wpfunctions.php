@@ -230,6 +230,20 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		}
 
 		/**
+		 * @return string
+		 */
+		public function getCookieDomain() {
+			return defined( 'COOKIE_DOMAIN' ) ? COOKIE_DOMAIN : false;
+		}
+
+		/**
+		 * @return string
+		 */
+		public function getCookiePath() {
+			return defined( 'COOKIEPATH' ) ? COOKIEPATH : '/';
+		}
+
+		/**
 		 * @return boolean
 		 */
 		public function getIsAjax() {

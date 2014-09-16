@@ -42,7 +42,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * @var boolean
 		 */
-		protected $fPreventPluginOptionsSave = false;
+		protected $fPluginDeleting = false;
 
 		/**
 		 * @var string
@@ -152,15 +152,15 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function action_doFeatureShutdown() {
 
-			if ( $this->oPluginVo->getIsLoggingEnabled() ) {
-				$aLogData = apply_filters( $this->doPluginPrefix( 'flush_logs' ), array() );
-				$oLoggingProcessor = $this->getLoggingProcessor();
-				$oLoggingProcessor->addDataToWrite( $aLogData );
-				$oLoggingProcessor->commitData();
-			}
-
-			if ( ! $this->fPreventPluginOptionsSave ) {
+			if ( ! $this->fPluginDeleting ) {
 				$this->savePluginOptions();
+
+				if ( $this->oPluginVo->getIsLoggingEnabled() ) {
+					$aLogData = apply_filters( $this->doPluginPrefix( 'flush_logs' ), array() );
+					$oLoggingProcessor = $this->getLoggingProcessor();
+					$oLoggingProcessor->addDataToWrite( $aLogData );
+					$oLoggingProcessor->commitData();
+				}
 			}
 		}
 
@@ -579,7 +579,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		public function deletePluginOptions() {
 			if ( apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
 				$this->getOptionsVo()->doOptionsDelete();
-				$this->fPreventPluginOptionsSave = true;
+				$this->fPluginDeleting = true;
 			}
 		}
 

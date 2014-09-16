@@ -77,6 +77,9 @@ options:
         slug: 'autoupdates'
         storage_key: 'autoupdates'
       -
+        slug: 'lockdown'
+        storage_key: 'lockdown'
+      -
         slug: 'email'
         storage_key: 'email'
       -
