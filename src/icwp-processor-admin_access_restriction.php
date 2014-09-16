@@ -22,6 +22,11 @@ if ( !class_exists('ICWP_WPSF_Processor_AdminAccessRestriction') ):
 class ICWP_WPSF_Processor_AdminAccessRestriction extends ICWP_WPSF_Processor_Base {
 
 	/**
+	 * @var ICWP_WPSF_FeatureHandler_AdminAccessRestriction
+	 */
+	protected $oFeatureOptions;
+
+	/**
 	 * @var string
 	 */
 	protected $sOptionRegexPattern;

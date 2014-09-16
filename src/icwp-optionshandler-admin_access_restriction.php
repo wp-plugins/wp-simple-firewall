@@ -59,25 +59,22 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	 */
 	public function doCheckHasPermissionToSubmit( $fHasPermission = true ) {
 
-		$oDp = $this->loadDataProcessor();
-		$sAccessKeyRequest = $oDp->FetchPost( $this->doPluginPrefix( 'admin_access_key_request', '_' ) );
-		if ( !empty( $sAccessKeyRequest ) ) {
-			$sAccessKeyRequest = md5( trim( $sAccessKeyRequest ) );
-			if ( $sAccessKeyRequest === $this->getOpt( 'admin_access_key' ) ) {
-				$this->setPermissionToSubmit( true );
-				wp_safe_redirect( network_admin_url() );
-			}
+		// We don't use setPermissionToSubmit() here because of timing with headers - we just for now manually
+		// checking POST for the submission of the key and if it fits, we say "yes"
+		if ( $this->checkAdminAccessKeySubmission() ) {
+			$this->fHasPermissionToSubmit = true;
 		}
 
 		if ( isset( $this->fHasPermissionToSubmit ) ) {
 			return $this->fHasPermissionToSubmit;
 		}
 
+		$oDp = $this->loadDataProcessor();
+
 		$this->fHasPermissionToSubmit = $fHasPermission;
 		if ( $this->getIsMainFeatureEnabled() )  {
 			$sAccessKey = $this->getOpt( 'admin_access_key' );
 			if ( !empty( $sAccessKey ) ) {
-				$this->loadDataProcessor();
 				$sHash = md5( $sAccessKey );
 				$sCookieValue = $oDp->FetchCookie( $this->getAdminAccessKeyCookieName() );
 				$this->fHasPermissionToSubmit = ( $sCookieValue === $sHash );
@@ -88,15 +85,35 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 
 	/**
 	 */
+	protected function setAdminAccessCookie() {
+		$sAccessKey = $this->getOpt( 'admin_access_key' );
+		if ( !empty( $sAccessKey ) ) {
+			$sValue = md5( $sAccessKey );
+			$sTimeout = $this->getOpt( 'admin_access_timeout' ) * 60;
+			$_COOKIE[ $this->getAdminAccessKeyCookieName() ] = $sValue;
+			setcookie( $this->getAdminAccessKeyCookieName(), $sValue, time()+$sTimeout, COOKIEPATH, COOKIE_DOMAIN, false );
+		}
+	}
+
+	/**
+	 */
+	protected function clearAdminAccessCookie() {
+		unset( $_COOKIE[ $this->getAdminAccessKeyCookieName() ] );
+		setcookie( $this->getAdminAccessKeyCookieName(), "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
+	}
+
+	/**
+	 */
 	public function handleFormSubmit() {
 		$fSuccess = parent::handleFormSubmit();
 		if ( !$fSuccess ) {
 			return $fSuccess;
 		}
 
-		$oDp = $this->loadDataProcessor();
-		if ( $this->getIsCurrentPageConfig() && is_null( $oDp->FetchPost( $this->doPluginPrefix( 'enable_admin_access_restriction', '_' ) ) ) ) {
-			$this->setPermissionToSubmit( false );
+		// We should only use setPermissionToSubmit() here, before any headers elsewhere are sent out.
+		if ( $this->checkAdminAccessKeySubmission() ) {
+			$this->setPermissionToSubmit( true );
+			wp_safe_redirect( network_admin_url() );
 		}
 	}
 
@@ -111,21 +128,25 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	 * @param bool $fPermission
 	 */
 	protected function setPermissionToSubmit( $fPermission = false ) {
-		$sCookieName = $this->getAdminAccessKeyCookieName();
 		if ( $fPermission ) {
-			$sAccessKey = $this->getOpt( 'admin_access_key' );
-
-			if ( !empty( $sAccessKey ) ) {
-				$sValue = md5( $sAccessKey );
-				$sTimeout = $this->getOpt( 'admin_access_timeout' ) * 60;
-				$_COOKIE[ $sCookieName ] = $sValue;
-				setcookie( $sCookieName, $sValue, time()+$sTimeout, COOKIEPATH, COOKIE_DOMAIN, false );
-			}
+			$this->setAdminAccessCookie();
 		}
 		else {
-			unset( $_COOKIE[ $sCookieName ] );
-			setcookie( $sCookieName, "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
+			$this->clearAdminAccessCookie();
 		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function checkAdminAccessKeySubmission() {
+		$oDp = $this->loadDataProcessor();
+
+		$sAccessKeyRequest = $oDp->FetchPost( $this->doPluginPrefix( 'admin_access_key_request', '_' ) );
+		if ( empty( $sAccessKeyRequest ) ) {
+			return false;
+		}
+		return $this->getOpt( 'admin_access_key' ) === md5( $sAccessKeyRequest );
 	}
 
 	/**
