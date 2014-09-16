@@ -99,23 +99,6 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	private static $fAutoUpgrade = false;
 
 	/**
-	 * @var string
-	 */
-	private static $aFeatures = array(
-		'plugin',
-		'logging',
-		'email',
-		'admin_access_restriction',
-		'firewall',
-		'login_protect',
-		'user_management',
-		'comments_filter',
-//		'privacy_protect',
-		'autoupdates',
-		'lockdown'
-	);
-
-	/**
 	 * @var ICWP_Wordpress_Simple_Firewall_Plugin
 	 */
 	public static $oInstance;
@@ -159,14 +142,6 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	 */
 	public function getFullPluginPrefix( $sGlue = '-' ) {
 		return sprintf( '%s%s%s', self::$sParentSlug, $sGlue, self::$sPluginSlug );
-	}
-
-	/**
-	 * @param string
-	 * @return string
-	 */
-	public function getFeatures() {
-		return self::$aFeatures;
 	}
 
 	/**

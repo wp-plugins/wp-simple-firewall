@@ -79,6 +79,15 @@ class ICWP_WPSF_OptionsVO {
 	}
 
 	/**
+	 * @param $sProperty
+	 * @return null|mixed
+	 */
+	public function getFeatureProperty( $sProperty ) {
+		$aRawConfig = $this->getRawOptionsConfigData();
+		return ( isset( $aRawConfig['properties'] ) && isset( $aRawConfig['properties'][$sProperty] ) ) ? $aRawConfig['properties'][$sProperty] : null;
+	}
+
+	/**
 	 * @param string $sKey
 	 * @return boolean
 	 */
@@ -116,6 +125,10 @@ class ICWP_WPSF_OptionsVO {
 			foreach( $aRawData['options'] as $aRawOption ) {
 
 				if ( $aRawOption['section'] != $aRawSection['slug'] ) {
+					continue;
+				}
+
+				if ( isset( $aRawOption['hidden'] ) && $aRawOption['hidden'] ) {
 					continue;
 				}
 
@@ -213,14 +226,25 @@ class ICWP_WPSF_OptionsVO {
 	}
 
 	/**
+	 * @param string $sOptionKey
+	 * @return null|array
+	 */
+	public function getOptionRawConfig( $sOptionKey ) {
+		foreach( $this->getAllRawOptions() as $aOption ) {
+			if ( $sOptionKey == $aOption['key'] ) {
+				return $aOption;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getOptionsKeys() {
 		if ( !isset( $this->aOptionsKeys ) ) {
-
 			$this->aOptionsKeys = array();
-			$aRawData = $this->getRawOptionsConfigData();
-			foreach( $aRawData['options'] as $aOption ) {
+			foreach( $this->getAllRawOptions() as $aOption ) {
 				$this->aOptionsKeys[] = $aOption['key'];
 			}
 		}
@@ -242,6 +266,16 @@ class ICWP_WPSF_OptionsVO {
 			$this->aRawOptionsConfigData = $this->readYamlConfiguration( $this->sOptionsName );
 		}
 		return $this->aRawOptionsConfigData;
+	}
+
+	/**
+	 * Return the section of the Raw config that is the "options" key only.
+	 *
+	 * @return array
+	 */
+	protected function getAllRawOptions() {
+		$aAllRawOptions = $this->getRawOptionsConfigData();
+		return isset( $aAllRawOptions['options'] ) ? $aAllRawOptions['options'] : array();
 	}
 
 	/**

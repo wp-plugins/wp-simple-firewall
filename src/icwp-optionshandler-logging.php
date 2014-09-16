@@ -32,7 +32,6 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Logging');
 		$this->sFeatureSlug = 'logging';
-		$this->fShowFeatureMenuItem = false;
 		parent::__construct( $oPluginVo );
 	}
 

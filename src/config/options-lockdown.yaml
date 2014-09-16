@@ -1,5 +1,9 @@
 ---
-name: 'lockdown'
+name: 'Lockdown'
+properties:
+  slug: 'lockdown'
+  show_feature_menu_item: true
+  storage_key: 'lockdown' # should correspond exactly to that in the plugin.yaml
 # Options Sections
 sections:
   -

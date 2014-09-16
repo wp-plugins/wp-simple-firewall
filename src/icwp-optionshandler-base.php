@@ -57,11 +57,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		protected $aNonUiOptions;
 
 		/**
-		 * @var array
-		 */
-		protected $m_aOptionsValues;
-
-		/**
 		 * @var string
 		 */
 		protected $sOptionsStoreKey;
@@ -75,6 +70,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @var string
 		 */
 		protected $sFeatureName;
+
 		/**
 		 * @var string
 		 */
@@ -86,7 +82,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		protected static $sPluginBaseFile;
 
 		/**
-		 * @var string
+		 * @var boolean
 		 */
 		protected $fShowFeatureMenuItem = true;
 
@@ -275,7 +271,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * @return mixed
+		 * @return string
 		 */
 		protected function getMainFeatureName() {
 			return $this->sFeatureName;
@@ -299,7 +295,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * with trailing slash
+		 * With trailing slash
 		 * @param string $sSourceFile
 		 * @return string
 		 */
@@ -376,12 +372,14 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return array
 		 */
 		public function filter_addPluginSubMenuItem( $aItems ) {
-			if ( !$this->fShowFeatureMenuItem || empty( $this->sFeatureName ) ) {
+			$sName = $this->getMainFeatureName();
+			if ( !$this->getIfShowFeatureMenuItem() || empty( $sName ) ) {
 				return $aItems;
 			}
-			$sMenuPageTitle = $this->oPluginVo->getHumanName().' - '.$this->getMainFeatureName();
+
+			$sMenuPageTitle = $this->oPluginVo->getHumanName().' - '.$sName;
 			$aItems[ $sMenuPageTitle ] = array(
-				$this->getMainFeatureName(),
+				$sName,
 				$this->getFeatureSlug(),
 				array( $this, 'displayFeatureConfigPage' )
 			);
@@ -393,7 +391,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return array
 		 */
 		public function filter_getFeatureSummaryData( $aSummaryData ) {
-			if ( !$this->fShowFeatureMenuItem ) {
+			if ( !$this->getIfShowFeatureMenuItem() ) {
 				return $aSummaryData;
 			}
 
@@ -422,6 +420,13 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				return true;
 			}
 			return false;
+		}
+
+		/**
+		 * @return boolean
+		 */
+		public function getIfShowFeatureMenuItem() {
+			return $this->getOptionsVo()->getFeatureProperty( 'show_feature_menu_item' );
 		}
 
 		/**
@@ -500,8 +505,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 		/**
 		 * Will initiate the plugin options structure for use by the UI builder.
-		 *
-		 * It will also fill in $this->m_aOptionsValues with defaults where appropriate.
 		 *
 		 * It doesn't set any values, just populates the array created in buildOptions()
 		 * with values stored.

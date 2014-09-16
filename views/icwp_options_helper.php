@@ -69,7 +69,7 @@ function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $i
 
 }
 
-function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
+function getPluginOptionSpan( $aOption, $nSpanSize, $insVarPrefix = '' ) {
 	
 	$sOptionKey = $aOption['key'];
 	$sOptionSaved = $aOption['value'];
@@ -77,24 +77,36 @@ function getPluginOptionSpan( $aOption, $iSpanSize, $insVarPrefix = '' ) {
 	$sOptionType = $aOption['type'];
 	$aPossibleOptions = $aOption['value_options'];
 	$sHelpLink = $aOption['info_link'];
+	$sBlogLink = $aOption['blog_link'];
 	$sOptionHumanName = $aOption['name'];
 	$sOptionTitle = $aOption['summary'];
 	$sOptionHelpText = $aOption['description'];
 
 	if ( $sOptionKey == 'spacer' ) {
 		$sHtml = '
-			<div class="span'.$iSpanSize.'">
+			<div class="span'.$nSpanSize.'">
 			</div>
 		';
 	}
 	else {
 
-		$sHelpLink = !empty($sHelpLink)? '<span>['.$sHelpLink.']</span>' : '';
+		$sLink = '';
+		$sLinkTemplate = '<br /><span>[%s]</span>';
+		if ( !empty($sHelpLink) ) {
+			$sLink = sprintf( $sLinkTemplate, '<a href="'.$sHelpLink.'" target="_blank">'._wpsf__('More Info').'</a>%s' );
+			if ( !empty( $sBlogLink ) ) {
+				$sLink = sprintf( $sLink, ' | <a href="'.$sBlogLink.'" target="_blank">'._wpsf__('Blog').'</a>' );
+			}
+			else {
+				$sLink = sprintf( $sLink, '' );
+			}
+		}
+
 		$sSpanId = 'span_'.$insVarPrefix.$sOptionKey;
 		$sHtml = '
-			<div class="item_group span'.$iSpanSize.' '.( ($sOptionSaved === 'Y' || $sOptionSaved != $sOptionDefault )? ' selected_item_group':'' ).'" id="'.$sSpanId.'">
+			<div class="item_group span'.$nSpanSize.' '.( ($sOptionSaved === 'Y' || $sOptionSaved != $sOptionDefault )? ' selected_item_group':'' ).'" id="'.$sSpanId.'">
 				<div class="control-group">
-					<label class="control-label" for="'.$insVarPrefix.$sOptionKey.'">'.$sOptionHumanName.'<br />'.$sHelpLink.'</label>
+					<label class="control-label" for="'.$insVarPrefix.$sOptionKey.'">'.$sOptionHumanName.$sLink.'</label>
 					<div class="controls">
 					  <div class="option_section'.( ($sOptionSaved == 'Y')? ' selected_item':'' ).'" id="option_section_'.$insVarPrefix.$sOptionKey.'">
 						<label>

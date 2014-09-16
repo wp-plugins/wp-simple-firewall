@@ -134,17 +134,19 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			$oWp = $this->loadWpFunctionsProcessor();
 			$oUser = $oWp->getCurrentWpUser();
 
-			// only check the non-admin areas if specified to do so and it's not AJAX
-			if ( !$oWp->getIsAjax() && ( is_admin() || !$this->getIsOption( 'session_check_admin_area_only', 'Y' ) ) ) {
+			// only check the non-admin areas if specified to do so and it's not AJAX (we've removed the option to check admin only)
+//			if ( !$oWp->getIsAjax() && ( is_admin() || !$this->getIsOption( 'session_check_admin_area_only', 'Y' ) ) ) {
+			if ( is_admin() ) {
 				$this->doVerifyCurrentUser( $oUser );
 			}
 
 			// At this point session is validated
-			if ( $this->getIsOption( 'session_auto_forward_to_admin_area', 'Y' ) ) {
+
+			// This used to be an option, but to simplify, we've removed it and do it anyway.
+			if ( true || $this->getIsOption( 'session_auto_forward_to_admin_area', 'Y' ) ) {
 				$oDp = $this->loadDataProcessor();
 				$sWpLogin = 'wp-login.php';
 				if ( $oDp->FetchGet( 'action' ) != 'logout' && ( substr( $oWp->getCurrentPage(), -strlen( $sWpLogin ) ) === $sWpLogin ) ) {
-					$oWp = $this->loadWpFunctionsProcessor();
 					$oWp->redirectToAdmin();
 				}
 			}
@@ -194,7 +196,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 * @return integer
 	 */
 	protected function getSessionTimeoutInterval( ) {
-		return $this->getOption( 'session_timeout_interval', 0 ) * DAY_IN_SECONDS;
+		return $this->getOption( 'session_timeout_interval' ) * DAY_IN_SECONDS;
 	}
 
 	/**
@@ -325,7 +327,9 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	/**
 	 */
 	protected function setSessionCookie() {
-		setcookie( self::Session_Cookie, $this->getSessionId(), time()+$this->getSessionTimeoutInterval(), COOKIEPATH, COOKIE_DOMAIN, false );
+		if ( $this->getSessionTimeoutInterval() > 0 ) {
+			setcookie( self::Session_Cookie, $this->getSessionId(), time()+$this->getSessionTimeoutInterval(), COOKIEPATH, COOKIE_DOMAIN, false );
+		}
 	}
 
 	/**

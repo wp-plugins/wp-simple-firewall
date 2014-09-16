@@ -1,5 +1,9 @@
 ---
-name: 'firewall'
+slug: 'firewall'
+properties:
+  name: 'Firewall'
+  show_feature_menu_item: true
+  storage_key: 'firewall' # should correspond exactly to that in the plugin.yaml
 # Options Sections
 sections:
   -

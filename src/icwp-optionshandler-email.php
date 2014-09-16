@@ -32,7 +32,6 @@ class ICWP_WPSF_FeatureHandler_Email extends ICWP_WPSF_FeatureHandler_Base {
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Email');
 		$this->sFeatureSlug = 'email';
-		$this->fShowFeatureMenuItem = false;
 		parent::__construct( $oPluginVo );
 	}
 

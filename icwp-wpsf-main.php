@@ -105,30 +105,48 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	}
 
 	/**
+	 * @return ICWP_WPSF_FeatureHandler_Plugin
+	 */
+	protected function loadCorePluginFeature() {
+		if ( isset( $this->oPluginOptions ) ) {
+			return $this->oPluginOptions;
+		}
+		return $this->loadFeatureHandler( 'plugin' );
+	}
+
+	/**
 	 * @param bool $fRecreate
 	 * @param bool $fFullBuild
 	 * @return bool
 	 */
 	protected function loadAllFeatures( $fRecreate = false, $fFullBuild = false ) {
-		foreach( $this->oPluginVo->getFeatures() as $sFeature ) {
-			$fSuccess = $this->loadFeatureHandler( $sFeature, $fRecreate, $fFullBuild );
+
+		$oMainPluginFeature = $this->loadCorePluginFeature();
+		$aPluginFeatures = $oMainPluginFeature->getActivePluginFeatures();
+
+		foreach( $aPluginFeatures as $sSlug => $sStorageKey ) {
+			$fSuccess = $this->loadFeatureHandler( $sSlug, $fRecreate, $fFullBuild );
 		}
 		return $fSuccess;
 	}
 
-	protected function loadFeatureHandler( $sFeatureSlug = 'plugin', $infRecreate = false, $infFullBuild = false ) {
-		if ( !$this->getIsFeature( $sFeatureSlug ) ) {
-			return false;
-		}
+	/**
+	 * @param string $sFeatureSlug
+	 * @param bool $infRecreate
+	 * @param bool $infFullBuild
+	 * @return mixed
+	 */
+	protected function loadFeatureHandler( $sFeatureSlug, $infRecreate = false, $infFullBuild = false ) {
 
 		$sFeatureName = str_replace( ' ', '', ucwords( str_replace( '_', ' ', $sFeatureSlug ) ) );
-		$sOptionsVarName = 'o'.$sFeatureName.'Options'; // e.g. oPluginOptions
+		$sOptionsVarName = sprintf( 'o%sOptions', $sFeatureName ); // e.g. oPluginOptions
 
 		if ( isset( $this->{$sOptionsVarName} ) ) {
 			return $this->{$sOptionsVarName};
 		}
-		$sSourceFile = $this->oPluginVo->getSourceDir().'icwp-optionshandler-'.$sFeatureSlug.'.php'; // e.g. icwp-optionshandler-plugin.php
-		$sClassName = 'ICWP_WPSF_FeatureHandler_'.$sFeatureName; // e.g. ICWP_WPSF_FeatureHandler_Plugin
+
+		$sSourceFile = $this->oPluginVo->getSourceDir(). sprintf( 'icwp-optionshandler-%s.php', $sFeatureSlug ); // e.g. icwp-optionshandler-plugin.php
+		$sClassName = sprintf( 'ICWP_WPSF_FeatureHandler_%s', $sFeatureName ); // e.g. ICWP_WPSF_FeatureHandler_Plugin
 
 		require_once( $sSourceFile );
 		if ( $infRecreate || !isset( $this->{$sOptionsVarName} ) ) {
@@ -138,16 +156,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 			$this->{$sOptionsVarName}->buildOptions();
 		}
 		return $this->{$sOptionsVarName};
-	}
-
-	/**
-	 * Given a certain feature 'slug' will return true if this is a particular supported feature of this plugin.
-	 *
-	 * @param string $sFeature
-	 * @return boolean
-	 */
-	public function getIsFeature( $sFeature ) {
-		return in_array( $sFeature, $this->oPluginVo->getFeatures() );
 	}
 
 	/**

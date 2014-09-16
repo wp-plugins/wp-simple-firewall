@@ -1,5 +1,9 @@
 ---
-name: 'login_protect'
+slug: 'login_protect'
+properties:
+  name: 'Login Protection'
+  show_feature_menu_item: true
+  storage_key: 'loginprotect' # should correspond exactly to that in the plugin.yaml
 # Options Sections
 sections:
   -
@@ -137,6 +141,13 @@ options:
     section: 'section_yubikey_authentication'
     default: ''
     type: 'yubikey_unique_keys'
+    link_info: 'http://icwp.io/4h'
+    link_blog: ''
+  -
+    key: 'enable_login_protect_log'
+    section: 'section_login_logging'
+    default: 'N'
+    type: 'checkbox'
     link_info: 'http://icwp.io/4h'
     link_blog: ''
   -

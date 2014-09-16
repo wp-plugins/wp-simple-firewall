@@ -45,6 +45,21 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 		return $this->oFeatureProcessor;
 	}
 
+	public function doPrePluginOptionsSave() {
+
+		if ( !is_email( $this->getOpt( 'enable_admin_login_email_notification' ) ) ) {
+			$this->getOptionsVo()->resetOptToDefault( 'enable_admin_login_email_notification' );
+		}
+
+		if ( $this->getOpt( 'session_username_concurrent_limit' ) < 0 ) {
+			$this->getOptionsVo()->resetOptToDefault( 'session_username_concurrent_limit' );
+		}
+
+		if ( $this->getOpt( 'session_timeout_interval' ) < 1 ) {
+			$this->getOptionsVo()->resetOptToDefault( 'session_timeout_interval' );
+		}
+	}
+
 	/**
 	 */
 	public function displayFeatureConfigPage( ) {
@@ -264,7 +279,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 				$sName = _wpsf__( 'Session Timeout' );
 				$sSummary = _wpsf__( 'Specify How Many Days After Login To Automatically Force Re-Login' );
 				$sDescription = _wpsf__( 'WordPress default is 2 days, or 14 days if you check the "Remember Me" box.' )
-					.'<br />'. sprintf( _wpsf__( 'Set to %s to turn off this option.' ), '"<strong>0</strong>"' );
+					.'<br />'. sprintf( _wpsf__( 'This cannot be less than %s. Default: %s.' ), '"<strong>1</strong>"', '"<strong>'.$this->getOptionsVo()->getOptDefault('session_timeout_interval').'</strong>"' );
 				break;
 
 			case 'session_idle_timeout_interval' :

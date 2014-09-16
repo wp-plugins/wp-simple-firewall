@@ -1,5 +1,9 @@
 ---
-name: 'plugin'
+slug: 'plugin'
+properties:
+  name: 'Dashboard'
+  show_feature_menu_item: true
+  storage_key: 'plugin' # should correspond exactly to that in the plugin.yaml
 # Options Sections
 sections:
   -
@@ -50,3 +54,31 @@ options:
   -
     key: 'capability_can_remote_get'
     section: 'section_non_ui'
+  -
+    key: 'active_plugin_features'
+    section: 'section_non_ui'
+    value:
+      -
+        slug: 'admin_access_restriction'
+        storage_key: 'admin_access_restriction'
+      -
+        slug: 'firewall'
+        storage_key: 'firewall'
+      -
+        slug: 'login_protect'
+        storage_key: 'loginprotect'
+      -
+        slug: 'user_management'
+        storage_key: 'user_management'
+      -
+        slug: 'comments_filter'
+        storage_key: 'commentsfilter'
+      -
+        slug: 'autoupdates'
+        storage_key: 'autoupdates'
+      -
+        slug: 'email'
+        storage_key: 'email'
+      -
+        slug: 'logging'
+        storage_key: 'logging'

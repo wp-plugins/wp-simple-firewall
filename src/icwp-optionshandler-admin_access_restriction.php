@@ -22,11 +22,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_AdminAccessRestriction') ):
 class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
-	 * @const integer
-	 */
-	const Default_AccessKeyTimeout = 30;
-
-	/**
 	 * @var string
 	 */
 	const AdminAccessKeyCookieName		= 'icwp_wpsf_aakcook';
@@ -41,7 +36,6 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	public function __construct( $oPluginVo ) {
 		$this->sFeatureName = _wpsf__('Admin Access');
 		$this->sFeatureSlug = 'admin_access_restriction';
-		$this->fShowFeatureMenuItem = true;
 		parent::__construct( $oPluginVo );
 
 		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'doCheckHasPermissionToSubmit' ) );
@@ -60,7 +54,8 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	}
 
 	/**
-	 *
+	 * @param bool $fHasPermission
+	 * @return bool
 	 */
 	public function doCheckHasPermissionToSubmit( $fHasPermission = true ) {
 
@@ -92,7 +87,6 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	}
 
 	/**
-	 *
 	 */
 	public function handleFormSubmit() {
 		$fSuccess = parent::handleFormSubmit();
@@ -172,7 +166,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 				$sName = _wpsf__( 'Admin Access Timeout' );
 				$sSummary = _wpsf__( 'Specify An Automatic Timeout Interval For Admin Access' );
 				$sDescription = _wpsf__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again.')
-					.'<br />'.sprintf(_wpsf__( 'Default: %s minutes.' ), self::Default_AccessKeyTimeout );
+					.'<br />'.sprintf(_wpsf__( 'Default: %s minutes.' ), $this->getOptionsVo()->getOptDefault( 'admin_access_timeout' ) );
 				break;
 
 			default:
@@ -259,6 +253,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 
 	protected function updateHandler() {
 		parent::updateHandler();
+
 		if ( $this->getVersion() == '0.0' ) {
 			return;
 		}

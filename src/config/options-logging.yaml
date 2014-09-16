@@ -1,5 +1,9 @@
 ---
-name: 'logging'
+slug: 'logging'
+properties:
+  name: 'Logging'
+  show_feature_menu_item: false
+  storage_key: 'logging' # should correspond exactly to that in the plugin.yaml
 # Options Sections
 sections:
   -

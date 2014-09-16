@@ -46,6 +46,11 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	}
 	
 	public function doPrePluginOptionsSave() {
+
+		if ( $this->getOpt( 'login_limit_interval' ) < 0 ) {
+			$this->getOptionsVo()->resetOptToDefault( 'login_limit_interval' );
+		}
+
 		$aIpWhitelist = $this->getOpt( 'ips_whitelist' );
 		if ( $aIpWhitelist === false ) {
 			$aIpWhitelist = '';
@@ -370,7 +375,9 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 			case 'login_limit_interval' :
 				$sName = _wpsf__('Login Cooldown Interval');
 				$sSummary = _wpsf__('Limit login attempts to every X seconds');
-				$sDescription = _wpsf__('WordPress will process only ONE login attempt for every number of seconds specified. Zero (0) turns this off. Suggested: 5');
+				$sDescription = _wpsf__( 'WordPress will process only ONE login attempt for every number of seconds specified.' )
+					.'<br />'._wpsf__( 'Zero (0) turns this off.' )
+					.' '.sprintf( _wpsf__( 'Default: "%s".' ), $this->getOptionsVo()->getOptDefault( 'login_limit_interval' ) );
 				break;
 
 			case 'enable_login_gasp_check' :

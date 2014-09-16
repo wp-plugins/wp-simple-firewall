@@ -46,6 +46,15 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 		return $this->oFeatureProcessor;
 	}
 
+	public function getActivePluginFeatures() {
+		$aActiveFeatures = $this->getOptionsVo()->getOptionRawConfig( 'active_plugin_features' );
+		$aPluginFeatures = array();
+		foreach( $aActiveFeatures['value'] as $aFeature ) {
+			$aPluginFeatures[ $aFeature['slug'] ] = $aFeature['storage_key'];
+		}
+		return $aPluginFeatures;
+	}
+
 	/**
 	 * @return mixed
 	 */
