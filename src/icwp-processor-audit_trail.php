@@ -47,6 +47,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 				add_action( 'wp_login_failed', array( $this, 'auditUserLoginFail' ) );
 				add_action( 'wp_login', array( $this, 'auditUserLoginSuccess' ) );
 				add_action( 'user_register', array( $this, 'auditNewUserRegistered' ) );
+				add_action( 'delete_user', array( $this, 'auditDeleteUser' ), 30, 2 );
 			}
 
 		}
@@ -107,15 +108,14 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		 * @return bool
 		 */
 		public function auditNewUserRegistered( $nUserId ) {
-
 			if ( empty( $nUserId ) ) {
 				return false;
 			}
-
 			$oWp = $this->loadWpFunctionsProcessor();
+			$oDp = $this->loadDataProcessor();
+
 			$oNewUser = $oWp->getUserById( $nUserId );
 			$oCurrentUser = $oWp->getCurrentWpUser();
-			$oDp = $this->loadDataProcessor();
 
 			$oAuditTrail = $this->getAuditTrailEntries();
 			$oAuditTrail->add(
@@ -127,9 +127,55 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 				_wpsf__( 'New WordPress user registered.').' '
 				.sprintf(
 					_wpsf__( 'New username is "%s" with email address "%s".' ),
-					$oNewUser->get( 'user_login' ),
-					$oNewUser->get( 'user_email' )
+					empty( $oNewUser ) ? 'unknown' : $oNewUser->get( 'user_login' ),
+					empty( $oNewUser ) ? 'unknown' : $oNewUser->get( 'user_email' )
 				)
+			);
+		}
+
+		/**
+		 * @param int $nUserId
+		 * @param int $nReassigned
+		 * @return bool
+		 */
+		public function auditDeleteUser( $nUserId, $nReassigned ) {
+			if ( empty( $nUserId ) ) {
+				return false;
+			}
+			$oWp = $this->loadWpFunctionsProcessor();
+			$oDp = $this->loadDataProcessor();
+
+			$oDeletedUser = $oWp->getUserById( $nUserId );
+			$oReassignedUser = empty( $nReassigned ) ? null : $oWp->getUserById( $nReassigned );
+			$oCurrentUser = $oWp->getCurrentWpUser();
+
+			$oAuditTrail = $this->getAuditTrailEntries();
+
+			// Build the audit message
+			$sAuditMessage =
+				_wpsf__( 'WordPress user deleted.')
+				.' '.sprintf(
+					_wpsf__( 'Username was "%s" with email address "%s".' ),
+					empty( $oDeletedUser ) ? 'unknown' : $oDeletedUser->get( 'user_login' ),
+					empty( $oDeletedUser ) ? 'unknown' : $oDeletedUser->get( 'user_email' )
+				).' ';
+			if ( empty( $oReassignedUser ) ) {
+				$sAuditMessage .= _wpsf__( 'Their posts were not reassigned to another user.' );
+			}
+			else {
+				$sAuditMessage .= sprintf(
+					_wpsf__( 'Their posts were reassigned to username "%s".' ),
+					$oReassignedUser->get( 'user_login' )
+				);
+			}
+
+			$oAuditTrail->add(
+				$oDp->GetRequestTime(),
+				empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
+				'user',
+				'user_deleted',
+				2,
+				$sAuditMessage
 			);
 		}
 
