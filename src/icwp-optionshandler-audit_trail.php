@@ -17,34 +17,49 @@
 
 require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_WPSF_FeatureHandler_Logging') ):
+if ( !class_exists('ICWP_WPSF_FeatureHandler_AuditTrail_V1') ):
 
-class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
+class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
-	 * @var ICWP_WPSF_Processor_Logging
+	 * @var ICWP_WPSF_Processor_AuditTrail
 	 */
 	protected $oFeatureProcessor;
 
-	/**
-	 * @param $oPluginVo
-	 */
 	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('Logging');
-		$this->sFeatureSlug = 'logging';
+		$this->sFeatureName = _wpsf__('Audit Trail');
+		$this->sFeatureSlug = 'audit_trail';
 		parent::__construct( $oPluginVo );
 	}
 
 	/**
-	 * @return ICWP_WPSF_Processor_Logging|null
+	 * @return ICWP_WPSF_Processor_Autoupdates|null
 	 */
 	protected function loadFeatureProcessor() {
-
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir().sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) );
-			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Logging( $this );
+			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-audit_trail.php' );
+			$this->oFeatureProcessor = new ICWP_WPSF_Processor_AuditTrail( $this );
 		}
 		return $this->oFeatureProcessor;
+	}
+
+	/**
+	 * @return bool|void
+	 */
+	public function handleFormSubmit() {
+		$fSuccess = parent::handleFormSubmit();
+		if ( !$fSuccess ) {
+			return $fSuccess;
+		}
+	}
+
+	public function doPrePluginOptionsSave() {}
+
+	/**
+	 * @return string
+	 */
+	public function getAuditTrailTableName() {
+		return $this->doPluginPrefix( $this->getOpt( 'audit_trail_table_name' ), '_' );
 	}
 
 	/**
@@ -55,10 +70,14 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 	protected function loadStrings_SectionTitles( $aOptionsParams ) {
 
 		$sSectionSlug = $aOptionsParams['section_slug'];
-		switch( $aOptionsParams['section_slug'] ) {
+		switch( $sSectionSlug ) {
 
-			case 'section_logging_options' :
-				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Logging') );
+			case 'section_enable_plugin_feature_audit_trail' :
+				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), $this->getMainFeatureName() );
+				break;
+
+			case 'section_enable_audit_contexts' :
+				$sTitle = _wpsf__( 'Enable Audit Contexts' );
 				break;
 
 			default:
@@ -78,10 +97,16 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 		$sKey = $aOptionsParams['key'];
 		switch( $sKey ) {
 
-			case 'enable_logging' :
+			case 'enable_audit_trail' :
 				$sName = sprintf( _wpsf__( 'Enable %s' ), $this->getMainFeatureName() );
 				$sSummary = sprintf( _wpsf__( 'Enable (or Disable) The %s Feature' ), $this->getMainFeatureName() );
 				$sDescription = sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), $this->getMainFeatureName() );
+				break;
+
+			case 'enable_audit_context_users' :
+				$sName = _wpsf__( 'Users And Logins' );
+				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'Users And Logins' ) );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
 				break;
 
 			default:
@@ -93,13 +118,8 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 		$aOptionsParams['description'] = $sDescription;
 		return $aOptionsParams;
 	}
-
-	/**
-	 * @return string
-	 */
-	public function getGeneralLoggingTableName() {
-		return $this->doPluginPrefix( $this->getOpt( 'general_logging_table_name' ), '_' );
-	}
 }
 
 endif;
+
+class ICWP_WPSF_FeatureHandler_AuditTrail extends ICWP_WPSF_FeatureHandler_AuditTrail_V1 { }

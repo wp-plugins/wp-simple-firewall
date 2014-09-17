@@ -20,10 +20,8 @@ require_once( dirname(__FILE__).'/icwp-processor-base.php' );
 
 if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 
-class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
+abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	
-	/**
-	 */
 	const CleanupCronActionHook = 'icwp_wpsf_cron_cleanupactionhook';
 
 	/**
@@ -41,6 +39,11 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * @var array 
 	 */
 	protected $m_aDataToWrite;
+
+	/**
+	 * @var boolean
+	 */
+	protected $fTableExists;
 	
 	public function __construct( ICWP_WPSF_FeatureHandler_Base $oFeatureOptions, $sTableName = null ) {
 		parent::__construct( $oFeatureOptions );
@@ -52,15 +55,7 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	/**
 	 * Override to set what this processor does when it's "run"
 	 */
-	public function run() {
-		if ( $this->getTableExists() ) {
-			$sFullHookName = $this->oFeatureOptions->doPluginPrefix( self::CleanupCronActionHook, '_' );
-			add_action( $sFullHookName, array( $this, 'cleanupDatabase' ) );
-		}
-		else {
-			$this->createTable();
-		}
-	}
+	public function run() { }
 
 	/**
 	 */
@@ -77,10 +72,40 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 */
 	protected function loadWpdb() {
 		if ( is_null( $this->oWpdb ) ) {
-			global $wpdb;
-			$this->oWpdb = $wpdb;
+			$this->oWpdb = $this->getWpdb();
+			$this->initializeTable();
 		}
 		return $this->oWpdb;
+	}
+
+	/**
+	 */
+	private function getWpdb() {
+		global $wpdb;
+		return $wpdb;
+	}
+
+	/**
+	 * @return bool|int
+	 */
+	protected function createTable() {
+		$sSql = $this->getCreateTableSql();
+		if ( !empty( $sSql ) ) {
+			return $this->doSql( $sSql );
+		}
+		return true;
+	}
+
+	/**
+	 */
+	protected function initializeTable() {
+		if ( $this->getTableExists() ) {
+			$sFullHookName = $this->oFeatureOptions->doPluginPrefix( self::CleanupCronActionHook, '_' );
+			add_action( $sFullHookName, array( $this, 'cleanupDatabase' ) );
+		}
+		else {
+			$this->createTable();
+		}
 	}
 	
 	/**
@@ -198,6 +223,7 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 
 	/**
 	 * @param integer $nTime
+	 * @return bool|int
 	 */
 	protected function deleteAllRowsOlderThan( $nTime ) {
 		$sQuery = "
@@ -214,22 +240,9 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	}
 
 	/**
-	 * @return bool|int
-	 */
-	public function createTable() {
-		$sSql = $this->getCreateTableSql();
-		if ( !empty( $sSql ) ) {
-			return $this->doSql( $sSql );
-		}
-		return true;
-	}
-
-	/**
 	 * @return string
 	 */
-	protected function getCreateTableSql() {
-		return '';
-	}
+	abstract protected function getCreateTableSql();
 	
 	/**
 	 * Will remove all data from this table (to delete the table see dropTable)
@@ -286,7 +299,7 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 		if ( empty( $sTableName ) ) {
 			throw new Exception( 'Database Table Name is EMPTY' );
 		}
-		$oDb = $this->loadWpdb();
+		$oDb = $this->getWpdb();
 		$sTableString =
 			$oDb->prefix
 			. $sTableName;
@@ -312,13 +325,21 @@ class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * @return bool
 	 */
 	public function getTableExists() {
+
+		// only return true if this is true.
+		if ( $this->fTableExists === true ) {
+			return true;
+		}
+
 		$oDb = $this->loadWpdb();
 		$sQuery = "
 			SHOW TABLES LIKE '%s'
 		";
 		$sQuery = sprintf( $sQuery, $this->getTableName() );
 		$mResult = $oDb->get_var( $sQuery );
-		return !is_null( $mResult );
+
+		$this->fTableExists = !is_null( $mResult );
+		return $this->fTableExists;
 	}
 }
 

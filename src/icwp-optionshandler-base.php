@@ -18,7 +18,7 @@
 require_once( 'icwp-options-vo.php' );
 if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
-	class ICWP_WPSF_FeatureHandler_Base_V2 {
+	abstract class ICWP_WPSF_FeatureHandler_Base_V2 {
 
 		/**
 		 * @var ICWP_Wordpress_Simple_Firewall_Plugin
@@ -125,9 +125,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * Override this and adapt per feature
 		 * @return null
 		 */
-		protected function loadFeatureProcessor() {
-			return null;
-		}
+		abstract protected function loadFeatureProcessor();
 
 		/**
 		 * @return ICWP_WPSF_OptionsVO
@@ -204,6 +202,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public static function GetLoggingHandler() {
 			if ( is_null( self::$oLoggingHandler ) ) {
+				require_once( 'icwp-optionshandler-logging.php' );
 				self::$oLoggingHandler = new ICWP_WPSF_FeatureHandler_Logging( ICWP_Wordpress_Simple_Firewall_Plugin::GetInstance() );
 			}
 			return self::$oLoggingHandler;
@@ -953,4 +952,4 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 endif;
 
-class ICWP_WPSF_FeatureHandler_Base extends ICWP_WPSF_FeatureHandler_Base_V2 { }
+abstract class ICWP_WPSF_FeatureHandler_Base extends ICWP_WPSF_FeatureHandler_Base_V2 { }

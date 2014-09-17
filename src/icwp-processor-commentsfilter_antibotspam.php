@@ -21,8 +21,6 @@ if ( !class_exists('ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam') ):
 
 class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbProcessor {
 
-	const TableName = 'comments_filter';
-
 	/**
 	 * The unique comment token assigned to this page
 	 * @var integer

@@ -634,7 +634,6 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 * @return string
 	 */
 	public function getCreateTableSql() {
-
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
 			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`session_id` varchar(32) NOT NULL DEFAULT '',

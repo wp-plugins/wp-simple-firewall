@@ -80,6 +80,9 @@ options:
         slug: 'lockdown'
         storage_key: 'lockdown'
       -
+        slug: 'audit_trail'
+        storage_key: 'audit_trail'
+      -
         slug: 'email'
         storage_key: 'email'
       -

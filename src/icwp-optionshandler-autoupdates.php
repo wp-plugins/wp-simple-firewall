@@ -72,7 +72,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Autoupdates_V3') ):
 			switch( $sSectionSlug ) {
 
 				case 'section_enable_plugin_feature_automatic_updates_control' :
-					$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), _wpsf__('Automatic Updates Control') );
+					$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), $this->getMainFeatureName() );
 					break;
 
 				case 'section_disable_all_wordpress_automatic_updates' :
@@ -109,9 +109,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Autoupdates_V3') ):
 			switch( $sKey ) {
 
 				case 'enable_autoupdates' :
-					$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Auto Updates Control') );
-					$sSummary = _wpsf__( 'Enable (or Disable) The Automatic Updates Control Feature' );
-					$sDescription = sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('Automatic Updates Control') );
+					$sName = sprintf( _wpsf__( 'Enable %s' ), $this->getMainFeatureName() );
+					$sSummary = sprintf( _wpsf__( 'Enable (or Disable) The %s Feature' ), $this->getMainFeatureName() );
+					$sDescription = sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), $this->getMainFeatureName() );
 					break;
 
 				case 'enable_autoupdate_disable_all' :

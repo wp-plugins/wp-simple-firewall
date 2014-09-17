@@ -77,7 +77,7 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 		switch( $aOptionsParams['section_slug'] ) {
 
 			case 'section_enable_plugin_feature_login_protection' :
-				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), _wpsf__('Login Protection') );
+				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), $this->getMainFeatureName() );
 				break;
 
 			case 'section_bypass_login_protection' :
@@ -119,9 +119,9 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 		switch( $sKey ) {
 
 			case 'enable_login_protect' :
-				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Login Protection') );
-				$sSummary = _wpsf__( 'Enable (or Disable) The Login Protection Feature' );
-				$sDescription = sprintf( _wpsf__( 'Checking/Un-checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('Login Protection') );
+				$sName = sprintf( _wpsf__( 'Enable %s' ), $this->getMainFeatureName() );
+				$sSummary = sprintf( _wpsf__( 'Enable (or Disable) The %s Feature' ), $this->getMainFeatureName() );
+				$sDescription = sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), $this->getMainFeatureName() );
 				break;
 
 			case 'enable_xmlrpc_compatibility' :

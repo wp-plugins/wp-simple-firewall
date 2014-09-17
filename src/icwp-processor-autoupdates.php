@@ -220,7 +220,7 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_WPSF_Processor_Base {
 
 		return $infUpdate;
 	}
-	
+
 	/**
 	 * This is a filter method designed to say whether WordPress theme upgrades should be permitted,
 	 * based on the plugin settings.
@@ -249,35 +249,36 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_WPSF_Processor_Base {
 		}
 
 		$aAutoupdateThemeFiles = apply_filters( 'icwp_wpsf_autoupdate_themes', array() );
-		
+
 		if ( !empty( $aAutoupdateThemeFiles )
 			&& is_array($aAutoupdateThemeFiles)
 			&& in_array( $sItemFile, $aAutoupdateThemeFiles ) ) {
 
 				return true;
 		}
-		
+
 		return $infUpdate;
 	}
-	
+
 	/**
 	 * This is a filter method designed to say whether WordPress automatic upgrades should be permitted
 	 * if a version control system is detected.
-	 * 
-	 * @param boolean $infUpdate
+	 *
+	 * @param $checkout
+	 * @param $context
 	 * @return boolean
 	 */
 	public function disable_for_vcs( $checkout, $context ) {
 		return false;
 	}
-	
+
 	/**
 	 * A filter on whether or not a notification email is send after core upgrades are attempted.
 	 * 
-	 * @param boolean $infSendEmail
+	 * @param boolean $fSendEmail
 	 * @return boolean
 	 */
-	public function autoupdate_send_email( $infSendEmail ) {
+	public function autoupdate_send_email( $fSendEmail ) {
 		return $this->getIsOption( 'enable_upgrade_notification_email', 'Y' );
 	}
 	

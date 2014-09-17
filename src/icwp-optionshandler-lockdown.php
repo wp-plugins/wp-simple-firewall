@@ -72,7 +72,7 @@ class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 		switch( $aOptionsParams['section_slug'] ) {
 
 			case 'section_enable_plugin_feature_wordpress_lockdown' :
-				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), _wpsf__('WordPress Lockdown') );
+				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), $this->getMainFeatureName() );
 				break;
 
 			case 'section_permission_access_options' :
@@ -101,9 +101,9 @@ class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 		switch( $sKey ) {
 
 			case 'enable_lockdown' :
-				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Lockdown') );
-				$sSummary = _wpsf__( 'Enable (or Disable) The Lockdown Feature' );
-				$sDescription = sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('WordPress Lockdown') );
+				$sName = sprintf( _wpsf__( 'Enable %s' ), $this->getMainFeatureName() );
+				$sSummary = sprintf( _wpsf__( 'Enable (or Disable) The %s Feature' ), $this->getMainFeatureName() );
+				$sDescription = sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), $this->getMainFeatureName() );
 				break;
 
 			case 'disable_file_editing' :

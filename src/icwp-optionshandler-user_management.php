@@ -90,7 +90,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 		switch( $aOptionsParams['section_slug'] ) {
 
 			case 'section_enable_plugin_feature_user_accounts_management' :
-				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), _wpsf__('User Accounts Management') );
+				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), $this->getMainFeatureName() );
 				break;
 
 			case 'section_bypass_user_accounts_management' :
@@ -127,9 +127,9 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 		switch( $sKey ) {
 
 			case 'enable_user_management' :
-				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('User Accounts Management') );
-				$sSummary = _wpsf__( 'Enable (or Disable) The User Accounts Management Feature' );
-				$sDescription = sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), _wpsf__('User Accounts Management') );
+				$sName = sprintf( _wpsf__( 'Enable %s' ), $this->getMainFeatureName() );
+				$sSummary = sprintf( _wpsf__( 'Enable (or Disable) The %s Feature' ), $this->getMainFeatureName() );
+				$sDescription = sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), $this->getMainFeatureName() );
 				break;
 
 			case 'enable_xmlrpc_compatibility' :

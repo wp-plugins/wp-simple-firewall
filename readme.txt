@@ -227,6 +227,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *   KNOWN ISSUE:      Login Protection logs are not being properly created.
 
+= 4.0.0 =
+
+*   ADDED:      New Audit Trail Feature.
+
 = 3.5.0 =
 
 *   CHANGED:    Plugin features are now configured [using YAML](https://github.com/mustangostang/spyc/) - no more in-PHP configuration.

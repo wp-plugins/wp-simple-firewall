@@ -41,49 +41,54 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_Plugin
 	 */
-	protected $oPluginOptions;
+	protected $oFeatureHandlerPlugin;
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_AdminAccessRestriction
 	 */
-	protected $oAdminAccessRestrictionOptions;
+	protected $oFeatureHandlerAdminAccessRestriction;
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_Firewall
 	 */
-	protected $oFirewallOptions;
+	protected $oFeatureHandlerFirewall;
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_LoginProtect
 	 */
-	protected $oLoginProtectOptions;
+	protected $oFeatureHandlerLoginProtect;
 
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_PrivacyProtect
 	 */
-	protected $oPrivacyProtectOptions;
+	protected $oFeatureHandlerPrivacyProtect;
+
+	/**
+	 * @var ICWP_WPSF_FeatureHandler_AuditTrail
+	 */
+	protected $oFeatureHandlerAuditTrail;
 
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_CommentsFilter
 	 */
-	protected $oCommentsFilterOptions;
+	protected $oFeatureHandlerCommentsFilter;
 
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_Lockdown
 	 */
-	protected $oLockdownOptions;
+	protected $oFeatureHandlerLockdown;
 
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_Autoupdates
 	 */
-	protected $oAutoupdatesOptions;
+	protected $oFeatureHandlerAutoupdates;
 
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_Email
 	 */
-	protected $oEmailOptions;
+	protected $oFeatureHandlerEmail;
 
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_Logging
 	 */
-	protected $oLoggingOptions;
+	protected $pFeatureHandlerLogging;
 
 	/**
 	 */
@@ -119,8 +124,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		$oMainPluginFeature = $this->loadCorePluginFeature();
 		$aPluginFeatures = $oMainPluginFeature->getActivePluginFeatures();
 
+		$fSuccess = true;
 		foreach( $aPluginFeatures as $sSlug => $sStorageKey ) {
-			$fSuccess = $this->loadFeatureHandler( $sSlug, $fRecreate, $fFullBuild );
+			try {
+				$this->loadFeatureHandler( $sSlug, $fRecreate, $fFullBuild );
+				$fSuccess = true;
+			}
+			catch( Exception $oE ) {
+				wp_die( $oE->getMessage() );
+			}
 		}
 		return $fSuccess;
 	}
@@ -130,11 +142,12 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 * @param bool $fRecreate
 	 * @param bool $fFullBuild
 	 * @return mixed
+	 * @throws Exception
 	 */
 	protected function loadFeatureHandler( $sFeatureSlug, $fRecreate = false, $fFullBuild = false ) {
 
 		$sFeatureName = str_replace( ' ', '', ucwords( str_replace( '_', ' ', $sFeatureSlug ) ) );
-		$sOptionsVarName = sprintf( 'o%sOptions', $sFeatureName ); // e.g. oPluginOptions
+		$sOptionsVarName = sprintf( 'oFeatureHandler%s', $sFeatureName ); // e.g. oFeatureHandlerOptions
 
 		if ( isset( $this->{$sOptionsVarName} ) ) {
 			return $this->{$sOptionsVarName};
@@ -142,6 +155,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 
 		$sSourceFile = $this->oPluginVo->getSourceDir(). sprintf( 'icwp-optionshandler-%s.php', $sFeatureSlug ); // e.g. icwp-optionshandler-plugin.php
 		$sClassName = sprintf( 'ICWP_WPSF_FeatureHandler_%s', $sFeatureName ); // e.g. ICWP_WPSF_FeatureHandler_Plugin
+
+		$oFs = $this->loadWpFilesystem();
+		if ( !$oFs->exists( $sSourceFile ) ) {
+			throw new Exception( sprintf( 'Source File For Feature "%s" Does NOT Exist. You should re-install the Simple Firewall plugin.', $sFeatureName ) );
+		}
 
 		require_once( $sSourceFile );
 		if ( $fRecreate || !isset( $this->{$sOptionsVarName} ) ) {
@@ -159,6 +177,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 */
 	public function filter_addExtraAdminMenuItems( $aItems ) {
 		$aItems[ _wpsf__('Firewall Log' ) ] = array( 'Firewall Log', $this->getSubmenuId('firewall_log'), array( $this, 'onDisplayAll' ) );
+		$aItems[ _wpsf__('Audit Trail Viewer' ) ] = array( 'Audit Trail Viewer', $this->getSubmenuId('audit_trail_viewer'), array( $this, 'onDisplayAll' ) );
 		return $aItems;
 	}
 
@@ -186,6 +205,9 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 				break;
 			case 'firewall_log' :
 				$this->onDisplayFirewallLog();
+				break;
+			case 'audit_trail_viewer' :
+				$this->onDisplayAuditTrailViewer();
 				break;
 			default:
 				$this->getFeatureHandler_MainPlugin()->displayFeatureConfigPage();
@@ -220,6 +242,19 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $this->doPluginPrefix( 'firewall_log_index' ), $aData );
+	}
+
+	protected function onDisplayAuditTrailViewer() {
+
+		$oAuditTrail = $this->getProcessor_AuditTrail();
+		$aAuditData = $oAuditTrail->getAllAuditEntries();
+
+		$aData = array(
+			'sFeatureName'		=> _wpsf__('Audit Trail Viewer'),
+			'aAuditData'		=> $aAuditData,
+		);
+		$aData = array_merge( $this->getBaseDisplayData(), $aData );
+		$this->display( $this->doPluginPrefix( 'audit_trail_viewer_index' ), $aData );
 	}
 
 	public function onWpAdminInit() {
@@ -362,11 +397,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 * @return string|void
 	 */
 	protected function getAdminNoticeHtml_OptionsUpdated() {
-		$sAdminFeedbackNotice = $this->oPluginOptions->getOpt( 'feedback_admin_notice' );
+		$sAdminFeedbackNotice = $this->loadCorePluginFeature()->getOpt( 'feedback_admin_notice' );
 		if ( !empty( $sAdminFeedbackNotice ) ) {
 			$sNotice = '<p>'.$sAdminFeedbackNotice.'</p>';
 			return $sNotice;
-			$this->oPluginOptions->setOpt( 'feedback_admin_notice', '' );
 		}
 	}
 
@@ -374,14 +408,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 * @return bool
 	 */
 	protected function getShowAdminNotices() {
-		return $this->oPluginOptions->getOpt('enable_upgrade_admin_notice') == 'Y';
+		return $this->loadCorePluginFeature()->getOpt('enable_upgrade_admin_notice') == 'Y';
 	}
 
 	/**
 	 * @return int
 	 */
 	protected function getInstallationDays() {
-		$nTimeInstalled = $this->oPluginOptions->getOpt( 'installation_time' );
+		$nTimeInstalled = $this->loadCorePluginFeature()->getOpt( 'installation_time' );
 		if ( empty($nTimeInstalled) ) {
 			return 0;
 		}
@@ -430,7 +464,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 */
 	public function getProcessor_Firewall() {
 		$this->loadFeatureHandler( 'firewall' );
-		return $this->oFirewallOptions->getProcessor();
+		return $this->oFeatureHandlerFirewall->getProcessor();
 	}
 
 	/**
@@ -438,7 +472,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 */
 	public function getProcessor_LoginProtect() {
 		$this->loadFeatureHandler( 'login_protect' );
-		return $this->oLoginProtectOptions->getProcessor();
+		return $this->oFeatureHandlerLoginProtect->getProcessor();
 	}
 
 	/**
@@ -446,7 +480,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 */
 	public function getProcessor_Autoupdates() {
 		$this->loadFeatureHandler( 'autoupdates' );
-		return $this->oAutoupdatesOptions->getProcessor();
+		return $this->oFeatureHandlerAutoupdates->getProcessor();
 	}
 
 	/**
@@ -454,7 +488,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 */
 	public function getProcessor_PrivacyProtect() {
 		$this->loadFeatureHandler( 'privacy_protect' );
-		return $this->oPrivacyProtectOptions->getProcessor();
+		return $this->oFeatureHandlerPrivacyProtect->getProcessor();
+	}
+
+	/**
+	 * @return ICWP_WPSF_Processor_AuditTrail|null
+	 */
+	public function getProcessor_AuditTrail() {
+		$this->loadFeatureHandler( 'audit_trail' );
+		return $this->oFeatureHandlerAuditTrail->getProcessor();
 	}
 
 	/**
@@ -462,14 +504,14 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 */
 	public function getProcessor_Logging() {
 		$this->loadFeatureHandler( 'logging' );
-		return $this->oLoggingOptions->getProcessor();
+		return $this->oFeatureHandlerLogging->getProcessor();
 	}
 
 	/**
 	 * @return ICWP_WPSF_Processor_Email|null
 	 */
 	public function getProcessor_Email() {
-		return $this->oPluginOptions->getEmailProcessor();
+		return $this->oFeatureHandlerEmail->getEmailProcessor();
 	}
 }
 
