@@ -328,7 +328,8 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 *
+		 * @param array $aLogs
+		 * @return array
 		 */
 		public function filter_flushFeatureLogs( $aLogs ) {
 			if ( $this->getIsMainFeatureEnabled() ) {
@@ -403,25 +404,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * @return string
-		 */
-		public function getVersion() {
-			$sVersion = $this->getOpt( self::PluginVersionKey );
-			return empty( $sVersion )? '0.0' : $sVersion;
-		}
-
-		/**
-		 * Sets the value for the given option key
-		 *
-		 * @param string $sOptionKey
-		 * @param mixed $mValue
-		 * @return boolean
-		 */
-		public function setOpt( $sOptionKey, $mValue ) {
-			return $this->getOptionsVo()->setOpt( $sOptionKey, $mValue );
-		}
-
-		/**
 		 * @param string $sOptionKey
 		 * @param mixed $mDefault
 		 * @return mixed
@@ -448,6 +430,25 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function getOptions() {
 			return $this->buildOptions();
+		}
+
+		/**
+		 * @return string
+		 */
+		public function getVersion() {
+			$sVersion = $this->getOpt( self::PluginVersionKey );
+			return empty( $sVersion )? '0.0' : $sVersion;
+		}
+
+		/**
+		 * Sets the value for the given option key
+		 *
+		 * @param string $sOptionKey
+		 * @param mixed $mValue
+		 * @return boolean
+		 */
+		public function setOpt( $sOptionKey, $mValue ) {
+			return $this->getOptionsVo()->setOpt( $sOptionKey, $mValue );
 		}
 
 		/**

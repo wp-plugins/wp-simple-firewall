@@ -422,7 +422,7 @@ class ICWP_WPSF_OptionsVO {
 		$oFs = $this->loadFileSystemProcessor();
 
 		$aConfig = array();
-		$sConfigFile = dirname( __FILE__ ). sprintf( '/config/options-%s.yaml', $sName );
+		$sConfigFile = dirname( __FILE__ ). sprintf( '/config/feature-%s.yaml', $sName );
 		if ( !$oFs->exists( $sConfigFile ) ) {
 			throw new Exception( 'YAML configuration file for options does not exist. Options: '.$sName );
 		}
@@ -431,6 +431,9 @@ class ICWP_WPSF_OptionsVO {
 			if ( !empty( $sContents ) ) {
 				$oYaml = $this->loadYamlProcessor();
 				$aConfig = $oYaml->parseYamlString( $sContents );
+				if ( is_null( $aConfig ) ) {
+					throw new Exception( 'YAML parser could not load to process the options configuration.' );
+				}
 			}
 		}
 		return $aConfig;

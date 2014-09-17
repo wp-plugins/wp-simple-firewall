@@ -189,9 +189,29 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 
 	protected function updateHandler() {
 		parent::updateHandler();
+
+		if ( $this->getVersion() == '0.0' ) {
+			return;
+		}
+
 		if ( version_compare( $this->getVersion(), '3.0.0', '<' ) ) {
 			$aAllOptions = apply_filters( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array() );
 			$this->setOpt( 'block_send_email_address', $aAllOptions['block_send_email_address'] );
+		}
+
+		// clean out old database tables as we've changed the naming prefix going forward.
+		if ( version_compare( $this->getVersion(), '3.5.0', '<' ) ) {
+			$aOldTables = array(
+				'icwp_wpsf_log',
+				'icwp_login_auth',
+				'icwp_comments_filter',
+				'icwp_user_management'
+			);
+			global $wpdb;
+			foreach( $aOldTables as $sTable ) {
+				$sQuery = sprintf( 'DROP TABLE IF EXISTS `%s%s`', $wpdb->prefix, $sTable ) ;
+				$wpdb->query( $sQuery );
+			}
 		}
 	}
 }

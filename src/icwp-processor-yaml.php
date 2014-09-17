@@ -22,26 +22,23 @@ if ( !class_exists('ICWP_WPSF_YamlProcessor_V1') ):
 	class ICWP_WPSF_YamlProcessor_V1 {
 
 		/**
-		 * @var ICWP_WPSF_YamlProcessor_V1
-		 */
-		protected static $oInstance = NULL;
-
-		/**
 		 * @param string $sYamlString
 		 * @return array
 		 */
 		public function parseYamlString( $sYamlString ) {
-			$this->loadYamlParser();
+			if ( ! $this->loadYamlParser() ) {
+				return null;
+			}
 			return Spyc::YAMLLoadString( $sYamlString );
 		}
 
 		/**
-		 *
 		 */
-		public function loadYamlParser() {
+		protected function loadYamlParser() {
 			if ( !class_exists( 'Spyc' ) ) {
 				require_once( 'lib/yaml/Spyc.php' );
 			}
+			return class_exists( 'Spyc' );
 		}
 	}
 endif;
@@ -49,6 +46,12 @@ endif;
 if ( !class_exists('ICWP_WPSF_YamlProcessor') ):
 
 	class ICWP_WPSF_YamlProcessor extends ICWP_WPSF_YamlProcessor_V1 {
+
+		/**
+		 * @var ICWP_WPSF_YamlProcessor
+		 */
+		protected static $oInstance = NULL;
+
 		/**
 		 * @return ICWP_WPSF_YamlProcessor
 		 */

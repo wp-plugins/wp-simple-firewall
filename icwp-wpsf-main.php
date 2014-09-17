@@ -39,11 +39,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 
 	/**
-	 * @var string
-	 */
-	const AdminAccessKeyCookieName		= 'icwp_wpsf_aakcook';
-
-	/**
 	 * @var ICWP_WPSF_FeatureHandler_Plugin
 	 */
 	protected $oPluginOptions;
@@ -132,11 +127,11 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 
 	/**
 	 * @param string $sFeatureSlug
-	 * @param bool $infRecreate
-	 * @param bool $infFullBuild
+	 * @param bool $fRecreate
+	 * @param bool $fFullBuild
 	 * @return mixed
 	 */
-	protected function loadFeatureHandler( $sFeatureSlug, $infRecreate = false, $infFullBuild = false ) {
+	protected function loadFeatureHandler( $sFeatureSlug, $fRecreate = false, $fFullBuild = false ) {
 
 		$sFeatureName = str_replace( ' ', '', ucwords( str_replace( '_', ' ', $sFeatureSlug ) ) );
 		$sOptionsVarName = sprintf( 'o%sOptions', $sFeatureName ); // e.g. oPluginOptions
@@ -149,10 +144,10 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		$sClassName = sprintf( 'ICWP_WPSF_FeatureHandler_%s', $sFeatureName ); // e.g. ICWP_WPSF_FeatureHandler_Plugin
 
 		require_once( $sSourceFile );
-		if ( $infRecreate || !isset( $this->{$sOptionsVarName} ) ) {
+		if ( $fRecreate || !isset( $this->{$sOptionsVarName} ) ) {
 			$this->{$sOptionsVarName} = new $sClassName( $this->oPluginVo );
 		}
-		if ( $infFullBuild ) {
+		if ( $fFullBuild ) {
 			$this->{$sOptionsVarName}->buildOptions();
 		}
 		return $this->{$sOptionsVarName};
@@ -218,6 +213,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		$aLogData = $oLoggingProcessor->getLogs( true );
 
 		$aData = array(
+			'sFeatureName'		=> _wpsf__('Firewall Log'),
 			'firewall_log'		=> $aLogData,
 			'ip_whitelist'		=> isset( $aIpWhitelist['ips'] )? $aIpWhitelist['ips'] : array(),
 			'ip_blacklist'		=> isset( $aIpBlacklist['ips'] )? $aIpBlacklist['ips'] : array(),
