@@ -46,6 +46,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 			if ( $this->getIsOption( 'enable_audit_context_users', 'Y' ) ) {
 				add_action( 'wp_login_failed', array( $this, 'auditUserLoginFail' ) );
 				add_action( 'wp_login', array( $this, 'auditUserLoginSuccess' ) );
+				add_action( 'user_register', array( $this, 'auditNewUserRegistered' ) );
 			}
 
 		}
@@ -54,7 +55,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		 * @return array|bool
 		 */
 		public function getAllAuditEntries() {
-			return $this->selectAllFromTable();
+			return array_reverse( $this->selectAllFromTable() );
 		}
 
 		/**
@@ -98,6 +99,37 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 				'login_failure',
 				2,
 				sprintf( _wpsf__( 'Attempted user login by "%s" was failed.' ), $sUsername )
+			);
+		}
+
+		/**
+		 * @param int $nUserId
+		 * @return bool
+		 */
+		public function auditNewUserRegistered( $nUserId ) {
+
+			if ( empty( $nUserId ) ) {
+				return false;
+			}
+
+			$oWp = $this->loadWpFunctionsProcessor();
+			$oNewUser = $oWp->getUserById( $nUserId );
+			$oCurrentUser = $oWp->getCurrentWpUser();
+			$oDp = $this->loadDataProcessor();
+
+			$oAuditTrail = $this->getAuditTrailEntries();
+			$oAuditTrail->add(
+				$oDp->GetRequestTime(),
+				empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
+				'user',
+				'user_registered',
+				1,
+				_wpsf__( 'New WordPress user registered.').' '
+				.sprintf(
+					_wpsf__( 'New username is "%s" with email address "%s".' ),
+					$oNewUser->get( 'user_login' ),
+					$oNewUser->get( 'user_email' )
+				)
 			);
 		}
 

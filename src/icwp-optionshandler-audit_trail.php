@@ -109,6 +109,36 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
 				break;
 
+			case 'enable_audit_context_plugins' :
+				$sName = _wpsf__( 'Plugins' );
+				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'Plugins' ) );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
+				break;
+
+			case 'enable_audit_context_themes' :
+				$sName = _wpsf__( 'Themes' );
+				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'Themes' ) );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
+				break;
+
+			case 'enable_audit_context_posts' :
+				$sName = _wpsf__( 'Posts And Pages' );
+				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'Posts And Pages' ) );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
+				break;
+
+			case 'enable_audit_context_wordpress' :
+				$sName = _wpsf__( 'WordPress And Settings' );
+				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'WordPress And Settings' ) );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
+				break;
+
+			case 'enable_audit_context_wpsf' :
+				$sName = _wpsf__( 'Simple Firewall' );
+				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'Simple Firewall' ) );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
+				break;
+
 			default:
 				throw new Exception( sprintf( 'An option has been defined but without strings assigned to it. Option key: "%s".', $sKey ) );
 		}

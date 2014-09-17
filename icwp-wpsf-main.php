@@ -249,9 +249,26 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		$oAuditTrail = $this->getProcessor_AuditTrail();
 		$aAuditData = $oAuditTrail->getAllAuditEntries();
 
+		$aAuditDataUser = array();
+		$aAuditDataPlugin = array();
+		$aAuditDataTheme = array();
+		foreach( $aAuditData as $aAudit ) {
+			if ( $aAudit['context'] == 'user' ) {
+				$aAuditDataUser[] = $aAudit;
+			}
+			if ( $aAudit['context'] == 'plugin' ) {
+				$aAuditDataPlugin[] = $aAudit;
+			}
+			if ( $aAudit['context'] == 'theme' ) {
+				$aAuditDataTheme[] = $aAudit;
+			}
+		}
+
 		$aData = array(
 			'sFeatureName'		=> _wpsf__('Audit Trail Viewer'),
-			'aAuditData'		=> $aAuditData,
+			'aAuditDataUser'	=> $aAuditDataUser,
+			'aAuditDataPlugin'	=> $aAuditDataPlugin,
+			'aAuditDataTheme'	=> $aAuditDataTheme
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $this->doPluginPrefix( 'audit_trail_viewer_index' ), $aData );

@@ -251,6 +251,17 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		}
 
 		/**
+		 * @param int $nId
+		 * @return WP_User|null
+		 */
+		public function getUserById( $nId ) {
+			if ( version_compare( $this->getWordpressVersion(), '2.8.0', '<' ) || !function_exists( 'get_user_by' ) ) {
+				return null;
+			}
+			return get_user_by( 'id', $nId );
+		}
+
+		/**
 		 * @param array $aLoginUrlParams
 		 */
 		public function forceUserRelogin( $aLoginUrlParams = array() ) {
