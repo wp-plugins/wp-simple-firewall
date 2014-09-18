@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-processor-base.php' );
 
-if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
+if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Themes') ):
 
-	class ICWP_WPSF_Processor_AuditTrail_Plugins extends ICWP_WPSF_Processor_Base {
+	class ICWP_WPSF_Processor_AuditTrail_Themes extends ICWP_WPSF_Processor_Base {
 
 		/**
 		 * @var ICWP_WPSF_FeatureHandler_AuditTrail
@@ -37,48 +37,29 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
 		 */
 		public function run() {
 
-			if ( $this->getIsOption( 'enable_audit_context_plugins', 'Y' ) ) {
-				add_action( 'deactivated_plugin', array( $this, 'auditDeactivatedPlugin' ) );
-				add_action( 'activated_plugin', array( $this, 'auditActivatedPlugin' ) );
+			if ( $this->getIsOption( 'enable_audit_context_themes', 'Y' ) ) {
+				add_action( 'switch_theme', array( $this, 'auditSwitchTheme' ) );
+//				add_action( 'upgrader_process_complete', array( $this, 'auditInstalledTheme' ) );
 			}
 
 		}
 
 		/**
-		 * @param string $sPlugin
+		 * @param string $sThemeName
 		 * @return bool
 		 */
-		public function auditActivatedPlugin( $sPlugin ) {
+		public function auditSwitchTheme( $sThemeName ) {
 
-			if ( empty( $sPlugin ) ) {
+			if ( empty( $sThemeName ) ) {
 				return false;
 			}
 
 			$oAuditTrail = $this->getAuditTrailEntries();
 			$oAuditTrail->add(
-				'plugins',
-				'plugin_activated',
+				'themes',
+				'theme_activated',
 				1,
-				sprintf( _wpsf__( 'Plugin "%s" was activated.' ), $sPlugin )
-			);
-		}
-
-		/**
-		 * @param string $sPlugin
-		 * @return bool
-		 */
-		public function auditDeactivatedPlugin( $sPlugin ) {
-
-			if ( empty( $sPlugin ) ) {
-				return false;
-			}
-
-			$oAuditTrail = $this->getAuditTrailEntries();
-			$oAuditTrail->add(
-				'plugins',
-				'plugin_deactivated',
-				1,
-				sprintf( _wpsf__( 'Plugin "%s" was deactivated.' ), $sPlugin )
+				sprintf( _wpsf__( 'Theme "%s" was activated.' ), $sThemeName )
 			);
 		}
 

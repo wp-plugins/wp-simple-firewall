@@ -17,9 +17,9 @@
 
 require_once( dirname(__FILE__).'/icwp-processor-base.php' );
 
-if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
+if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Wordpress') ):
 
-	class ICWP_WPSF_Processor_AuditTrail_Plugins extends ICWP_WPSF_Processor_Base {
+	class ICWP_WPSF_Processor_AuditTrail_Wordpress extends ICWP_WPSF_Processor_Base {
 
 		/**
 		 * @var ICWP_WPSF_FeatureHandler_AuditTrail
@@ -36,49 +36,40 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
 		/**
 		 */
 		public function run() {
-
-			if ( $this->getIsOption( 'enable_audit_context_plugins', 'Y' ) ) {
-				add_action( 'deactivated_plugin', array( $this, 'auditDeactivatedPlugin' ) );
-				add_action( 'activated_plugin', array( $this, 'auditActivatedPlugin' ) );
+			if ( $this->getIsOption( 'enable_audit_context_wordpress', 'Y' ) ) {
+				add_action( '_core_updated_successfully', array( $this, 'auditCoreUpdated' ) );
+				add_action( 'update_option_permalink_structure', array( $this, 'auditPermalinkStructure' ), 10, 2 );
 			}
-
 		}
 
 		/**
-		 * @param string $sPlugin
+		 * @param string $sNewCoreVersion
 		 * @return bool
 		 */
-		public function auditActivatedPlugin( $sPlugin ) {
-
-			if ( empty( $sPlugin ) ) {
-				return false;
-			}
+		public function auditCoreUpdated( $sNewCoreVersion ) {
+			global $wp_version;
 
 			$oAuditTrail = $this->getAuditTrailEntries();
 			$oAuditTrail->add(
-				'plugins',
-				'plugin_activated',
+				'wordpress',
+				'core_updated',
 				1,
-				sprintf( _wpsf__( 'Plugin "%s" was activated.' ), $sPlugin )
+				sprintf( _wpsf__( 'WordPress Core was updated from "v%s" to "v%s".' ), $wp_version, $sNewCoreVersion )
 			);
 		}
 
 		/**
-		 * @param string $sPlugin
+		 * @param string $sOld
+		 * @param string $sNew
 		 * @return bool
 		 */
-		public function auditDeactivatedPlugin( $sPlugin ) {
-
-			if ( empty( $sPlugin ) ) {
-				return false;
-			}
-
+		public function auditPermalinkStructure( $sOld, $sNew ) {
 			$oAuditTrail = $this->getAuditTrailEntries();
 			$oAuditTrail->add(
-				'plugins',
-				'plugin_deactivated',
+				'wordpress',
+				'permalinks_structure',
 				1,
-				sprintf( _wpsf__( 'Plugin "%s" was deactivated.' ), $sPlugin )
+				sprintf( _wpsf__( 'WordPress Permalinks Structure was updated from "%s" to "%s".' ), $sOld, $sNew )
 			);
 		}
 

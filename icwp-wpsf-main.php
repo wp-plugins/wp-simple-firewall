@@ -156,11 +156,6 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		$sSourceFile = $this->oPluginVo->getSourceDir(). sprintf( 'icwp-optionshandler-%s.php', $sFeatureSlug ); // e.g. icwp-optionshandler-plugin.php
 		$sClassName = sprintf( 'ICWP_WPSF_FeatureHandler_%s', $sFeatureName ); // e.g. ICWP_WPSF_FeatureHandler_Plugin
 
-		$oFs = $this->loadWpFilesystem();
-		if ( !$oFs->exists( $sSourceFile ) ) {
-			throw new Exception( sprintf( 'Source File For Feature "%s" Does NOT Exist. You should re-install the Simple Firewall plugin.', $sFeatureName ) );
-		}
-
 		require_once( $sSourceFile );
 		if ( $fRecreate || !isset( $this->{$sOptionsVarName} ) ) {
 			$this->{$sOptionsVarName} = new $sClassName( $this->oPluginVo );
@@ -252,6 +247,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		$aAuditDataUsers = array();
 		$aAuditDataPlugins = array();
 		$aAuditDataThemes = array();
+		$aAuditDataWordpress = array();
+		$aAuditDataPosts = array();
 		foreach( $aAuditData as $aAudit ) {
 			if ( $aAudit['context'] == 'users' ) {
 				$aAuditDataUsers[] = $aAudit;
@@ -262,13 +259,21 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 			if ( $aAudit['context'] == 'themes' ) {
 				$aAuditDataThemes[] = $aAudit;
 			}
+			if ( $aAudit['context'] == 'wordpress' ) {
+				$aAuditDataWordpress[] = $aAudit;
+			}
+			if ( $aAudit['context'] == 'posts' ) {
+				$aAuditDataPosts[] = $aAudit;
+			}
 		}
 
 		$aData = array(
 			'sFeatureName'		=> _wpsf__('Audit Trail Viewer'),
 			'aAuditDataUsers'	=> $aAuditDataUsers,
 			'aAuditDataPlugins'	=> $aAuditDataPlugins,
-			'aAuditDataThemes'	=> $aAuditDataThemes
+			'aAuditDataThemes'	=> $aAuditDataThemes,
+			'aAuditDataWordpress'	=> $aAuditDataWordpress,
+			'aAuditDataPosts'	=> $aAuditDataPosts
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $this->doPluginPrefix( 'audit_trail_viewer_index' ), $aData );

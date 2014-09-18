@@ -8,6 +8,9 @@ $aLogTypes = array(
 );
 
 function printAuditTrailTable( $aAuditData ) {
+	if ( empty( $aAuditData ) ) {
+		return;
+	}
 	?>
 	<table class="table table-bordered">
 		<tr>
@@ -33,9 +36,20 @@ function printAuditTrailTable( $aAuditData ) {
 	<div class="row">
 		<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
 
+			Users
 			<?php printAuditTrailTable($icwp_aAuditDataUsers); ?>
 
+			Plugins
 			<?php printAuditTrailTable($icwp_aAuditDataPlugins); ?>
+
+			Themes
+			<?php printAuditTrailTable($icwp_aAuditDataThemes); ?>
+
+			WordPress
+			<?php printAuditTrailTable($icwp_aAuditDataWordpress); ?>
+
+			Posts
+			<?php printAuditTrailTable($icwp_aAuditDataPosts); ?>
 
 		</div><!-- / span9 -->
 
