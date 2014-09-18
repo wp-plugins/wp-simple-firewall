@@ -265,13 +265,16 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		 * @return string|null
 		 */
 		public function getFileContent( $sFilePath ) {
+			$sContents = '';
 			if ( $this->m_oWpFilesystem ) {
-				return $this->m_oWpFilesystem->get_contents( $sFilePath );
+				$sContents = $this->m_oWpFilesystem->get_contents( $sFilePath );
 			}
-			else if ( function_exists('file_get_contents') ) {
-				return file_get_contents( $sFilePath );
+
+			if ( empty( $sContents ) && function_exists('file_get_contents') ) {
+				$sContents = file_get_contents( $sFilePath );
 			}
-			return null;
+
+			return $sContents;
 		}
 
 		/**

@@ -222,12 +222,16 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 
 	protected function onDisplayFirewallLog() {
 
-		$this->loadFeatureHandler( 'firewall' );
-		$aIpWhitelist = $this->oFirewallOptions->getOpt( 'ips_whitelist' );
-		$aIpBlacklist = $this->oFirewallOptions->getOpt( 'ips_blacklist' );
+		$oFirewallHandler = $this->loadFeatureHandler( 'firewall' );
+		if ( $oFirewallHandler instanceof ICWP_WPSF_FeatureHandler_Firewall ) {
+			$aIpWhitelist = $this->oFirewallOptions->getOpt( 'ips_whitelist' );
+			$aIpBlacklist = $this->oFirewallOptions->getOpt( 'ips_blacklist' );
+		}
 
 		$oLoggingProcessor = $this->getProcessor_Logging();
-		$aLogData = $oLoggingProcessor->getLogs( true );
+		if ( $oLoggingProcessor instanceof ICWP_WPSF_Processor_Logging ) {
+			$aLogData = $oLoggingProcessor->getLogs( true );
+		}
 
 		$aData = array(
 			'sFeatureName'		=> _wpsf__('Firewall Log'),

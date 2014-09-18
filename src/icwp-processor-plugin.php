@@ -29,7 +29,6 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 	}
 
 	/**
-	 *
 	 */
 	public function run() {
 		$this->removePluginConflicts();

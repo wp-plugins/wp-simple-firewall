@@ -226,7 +226,10 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return mixed
 		 */
 		public function getIsMainFeatureEnabled() {
-			$this->override();
+			$fOverride = $this->override();
+			if ( !is_null( $fOverride ) ) {
+				return $fOverride;
+			}
 			return $this->getOptIs( 'enable_'.$this->getFeatureSlug(), 'Y' ) || $this->getOptIs( 'enable_'.$this->getFeatureSlug(), true, true ) ;
 		}
 
@@ -235,11 +238,12 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		protected function override() {
 			$oWpFs = $this->loadFileSystemProcessor();
 			if ( $oWpFs->fileExistsInDir( 'forceOff', $this->oPluginVo->getRootDir(), false ) ) {
-				$this->setIsMainFeatureEnabled( false );
+				return false;
 			}
 			else if ( $oWpFs->fileExistsInDir( 'forceOn', $this->oPluginVo->getRootDir(), false ) ) {
-				$this->setIsMainFeatureEnabled( true );
+				return true;
 			}
+			return null;
 		}
 
 		/**

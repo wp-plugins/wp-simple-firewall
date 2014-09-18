@@ -227,9 +227,9 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *   KNOWN ISSUE:      Login Protection logs are not being properly created.
 
-= 4.0.0 =
+= 3.5.1 =
 
-*   ADDED:      New Audit Trail Feature.
+*   CHANGED:    The 'forceOff' system is now temporary - i.e. it doesn't save the configuration and so once this file is removed, the plugin returns to normal.
 
 = 3.5.0 =
 
