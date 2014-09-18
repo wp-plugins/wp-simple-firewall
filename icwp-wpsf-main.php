@@ -224,8 +224,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 
 		$oFirewallHandler = $this->loadFeatureHandler( 'firewall' );
 		if ( $oFirewallHandler instanceof ICWP_WPSF_FeatureHandler_Firewall ) {
-			$aIpWhitelist = $this->oFirewallOptions->getOpt( 'ips_whitelist' );
-			$aIpBlacklist = $this->oFirewallOptions->getOpt( 'ips_blacklist' );
+			$aIpWhitelist = $oFirewallHandler->getOpt( 'ips_whitelist' );
+			$aIpBlacklist = $oFirewallHandler->getOpt( 'ips_blacklist' );
 		}
 
 		$oLoggingProcessor = $this->getProcessor_Logging();
