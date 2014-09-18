@@ -409,7 +409,7 @@ class ICWP_WPSF_OptionsVO {
 	 * @return ICWP_WPSF_YamlProcessor
 	 */
 	private function loadYamlProcessor() {
-		require_once( dirname(__FILE__) . '/icwp-processor-yaml.php' );
+		require_once( dirname(__FILE__) .ICWP_DS.'icwp-processor-yaml.php' );
 		return ICWP_WPSF_YamlProcessor::GetInstance();
 	}
 
@@ -422,18 +422,13 @@ class ICWP_WPSF_OptionsVO {
 		$oFs = $this->loadFileSystemProcessor();
 
 		$aConfig = array();
-		$sConfigFile = dirname( __FILE__ ). sprintf( '/config/feature-%s.yaml', $sName );
-		if ( !$oFs->exists( $sConfigFile ) ) {
-			throw new Exception( 'YAML configuration file for options does not exist. Options: '.$sName );
-		}
-		if ( $oFs->exists( $sConfigFile ) ) {
-			$sContents = $oFs->getFileContent( $sConfigFile );
-			if ( !empty( $sContents ) ) {
-				$oYaml = $this->loadYamlProcessor();
-				$aConfig = $oYaml->parseYamlString( $sContents );
-				if ( is_null( $aConfig ) ) {
-					throw new Exception( 'YAML parser could not load to process the options configuration.' );
-				}
+		$sConfigFile = dirname( __FILE__ ). sprintf( ICWP_DS.'config'.ICWP_DS.'feature-%s.yaml', $sName );
+		$sContents = $oFs->getFileContent( $sConfigFile );
+		if ( !empty( $sContents ) ) {
+			$oYaml = $this->loadYamlProcessor();
+			$aConfig = $oYaml->parseYamlString( $sContents );
+			if ( is_null( $aConfig ) ) {
+				throw new Exception( 'YAML parser could not load to process the options configuration.' );
 			}
 		}
 		return $aConfig;
@@ -444,7 +439,7 @@ class ICWP_WPSF_OptionsVO {
 	 */
 	private function loadFileSystemProcessor() {
 		if ( !class_exists('ICWP_WPSF_WpFilesystem') ) {
-			require_once( dirname(__FILE__) . '/icwp-wpfilesystem.php' );
+			require_once( dirname(__FILE__) .ICWP_DS.'icwp-wpfilesystem.php' );
 		}
 		return ICWP_WPSF_WpFilesystem::GetInstance();
 	}

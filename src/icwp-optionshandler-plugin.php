@@ -57,6 +57,9 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 		}
 
 		foreach( $aActiveFeatures['value'] as $aFeature ) {
+			if ( isset( $aFeature['hidden'] ) && $aFeature['hidden'] ) {
+				continue;
+			}
 			$aPluginFeatures[ $aFeature['slug'] ] = $aFeature['storage_key'];
 		}
 		return $aPluginFeatures;

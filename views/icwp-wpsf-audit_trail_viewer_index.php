@@ -33,7 +33,9 @@ function printAuditTrailTable( $aAuditData ) {
 	<div class="row">
 		<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
 
-			<?php printAuditTrailTable($icwp_aAuditDataUser); ?>
+			<?php printAuditTrailTable($icwp_aAuditDataUsers); ?>
+
+			<?php printAuditTrailTable($icwp_aAuditDataPlugins); ?>
 
 		</div><!-- / span9 -->
 

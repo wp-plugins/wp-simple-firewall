@@ -15,7 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-processor-base.php' );
+require_once( dirname(__FILE__).'/icwp-processor-basedb.php' );
 
 if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 
@@ -25,11 +25,6 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		 * @var ICWP_WPSF_FeatureHandler_AuditTrail
 		 */
 		protected $oFeatureOptions;
-
-		/**
-		 * @var ICWP_WPSF_AuditTrail_Entries
-		 */
-		protected $oAuditEntries;
 
 		/**
 		 * @param ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions
@@ -44,11 +39,40 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		public function run() {
 
 			if ( $this->getIsOption( 'enable_audit_context_users', 'Y' ) ) {
-				add_action( 'wp_login_failed', array( $this, 'auditUserLoginFail' ) );
-				add_action( 'wp_login', array( $this, 'auditUserLoginSuccess' ) );
-				add_action( 'user_register', array( $this, 'auditNewUserRegistered' ) );
-				add_action( 'delete_user', array( $this, 'auditDeleteUser' ), 30, 2 );
+				require_once( 'icwp-processor-audit_trail_users.php' );
+				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Users( $this->oFeatureOptions );
+				$oUsers->run();
 			}
+
+			if ( $this->getIsOption( 'enable_audit_context_plugins', 'Y' ) ) {
+				require_once( 'icwp-processor-audit_trail_plugins.php' );
+				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Plugins( $this->oFeatureOptions );
+				$oUsers->run();
+			}
+
+//			if ( $this->getIsOption( 'enable_audit_context_themes', 'Y' ) ) {
+//				require_once( 'icwp-processor-audit_trail_themes.php' );
+//				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Themes( $this->oFeatureOptions );
+//				$oUsers->run();
+//			}
+//
+//			if ( $this->getIsOption( 'enable_audit_context_posts', 'Y' ) ) {
+//				require_once( 'icwp-processor-audit_trail_posts.php' );
+//				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Posts( $this->oFeatureOptions );
+//				$oUsers->run();
+//			}
+//
+//			if ( $this->getIsOption( 'enable_audit_context_wordpress', 'Y' ) ) {
+//				require_once( 'icwp-processor-audit_trail_wordpress.php' );
+//				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Wordpress( $this->oFeatureOptions );
+//				$oUsers->run();
+//			}
+//
+//			if ( $this->getIsOption( 'enable_audit_context_wpsf', 'Y' ) ) {
+//				require_once( 'icwp-processor-audit_trail_wpsf.php' );
+//				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Wpsf( $this->oFeatureOptions );
+//				$oUsers->run();
+//			}
 
 		}
 
@@ -60,130 +84,10 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		}
 
 		/**
-		 * @param string $sUsername
-		 * @return bool
-		 */
-		public function auditUserLoginSuccess( $sUsername ) {
-
-			if ( empty( $sUsername ) ) {
-				return false;
-			}
-			$oAuditTrail = $this->getAuditTrailEntries();
-
-			$oDp = $this->loadDataProcessor();
-			$oAuditTrail->add(
-				$oDp->GetRequestTime(),
-				$sUsername,
-				'user',
-				'login_success',
-				1,
-				sprintf( _wpsf__( 'Attempted user login by "%s" was successful.' ), $sUsername )
-			);
-		}
-
-		/**
-		 * @param string $sUsername
-		 * @return bool
-		 */
-		public function auditUserLoginFail( $sUsername ) {
-
-			if ( empty( $sUsername ) ) {
-				return false;
-			}
-			$oAuditTrail = $this->getAuditTrailEntries();
-
-			$oDp = $this->loadDataProcessor();
-			$oAuditTrail->add(
-				$oDp->GetRequestTime(),
-				$sUsername,
-				'user',
-				'login_failure',
-				2,
-				sprintf( _wpsf__( 'Attempted user login by "%s" was failed.' ), $sUsername )
-			);
-		}
-
-		/**
-		 * @param int $nUserId
-		 * @return bool
-		 */
-		public function auditNewUserRegistered( $nUserId ) {
-			if ( empty( $nUserId ) ) {
-				return false;
-			}
-			$oWp = $this->loadWpFunctionsProcessor();
-			$oDp = $this->loadDataProcessor();
-
-			$oNewUser = $oWp->getUserById( $nUserId );
-			$oCurrentUser = $oWp->getCurrentWpUser();
-
-			$oAuditTrail = $this->getAuditTrailEntries();
-			$oAuditTrail->add(
-				$oDp->GetRequestTime(),
-				empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
-				'user',
-				'user_registered',
-				1,
-				_wpsf__( 'New WordPress user registered.').' '
-				.sprintf(
-					_wpsf__( 'New username is "%s" with email address "%s".' ),
-					empty( $oNewUser ) ? 'unknown' : $oNewUser->get( 'user_login' ),
-					empty( $oNewUser ) ? 'unknown' : $oNewUser->get( 'user_email' )
-				)
-			);
-		}
-
-		/**
-		 * @param int $nUserId
-		 * @param int $nReassigned
-		 * @return bool
-		 */
-		public function auditDeleteUser( $nUserId, $nReassigned ) {
-			if ( empty( $nUserId ) ) {
-				return false;
-			}
-			$oWp = $this->loadWpFunctionsProcessor();
-			$oDp = $this->loadDataProcessor();
-
-			$oDeletedUser = $oWp->getUserById( $nUserId );
-			$oReassignedUser = empty( $nReassigned ) ? null : $oWp->getUserById( $nReassigned );
-			$oCurrentUser = $oWp->getCurrentWpUser();
-
-			$oAuditTrail = $this->getAuditTrailEntries();
-
-			// Build the audit message
-			$sAuditMessage =
-				_wpsf__( 'WordPress user deleted.')
-				.' '.sprintf(
-					_wpsf__( 'Username was "%s" with email address "%s".' ),
-					empty( $oDeletedUser ) ? 'unknown' : $oDeletedUser->get( 'user_login' ),
-					empty( $oDeletedUser ) ? 'unknown' : $oDeletedUser->get( 'user_email' )
-				).' ';
-			if ( empty( $oReassignedUser ) ) {
-				$sAuditMessage .= _wpsf__( 'Their posts were not reassigned to another user.' );
-			}
-			else {
-				$sAuditMessage .= sprintf(
-					_wpsf__( 'Their posts were reassigned to username "%s".' ),
-					$oReassignedUser->get( 'user_login' )
-				);
-			}
-
-			$oAuditTrail->add(
-				$oDp->GetRequestTime(),
-				empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
-				'user',
-				'user_deleted',
-				2,
-				$sAuditMessage
-			);
-		}
-
-		/**
 		 */
 		public function commitAuditTrial() {
 			$aEntries = $this->getAuditTrailEntries()->getAuditTrailEntries( true );
-			if ( empty( $aEntries ) || !is_array( $aEntries )) {
+			if ( empty( $aEntries ) || !is_array( $aEntries ) ) {
 				return;
 			}
 
@@ -196,10 +100,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		 * @return ICWP_WPSF_AuditTrail_Entries
 		 */
 		protected function getAuditTrailEntries() {
-			if ( !isset( $this->oAuditEntries ) ) {
-				$this->oAuditEntries = new ICWP_WPSF_AuditTrail_Entries();
-			}
-			return $this->oAuditEntries;
+			return ICWP_WPSF_AuditTrail_Entries::GetInstance();
 		}
 
 		/**
@@ -232,14 +133,32 @@ endif;
 class ICWP_WPSF_AuditTrail_Entries {
 
 	/**
+	 * @var ICWP_WPSF_AuditTrail_Entries
+	 */
+	protected static $oInstance = NULL;
+
+	/**
+	 * @return ICWP_WPSF_AuditTrail_Entries
+	 */
+	public static function GetInstance() {
+		if ( is_null( self::$oInstance ) ) {
+			self::$oInstance = new self();
+		}
+		return self::$oInstance;
+	}
+
+	/**
 	 * @var array
 	 */
 	protected $aEntries;
 
-	public function add( $nDate, $sWpUsername, $sContext, $sEvent, $nCategory, $sMessage = '' ) {
+	public function add( $sContext, $sEvent, $nCategory, $sMessage = '' ) {
+		$oDp = $this->loadDataProcessor();
+		$oWp = $this->loadWpFunctionsProcessor();
+		$oCurrentUser = $oWp->getCurrentWpUser();
 		$aNewEntry = array(
-			'created_at' => $nDate,
-			'wp_username' => $sWpUsername,
+			'created_at' => $oDp->GetRequestTime(),
+			'wp_username' => empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
 			'context' => $sContext,
 			'event' => $sEvent,
 			'category' => $nCategory,
@@ -275,5 +194,34 @@ class ICWP_WPSF_AuditTrail_Entries {
 			$this->aEntries = array();
 		}
 		return $aEntries;
+	}
+
+
+	/**
+	 * @return ICWP_WPSF_DataProcessor
+	 */
+	public function loadDataProcessor() {
+		if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
+			require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+		}
+		return ICWP_WPSF_DataProcessor::GetInstance();
+	}
+
+	/**
+	 * @return ICWP_WPSF_WpFilesystem
+	 */
+	public function loadFileSystemProcessor() {
+		if ( !class_exists('ICWP_WPSF_WpFilesystem') ) {
+			require_once( dirname(__FILE__) . '/icwp-wpfilesystem.php' );
+		}
+		return ICWP_WPSF_WpFilesystem::GetInstance();
+	}
+
+	/**
+	 * @return ICWP_WPSF_WpFunctions
+	 */
+	public function loadWpFunctionsProcessor() {
+		require_once( dirname(__FILE__) . '/icwp-wpfunctions.php' );
+		return ICWP_WPSF_WpFunctions::GetInstance();
 	}
 }

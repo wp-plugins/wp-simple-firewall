@@ -177,7 +177,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 */
 	public function filter_addExtraAdminMenuItems( $aItems ) {
 		$aItems[ _wpsf__('Firewall Log' ) ] = array( 'Firewall Log', $this->getSubmenuId('firewall_log'), array( $this, 'onDisplayAll' ) );
-		$aItems[ _wpsf__('Audit Trail Viewer' ) ] = array( 'Audit Trail Viewer', $this->getSubmenuId('audit_trail_viewer'), array( $this, 'onDisplayAll' ) );
+//		$aItems[ _wpsf__('Audit Trail Viewer' ) ] = array( 'Audit Trail Viewer', $this->getSubmenuId('audit_trail_viewer'), array( $this, 'onDisplayAll' ) );
 		return $aItems;
 	}
 
@@ -249,26 +249,26 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		$oAuditTrail = $this->getProcessor_AuditTrail();
 		$aAuditData = $oAuditTrail->getAllAuditEntries();
 
-		$aAuditDataUser = array();
-		$aAuditDataPlugin = array();
-		$aAuditDataTheme = array();
+		$aAuditDataUsers = array();
+		$aAuditDataPlugins = array();
+		$aAuditDataThemes = array();
 		foreach( $aAuditData as $aAudit ) {
-			if ( $aAudit['context'] == 'user' ) {
-				$aAuditDataUser[] = $aAudit;
+			if ( $aAudit['context'] == 'users' ) {
+				$aAuditDataUsers[] = $aAudit;
 			}
-			if ( $aAudit['context'] == 'plugin' ) {
-				$aAuditDataPlugin[] = $aAudit;
+			if ( $aAudit['context'] == 'plugins' ) {
+				$aAuditDataPlugins[] = $aAudit;
 			}
-			if ( $aAudit['context'] == 'theme' ) {
-				$aAuditDataTheme[] = $aAudit;
+			if ( $aAudit['context'] == 'themes' ) {
+				$aAuditDataThemes[] = $aAudit;
 			}
 		}
 
 		$aData = array(
 			'sFeatureName'		=> _wpsf__('Audit Trail Viewer'),
-			'aAuditDataUser'	=> $aAuditDataUser,
-			'aAuditDataPlugin'	=> $aAuditDataPlugin,
-			'aAuditDataTheme'	=> $aAuditDataTheme
+			'aAuditDataUsers'	=> $aAuditDataUsers,
+			'aAuditDataPlugins'	=> $aAuditDataPlugins,
+			'aAuditDataThemes'	=> $aAuditDataThemes
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $this->doPluginPrefix( 'audit_trail_viewer_index' ), $aData );

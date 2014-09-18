@@ -240,24 +240,24 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		}
 
 		/**
-		 * @param string $insFilePath
+		 * @param string $sFilePath
 		 * @return NULL|boolean
 		 */
-		public function getCanReadWriteFile( $insFilePath ) {
-			if ( !file_exists( $insFilePath ) ) {
+		public function getCanReadWriteFile( $sFilePath ) {
+			if ( !file_exists( $sFilePath ) ) {
 				return null;
 			}
 
-			$nFileSize = filesize( $insFilePath );
+			$nFileSize = filesize( $sFilePath );
 			if ( $nFileSize === 0 ) {
 				return null;
 			}
 
-			$sFileContent = $this->getFileContent( $insFilePath );
+			$sFileContent = $this->getFileContent( $sFilePath );
 			if ( empty( $sFileContent ) ) {
 				return false; //can't even read the file!
 			}
-			return $this->putFileContent( $insFilePath, $sFileContent );
+			return $this->putFileContent( $sFilePath, $sFileContent );
 		}
 
 		/**
@@ -265,9 +265,6 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		 * @return string|null
 		 */
 		public function getFileContent( $sFilePath ) {
-			if ( !$this->exists( $sFilePath ) ) {
-				return null;
-			}
 			if ( $this->m_oWpFilesystem ) {
 				return $this->m_oWpFilesystem->get_contents( $sFilePath );
 			}
@@ -327,7 +324,7 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 				$aParams = array( $aParams );
 			}
 
-			if ( !$this->m_oWpFilesystem ) {
+			if ( true || !$this->m_oWpFilesystem ) {
 				if ( function_exists( $insFunctionName ) ) {
 					call_user_func_array( $insFunctionName, $aParams );
 				}
