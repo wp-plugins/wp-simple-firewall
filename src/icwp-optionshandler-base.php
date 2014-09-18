@@ -884,6 +884,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				echo "View not found: ".$sFile;
 				return false;
 			}
+
 			if ( count( $aData ) > 0 ) {
 				extract( $aData, EXTR_PREFIX_ALL, $this->oPluginVo->getParentSlug() ); //slug being 'icwp'
 			}

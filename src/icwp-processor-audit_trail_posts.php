@@ -38,7 +38,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Posts') ):
 		public function run() {
 			if ( $this->getIsOption( 'enable_audit_context_wordpress', 'Y' ) ) {
 				add_action( 'deleted_post', array( $this, 'auditDeletedPost' ) );
-				add_action( 'transition_post_status', array( $this, 'auditPostStatus' ) );
+				add_action( 'transition_post_status', array( $this, 'auditPostStatus' ), 30 , 3 );
 			}
 		}
 
@@ -78,7 +78,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Posts') ):
 
 			if ( $sNewStatus == 'trash' ) {
 				$sEvent = 'post_trashed';
-				$sHumanEvent = _wpsf__( 'trashed' );
+				$sHumanEvent = _wpsf__( 'moved to trash' );
 			}
 			else if ( $sOldStatus == 'trash' && $sNewStatus != 'trash' ) {
 				$sEvent = 'post_recovered';
@@ -102,7 +102,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Posts') ):
 				'posts',
 				$sEvent,
 				1,
-				sprintf( _wpsf__( 'Post entitled "%" was %s.' ), $oPost->post_title, $sHumanEvent )
+				sprintf( _wpsf__( 'Post entitled "%s" was %s.' ), $oPost->post_title, $sHumanEvent )
 			);
 
 		}

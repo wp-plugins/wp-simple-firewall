@@ -172,7 +172,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 */
 	public function filter_addExtraAdminMenuItems( $aItems ) {
 		$aItems[ _wpsf__('Firewall Log' ) ] = array( 'Firewall Log', $this->getSubmenuId('firewall_log'), array( $this, 'onDisplayAll' ) );
-//		$aItems[ _wpsf__('Audit Trail Viewer' ) ] = array( 'Audit Trail Viewer', $this->getSubmenuId('audit_trail_viewer'), array( $this, 'onDisplayAll' ) );
+		$aItems[ _wpsf__('Audit Trail Viewer' ) ] = array( 'Audit Trail Viewer', $this->getSubmenuId('audit_trail_viewer'), array( $this, 'onDisplayAll' ) );
 		return $aItems;
 	}
 

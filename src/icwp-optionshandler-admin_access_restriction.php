@@ -73,6 +73,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 
 		$this->fHasPermissionToSubmit = $fHasPermission;
 		if ( $this->getIsMainFeatureEnabled() )  {
+
 			$sAccessKey = $this->getOpt( 'admin_access_key' );
 			if ( !empty( $sAccessKey ) ) {
 				$sHash = md5( $sAccessKey );
