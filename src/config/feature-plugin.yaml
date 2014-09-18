@@ -82,7 +82,7 @@ options:
       -
         slug: 'audit_trail'
         storage_key: 'audit_trail'
-        hidden: false
+        hidden: true
       -
         slug: 'email'
         storage_key: 'email'

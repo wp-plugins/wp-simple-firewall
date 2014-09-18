@@ -50,7 +50,7 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	 * @return array
 	 */
 	public function getActivePluginFeatures() {
-		$aActiveFeatures = $this->getOptionsVo()->getOptionRawConfig( 'active_plugin_features' );
+		$aActiveFeatures = $this->getOptionsVo()->getRawData_SingleOption( 'active_plugin_features' );
 		$aPluginFeatures = array();
 		if ( empty( $aActiveFeatures['value'] ) || !is_array( $aActiveFeatures['value'] ) ) {
 			return $aPluginFeatures;

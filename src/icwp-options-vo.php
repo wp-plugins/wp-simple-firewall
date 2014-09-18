@@ -122,7 +122,7 @@ class ICWP_WPSF_OptionsVO {
 			$aLegacySection = array();
 			$aLegacySection['section_slug'] = $aRawSection['slug'];
 			$aLegacySection['section_options'] = array();
-			foreach( $aRawData['options'] as $aRawOption ) {
+			foreach( $this->getRawData_AllOptions() as $aRawOption ) {
 
 				if ( $aRawOption['section'] != $aRawSection['slug'] ) {
 					continue;
@@ -158,29 +158,6 @@ class ICWP_WPSF_OptionsVO {
 	}
 
 	/**
-	 * @return array
-	 */
-	public function getLegacyOptionsNonUi() {
-		$aRawData = $this->getRawData_FullFeatureConfig();
-		foreach( $aRawData['sections'] as $aRawSection ) {
-
-			if ( !isset( $aRawSection['hidden'] ) || !$aRawSection['hidden'] ) {
-				continue;
-			}
-			$sKey = $aRawSection['slug'];
-			break;
-		}
-		$aNonUi = array();
-		foreach( $aRawData['options'] as $aOption ) {
-			if ( $aOption['section'] != $sKey ) {
-				continue;
-			}
-			$aNonUi[] = $aOption['key'];
-		}
-		return $aNonUi;
-	}
-
-	/**
 	 * @return string
 	 */
 	public function getNeedSave() {
@@ -206,8 +183,7 @@ class ICWP_WPSF_OptionsVO {
 	 * @return mixed|null
 	 */
 	public function getOptDefault( $sOptionKey, $mDefault = null ) {
-		$aRawOptionsData = $this->getRawData_FullFeatureConfig();
-		$aOptions = $aRawOptionsData['options'];
+		$aOptions = $this->getRawData_AllOptions();
 		foreach( $aOptions as $aOption ) {
 			if ( $aOption['key'] == $sOptionKey ) {
 				if ( isset( $aOption['value'] ) ) {
@@ -230,19 +206,6 @@ class ICWP_WPSF_OptionsVO {
 	public function getOptIs( $sKey, $mValueToTest, $fStrict = false ) {
 		$mOptionValue = $this->getOpt( $sKey );
 		return $fStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
-	}
-
-	/**
-	 * @param string $sOptionKey
-	 * @return null|array
-	 */
-	public function getOptionRawConfig( $sOptionKey ) {
-		foreach( $this->getRawData_AllOptions() as $aOption ) {
-			if ( $sOptionKey == $aOption['key'] ) {
-				return $aOption;
-			}
-		}
-		return null;
 	}
 
 	/**
@@ -291,7 +254,7 @@ class ICWP_WPSF_OptionsVO {
 	 * @param string $sOptionKey
 	 * @return array
 	 */
-	protected function getRawData_SingleOption( $sOptionKey ) {
+	public function getRawData_SingleOption( $sOptionKey ) {
 		$aAllRawOptions = $this->getRawData_AllOptions();
 		foreach( $aAllRawOptions as $aOption ) {
 			if ( $sOptionKey == $aOption['key'] ) {
