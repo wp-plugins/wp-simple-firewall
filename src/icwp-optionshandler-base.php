@@ -79,6 +79,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		protected $oFeatureProcessor;
 
+		/**
+		 * @var boolean
+		 */
+		protected $fOverrideState;
+
 		public function __construct( $oPluginVo, $sOptionsStoreKey = null ) {
 			if ( empty( $oPluginVo ) ) {
 				throw new Exception();
@@ -226,24 +231,30 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return mixed
 		 */
 		public function getIsMainFeatureEnabled() {
-			$fOverride = $this->override();
-			if ( !is_null( $fOverride ) ) {
-				return $fOverride;
+			$fOverride = $this->getIfOverride();
+			if ( $fOverride ) {
+				return !$fOverride;
 			}
 			return $this->getOptIs( 'enable_'.$this->getFeatureSlug(), 'Y' ) || $this->getOptIs( 'enable_'.$this->getFeatureSlug(), true, true ) ;
 		}
 
 		/**
+		 * Returns true if you're overriding OFF.  We don't do override ON any more (as of 3.5.1)
 		 */
-		protected function override() {
+		public function getIfOverride() {
+
+			if ( !is_null( $this->fOverrideState ) ) {
+				return $this->fOverrideState;
+			}
+
 			$oWpFs = $this->loadFileSystemProcessor();
 			if ( $oWpFs->fileExistsInDir( 'forceOff', $this->oPluginVo->getRootDir(), false ) ) {
-				return false;
+				$this->fOverrideState = true;
 			}
-			else if ( $oWpFs->fileExistsInDir( 'forceOn', $this->oPluginVo->getRootDir(), false ) ) {
-				return true;
+			else {
+				$this->fOverrideState = false;
 			}
-			return null;
+			return $this->fOverrideState;
 		}
 
 		/**
@@ -903,6 +914,16 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
+		 * get the directory for the plugin view with the trailing slash
+		 *
+		 * @param string $sSnippet
+		 * @return string
+		 */
+		public function getViewSnippet( $sSnippet = '' ) {
+			return $this->getPluginVo()->getViewDir().'snippets'.ICWP_DS.$sSnippet;
+		}
+
+		/**
 		 * @return ICWP_WPSF_DataProcessor
 		 */
 		public function loadDataProcessor() {
@@ -952,6 +973,61 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			$this->loadStatsProcessor();
 			ICWP_Stats_WPSF::DoStatIncrement( $sStatKey );
 		}
+
+		/**
+		 * @return ICWP_Wordpress_Simple_Firewall_Plugin
+		 */
+		public function getPluginVo() {
+			return $this->oPluginVo;
+		}
+
+		/**
+		 * @param $sKey
+		 * @return bool|string
+		 */
+		public function getUserMeta( $sKey ) {
+
+			$oWp = $this->loadWpFunctionsProcessor();
+			$oCurrentUser = $oWp->getCurrentWpUser();
+			if ( is_null( $oCurrentUser ) ) {
+				return false;
+			}
+			$nUserId = $oCurrentUser->ID;
+
+			$sFullOptionKey = $this->prefixOptionKey( $sKey );
+			$sCurrentMetaValue = get_user_meta( $nUserId, $sFullOptionKey, true );
+			// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
+			if ( empty( $sCurrentMetaValue ) ) {
+				//the value has never been set, or it's been installed for the first time.
+				$this->updateUserMeta( $sFullOptionKey, 'temp', $nUserId );
+				return 'Y'; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
+			}
+			return $sCurrentMetaValue;
+		}
+
+		/**
+		 * Updates the current (or supplied user ID) user meta data with the version of the plugin
+		 *
+		 * @param string $sKey
+		 * @param mixed $mValue
+		 * @param integer $nId		-user ID
+		 * @return boolean
+		 */
+		protected function updateUserMeta( $sKey, $mValue, $nId = null ) {
+			if ( empty( $innId ) ) {
+				$oWp = $this->loadWpFunctionsProcessor();
+				$oCurrentUser = $oWp->getCurrentWpUser();
+				if ( is_null( $oCurrentUser ) ) {
+					return false;
+				}
+				$nUserId = $oCurrentUser->ID;
+			}
+			else {
+				$nUserId = $nId;
+			}
+			return update_user_meta( $nUserId, $this->prefixOptionKey( $sKey ), $mValue );
+		}
+
 	}
 
 endif;

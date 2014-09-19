@@ -326,6 +326,27 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		protected function doStatIncrement( $sStatKey ) {
 			$this->oFeatureOptions->doStatIncrement( $sStatKey );
 		}
+
+		/**
+		 * @return ICWP_WPSF_FeatureHandler_Base
+		 */
+		protected function getFeatureOptions() {
+			return $this->oFeatureOptions;
+		}
+
+		/**
+		 * @return bool
+		 */
+		protected function isValidAdminArea() {
+			$oWp = $this->loadWpFunctionsProcessor();
+			if ( !$oWp->isMultisite() && is_admin() ) {
+				return true;
+			}
+			else if ( $oWp->isMultisite() && $this->getFeatureOptions()->getPluginVo()->getIsWpmsNetworkAdminOnly() && is_network_admin() ) {
+				return true;
+			}
+			return false;
+		}
 	}
 
 endif;

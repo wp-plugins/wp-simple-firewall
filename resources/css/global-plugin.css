@@ -1,0 +1,17 @@
+@CHARSET "ISO-8859-1";
+
+.wrap .icwp-admin-notice {
+	padding: 5px 20px 18px;
+	border: 1px solid rgba(240, 165, 4, 0.56);
+	background-color: rgba(255, 227, 167, 0.25);
+	border-right-width: 5px;
+	border-left-width: 5px;
+}
+
+.wrap .error.icwp-admin-notice {
+	border: 1px solid rgba(240, 51, 4, 0.56);
+	background-color: rgba(255, 185, 167, 0.25);
+}
+.wrap .error.icwp-admin-notice h3 {
+	color: rgba(199, 41, 0, 1);
+}

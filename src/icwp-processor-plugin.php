@@ -31,8 +31,75 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 	/**
 	 */
 	public function run() {
+		$oFO = $this->getFeatureOptions();
 		$this->removePluginConflicts();
-		add_filter( $this->oFeatureOptions->doPluginPrefix( 'show_marketing' ), array( $this, 'getIsShowMarketing' ) );
+		add_filter( $oFO->doPluginPrefix( 'show_marketing' ), array( $this, 'getIsShowMarketing' ) );
+
+		if ( $this->isValidAdminArea() && $this->getIfShowAdminNotices() ) {
+			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeForceOffActive' ) );
+			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeMailingListSignup' ) );
+			// TODO: this->
+//			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticePostPluginUpgrade' ) );
+//			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeTranslations' ) );
+//			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticePluginUpgradeAvailable' ) );
+		}
+	}
+
+	/**
+	 * @param array $aAdminNotices
+	 * @return array
+	 */
+	public function adminNoticeForceOffActive( $aAdminNotices ) {
+		$fOverride = $this->getFeatureOptions()->getIfOverride();
+		if ( !$fOverride ) {
+			return $aAdminNotices;
+		}
+
+		ob_start();
+		include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_override.php' ) );
+		$sNoticeMessage = ob_get_contents();
+		ob_end_clean();
+
+		$aAdminNotices[] = $this->getAdminNoticeHtml( $sNoticeMessage, 'error', false );
+		return $aAdminNotices;
+	}
+
+	/**
+	 * @param array $aAdminNotices
+	 * @return array
+	 */
+	public function adminNoticeMailingListSignup( $aAdminNotices ) {
+
+		$nDays = $this->getInstallationDays();
+		if ( $nDays < 2 ) {
+			return $aAdminNotices;
+		}
+
+		$sCurrentMetaValue = $this->getFeatureOptions()->getUserMeta( 'plugin_mailing_list_signup' );
+		if ( $sCurrentMetaValue == 'Y' ) {
+			return;
+		}
+
+		$sLink_HideNotice = $this->getUrl_PluginDashboard().'&'.$this->getFeatureOptions()->doPluginPrefix( 'hide_mailing_list_signup' ).'=1';
+		ob_start();
+		include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_mailchimp.php' ) );
+		$sNoticeMessage = ob_get_contents();
+		ob_end_clean();
+
+		$aAdminNotices[] = $this->getAdminNoticeHtml( $sNoticeMessage, 'updated', false );
+		return $aAdminNotices;
+	}
+
+	public function adminNoticePostPluginUpgrade( $aAdminNotices ) {
+		return $aAdminNotices;
+	}
+
+	public function adminNoticePluginUpgradeAvailable( $aAdminNotices ) {
+		return $aAdminNotices;
+	}
+
+	public function adminNoticeTranslations( $aAdminNotices ) {
+		return $aAdminNotices;
 	}
 
 	/**
@@ -67,8 +134,8 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 	 * @return int
 	 */
 	protected function getInstallationDays() {
-		$nTimeInstalled = $this->oFeatureOptions->getOpt( 'installation_time' );
-		if ( empty($nTimeInstalled) ) {
+		$nTimeInstalled = $this->getFeatureOptions()->getOpt( 'installation_time' );
+		if ( empty( $nTimeInstalled ) ) {
 			return 0;
 		}
 		return round( ( time() - $nTimeInstalled ) / DAY_IN_SECONDS );
@@ -83,6 +150,40 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 		if ( class_exists('AIO_WP_Security') && isset( $GLOBALS['aio_wp_security'] ) ) {
 			remove_action( 'init', array( $GLOBALS['aio_wp_security'], 'wp_security_plugin_init'), 0 );
 		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function getIfShowAdminNotices() {
+		return $this->getFeatureOptions()->getOptIs( 'enable_upgrade_admin_notice', 'Y' );
+	}
+
+	/**
+	 * Provides the basic HTML template for printing a WordPress Admin Notices
+	 *
+	 * @param $sNotice - The message to be displayed.
+	 * @param $sMessageClass - either error or updated
+	 * @param $infPrint - if true, will echo. false will return the string
+	 * @return boolean|string
+	 */
+	protected function getAdminNoticeHtml( $sNotice = '', $sMessageClass = 'updated', $infPrint = false ) {
+		$sWrapper = '<div class="%s icwp-admin-notice"><style>#message form { margin: 0px; padding-bottom: 8px; }</style>%s</div>';
+		$sFullNotice = sprintf( $sWrapper, $sMessageClass, $sNotice );
+		if ( $infPrint ) {
+			echo $sFullNotice;
+			return true;
+		} else {
+			return $sFullNotice;
+		}
+	}
+
+	/**
+	 * @param string $sFeaturePage - leave empty to get the main dashboard
+	 * @return mixed
+	 */
+	protected function getUrl_PluginDashboard( $sFeaturePage = '' ) {
+		return network_admin_url( sprintf( 'admin.php?page=%s', $this->getFeatureOptions()->doPluginPrefix( $sFeaturePage ) ) );
 	}
 }
 

@@ -294,6 +294,7 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 
 		public function onWpAdminInit() {
 			//Do Plugin-Specific Admin Work
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueuePluginGlobalAdminCss' ), 99 );
 			if ( $this->getIsPage_PluginAdmin() ) {
 				add_action( 'admin_enqueue_scripts', array( $this, 'enqueueBootstrapLegacyAdminCss' ), 99 );
 				add_action( 'admin_enqueue_scripts', array( $this, 'enqueuePluginAdminCss' ), 99 );
@@ -316,7 +317,6 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 			$sFullParentMenuId = $this->getPluginPrefix();
 			add_menu_page( $this->oPluginVo->getHumanName(), $this->oPluginVo->getAdminMenuTitle(), $this->oPluginVo->getBasePermissions(), $sFullParentMenuId, array( $this, 'onDisplayAll' ), $this->getPluginLogoUrl16() );
 			//Create and Add the submenu items
-//		$this->createPluginSubMenuItems();
 
 			// allow for any plugin menu items that don't come from filters
 			add_filter( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array( $this, 'filter_addExtraAdminMenuItems' ) );
@@ -474,6 +474,15 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 				return true;
 			}
 
+			$aAdminNotices = apply_filters( $this->doPluginPrefix( 'admin_notices' ), array() );
+			if ( empty( $aAdminNotices ) || !is_array( $aAdminNotices ) ) {
+				return;
+			}
+
+			foreach( $aAdminNotices as $sAdminNotice ) {
+				echo $sAdminNotice;
+			}
+
 			$this->doAdminNoticeOptionsUpdated();
 
 			// If we've set to not show admin notices ever
@@ -482,7 +491,6 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 				if ( $this->hasPermissionToView() ) {
 					$this->doAdminNoticePostUpgrade();
 					$this->doAdminNoticeTranslations();
-					$this->doAdminNoticeMailingListSignup();
 				}
 				if ( $this->hasPermissionToSubmit() ) {
 					$this->doAdminNoticePluginUpgradeAvailable();
@@ -506,7 +514,7 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 			$this->getAdminNoticeHtml( $sNotice, 'updated', true );
 		}
 
-		protected function doAdminNoticeOptionsUpdated(){
+		protected function doAdminNoticeOptionsUpdated() {
 			$sHtml = $this->getAdminNoticeHtml_OptionsUpdated();
 			if ( !empty($sHtml) ) {
 				$this->getAdminNoticeHtml( $sHtml, 'updated', true );
@@ -526,7 +534,6 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		}
 
 		/**
-		 *
 		 */
 		protected function doAdminNoticeTranslations() {
 
@@ -536,22 +543,6 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 			}
 
 			$sHtml = $this->getAdminNoticeHtml_Translations();
-			if ( !empty($sHtml) ) {
-				$this->getAdminNoticeHtml( $sHtml, 'updated', true );
-			}
-		}
-
-		/**
-		 *
-		 */
-		protected function doAdminNoticeMailingListSignup(){
-
-			$sCurrentMetaValue = $this->getUserMeta( 'plugin_mailing_list_signup' );
-			if ( $sCurrentMetaValue == 'Y' ) {
-				return;
-			}
-
-			$sHtml = $this->getAdminNoticeHtml_MailingListSignup();
 			if ( !empty($sHtml) ) {
 				$this->getAdminNoticeHtml( $sHtml, 'updated', true );
 			}
@@ -571,7 +562,6 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		protected function getAdminNoticeHtml_OptionsUpdated() { }
 		protected function getAdminNoticeHtml_VersionUpgrade() { }
 		protected function getAdminNoticeHtml_Translations() { }
-		protected function getAdminNoticeHtml_MailingListSignup() { }
 
 		/**
 		 * Provides the basic HTML template for printing a WordPress Admin Notices
@@ -599,7 +589,7 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		}
 
 		/**
-		 *
+		 * @return bool
 		 */
 		protected function getShowAdminNotices() {
 			return true;
@@ -740,6 +730,13 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 			wp_register_style( $sUnique, $this->getCssUrl('plugin.css'), array( $this->doPluginPrefix( 'bootstrap_wpadmin_css_fixes' ) ), $this->oPluginVo->getVersion() );
 			wp_enqueue_style( $sUnique );
 		}
+
+		public function enqueuePluginGlobalAdminCss() {
+			$sUnique = $this->doPluginPrefix( 'global_plugin_css' );
+			wp_register_style( $sUnique, $this->getCssUrl('global-plugin.css'), false, $this->oPluginVo->getVersion() );
+			wp_enqueue_style( $sUnique );
+		}
+
 		protected function redirect( $insUrl, $innTimeout = 1 ) {
 			echo '
 			<script type="text/javascript">

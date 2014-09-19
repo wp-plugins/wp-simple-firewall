@@ -234,6 +234,7 @@ class ICWP_Wordpress_Simple_Firewall_Plugin {
 	public function getViewDir() {
 		return $this->getRootDir().self::ViewDir.ICWP_DS;
 	}
+
 }
 
 $oICWP_Wpsf = new ICWP_Wordpress_Simple_Firewall( ICWP_Wordpress_Simple_Firewall_Plugin::GetInstance() );
