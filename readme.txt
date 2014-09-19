@@ -230,6 +230,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 = 3.5.1 =
 
 *   CHANGED:    The 'forceOff' system is now temporary - i.e. it doesn't save the configuration and so once this file is removed, the plugin returns to normal.
+*   CHANGED:    Problems with certain hosting environments reading in files with the ".yaml" extension - [support ref](https://wordpress.org/support/topic/yaml-breaks-plugin)
 
 = 3.5.0 =
 

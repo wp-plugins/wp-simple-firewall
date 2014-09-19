@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Paul
- * Date: 04/09/14
- * Time: 16:51
- */
-
 class ICWP_WPSF_OptionsVO {
 
 	/**
@@ -17,11 +10,6 @@ class ICWP_WPSF_OptionsVO {
 	 * @var array
 	 */
 	protected $aRawOptionsConfigData;
-
-	/**
-	 * @var boolean
-	 */
-	protected $fIsYaml;
 
 	/**
 	 * @var boolean
@@ -385,7 +373,7 @@ class ICWP_WPSF_OptionsVO {
 		$oFs = $this->loadFileSystemProcessor();
 
 		$aConfig = array();
-		$sConfigFile = dirname( __FILE__ ). sprintf( ICWP_DS.'config'.ICWP_DS.'feature-%s.yaml', $sName );
+		$sConfigFile = dirname( __FILE__ ). sprintf( ICWP_DS.'config'.ICWP_DS.'feature-%s.txt', $sName );
 		$sContents = $oFs->getFileContent( $sConfigFile );
 		if ( !empty( $sContents ) ) {
 			$oYaml = $this->loadYamlProcessor();
