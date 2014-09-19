@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, protection, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack, login
 Requires at least: 3.2.0
 Tested up to: 4.0
-Stable tag: 3.5.2
+Stable tag: 3.5.3
 
 Complete and Simple WordPress Security. Unrestricted, Easy, No Premium Features.
 
@@ -231,7 +231,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *   ADDED:      New Feature - Audit Trail.
 
-= 3.5.2 =
+= 3.5.3 =
 
 *   ADDED:      A warning message on the WordPress admin if the "forceOff" override is active.
 *   CHANGED:    The 'forceOff' system is now temporary - i.e. it doesn't save the configuration, and so once this file is removed, the plugin returns to the settings specified.
