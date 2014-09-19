@@ -272,12 +272,9 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	 * @return string
 	 */
 	public function getLastLoginTimeFilePath() {
-		$sPath = $this->getOpt( 'last_login_time_file_path' );
-		if ( empty( $sPath ) ) {
-			$sPath = $this->oPluginVo->getRootDir().'mode.login_throttled';
-			$this->setOpt( 'last_login_time_file_path', $sPath );
-		}
-		return $sPath;
+		// we always update it (but it wont need saved because we compare)
+		$this->setOpt( 'last_login_time_file_path', $this->getPluginVo()->getRootDir().'mode.login_throttled' );
+		return $this->getOpt( 'last_login_time_file_path' );
 	}
 
 	/**
