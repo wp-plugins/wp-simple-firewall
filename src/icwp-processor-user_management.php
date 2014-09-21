@@ -622,7 +622,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		if ( empty( $this->sSessionId ) ) {
 			$oDp = $this->loadDataProcessor();
 			$this->sSessionId = $oDp->FetchCookie( $this->oFeatureOptions->getUserSessionCookieName() );
-			if ( is_null( $this->sSessionId ) ) {
+			if ( empty( $this->sSessionId ) ) {
 				$this->sSessionId = md5( uniqid() );
 				$this->setSessionCookie();
 			}

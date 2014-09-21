@@ -37,7 +37,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Autoupdates_V3') ):
 		 */
 		protected function loadFeatureProcessor() {
 			if ( !isset( $this->oFeatureProcessor ) ) {
-				require_once( $this->oPluginVo->getSourceDir().sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) );
+				require_once( $this->oPluginVo->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 				$this->oFeatureProcessor = new ICWP_WPSF_Processor_Autoupdates( $this );
 			}
 			return $this->oFeatureProcessor;
@@ -46,12 +46,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Autoupdates_V3') ):
 		/**
 		 * @return bool|void
 		 */
-		public function handleFormSubmit() {
-			$fSuccess = parent::handleFormSubmit();
-			if ( !$fSuccess ) {
-				return $fSuccess;
-			}
-
+		protected function doExtraSubmitProcessing() {
 			// Force run automatic updates
 			$oDp = $this->loadDataProcessor();
 			if ( $oDp->FetchGet( 'force_run_auto_updates' ) == 'now' ) {

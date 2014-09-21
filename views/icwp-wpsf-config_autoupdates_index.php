@@ -6,7 +6,7 @@ include_once( 'icwp-wpsf-config_header.php' );
 
 			<form action="<?php echo $icwp_form_action; ?>" method="post" class="form-horizontal">
 
-				<?php if ( $fAutoupdatesOn ) : ?>
+				<?php if ( isset ( $fAutoupdatesOn ) && $fAutoupdatesOn ) : ?>
 					<legend>Run Updates Now</legend>
 					<div class="control-group">
 						<label class="control-label">Run Automatic Updates

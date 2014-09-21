@@ -54,7 +54,7 @@ class ICWP_WPSF_Processor_CommentsFilter_HumanSpam extends ICWP_WPSF_Processor_B
 		parent::reset();
 		$this->sCommentStatus = '';
 		$this->sCommentStatusExplanation = '';
-		self::$sSpamBlacklistFile = $this->oFeatureOptions->getResourcesDir().'spamblacklist.txt';
+		self::$sSpamBlacklistFile = $this->getFeatureOptions()->getResourcesDir().'spamblacklist.txt';
 	}
 	
 	/**
@@ -62,8 +62,8 @@ class ICWP_WPSF_Processor_CommentsFilter_HumanSpam extends ICWP_WPSF_Processor_B
 	public function run() {
 		add_filter( 'preprocess_comment',			array( $this, 'doCommentChecking' ), 1, 1 );
 
-		add_filter( $this->oFeatureOptions->doPluginPrefix( 'comments_filter_status' ), array( $this, 'getCommentStatus' ), 2 );
-		add_filter( $this->oFeatureOptions->doPluginPrefix( 'comments_filter_status_explanation' ), array( $this, 'getCommentStatusExplanation' ), 2 );
+		add_filter( $this->getFeatureOptions()->doPluginPrefix( 'comments_filter_status' ), array( $this, 'getCommentStatus' ), 2 );
+		add_filter( $this->getFeatureOptions()->doPluginPrefix( 'comments_filter_status_explanation' ), array( $this, 'getCommentStatusExplanation' ), 2 );
 	}
 
 	/**

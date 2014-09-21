@@ -179,7 +179,7 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	 */
 	public function getDefaultRecipientAddress() {
 		$oWpFunctions = $this->loadWpFunctionsProcessor();
-		return apply_filters( $this->oFeatureOptions->doPluginPrefix( 'report_email_address' ), $oWpFunctions->getSiteAdminEmail() );
+		return apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'report_email_address' ), $oWpFunctions->getSiteAdminEmail() );
 	}
 
 	/**

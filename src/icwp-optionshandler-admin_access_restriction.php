@@ -47,7 +47,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir().sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) );
+			require_once( $this->oPluginVo->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_AdminAccessRestriction( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -105,12 +105,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 
 	/**
 	 */
-	public function handleFormSubmit() {
-		$fSuccess = parent::handleFormSubmit();
-		if ( !$fSuccess ) {
-			return $fSuccess;
-		}
-
+	protected function doExtraSubmitProcessing() {
 		// We should only use setPermissionToSubmit() here, before any headers elsewhere are sent out.
 		if ( $this->checkAdminAccessKeySubmission() ) {
 			$this->setPermissionToSubmit( true );

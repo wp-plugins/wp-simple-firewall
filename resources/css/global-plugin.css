@@ -1,11 +1,24 @@
 @CHARSET "ISO-8859-1";
 
 .wrap .icwp-admin-notice {
-	padding: 5px 20px 18px;
+	padding: 13px 20px;
 	border: 1px solid rgba(240, 165, 4, 0.56);
 	background-color: rgba(255, 227, 167, 0.25);
 	border-right-width: 5px;
 	border-left-width: 5px;
+}
+
+.wrap .icwp-admin-notice p {
+	text-shadow: -1px -1px 0px rgba(255,255,255,0.4);
+}
+.wrap .icwp-admin-notice.updated p {
+	color: rgba(155, 107, 5, 1);
+}
+.wrap .icwp-admin-notice form {
+	margin: 0;
+}
+.wrap .icwp-admin-notice .button {
+	margin: 10px 0 7px;
 }
 
 .wrap .error.icwp-admin-notice {

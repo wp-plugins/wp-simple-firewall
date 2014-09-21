@@ -49,7 +49,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 		parent::__construct( $oFeatureOptions );
 		$this->setTableName( $sTableName );
 		$this->createCleanupCron();
-		add_action( $this->oFeatureOptions->doPluginPrefix( 'delete_plugin' ), array( $this, 'deleteDatabase' )  );
+		add_action( $this->getFeatureOptions()->doPluginPrefix( 'delete_plugin' ), array( $this, 'deleteDatabase' )  );
 	}
 
 	/**
@@ -60,7 +60,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	/**
 	 */
 	public function deleteDatabase() {
-		if ( apply_filters( $this->oFeatureOptions->doPluginPrefix( 'has_permission_to_submit' ), true ) && $this->getTableExists() ) {
+		if ( apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'has_permission_to_submit' ), true ) && $this->getTableExists() ) {
 			$this->dropTable();
 		}
 	}
@@ -100,7 +100,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 */
 	protected function initializeTable() {
 		if ( $this->getTableExists() ) {
-			$sFullHookName = $this->oFeatureOptions->doPluginPrefix( self::CleanupCronActionHook, '_' );
+			$sFullHookName = $this->getFeatureOptions()->doPluginPrefix( self::CleanupCronActionHook, '_' );
 			add_action( $sFullHookName, array( $this, 'cleanupDatabase' ) );
 		}
 		else {
@@ -311,7 +311,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * Will setup the cleanup cron to clean out old entries. This should be overridden per implementation.
 	 */
 	protected function createCleanupCron() {
-		$sFullHookName = $this->oFeatureOptions->doPluginPrefix( self::CleanupCronActionHook, '_' );
+		$sFullHookName = $this->getFeatureOptions()->doPluginPrefix( self::CleanupCronActionHook, '_' );
 		if ( ! wp_next_scheduled( $sFullHookName ) && ! defined( 'WP_INSTALLING' ) ) {
 			$nNextRun = strtotime( 'tomorrow 6am' ) - get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
 			wp_schedule_event( $nNextRun, 'daily', $sFullHookName );

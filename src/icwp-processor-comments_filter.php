@@ -54,15 +54,15 @@ class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 
 		if ( $this->getIsOption( 'enable_comments_gasp_protection', 'Y' ) ) {
 			require_once('icwp-processor-commentsfilter_antibotspam.php');
-			$oBotSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam( $this->oFeatureOptions );
+			$oBotSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam( $this->getFeatureOptions() );
 			$oBotSpamProcessor->run();
 		}
 
 		$oWp = $this->loadWpFunctionsProcessor();
 		$oDp = $this->loadDataProcessor();
-		if ( $oDp->GetIsRequestPost() && $oWp->getCurrentPage() == 'wp-comments-post.php' && $this->getIsOption( 'enable_comments_human_spam_filter', 'Y' ) ) {
+		if ( $oDp->GetIsRequestPost() && $oWp->getIsCurrentPage( 'wp-comments-post.php' ) && $this->getIsOption( 'enable_comments_human_spam_filter', 'Y' ) ) {
 			require_once('icwp-processor-commentsfilter_humanspam.php');
-			$oHumanSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_HumanSpam( $this->oFeatureOptions );
+			$oHumanSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_HumanSpam( $this->getFeatureOptions() );
 			$oHumanSpamProcessor->run();
 		}
 
@@ -79,7 +79,7 @@ class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 	 * @return string
 	 */
 	public function doSetCommentStatus( $sApprovalStatus ) {
-		$sStatus = apply_filters( $this->oFeatureOptions->doPluginPrefix( 'comments_filter_status' ), '' );
+		$sStatus = apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'comments_filter_status' ), '' );
 		return empty( $sStatus ) ? $sApprovalStatus : $sStatus;
 	}
 
@@ -89,7 +89,7 @@ class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 	 */
 	public function doInsertCommentStatusExplanation( $sCommentContent ) {
 
-		$sExplanation = apply_filters( $this->oFeatureOptions->doPluginPrefix( 'comments_filter_status_explanation' ), '' );
+		$sExplanation = apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'comments_filter_status_explanation' ), '' );
 
 		// If either spam filtering process left an explanation, we add it here
 		if ( !empty( $sExplanation ) ) {
@@ -106,7 +106,7 @@ class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 	 * @return array
 	 */
 	public function doClearCommentNotificationEmail_Filter( $aEmails ) {
-		$sStatus = apply_filters( $this->oFeatureOptions->doPluginPrefix( 'comments_filter_status' ), '' );
+		$sStatus = apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'comments_filter_status' ), '' );
 		if ( $sStatus == 'trash' ) {
 			$aEmails = array();
 		}

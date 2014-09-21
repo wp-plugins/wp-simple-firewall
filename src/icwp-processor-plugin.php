@@ -22,6 +22,11 @@ if ( !class_exists('ICWP_WPSF_Processor_Plugin') ):
 class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 
 	/**
+	 * @var ICWP_WPSF_FeatureHandler_Plugin
+	 */
+	protected $oFeatureOptions;
+
+	/**
 	 * @param ICWP_WPSF_FeatureHandler_Plugin $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_Plugin $oFeatureOptions ) {
@@ -35,13 +40,18 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 		$this->removePluginConflicts();
 		add_filter( $oFO->doPluginPrefix( 'show_marketing' ), array( $this, 'getIsShowMarketing' ) );
 
-		if ( $this->isValidAdminArea() && $this->getIfShowAdminNotices() ) {
+		if ( $this->isValidAdminArea() ) {
+
+			// always show this notice
 			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeForceOffActive' ) );
-			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeMailingListSignup' ) );
-			// TODO: this->
-//			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticePostPluginUpgrade' ) );
-//			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeTranslations' ) );
-//			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticePluginUpgradeAvailable' ) );
+			if ( $this->getIfShowAdminNotices() ) {
+				add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeMailingListSignup' ) );
+				add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeTranslations' ) );
+				add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticePluginUpgradeAvailable' ) );
+				add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeFeedback' ) );
+				add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticePostPluginUpgrade' ) );
+			}
+
 		}
 	}
 
@@ -56,7 +66,7 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 		}
 
 		ob_start();
-		include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_override.php' ) );
+		include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_override' ) );
 		$sNoticeMessage = ob_get_contents();
 		ob_end_clean();
 
@@ -75,14 +85,14 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 			return $aAdminNotices;
 		}
 
-		$sCurrentMetaValue = $this->getFeatureOptions()->getUserMeta( 'plugin_mailing_list_signup' );
+		$sCurrentMetaValue = $this->loadWpFunctionsProcessor()->getUserMeta( $this->getFeatureOptions()->prefixOptionKey( 'plugin_mailing_list_signup' ) );
 		if ( $sCurrentMetaValue == 'Y' ) {
 			return;
 		}
 
 		$sLink_HideNotice = $this->getUrl_PluginDashboard().'&'.$this->getFeatureOptions()->doPluginPrefix( 'hide_mailing_list_signup' ).'=1';
 		ob_start();
-		include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_mailchimp.php' ) );
+		include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_mailchimp' ) );
 		$sNoticeMessage = ob_get_contents();
 		ob_end_clean();
 
@@ -90,15 +100,113 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 		return $aAdminNotices;
 	}
 
+	/**
+	 * @param array $aAdminNotices
+	 * @return array
+	 */
+	public function adminNoticeFeedback( $aAdminNotices ) {
+		$aAdminFeedbackNotice = $this->getOption( 'feedback_admin_notice' );
+
+		if ( empty( $aAdminFeedbackNotice ) || !is_array( $aAdminFeedbackNotice ) ) {
+			return $aAdminNotices;
+		}
+
+		foreach ( $aAdminFeedbackNotice as $sNotice ) {
+			if ( empty( $sNotice ) || !is_string( $sNotice ) ) {
+				continue;
+			}
+			$aAdminNotices[] = $this->getAdminNoticeHtml( '<p>'.$sNotice.'</p>', 'updated', false );
+		}
+		$this->getFeatureOptions()->doClearAdminFeedback( 'feedback_admin_notice', array() );
+		return $aAdminNotices;
+	}
+
 	public function adminNoticePostPluginUpgrade( $aAdminNotices ) {
+		$oController = $this->getFeatureOptions()->getController();
+		$oWp = $this->loadWpFunctionsProcessor();
+
+		$sCurrentMetaValue = $oWp->getUserMeta( $oController->doPluginOptionPrefix( 'current_version' ) );
+//		if ( empty( $sCurrentMetaValue ) || $sCurrentMetaValue === $this->getFeatureOptions()->getVersion() ) {
+//			return $aAdminNotices;
+//		}
+
+		ob_start();
+		if ( $this->getInstallationDays() <= 1 ) {
+			$sMessage = sprintf(
+				_wpsf__( "Note: The %s plugin does not automatically turn on feature when you install." ),
+				$oController->getHumanName()
+			);
+		}
+		else {
+			$sMessage = sprintf(
+				_wpsf__( "Note: The %s plugin has been recently upgraded, but please remember that any new features are not automatically enabled." ),
+				$oController->getHumanName()
+			);
+		}
+		$sMessage .= '<br />'.sprintf(
+			'<a href="%s" id="fromIcwp" title="%s" target="_blank">%s</a>',
+			'http://icwp.io/27',
+			$oController->getHumanName(),
+			_wpsf__( 'Click to read about any important updates from the plugin home page.' )
+		);
+		$sButtonText = _wpsf__( 'Okay, hide this notice and go to the plugin dashboard.' );
+
+		$sMetaFlag = $oController->doPluginPrefix( 'hide_update_notice' );
+		$sAction = $oController->getPluginUrl_AdminPage().'&'.$sMetaFlag.'=1';
+		$sRedirectPage = $oWp->getUrl_CurrentAdminPage();
+		include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_plugin_upgraded' ) );
+		$sNoticeMessage = ob_get_contents();
+		ob_end_clean();
+
+		$aAdminNotices[] = $this->getAdminNoticeHtml( $sNoticeMessage, 'updated', false );
 		return $aAdminNotices;
 	}
 
+	/**
+	 * @param array $aAdminNotices
+	 * @return array
+	 */
 	public function adminNoticePluginUpgradeAvailable( $aAdminNotices ) {
+
+		$oWp = $this->loadWpFunctionsProcessor();
+		// Don't show on the update page
+		if ( $oWp->getIsPage_Updates() || !$oWp->getIsPluginUpdateAvailable( $this->getFeatureOptions()->getPluginBaseFile() ) ) {
+			return $aAdminNotices;
+		}
+
+		$sNoticeMessage = sprintf( _wpsf__( 'There is an update available for your WordPress Security plugin: %s.' ), '<strong>'.$this->getFeatureOptions()->getController()->getHumanName().'</strong>' );
+		$sNoticeMessage .= sprintf( '<br /><a href="%s" class="button">'._wpsf__( 'Please click to update immediately' ).'</a>', $oWp->getPluginUpgradeLink( $this->getFeatureOptions()->getPluginBaseFile() ) );
+
+		$aAdminNotices[] = $this->getAdminNoticeHtml( $sNoticeMessage, 'updated', false );
 		return $aAdminNotices;
 	}
 
+	/**
+	 * @param array $aAdminNotices
+	 * @return array
+	 */
 	public function adminNoticeTranslations( $aAdminNotices ) {
+		if ( $this->getInstallationDays() < 7 ) {
+			return $aAdminNotices;
+		}
+
+		$oController = $this->getFeatureOptions()->getController();
+
+		$oWp = $this->loadWpFunctionsProcessor();
+		$sCurrentMetaValue = $oWp->getUserMeta( $oController->doPluginOptionPrefix( 'plugin_translation_notice' ) );
+		if ( empty( $sCurrentMetaValue ) || $sCurrentMetaValue === 'Y' ) {
+			return $aAdminNotices;
+		}
+
+		ob_start();
+		$sMetaFlag = $oController->doPluginPrefix( 'hide_translation_notice' );
+		$sAction = $oController->getPluginUrl_AdminPage().'&'.$sMetaFlag.'=1';
+		$sRedirectPage = $oWp->getUrl_CurrentAdminPage();
+		include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_translate_plugin' ) );
+		$sNoticeMessage = ob_get_contents();
+		ob_end_clean();
+
+		$aAdminNotices[] = $this->getAdminNoticeHtml( $sNoticeMessage, 'updated', false );
 		return $aAdminNotices;
 	}
 
@@ -111,6 +219,10 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 			return $fShow;
 		}
 
+		if ( $this->getInstallationDays() < 1 ) {
+			$fShow = false;
+		}
+
 		$oWpFunctions = $this->loadWpFunctionsProcessor();
 		if ( class_exists( 'Worpit_Plugin' ) ) {
 			if ( method_exists( 'Worpit_Plugin', 'IsLinked' ) ) {
@@ -121,10 +233,6 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 
 				$fShow = false;
 			}
-		}
-
-		if ( $this->getInstallationDays() < 1 ) {
-			$fShow = false;
 		}
 
 		return $fShow;
@@ -168,7 +276,7 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 	 * @return boolean|string
 	 */
 	protected function getAdminNoticeHtml( $sNotice = '', $sMessageClass = 'updated', $infPrint = false ) {
-		$sWrapper = '<div class="%s icwp-admin-notice"><style>#message form { margin: 0px; padding-bottom: 8px; }</style>%s</div>';
+		$sWrapper = '<div class="%s icwp-admin-notice">%s</div>';
 		$sFullNotice = sprintf( $sWrapper, $sMessageClass, $sNotice );
 		if ( $infPrint ) {
 			echo $sFullNotice;

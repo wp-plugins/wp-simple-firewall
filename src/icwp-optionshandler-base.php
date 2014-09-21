@@ -18,7 +18,7 @@
 require_once( 'icwp-options-vo.php' );
 if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
-	abstract class ICWP_WPSF_FeatureHandler_Base_V2 {
+	abstract class ICWP_WPSF_FeatureHandler_Base_V2 extends ICWP_WPSF_Foundation {
 
 		/**
 		 * @var ICWP_Wordpress_Simple_Firewall_Plugin
@@ -268,10 +268,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		public function getPluginBaseFile() {
-			if ( !isset( self::$sPluginBaseFile ) ) {
-				self::$sPluginBaseFile	= plugin_basename( $this->oPluginVo->getRootFile() );
-			}
-			return self::$sPluginBaseFile;
+			return $this->getController()->getPluginBaseFile();
 		}
 
 		/**
@@ -288,57 +285,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function getResourcesDir( $sSourceFile = '' ) {
 			return $this->oPluginVo->getRootDir().'resources'.ICWP_DS.ltrim( $sSourceFile, ICWP_DS );
-		}
-
-		/**
-		 * with trailing slash
-		 * @param string $sSourceFile
-		 * @return string
-		 */
-		public function getPathToInc( $sSourceFile = '' ) {
-			return $this->oPluginVo->getRootDir().'inc'.ICWP_DS.ltrim( $sSourceFile, ICWP_DS );
-		}
-
-		/**
-		 * with trailing slash
-		 * @param string $sSourceFile
-		 * @return string
-		 */
-		public function getSrcFile( $sSourceFile = '' ) {
-			return $this->oPluginVo->getRootDir().'src'.ICWP_DS.ltrim( $sSourceFile, ICWP_DS );
-		}
-
-		/**
-		 * with trailing slash by default
-		 * @param string $sSubPath
-		 * @return string
-		 */
-		public function getPluginRootUrl( $sSubPath = '' ) {
-			return plugins_url( $sSubPath, $this->oPluginVo->getRootFile() );
-		}
-
-		/**
-		 * @param string $sResource
-		 * @return string
-		 */
-		public function getPathToCss( $sResource = '' ) {
-			return $this->getResourcesDir( 'css'.ICWP_DS.ltrim( $sResource, ICWP_DS ) );
-		}
-
-		/**
-		 * @param string $sResource
-		 * @return string
-		 */
-		public function getPathToJs( $sResource = '' ) {
-			return $this->getResourcesDir( 'js'.ICWP_DS.ltrim( $sResource, ICWP_DS ) );
-		}
-
-		/**
-		 * @param string $sResource
-		 * @return string
-		 */
-		public function getResourceUrl( $sResource = '' ) {
-			return $this->getPluginRootUrl( 'resources'.ICWP_DS.ltrim( $sResource, ICWP_DS ) );
 		}
 
 		/**
@@ -365,10 +311,10 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				return $aItems;
 			}
 
-			$sMenuPageTitle = $this->oPluginVo->getHumanName().' - '.$sName;
+			$sMenuPageTitle = $this->getController()->getHumanName().' - '.$sName;
 			$aItems[ $sMenuPageTitle ] = array(
 				$sName,
-				$this->getFeatureSlug(),
+				$this->doPluginPrefix( $this->getFeatureSlug() ),
 				array( $this, 'displayFeatureConfigPage' )
 			);
 			return $aItems;
@@ -647,24 +593,41 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 */
 		public function handleFormSubmit() {
+			$fVerified = $this->verifyFormSubmit();
+
+			if ( !$fVerified ) {
+				return false;
+			}
+
+			$this->doSaveStandardOptions();
+			$this->doExtraSubmitProcessing();
+			return true;
+		}
+
+		protected function verifyFormSubmit() {
 			if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
 //				TODO: manage how we react to prohibited submissions
 				return false;
 			}
 
 			// Now verify this is really a valid submission.
-			check_admin_referer( $this->oPluginVo->getFullPluginPrefix() );
+			return check_admin_referer( $this->getPluginVo()->getPluginPrefix() );
+		}
 
+		/**
+		 * @return bool
+		 */
+		protected function doSaveStandardOptions() {
 			$oDp = $this->loadDataProcessor();
 			$sAllOptions = $oDp->FetchPost( $this->prefixOptionKey( 'all_options_input' ) );
 
 			if ( empty( $sAllOptions ) ) {
 				return true;
 			}
-
 			$this->updatePluginOptionsFromSubmit( $sAllOptions ); //it also saves
-			return true;
 		}
+
+		protected function doExtraSubmitProcessing() { }
 
 		/**
 		 * @param string $sAllOptionsInput - comma separated list of all the input keys to be processed from the $_POST
@@ -756,7 +719,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @param $sKey
 		 * @return string
 		 */
-		protected function prefixOptionKey( $sKey ) {
+		public function prefixOptionKey( $sKey ) {
 			return $this->doPluginPrefix( $sKey, '_' );
 		}
 
@@ -768,13 +731,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		public function doPluginPrefix( $sSuffix = '', $sGlue = '-' ) {
-			$sPrefix = $this->oPluginVo->getFullPluginPrefix( $sGlue );
-
-			if ( $sSuffix == $sPrefix || strpos( $sSuffix, $sPrefix.$sGlue ) === 0 ) { //it already has the prefix
-				return $sSuffix;
-			}
-
-			return sprintf( '%s%s%s', $sPrefix, empty($sSuffix)? '' : $sGlue, empty($sSuffix)? '' : $sSuffix );
+			return $this->getPluginVo()->doPluginPrefix( $sSuffix, $sGlue );
 		}
 
 		/**
@@ -782,7 +739,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		public function getOptionStoragePrefix() {
-			return $this->oPluginVo->getOptionStoragePrefix();
+			return $this->getPluginVo()->getOptionStoragePrefix();
 		}
 
 		/**
@@ -840,6 +797,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			$this->display( $aData );
 		}
 
+		/**
+		 * @return bool
+		 */
 		public function getIsCurrentPageConfig() {
 			$oWpFunctions = $this->loadWpFunctionsProcessor();
 			return $oWpFunctions->getCurrentWpAdminPage() == $this->doPluginPrefix( $this->getFeatureSlug() );
@@ -857,11 +817,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		protected function getBaseDisplayData() {
 			return array(
-				'var_prefix'		=> $this->oPluginVo->getOptionStoragePrefix(),
-				'sPluginName'		=> $this->oPluginVo->getHumanName(),
+				'var_prefix'		=> $this->getPluginVo()->getOptionStoragePrefix(),
+				'sPluginName'		=> $this->getPluginVo()->getHumanName(),
 				'sFeatureName'		=> $this->getMainFeatureName(),
 				'fShowAds'			=> $this->getIsShowMarketing(),
-				'nonce_field'		=> $this->oPluginVo->getFullPluginPrefix(),
+				'nonce_field'		=> $this->getPluginVo()->getPluginPrefix(),
 				'sFeatureSlug'		=> $this->doPluginPrefix( $this->getFeatureSlug() ),
 				'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->getFeatureSlug() ),
 				'nOptionsPerRow'	=> 1,
@@ -887,12 +847,12 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 			if ( empty( $sView ) ) {
 				$oWpFs = $this->loadFileSystemProcessor();
-				$sCustomViewSource = $this->oPluginVo->getViewDir().$this->doPluginPrefix( 'config_'.$this->getFeatureSlug().'_index' ).'.php';
-				$sNormalViewSource = $this->oPluginVo->getViewDir().$this->doPluginPrefix( 'config_index' ).'.php';
+				$sCustomViewSource = $this->getPluginVo()->getViewPath( $this->doPluginPrefix( 'config_'.$this->getFeatureSlug().'_index' ) );
+				$sNormalViewSource = $this->getPluginVo()->getViewPath( $this->doPluginPrefix( 'config_index' ) );
 				$sFile = $oWpFs->exists( $sCustomViewSource ) ? $sCustomViewSource : $sNormalViewSource;
 			}
 			else {
-				$sFile = $this->oPluginVo->getViewDir().$this->doPluginPrefix( $sView ).'.php';
+				$sFile = $this->getPluginVo()->getViewPath( $this->doPluginPrefix( $sView ) );
 			}
 
 			if ( !is_file( $sFile ) ) {
@@ -901,7 +861,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			}
 
 			if ( count( $aData ) > 0 ) {
-				extract( $aData, EXTR_PREFIX_ALL, $this->oPluginVo->getParentSlug() ); //slug being 'icwp'
+				extract( $aData, EXTR_PREFIX_ALL, $this->getPluginVo()->getParentSlug() ); //slug being 'icwp'
 			}
 
 			ob_start();
@@ -914,56 +874,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * get the directory for the plugin view with the trailing slash
-		 *
 		 * @param string $sSnippet
 		 * @return string
 		 */
 		public function getViewSnippet( $sSnippet = '' ) {
-			return $this->getPluginVo()->getViewDir().'snippets'.ICWP_DS.$sSnippet;
-		}
-
-		/**
-		 * @return ICWP_WPSF_DataProcessor
-		 */
-		public function loadDataProcessor() {
-			if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
-				require_once( dirname(__FILE__).'/icwp-data-processor.php' );
-			}
-			return ICWP_WPSF_DataProcessor::GetInstance();
-		}
-
-		/**
-		 * @return ICWP_WPSF_WpFilesystem
-		 */
-		public function loadFileSystemProcessor() {
-			if ( !class_exists('ICWP_WPSF_WpFilesystem') ) {
-				require_once( dirname(__FILE__) . '/icwp-wpfilesystem.php' );
-			}
-			return ICWP_WPSF_WpFilesystem::GetInstance();
-		}
-
-		/**
-		 * @return ICWP_WPSF_WpFunctions
-		 */
-		public function loadWpFunctionsProcessor() {
-			require_once( dirname(__FILE__) . '/icwp-wpfunctions.php' );
-			return ICWP_WPSF_WpFunctions::GetInstance();
-		}
-
-		/**
-		 * @return ICWP_WPSF_YamlProcessor
-		 */
-		public function loadYamlProcessor() {
-			require_once( dirname(__FILE__) . '/icwp-processor-yaml.php' );
-			return ICWP_WPSF_YamlProcessor::GetInstance();
-		}
-
-		/**
-		 * @return ICWP_Stats_WPSF
-		 */
-		public function loadStatsProcessor() {
-			require_once( dirname(__FILE__) . '/icwp-wpsf-stats.php' );
+			return $this->getPluginVo()->getViewSnippet( $sSnippet );
 		}
 
 		/**
@@ -977,57 +892,16 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * @return ICWP_Wordpress_Simple_Firewall_Plugin
 		 */
-		public function getPluginVo() {
+		public function getController() {
 			return $this->oPluginVo;
 		}
 
 		/**
-		 * @param $sKey
-		 * @return bool|string
+		 * @return ICWP_Wordpress_Simple_Firewall_Plugin
 		 */
-		public function getUserMeta( $sKey ) {
-
-			$oWp = $this->loadWpFunctionsProcessor();
-			$oCurrentUser = $oWp->getCurrentWpUser();
-			if ( is_null( $oCurrentUser ) ) {
-				return false;
-			}
-			$nUserId = $oCurrentUser->ID;
-
-			$sFullOptionKey = $this->prefixOptionKey( $sKey );
-			$sCurrentMetaValue = get_user_meta( $nUserId, $sFullOptionKey, true );
-			// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
-			if ( empty( $sCurrentMetaValue ) ) {
-				//the value has never been set, or it's been installed for the first time.
-				$this->updateUserMeta( $sFullOptionKey, 'temp', $nUserId );
-				return 'Y'; //meaning we don't show the update notice upon new installations and for those people who can't set the version in their meta.
-			}
-			return $sCurrentMetaValue;
+		public function getPluginVo() {
+			return $this->getController();
 		}
-
-		/**
-		 * Updates the current (or supplied user ID) user meta data with the version of the plugin
-		 *
-		 * @param string $sKey
-		 * @param mixed $mValue
-		 * @param integer $nId		-user ID
-		 * @return boolean
-		 */
-		protected function updateUserMeta( $sKey, $mValue, $nId = null ) {
-			if ( empty( $innId ) ) {
-				$oWp = $this->loadWpFunctionsProcessor();
-				$oCurrentUser = $oWp->getCurrentWpUser();
-				if ( is_null( $oCurrentUser ) ) {
-					return false;
-				}
-				$nUserId = $oCurrentUser->ID;
-			}
-			else {
-				$nUserId = $nId;
-			}
-			return update_user_meta( $nUserId, $this->prefixOptionKey( $sKey ), $mValue );
-		}
-
 	}
 
 endif;

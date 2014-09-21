@@ -37,7 +37,7 @@ class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-privacyprotect.php' );
+			require_once( $this->oPluginVo->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_PrivacyProtect( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -106,11 +106,7 @@ class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_B
 		return $aOptionsDefinitions;
 	}
 
-	public function handleFormSubmit() {
-		if ( !parent::handleFormSubmit() ) {
-			return false;
-		}
-
+	protected function doExtraSubmitProcessing() {
 		$oDp = $this->loadDataProcessor();
 		if ( $oDp->FetchPost( 'clear_log_submit' ) ) {
 			$oLoggingProcessor = $this->getLoggingProcessor();

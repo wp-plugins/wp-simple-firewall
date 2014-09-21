@@ -18,7 +18,7 @@
 
 if ( !class_exists('ICWP_BaseProcessor_V3') ):
 
-	class ICWP_BaseProcessor_V3 {
+	class ICWP_BaseProcessor_V3 extends ICWP_WPSF_Foundation {
 
 		const PcreDelimiter = '/';
 		const LOG_MESSAGE_LEVEL_INFO = 0;
@@ -86,7 +86,7 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 * @return bool
 		 */
 		public function getOption( $sOptionKey, $mDefault = false ) {
-			return $this->oFeatureOptions->getOpt( $sOptionKey, $mDefault );
+			return $this->getFeatureOptions()->getOpt( $sOptionKey, $mDefault );
 		}
 
 		/**
@@ -261,14 +261,14 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 * @return ICWP_WPSF_Processor_Email
 		 */
 		public function getEmailProcessor() {
-			return $this->oFeatureOptions->getEmailProcessor();
+			return $this->getFeatureOptions()->getEmailProcessor();
 		}
 
 		/**
 		 * @return ICWP_WPSF_Processor_Logging
 		 */
 		public function getLoggingProcessor() {
-			return $this->oFeatureOptions->getLoggingProcessor();
+			return $this->getFeatureOptions()->getLoggingProcessor();
 		}
 
 		/**
@@ -290,34 +290,6 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 				}
 			}
 			return true;
-		}
-
-		/**
-		 * @return ICWP_WPSF_DataProcessor
-		 */
-		protected function loadDataProcessor() {
-			return $this->oFeatureOptions->loadDataProcessor();
-		}
-
-		/**
-		 * @return ICWP_WPSF_WpFilesystem
-		 */
-		protected function loadFileSystemProcessor() {
-			return $this->oFeatureOptions->loadFileSystemProcessor();
-		}
-
-		/**
-		 * @return ICWP_WPSF_WpFunctions
-		 */
-		protected function loadWpFunctionsProcessor() {
-			return $this->oFeatureOptions->loadWpFunctionsProcessor();
-		}
-
-		/**
-		 * @return ICWP_Stats_WPSF
-		 */
-		protected function loadStatsProcessor() {
-			return $this->oFeatureOptions->loadStatsProcessor();
 		}
 
 		/**

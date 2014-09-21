@@ -40,10 +40,28 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-plugin.php' );
+			require_once( $this->getController()->getSourceDir().'icwp-processor-plugin.php' );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Plugin( $this );
 		}
 		return $this->oFeatureProcessor;
+	}
+
+	/**
+	 */
+	public function doClearAdminFeedback() {
+		$this->setOpt( 'feedback_admin_notice', array() );
+	}
+
+	/**
+	 */
+	public function doAddAdminFeedback( $sMessage ) {
+		$aFeedback = $this->getOpt( 'feedback_admin_notice', array() );
+		$aFeedback[] = $sMessage;
+		$this->setOpt( 'feedback_admin_notice', $aFeedback );
+	}
+
+	public function doExtraSubmitProcessing() {
+		$this->doAddAdminFeedback( sprintf( _wpsf__( '%s Plugin options updated successfully.' ), $this->getController()->getHumanName() ) );
 	}
 
 	/**
@@ -100,10 +118,11 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 
 	/**
 	 * Hooked to 'deactivate_plugin' and can be used to interrupt the deactivation of this plugin.
-	 * @param string $insPlugin
+	 *
+	 * @param string $sPlugin
 	 */
-	public function onWpHookDeactivatePlugin( $insPlugin ) {
-		if ( strpos( $this->oPluginVo->getRootFile(), $insPlugin ) !== false ) {
+	public function onWpHookDeactivatePlugin( $sPlugin ) {
+		if ( strpos( $this->getPluginVo()->getRootFile(), $sPlugin ) !== false ) {
 			if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
 				wp_die(
 					_wpsf__( 'Sorry, you do not have permission to disable this plugin.')
@@ -159,7 +178,7 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 			case 'block_send_email_address' :
 				$sName = _wpsf__( 'Report Email' );
 				$sSummary = _wpsf__( 'Where to send email reports' );
-				$sDescription = _wpsf__( 'If this is empty, it will default to the blog admin email address.' );
+				$sDescription = sprintf( _wpsf__( 'If this is empty, it will default to the blog admin email address: %s' ), '<br /><strong>'.get_bloginfo('admin_email').'</strong>' );
 				break;
 
 			case 'enable_upgrade_admin_notice' :

@@ -23,8 +23,6 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_WPSF_Processor_Base {
 
 	const FilterPriority = 1001;
 	
-	protected $sPluginFile;
-
 	/**
 	 * @var boolean
 	 */
@@ -35,7 +33,6 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_WPSF_Processor_Base {
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_Autoupdates $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
-		$this->sPluginFile = $this->oFeatureOptions->getPluginBaseFile();
 	}
 	
 	/**
@@ -49,7 +46,7 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_WPSF_Processor_Base {
 	 * @return boolean
 	 */
 	public function getForceRunAutoupdates() {
-		return apply_filters( $this->oFeatureOptions->doPluginPrefix( 'force_autoupdate' ), $this->fDoForceRunAutoupdates );
+		return apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'force_autoupdate' ), $this->fDoForceRunAutoupdates );
 	}
 	
 	/**
@@ -201,7 +198,7 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_WPSF_Processor_Base {
 			return $infUpdate;
 		}
 
-		if ( $sItemFile === $this->sPluginFile ) {
+		if ( $sItemFile === $this->getFeatureOptions()->getPluginBaseFile() ) {
 			if ( $this->getIsOption('autoupdate_plugin_self', 'Y') ) {
 				$this->doStatIncrement( 'autoupdates.plugins.self' );
 				return true;

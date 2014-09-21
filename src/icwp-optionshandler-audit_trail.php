@@ -37,7 +37,7 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-audit_trail.php' );
+			require_once( $this->oPluginVo->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_AuditTrail( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -46,12 +46,7 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 	/**
 	 * @return bool|void
 	 */
-	public function handleFormSubmit() {
-		$fSuccess = parent::handleFormSubmit();
-		if ( !$fSuccess ) {
-			return $fSuccess;
-		}
-	}
+	public function doExtraSubmitProcessing() { }
 
 	public function doPrePluginOptionsSave() {}
 

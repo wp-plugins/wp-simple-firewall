@@ -68,8 +68,8 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 		add_action(	'comment_form',					array( $this, 'printGaspFormParts_Action' ), 2 );
 		add_filter( 'preprocess_comment',			array( $this, 'doCommentChecking' ), 1, 1 );
 
-		add_filter( $this->oFeatureOptions->doPluginPrefix( 'comments_filter_status' ), array( $this, 'getCommentStatus' ), 1 );
-		add_filter( $this->oFeatureOptions->doPluginPrefix( 'comments_filter_status_explanation' ), array( $this, 'getCommentStatusExplanation' ), 1 );
+		add_filter( $this->getFeatureOptions()->doPluginPrefix( 'comments_filter_status' ), array( $this, 'getCommentStatus' ), 1 );
+		add_filter( $this->getFeatureOptions()->doPluginPrefix( 'comments_filter_status_explanation' ), array( $this, 'getCommentStatusExplanation' ), 1 );
 	}
 
 	/**

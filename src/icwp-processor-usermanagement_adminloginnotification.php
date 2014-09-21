@@ -56,7 +56,7 @@ class ICWP_WPSF_Processor_UserManagement_AdminLoginNotification extends ICWP_WPS
 		}
 
 		$oDp = $this->loadDataProcessor();
-		$oEmailer = $this->oFeatureOptions->getEmailProcessor();
+		$oEmailer = $this->getFeatureOptions()->getEmailProcessor();
 
 		$aMessage = array(
 			_wpsf__( 'As requested, the WordPress Simple Firewall is notifying you of an administrator login to a WordPress site that you manage.' ),

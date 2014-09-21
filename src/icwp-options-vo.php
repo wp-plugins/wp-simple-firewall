@@ -1,5 +1,5 @@
 <?php
-class ICWP_WPSF_OptionsVO {
+class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 
 	/**
 	 * @var array
@@ -63,7 +63,7 @@ class ICWP_WPSF_OptionsVO {
 	 * @return array
 	 */
 	public function getAllOptionsValues() {
-		return $this->loadStoredOptionsValues();
+		return $this->loadOptionsValuesFromStorage();
 	}
 
 	/**
@@ -299,13 +299,6 @@ class ICWP_WPSF_OptionsVO {
 	}
 
 	/**
-	 * @param array $aOptions
-	 */
-	public function setRawOptionsConfigData( $aOptions ) {
-		$this->aRawOptionsConfigData = $aOptions;
-	}
-
-	/**
 	 * @param string $sOptionKey
 	 * @return mixed
 	 */
@@ -337,7 +330,7 @@ class ICWP_WPSF_OptionsVO {
 	 * @return array
 	 * @throws Exception
 	 */
-	private function loadStoredOptionsValues( $fReload = false ) {
+	private function loadOptionsValuesFromStorage( $fReload = false ) {
 
 		if ( $fReload || empty( $this->aOptionsValues ) ) {
 
@@ -354,14 +347,6 @@ class ICWP_WPSF_OptionsVO {
 			}
 		}
 		return $this->aOptionsValues;
-	}
-
-	/**
-	 * @return ICWP_WPSF_YamlProcessor
-	 */
-	private function loadYamlProcessor() {
-		require_once( dirname(__FILE__) .ICWP_DS.'icwp-processor-yaml.php' );
-		return ICWP_WPSF_YamlProcessor::GetInstance();
 	}
 
 	/**
@@ -383,25 +368,5 @@ class ICWP_WPSF_OptionsVO {
 			}
 		}
 		return $aConfig;
-	}
-
-	/**
-	 * @return ICWP_WPSF_WpFilesystem
-	 */
-	private function loadFileSystemProcessor() {
-		if ( !class_exists('ICWP_WPSF_WpFilesystem') ) {
-			require_once( dirname(__FILE__) .ICWP_DS.'icwp-wpfilesystem.php' );
-		}
-		return ICWP_WPSF_WpFilesystem::GetInstance();
-	}
-
-	/**
-	 * @return ICWP_WPSF_WpFunctions
-	 */
-	private function loadWpFunctionsProcessor() {
-		if ( !class_exists('ICWP_WPSF_WpFunctions') ) {
-			require_once( dirname(__FILE__) . '/icwp-wpfunctions.php' );
-		}
-		return ICWP_WPSF_WpFunctions::GetInstance();
 	}
 }

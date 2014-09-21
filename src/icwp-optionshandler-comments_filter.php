@@ -21,9 +21,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_CommentsFilter') ):
 
 class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_Base {
 
-	const DefaultCommentCooldown	= 30; //seconds.
-	const DefaultCommentExpire		= 600; //seconds.
-	
 	/**
 	 * @var ICWP_WPSF_Processor_CommentsFilter
 	 */
@@ -40,7 +37,7 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-commentsfilter.php' );
+			require_once( $this->oPluginVo->getSourceDir().sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_CommentsFilter( $this );
 		}
 		return $this->oFeatureProcessor;

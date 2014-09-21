@@ -39,7 +39,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-usermanagement.php' );
+			require_once( $this->oPluginVo->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_UserManagement( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -90,7 +90,7 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 		switch( $aOptionsParams['section_slug'] ) {
 
 			case 'section_enable_plugin_feature_user_accounts_management' :
-				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature %s' ), $this->getMainFeatureName() );
+				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), $this->getMainFeatureName() );
 				break;
 
 			case 'section_bypass_user_accounts_management' :
@@ -149,7 +149,8 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 				$sName = _wpsf__( 'Session Timeout' );
 				$sSummary = _wpsf__( 'Specify How Many Days After Login To Automatically Force Re-Login' );
 				$sDescription = _wpsf__( 'WordPress default is 2 days, or 14 days if you check the "Remember Me" box.' )
-					.'<br />'. sprintf( _wpsf__( 'This cannot be less than %s. Default: %s.' ), '"<strong>1</strong>"', '"<strong>'.$this->getOptionsVo()->getOptDefault('session_timeout_interval').'</strong>"' );
+					.'<br />'. sprintf( _wpsf__( 'This cannot be less than %s.' ), '"<strong>1</strong>"' )
+					.'<br />'. sprintf( _wpsf__( 'Default: %s.' ), '"<strong>'.$this->getOptionsVo()->getOptDefault('session_timeout_interval').'</strong>"' );
 				break;
 
 			case 'session_idle_timeout_interval' :

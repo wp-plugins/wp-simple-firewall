@@ -37,7 +37,7 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir().'icwp-processor-loginprotect.php' );
+			require_once( $this->oPluginVo->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_LoginProtect( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -232,12 +232,7 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	/**
 	 * @return bool|void
 	 */
-	public function handleFormSubmit() {
-		$fSuccess = parent::handleFormSubmit();
-		if ( !$fSuccess ) {
-			return;
-		}
-
+	public function doExtraSubmitProcessing() {
 		// When they've clicked to terminate all logged in authenticated users.
 		$oDp = $this->loadDataProcessor();
 		if ( $oDp->FetchPost( 'terminate-all-logins' ) ) {

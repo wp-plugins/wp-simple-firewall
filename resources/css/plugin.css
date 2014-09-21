@@ -20,6 +20,9 @@
 	vertical-align: middle;
 	width: 48px;
 }
+.plugin_update_message {
+	color: #dd3333;
+}
 .wrap .icon32 {
 	width: 32px;
 }

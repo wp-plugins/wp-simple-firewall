@@ -189,11 +189,40 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		}
 
 		/**
+		 * @return string
+		 */
+		public function getUrl_CurrentAdminPage() {
+
+			$sPage = $this->getCurrentPage();
+			$sUrl = self_admin_url( $sPage );
+
+			//special case for plugin admin pages.
+			if ( $sPage == 'admin.php' ) {
+				$sSubPage = $this->loadDataProcessor()->FetchGet( 'page' );
+				if ( !empty( $sSubPage ) ) {
+					$aQueryArgs = array(
+						'page' 	=> $sSubPage,
+					);
+					$sUrl = add_query_arg( $aQueryArgs, $sUrl );
+				}
+			}
+			return $sUrl;
+		}
+
+		/**
 		 * @param string
 		 * @return string
 		 */
 		public function getIsCurrentPage( $sPage ) {
 			return $sPage == $this->getCurrentPage();
+		}
+
+		/**
+		 * @param string
+		 * @return string
+		 */
+		public function getIsPage_Updates() {
+			return $this->getIsCurrentPage( 'update.php' );
 		}
 
 		/**
@@ -248,6 +277,13 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 */
 		public function getIsAjax() {
 			return defined( 'DOING_AJAX' ) && DOING_AJAX;
+		}
+
+		/**
+		 * @return boolean
+		 */
+		public function getIsCron() {
+			return defined( 'DOING_CRON' ) && DOING_CRON;
 		}
 
 		/**
@@ -366,6 +402,51 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 */
 		protected function getWpLoginUrl() {
 			return site_url() . '/wp-login.php';
+		}
+
+		/**
+		 * @param string $sKey should be already prefixed
+		 * @param string $nId
+		 * @return bool|string
+		 */
+		public function getUserMeta( $sKey, $nId = null ) {
+			$nUserId = $nId;
+			if ( empty( $nUserId ) ) {
+				$oCurrentUser = $this->getCurrentWpUser();
+				if ( is_null( $oCurrentUser ) ) {
+					return false;
+				}
+				$nUserId = $oCurrentUser->ID;
+			}
+
+			$sCurrentMetaValue = get_user_meta( $nUserId, $sKey, true );
+			// A guard whereby if we can't ever get a value for this meta, it means we can never set it.
+			if ( empty( $sCurrentMetaValue ) ) {
+				//the value has never been set, or it's been installed for the first time.
+				$this->updateUserMeta( $sKey, 'temp', $nUserId );
+				return '';
+			}
+			return $sCurrentMetaValue;
+		}
+
+		/**
+		 * Updates the user meta data for the current (or supplied user ID)
+		 *
+		 * @param string $sKey
+		 * @param mixed $mValue
+		 * @param integer $nId		-user ID
+		 * @return boolean
+		 */
+		public function updateUserMeta( $sKey, $mValue, $nId = null ) {
+			$nUserId = $nId;
+			if ( empty( $nUserId ) ) {
+				$oCurrentUser = $this->getCurrentWpUser();
+				if ( is_null( $oCurrentUser ) ) {
+					return false;
+				}
+				$nUserId = $oCurrentUser->ID;
+			}
+			return update_user_meta( $nUserId, $sKey, $mValue );
 		}
 
 		/**

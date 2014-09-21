@@ -27,9 +27,9 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		protected static $oInstance = NULL;
 
 		/**
-		 * @var object
+		 * @var WP_Filesystem
 		 */
-		protected $m_oWpFilesystem = null;
+		protected $oWpfs = null;
 
 		/**
 		 * @var string
@@ -46,11 +46,6 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 			return self::$oInstance;
 		}
 
-		public function __construct() {
-			$this->initFileSystem();
-// 		$this->setWpConfigPath();
-		}
-
 		/**
 		 * @param string $sBase
 		 * @param string $sPath
@@ -61,11 +56,15 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		}
 
 		/**
-		 * @param $sPath
-		 * @return boolean	true/false whether file/directory exists
+		 * @param $sFilePath
+		 * @return boolean|null	true/false whether file/directory exists
 		 */
-		public function exists( $sPath ) {
-			return $this->fileAction( 'file_exists', $sPath );
+		public function exists( $sFilePath ) {
+			$oFs = $this->getWpfs();
+			if ( $oFs ) {
+				return $oFs->exists( $sFilePath );
+			}
+			return function_exists( 'file_exists' ) ? file_exists( $sFilePath ) : null;
 		}
 
 		/**
@@ -104,26 +103,16 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 			}
 		}
 
-		protected function initFileSystem() {
-			if ( is_null( $this->m_oWpFilesystem ) ) {
-				require_once(ABSPATH . 'wp-admin/includes/file.php');
-				WP_Filesystem();
-				global $wp_filesystem;
-				if ( isset( $wp_filesystem ) && is_object( $wp_filesystem ) ) {
-					$this->m_oWpFilesystem = &$wp_filesystem;
-				}
-				else {
-					$this->m_oWpFilesystem = false;
-				}
-			}
-		}
-
 		public function getContent_WpConfig() {
 			return $this->getFileContent( $this->m_sWpConfigPath );
 		}
 
-		public function putContent_WpConfig( $insContent ) {
-			return $this->putFileContent( $this->m_sWpConfigPath, $insContent );
+		/**
+		 * @param string $sContent
+		 * @return bool
+		 */
+		public function putContent_WpConfig( $sContent ) {
+			return $this->putFileContent( $this->m_sWpConfigPath, $sContent );
 		}
 
 		/**
@@ -145,11 +134,11 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		}
 
 		/**
-		 * @param $insUrl
+		 * @param string $sUrl
 		 * @return bool
 		 */
-		public function getUrl( $insUrl ) {
-			$mResult = wp_remote_get( $insUrl );
+		public function getUrl( $sUrl ) {
+			$mResult = wp_remote_get( $sUrl );
 			if ( is_wp_error( $mResult ) ) {
 				return false;
 			}
@@ -159,10 +148,13 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 			return $mResult;
 		}
 
-		public function getUrlContent( $insUrl ) {
-
-			$aResponse = $this->getUrl( $insUrl );
-			if ( !$aResponse ) {
+		/**
+		 * @param string $sUrl
+		 * @return bool|string
+		 */
+		public function getUrlContent( $sUrl ) {
+			$aResponse = $this->getUrl( $sUrl );
+			if ( !$aResponse || !isset( $aResponse['body'] ) ) {
 				return false;
 			}
 			return $aResponse['body'];
@@ -197,41 +189,40 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		}
 
 		/**
-		 * @param $sFilePath
+		 * @param string $sFilePath
 		 * @return int|null
 		 */
 		public function getModifiedTime( $sFilePath ) {
-			return $this->getTime($sFilePath, 'modified');
+			return $this->getTime( $sFilePath, 'modified' );
 		}
 
 		/**
-		 * @param $sFilePath
+		 * @param string $sFilePath
 		 * @return int|null
 		 */
 		public function getAccessedTime( $sFilePath ) {
-			return $this->getTime($sFilePath, 'accessed');
+			return $this->getTime( $sFilePath, 'accessed' );
 		}
 
 		/**
-		 * @param $sFilePath
+		 * @param string $sFilePath
 		 * @param string $sProperty
 		 * @return int|null
 		 */
 		public function getTime( $sFilePath, $sProperty = 'modified' ) {
 
-			if ( !$this->exists($sFilePath) ) {
+			if ( !$this->exists( $sFilePath ) ) {
 				return null;
 			}
 
-			$fUseWp = $this->m_oWpFilesystem ? true : false;
-
+			$oFs = $this->getWpfs();
 			switch ( $sProperty ) {
 
 				case 'modified' :
-					return $fUseWp? $this->m_oWpFilesystem->mtime( $sFilePath ) : filemtime( $sFilePath );
+					return $oFs? $oFs->mtime( $sFilePath ) : filemtime( $sFilePath );
 					break;
 				case 'accessed' :
-					return $fUseWp? $this->m_oWpFilesystem->atime( $sFilePath ) : fileatime( $sFilePath );
+					return $oFs? $oFs->atime( $sFilePath ) : fileatime( $sFilePath );
 					break;
 				default:
 					return null;
@@ -265,47 +256,46 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		 * @return string|null
 		 */
 		public function getFileContent( $sFilePath ) {
-			$sContents = '';
-			if ( $this->m_oWpFilesystem ) {
-				$sContents = $this->m_oWpFilesystem->get_contents( $sFilePath );
+			$sContents = null;
+			$oFs = $this->getWpfs();
+			if ( $oFs ) {
+				$sContents = $oFs->get_contents( $sFilePath );
 			}
 
-			if ( empty( $sContents ) && function_exists('file_get_contents') ) {
+			if ( empty( $sContents ) && function_exists( 'file_get_contents' ) ) {
 				$sContents = file_get_contents( $sFilePath );
 			}
-
 			return $sContents;
 		}
 
 		/**
 		 * @param string $sFilePath
 		 * @param string $sContents
-		 * @return boolean
+		 * @return boolean|null
 		 */
 		public function putFileContent( $sFilePath, $sContents ) {
-			if ( $this->m_oWpFilesystem ) {
-				return $this->m_oWpFilesystem->put_contents( $sFilePath, $sContents, FS_CHMOD_FILE );
+			$oFs = $this->getWpfs();
+			if ( $oFs ) {
+				return $oFs->put_contents( $sFilePath, $sContents, FS_CHMOD_FILE );
 			}
-			else if ( file_put_contents( $sFilePath, $sContents ) === false ) {
-				return false;
+
+			if ( function_exists( 'file_put_contents' ) ) {
+				return file_put_contents( $sFilePath, $sContents ) !== false;
 			}
-			return true;
+			return null;
 		}
 
 		/**
-		 * @param $insFilePath
-		 * @return boolean
+		 * @param $sFilePath
+		 * @return boolean|null
 		 */
-		public function deleteFile( $insFilePath ) {
-			if ( !$this->exists( $insFilePath ) ) {
-				return null;
+		public function deleteFile( $sFilePath ) {
+			$oFs = $this->getWpfs();
+			if ( $oFs ) {
+				return $oFs->delete( $sFilePath );
 			}
-			if ( $this->m_oWpFilesystem ) {
-				return $this->m_oWpFilesystem->delete( $insFilePath );
-			}
-			else {
-				return unlink( $insFilePath );
-			}
+
+			return function_exists( 'unlink' ) ? unlink( $sFilePath ) : null;
 		}
 
 		/**
@@ -313,34 +303,49 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		 * @return bool|mixed
 		 */
 		public function isFile( $sFilePath ) {
-			return $this->fileAction( 'is_file', $sFilePath );
+			$oFs = $this->getWpfs();
+			if ( $oFs ) {
+				return $oFs->is_file( $sFilePath );
+			}
+			return function_exists( 'is_file' ) ? is_file( $sFilePath ) : null;
 		}
 
-		public function fileAction( $insFunctionName, $aParams ) {
-			$aFunctionMap = array(
-				'file_exists'	=> 'exists',
-				'touch'			=> 'touch',
-				'is_file'		=> 'is_file'
-			);
-
-			if ( !is_array( $aParams ) ) {
-				$aParams = array( $aParams );
+		/**
+		 * @param string $sFilePath
+		 * @param int $nTime
+		 * @return bool|mixed
+		 */
+		public function touch( $sFilePath, $nTime ) {
+			$oFs = $this->getWpfs();
+			if ( $oFs ) {
+				return $oFs->touch( $sFilePath, $nTime );
 			}
+			return function_exists( 'touch' ) ? touch( $sFilePath, $nTime ) : null;
+		}
 
-			if ( true || !$this->m_oWpFilesystem ) {
-				if ( function_exists( $insFunctionName ) ) {
-					call_user_func_array( $insFunctionName, $aParams );
+		/**
+		 */
+		protected function getWpfs() {
+			if ( is_null( $this->oWpfs ) ) {
+				$this->initFileSystem();
+			}
+			return $this->oWpfs;
+		}
+
+		/**
+		 */
+		private function initFileSystem() {
+			if ( is_null( $this->oWpfs ) ) {
+				require_once( ABSPATH . 'wp-admin'.ICWP_DS.'includes'.ICWP_DS.'file.php' );
+				WP_Filesystem();
+				global $wp_filesystem;
+				if ( isset( $wp_filesystem ) && is_object( $wp_filesystem ) ) {
+					$this->oWpfs = $wp_filesystem;
 				}
 				else {
-					return false;
+					$this->oWpfs = false;
 				}
 			}
-			if ( !array_key_exists($insFunctionName, $aFunctionMap) ) {
-				return false;
-			}
-			$sWpFunctionName = $aFunctionMap[$insFunctionName];
-			$sResult = call_user_func_array( array($this->m_oWpFilesystem, $sWpFunctionName), $aParams );
-			return $sResult;
 		}
 	}
 endif;

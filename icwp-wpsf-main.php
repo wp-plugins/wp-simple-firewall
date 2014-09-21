@@ -88,7 +88,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	/**
 	 * @var ICWP_WPSF_FeatureHandler_Logging
 	 */
-	protected $pFeatureHandlerLogging;
+	protected $oFeatureHandlerLogging;
 
 	/**
 	 */
@@ -98,6 +98,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		$this->loadAllFeatures();
 		add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
 		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
+		add_filter( $this->doPluginPrefix( 'plugin_update_message' ), array( $this, 'getPluginsListUpdateMessage' ) );
 	}
 
 	public function onWpActivatePlugin() {
@@ -153,7 +154,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 			return $this->{$sOptionsVarName};
 		}
 
-		$sSourceFile = $this->oPluginVo->getSourceDir(). sprintf( 'icwp-optionshandler-%s.php', $sFeatureSlug ); // e.g. icwp-optionshandler-plugin.php
+		$sSourceFile = $this->oPluginVo->getSourceDir( sprintf( 'icwp-optionshandler-%s.php', $sFeatureSlug ) ); // e.g. icwp-optionshandler-plugin.php
 		$sClassName = sprintf( 'ICWP_WPSF_FeatureHandler_%s', $sFeatureName ); // e.g. ICWP_WPSF_FeatureHandler_Plugin
 
 		require_once( $sSourceFile );
@@ -171,8 +172,8 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	 * @return array $aItems
 	 */
 	public function filter_addExtraAdminMenuItems( $aItems ) {
-		$aItems[ _wpsf__('Firewall Log' ) ] = array( 'Firewall Log', $this->getSubmenuId('firewall_log'), array( $this, 'onDisplayAll' ) );
-//		$aItems[ _wpsf__('Audit Trail Viewer' ) ] = array( 'Audit Trail Viewer', $this->getSubmenuId('audit_trail_viewer'), array( $this, 'onDisplayAll' ) );
+		$aItems[ _wpsf__('Firewall Log' ) ] = array( 'Firewall Log', $this->doPluginPrefix('firewall_log'), array( $this, 'onDisplayAll' ) );
+//		$aItems[ _wpsf__('Audit Trail Viewer' ) ] = array( 'Audit Trail Viewer', $this->doPluginPrefix('audit_trail_viewer'), array( $this, 'onDisplayAll' ) );
 		return $aItems;
 	}
 
@@ -191,7 +192,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		// regardless of clicking the button.
 		$this->updateVersionUserMeta();
 
-		$sPrefix = str_replace(' ', '-', strtolower( $this->oPluginVo->getAdminMenuTitle() ) ) .'_page_'.$this->getPluginPrefix().'-';
+		$sPrefix = str_replace(' ', '-', strtolower( $this->getController()->getAdminMenuTitle() ) ) .'_page_'.$this->getPluginPrefix().'-';
 		$sCurrent = str_replace( $sPrefix, '', current_filter() );
 
 		switch( $sCurrent ) {
@@ -286,28 +287,24 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	public function onWpAdminInit() {
 		parent::onWpAdminInit();
 
-		$oDp = $this->loadDataProcessor();
-		if ( $this->isValidAdminArea() ) {
+		if ( $this->getController()->getIsValidAdminArea() ) {
+			$oDp = $this->loadDataProcessor();
+			$oWp = $this->loadWpFunctionsProcessor();
+
+			$sRedirect = $oDp->FetchPost( 'redirect_page' );
+			$sRedirect = empty( $sRedirect ) ? $this->getController()->getPluginUrl_AdminPage() : $sRedirect;
 			//Someone clicked the button to acknowledge the update
-			$sMetaFlag = $this->doPluginPrefix( 'hide_update_notice' );
-			if ( $oDp->FetchRequest( $sMetaFlag ) == 1 ) {
+			if ( $oDp->FetchRequest( $this->doPluginPrefix( 'hide_update_notice' ) ) == 1 ) {
 				$this->updateVersionUserMeta();
-				if ( $this->isShowMarketing() ) {
-					wp_redirect( $this->getUrl_PluginDashboard() );
-				}
-				else {
-					wp_redirect( network_admin_url( $_POST['redirect_page'] ) );
-				}
+				$oWp->doRedirect( $sRedirect );
 			}
 
-			$sMetaFlag = $this->doPluginPrefix( 'hide_translation_notice' );
-			if ( $oDp->FetchRequest( $sMetaFlag ) == 1 ) {
+			if ( $oDp->FetchRequest( $this->doPluginPrefix( 'hide_translation_notice' ) ) == 1 ) {
 				$this->updateTranslationNoticeShownUserMeta();
-				wp_redirect( network_admin_url( $_POST['redirect_page'] ) );
+				$oWp->doRedirect( $sRedirect );
 			}
 
-			$sMetaFlag = $this->doPluginPrefix( 'hide_mailing_list_signup' );
-			if ( $oDp->FetchRequest( $sMetaFlag ) == 1 ) {
+			if ( $oDp->FetchRequest( $this->doPluginPrefix( 'hide_mailing_list_signup' ) ) == 1 ) {
 				$this->updateMailingListSignupShownUserMeta();
 			}
 		}
@@ -320,84 +317,15 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 		return apply_filters( $this->doPluginPrefix( 'show_marketing' ), true );
 	}
 
-	protected function getPluginsListUpdateMessage() {
+	public function getPluginsListUpdateMessage( $sMessage ) {
 		return _wpsf__( 'Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features.' );
-	}
-
-	protected function getAdminNoticeHtml_Translations() {
-
-		if ( $this->getInstallationDays() < 7 ) {
-			return '';
-		}
-
-		$sMetaFlag = $this->doPluginPrefix( 'hide_translation_notice' );
-
-		$sRedirectPage = 'index.php';
-		ob_start(); ?>
-			<style>
-				a#fromIcwp { padding: 0 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); color: blue; font-weight: bold; }
-			</style>
-			<form id="IcwpTranslationsNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall'); ?>&<?php echo $sMetaFlag; ?>=1">
-				<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
-				<input type="hidden" value="1" name="<?php echo $sMetaFlag; ?>" id="<?php echo $sMetaFlag; ?>">
-				<h4 style="margin:10px 0 3px;">
-					<?php _wpsf_e( 'Would you like to help translate the WordPress Simple Firewall into your language?' ); ?>
-					<?php printf( _wpsf__( 'Head over to: %s' ), '<a href="http://translate.icontrolwp.com" target="_blank">translate.icontrolwp.com</a>' ); ?>
-				</h4>
-				<input type="submit" value="<?php _wpsf_e( 'Dismiss this notice' ); ?>" name="submit" class="button" style="float:left; margin-bottom:10px;">
-				<div style="clear:both;"></div>
-			</form>
-		<?php
-		$sNotice = ob_get_contents();
-		ob_end_clean();
-		return $sNotice;
-	}
-
-	protected function getAdminNoticeHtml_VersionUpgrade() {
-
-		// for now just showing this for the first 3 days of installation.
-		if ( $this->getInstallationDays() > 7 ) {
-			return '';
-		}
-
-		$sMetaFlag = $this->doPluginPrefix( 'hide_update_notice' );
-
-		$sRedirectPage = 'admin.php?page=icwp-wpsf';
-		ob_start(); ?>
-			<style>a#fromIcwp { padding: 0 5px; border-bottom: 1px dashed rgba(0,0,0,0.1); color: blue; font-weight: bold; }</style>
-			<form id="IcwpUpdateNotice" method="post" action="admin.php?page=<?php echo $this->getSubmenuId('firewall'); ?>&<?php echo $sMetaFlag; ?>=1">
-				<input type="hidden" value="<?php echo $sRedirectPage; ?>" name="redirect_page" id="redirect_page">
-				<input type="hidden" value="1" name="<?php echo $sMetaFlag; ?>" id="<?php echo $sMetaFlag; ?>">
-				<p>
-					<?php _wpsf_e( 'Note: WordPress Simple Firewall plugin does not automatically turn on when you install/update.' ); ?>
-					<?php printf( _wpsf__( 'There may also be %simportant updates to read about%s.' ), '<a href="http://icwp.io/27" id="fromIcwp" title="'._wpsf__( 'WordPress Simple Firewall' ).'" target="_blank">', '</a>' ); ?>
-				</p>
-				</h4>
-				<input type="submit" value="<?php _wpsf_e( 'Okay, show me the dashboard' ); ?>" name="submit" class="button" style="float:left; margin-bottom:10px;">
-				<div style="clear:both;"></div>
-			</form>
-		<?php
-		$sNotice = ob_get_contents();
-		ob_end_clean();
-		return $sNotice;
-	}
-
-	/**
-	 * @return string|void
-	 */
-	protected function getAdminNoticeHtml_OptionsUpdated() {
-		$sAdminFeedbackNotice = $this->loadCorePluginFeature()->getOpt( 'feedback_admin_notice' );
-		if ( !empty( $sAdminFeedbackNotice ) ) {
-			$sNotice = '<p>'.$sAdminFeedbackNotice.'</p>';
-			return $sNotice;
-		}
 	}
 
 	/**
 	 * @return bool
 	 */
 	protected function getShowAdminNotices() {
-		return $this->loadCorePluginFeature()->getOpt('enable_upgrade_admin_notice') == 'Y';
+		return $this->loadCorePluginFeature()->getOpt( 'enable_upgrade_admin_notice' ) == 'Y';
 	}
 
 	/**
@@ -414,7 +342,7 @@ class ICWP_Wordpress_Simple_Firewall extends ICWP_Pure_Base_V5 {
 	protected function getAdminBarNodes() {
 		return array(); //disabled for now
 		$aMenu = array(
-			'id'	=> self::$sOptionPrefix.'admin_menu',
+			'id'	=> $this->doPluginOptionPrefix( 'admin_menu' ),
 			'title'	=> '<span class="pluginlogo_16">&nbsp;</span>'._wpsf__('Firewall').'',
 			'href'	=> 'bob',
 		);
