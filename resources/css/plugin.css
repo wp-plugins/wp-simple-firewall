@@ -92,6 +92,16 @@ p.code-description {
 	margin-left: 0px;
 }*/
 
+.well.admin_access_restriction_form {
+	background-color: #fbfbfb;
+	border: 1px solid #ccc;
+	box-shadow: none;
+}
+
+.well.admin_access_restriction_form .form-actions {
+	background-color: #fbfbfb;
+}
+
 /** LESS PAGE **/
 .enabled_section {
 	opacity: 1.0;
@@ -110,7 +120,7 @@ p.code-description {
 .form-horizontal legend {
 	border-bottom: 1px dashed #aaa;
 	margin-bottom: 8px;
-	margin-top: 30px;
+	margin-top: 10px;
 }
 .form-horizontal .item_group .control-group {
 	margin-bottom: 0;

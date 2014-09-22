@@ -8,6 +8,9 @@ properties:
 sections:
   -
     slug: 'section_enable_plugin_feature_admin_access_restriction'
+    primary: true
+  -
+    slug: 'section_admin_access_restriction_settings'
     primary: false
   -
     slug: 'section_non_ui'
@@ -24,14 +27,14 @@ options:
     link_blog: 'http://icwp.io/wpsf02'
   -
     key: 'admin_access_key'
-    section: 'section_enable_plugin_feature_admin_access_restriction'
+    section: 'section_admin_access_restriction_settings'
     default: ''
     type: 'password'
     link_info: 'http://icwp.io/42'
     link_blog: ''
   -
     key: 'admin_access_timeout'
-    section: 'section_enable_plugin_feature_admin_access_restriction'
+    section: 'section_admin_access_restriction_settings'
     default: 30
     type: 'integer'
     link_info: 'http://icwp.io/41'

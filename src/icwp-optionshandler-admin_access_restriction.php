@@ -21,11 +21,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_AdminAccessRestriction') ):
 
 class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureHandler_Base {
 
-	/**
-	 * @var string
-	 */
-	const AdminAccessKeyCookieName		= 'icwp_wpsf_aakcook';
-
 	private $fHasPermissionToSubmit;
 	
 	/**
@@ -157,6 +152,10 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 
 			case 'section_enable_plugin_feature_admin_access_restriction' :
 				$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Admin Access Restriction') );
+				break;
+
+			case 'section_admin_access_restriction_settings' :
+				$sTitle = _wpsf__( 'Admin Access Restriction Settings' );
 				break;
 
 			default:
