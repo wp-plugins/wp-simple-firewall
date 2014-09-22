@@ -178,7 +178,7 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 				if ( isset( $aOption['value'] ) ) {
 					return $aOption['value'];
 				}
-				else if ( isset( $aOption['value'] ) ) {
+				else if ( isset( $aOption['default'] ) ) {
 					return $aOption['default'];
 				}
 			}

@@ -176,7 +176,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 		switch( $sKey ) {
 
 			case 'enable_admin_access_restriction' :
-				$sName = sprintf( _wpsf__( 'Enable %s' ), _wpsf__('Admin Access') );
+				$sName = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), _wpsf__('Admin Access') );
 				$sSummary = _wpsf__( 'Enforce Admin Access Restriction' );
 				$sDescription = _wpsf__( 'Enable this with great care and consideration. When this Access Key option is enabled, you must specify a key below and use it to gain access to this plugin.' );
 				break;
@@ -191,7 +191,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 				$sName = _wpsf__( 'Admin Access Timeout' );
 				$sSummary = _wpsf__( 'Specify An Automatic Timeout Interval For Admin Access' );
 				$sDescription = _wpsf__( 'This will automatically expire your WordPress Simple Firewall session. Does not apply until you enter the access key again.')
-					.'<br />'.sprintf(_wpsf__( 'Default: %s minutes.' ), $this->getOptionsVo()->getOptDefault( 'admin_access_timeout' ) );
+					.'<br />'.sprintf( _wpsf__( 'Default: %s minutes.' ), $this->getOptionsVo()->getOptDefault( 'admin_access_timeout' ) );
 				break;
 
 			default:
