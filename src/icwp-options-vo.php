@@ -108,6 +108,7 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 			}
 
 			$aLegacySection = array();
+			$aLegacySection['section_primary'] = isset( $aRawSection['primary'] ) && $aRawSection['primary'];
 			$aLegacySection['section_slug'] = $aRawSection['slug'];
 			$aLegacySection['section_options'] = array();
 			foreach( $this->getRawData_AllOptions() as $aRawOption ) {

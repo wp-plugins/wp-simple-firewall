@@ -20,9 +20,12 @@
 .wrap .icwp-admin-notice .button {
 	margin: 10px 0 7px;
 }
+.wrap .icwp-admin-notice .button:hover {
+	text-decoration: none;
+}
 
 .wrap .error.icwp-admin-notice {
-	border: 1px solid rgba(240, 51, 4, 0.56);
+	border-color: rgba(240, 51, 4, 0.56);
 	background-color: rgba(255, 185, 167, 0.25);
 }
 .wrap .error.icwp-admin-notice h3 {

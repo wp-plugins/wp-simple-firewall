@@ -22,31 +22,12 @@ if ( !class_exists('ICWP_WPSF_Processor_CommentsFilter_V2') ):
 class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 
 	/**
-	 * @var string
-	 */
-	protected $sCommentStatus;
-	/**
-	 * @var string
-	 */
-	protected $sCommentStatusExplanation;
-
-	/**
 	 * @param ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
-		$this->reset();
 	}
 
-	/**
-	 * Resets the object values to be re-used anew
-	 */
-	public function reset() {
-		parent::reset();
-		$this->sCommentStatus = '';
-		$this->sCommentStatusExplanation = '';
-	}
-	
 	/**
 	 */
 	public function run() {
@@ -58,10 +39,8 @@ class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 			$oBotSpamProcessor->run();
 		}
 
-		$oWp = $this->loadWpFunctionsProcessor();
-		$oDp = $this->loadDataProcessor();
-		if ( $oDp->GetIsRequestPost() && $oWp->getIsCurrentPage( 'wp-comments-post.php' ) && $this->getIsOption( 'enable_comments_human_spam_filter', 'Y' ) ) {
-			require_once('icwp-processor-commentsfilter_humanspam.php');
+		if ( $this->getIsOption( 'enable_comments_human_spam_filter', 'Y' ) ) {
+			require_once( 'icwp-processor-commentsfilter_humanspam.php' );
 			$oHumanSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_HumanSpam( $this->getFeatureOptions() );
 			$oHumanSpamProcessor->run();
 		}

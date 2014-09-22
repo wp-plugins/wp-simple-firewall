@@ -28,9 +28,9 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	protected $sUniqueCommentToken;
 	/**
 	 * The unique comment token assigned to this page
-	 * @var integer
+	 * @var string
 	 */
-	protected $m_sUniqueFormId;
+	protected $sUniqueFormId;
 	/**
 	 * @var string
 	 */
@@ -174,10 +174,6 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 
 		$this->deleteOldPostCommentTokens();
 		$this->insertUniquePostCommentToken();
-
-		$oDp = $this->loadDataProcessor();
-		$this->m_sUniqueFormId = $oDp->GenerateRandomString( rand(7, 23), true );
-		
 		echo $this->getGaspCommentsHookHtml();
 	}
 	
@@ -228,6 +224,16 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	}
 
 	/**
+	 * @return string
+	 */
+	protected function getUniqueFormId() {
+		if ( !isset( $this->sUniqueFormId ) ) {
+			$this->sUniqueFormId = $this->loadDataProcessor()->GenerateRandomString( rand(7, 23), true );
+		}
+		return $this->sUniqueFormId;
+	}
+
+	/**
 	 * @return void
 	 */
 	public function printGaspFormParts_Action() {
@@ -240,8 +246,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	 * @return string
 	 */
 	protected function getGaspCommentsHookHtml() {
-		$sId = $this->m_sUniqueFormId;
-		$sReturn = '<p id="'.$sId.'"></p>'; // we use this unique <p> to hook onto using javascript
+		$sReturn = '<p id="'.$this->getUniqueFormId().'"></p>'; // we use this unique <p> to hook onto using javascript
 		$sReturn .= '<input type="hidden" id="_sugar_sweet_email" name="sugar_sweet_email" value="" />';
 		$sReturn .= '<input type="hidden" id="_comment_token" name="comment_token" value="'.$this->getUniqueCommentToken().'" />';
 		return $sReturn;
@@ -249,7 +254,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	
 	protected function getGaspCommentsHtml() {
 
-		$sId			= $this->m_sUniqueFormId;
+		$sId			= $this->getUniqueFormId();
 		$sConfirm		= stripslashes( $this->getOption('custom_message_checkbox') );
 		$sAlert			= stripslashes( $this->getOption('custom_message_alert') );
 		$sCommentWait	= stripslashes( $this->getOption('custom_message_comment_wait') );

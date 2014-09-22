@@ -37,7 +37,7 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
+			require_once( $this->getController()->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_LoginProtect( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -268,7 +268,7 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	 */
 	public function getLastLoginTimeFilePath() {
 		// we always update it (but it wont need saved because we compare)
-		$this->setOpt( 'last_login_time_file_path', $this->getPluginVo()->getRootDir().'mode.login_throttled' );
+		$this->setOpt( 'last_login_time_file_path', $this->getController()->getRootDir().'mode.login_throttled' );
 		return $this->getOpt( 'last_login_time_file_path' );
 	}
 

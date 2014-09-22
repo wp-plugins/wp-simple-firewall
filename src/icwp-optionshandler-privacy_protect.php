@@ -37,7 +37,7 @@ class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->oPluginVo->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
+			require_once( $this->getController()->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_PrivacyProtect( $this );
 		}
 		return $this->oFeatureProcessor;

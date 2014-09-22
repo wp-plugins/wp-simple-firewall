@@ -25,12 +25,14 @@ function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $i
 
 	//Take each Options Section in turn
 	foreach ( $inaAllPluginOptions as $sOptionSection ) {
-		
+
+		$fIsPrimarySection = isset( $sOptionSection['section_primary'] ) && $sOptionSection['section_primary'];
+
 		$sRowId = str_replace( ' ', '', $sOptionSection['section_title'] );
 		//Print the Section Title
 		echo '
-				<div class="row" id="'.$sRowId.'">
-					<div class="span9" style="margin-left:0px">
+				<div class="row option_section_row '.( $fIsPrimarySection? 'primary_section' : 'non_primary_section' ).'" id="'.$sRowId.'">
+					<div class="span'.( $fIsPrimarySection? '9' : '9' ).'">
 						<fieldset>
 							<legend>'.$sOptionSection['section_title'].'</legend>
 		';

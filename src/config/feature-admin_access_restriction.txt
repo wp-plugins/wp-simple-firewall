@@ -8,7 +8,7 @@ properties:
 sections:
   -
     slug: 'section_enable_plugin_feature_admin_access_restriction'
-    primary: true
+    primary: false
   -
     slug: 'section_non_ui'
     hidden: true

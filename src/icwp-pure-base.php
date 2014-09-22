@@ -2,21 +2,21 @@
 
 require_once( dirname(__FILE__).ICWP_DS.'icwp-foundation.php' );
 
-if ( !class_exists('ICWP_Pure_Base_V5') ):
+if ( !class_exists('ICWP_Pure_Base_V6') ):
 
-	class ICWP_Pure_Base_V5 extends ICWP_WPSF_Foundation {
+	class ICWP_Pure_Base_V6 extends ICWP_WPSF_Foundation {
 
 		/**
-		 * @var ICWP_Wordpress_Simple_Firewall_Plugin
+		 * @var ICWP_WPSF_Plugin_Controller
 		 */
-		protected $oPluginVo;
+		protected $oPluginController;
 
 		protected $fShowMarketing;
 
-		public function __construct( ICWP_Wordpress_Simple_Firewall_Plugin $oPluginVo ) {
+		public function __construct( ICWP_WPSF_Plugin_Controller $oPluginController ) {
 
 			// All core values of the plugin are derived from the values stored in this value object.
-			$this->oPluginVo				= $oPluginVo;
+			$this->oPluginController				= $oPluginController;
 
 //			add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 //			add_action( 'init',						array( $this, 'onWpInit' ), 0 );
@@ -31,10 +31,10 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		}
 
 		/**
-		 * @return ICWP_Wordpress_Simple_Firewall_Plugin
+		 * @return ICWP_WPSF_Plugin_Controller
 		 */
 		public function getController() {
-			return $this->oPluginVo;
+			return $this->oPluginController;
 		}
 
 		/**
@@ -62,8 +62,8 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		 * Registers the plugins activation, deactivate and uninstall hooks.
 		 */
 		protected function registerActivationHooks() {
-			register_activation_hook( $this->oPluginVo->getRootFile(), array( $this, 'onWpActivatePlugin' ) );
-			register_deactivation_hook( $this->oPluginVo->getRootFile(), array( $this, 'onWpDeactivatePlugin' ) );
+			register_activation_hook( $this->getController()->getRootFile(), array( $this, 'onWpActivatePlugin' ) );
+			register_deactivation_hook( $this->getController()->getRootFile(), array( $this, 'onWpDeactivatePlugin' ) );
 			//	register_uninstall_hook( $this->oPluginVo->getRootFile(), array( $this, 'onWpUninstallPlugin' ) );
 		}
 
@@ -90,7 +90,7 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		 */
 		public function hasPermissionToSubmit( $fHasPermission = true ) {
 			// first a basic admin check
-			return $fHasPermission && is_super_admin() && current_user_can( $this->oPluginVo->getBasePermissions() );
+			return $fHasPermission && is_super_admin() && current_user_can( $this->getController()->getBasePermissions() );
 		}
 
 		/**
@@ -317,13 +317,13 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 			wp_enqueue_style( $sUnique );
 
 			$sUnique = $this->doPluginPrefix( 'bootstrap_wpadmin_css_fixes' );
-			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('bootstrap-wpadmin-fixes.css'),  array( $this->doPluginPrefix( 'bootstrap_wpadmin_legacy_css' ) ), $this->oPluginVo->getVersion() );
+			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('bootstrap-wpadmin-fixes.css'),  array( $this->doPluginPrefix( 'bootstrap_wpadmin_legacy_css' ) ), $this->getController()->getVersion() );
 			wp_enqueue_style( $sUnique );
 		}
 
 		public function enqueuePluginAdminCss() {
 			$sUnique = $this->doPluginPrefix( 'plugin_css' );
-			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('plugin.css'), array( $this->doPluginPrefix( 'bootstrap_wpadmin_css_fixes' ) ), $this->oPluginVo->getVersion() );
+			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('plugin.css'), array( $this->doPluginPrefix( 'bootstrap_wpadmin_css_fixes' ) ), $this->getController()->getVersion().rand() );
 			wp_enqueue_style( $sUnique );
 		}
 
@@ -336,7 +336,7 @@ if ( !class_exists('ICWP_Pure_Base_V5') ):
 		public function onWpActivatePlugin() { }
 
 		public function onWpDeactivatePlugin() {
-			if ( current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
+			if ( current_user_can( $this->getController()->getBasePermissions() ) ) {
 				do_action( $this->doPluginPrefix( 'delete_plugin' ) );
 			}
 		}

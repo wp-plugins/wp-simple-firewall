@@ -53,6 +53,7 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	}
 
 	/**
+	 * @param string $sMessage
 	 */
 	public function doAddAdminFeedback( $sMessage ) {
 		$aFeedback = $this->getOpt( 'feedback_admin_notice', array() );
@@ -122,7 +123,7 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	 * @param string $sPlugin
 	 */
 	public function onWpHookDeactivatePlugin( $sPlugin ) {
-		if ( strpos( $this->getPluginVo()->getRootFile(), $sPlugin ) !== false ) {
+		if ( strpos( $this->getController()->getRootFile(), $sPlugin ) !== false ) {
 			if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
 				wp_die(
 					_wpsf__( 'Sorry, you do not have permission to disable this plugin.')

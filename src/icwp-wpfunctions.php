@@ -51,6 +51,23 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		public function __construct() {}
 
 		/**
+		 * The full plugin file to be upgraded.
+		 *
+		 * @param string $sPluginFile
+		 * @return boolean
+		 */
+		public function doPluginUpgrade( $sPluginFile ) {
+
+			if ( !$this->getIsPluginUpdateAvailable( $sPluginFile )
+				|| ( isset( $GLOBALS['pagenow'] ) && $GLOBALS['pagenow'] == 'update.php' ) ) {
+				return true;
+			}
+			$sUrl = $this->getPluginUpgradeLink( $sPluginFile );
+			wp_redirect( $sUrl );
+			exit();
+		}
+
+		/**
 		 * @param string $sPluginFile
 		 * @return boolean|stdClass
 		 */
@@ -66,8 +83,70 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		}
 
 		/**
-		 * @param $sPluginFile
-		 * @return mixed
+		 * @param string $sCompareString
+		 * @param string $sKey
+		 * @return bool
+		 */
+		public function getIsPluginActive( $sCompareString, $sKey = 'Name' ) {
+
+			$sPluginFile = $this->getIsPluginInstalled( $sCompareString, $sKey );
+			if ( !$sPluginFile ) {
+				return false;
+			}
+			return is_plugin_active( $sPluginFile ) ? $sPluginFile : false;
+		}
+
+		/**
+		 * @param string $sCompareString
+		 * @param string $sKey
+		 * @return bool|string
+		 */
+		public function getIsPluginInstalled( $sCompareString, $sKey = 'Name' ) {
+			$aPlugins = $this->getPlugins();
+
+			if ( empty( $aPlugins ) || !is_array( $aPlugins ) ) {
+				return false;
+			}
+
+			foreach( $aPlugins as $sBaseFileName => $aPluginData ) {
+				if ( isset( $aPluginData[$sKey] ) && $sCompareString == $aPluginData[$sKey] ) {
+					return $sBaseFileName;
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * @param string $sPluginFile
+		 * @return string
+		 */
+		public function getPluginActivateLink( $sPluginFile ) {
+			$sUrl = self_admin_url( 'plugins.php' ) ;
+			$aQueryArgs = array(
+				'action' 	=> 'activate',
+				'plugin'	=> urlencode( $sPluginFile ),
+				'_wpnonce'	=> wp_create_nonce( 'activate-plugin_' . $sPluginFile )
+			);
+			return add_query_arg( $aQueryArgs, $sUrl );
+		}
+
+		/**
+		 * @param string $sPluginFile
+		 * @return string
+		 */
+		public function getPluginDeactivateLink( $sPluginFile ) {
+			$sUrl = self_admin_url( 'plugins.php' ) ;
+			$aQueryArgs = array(
+				'action' 	=> 'deactivate',
+				'plugin'	=> urlencode( $sPluginFile ),
+				'_wpnonce'	=> wp_create_nonce( 'deactivate-plugin_' . $sPluginFile )
+			);
+			return add_query_arg( $aQueryArgs, $sUrl );
+		}
+
+		/**
+		 * @param string $sPluginFile
+		 * @return string
 		 */
 		public function getPluginUpgradeLink( $sPluginFile ) {
 			$sUrl = self_admin_url( 'update.php' ) ;
@@ -88,20 +167,10 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		}
 
 		/**
-		 * The full plugin file to be upgraded.
-		 *
-		 * @param string $sPluginFile
-		 * @return boolean
+		 * @return array
 		 */
-		public function doPluginUpgrade( $sPluginFile ) {
-
-			if ( !$this->getIsPluginUpdateAvailable( $sPluginFile )
-				|| ( isset( $GLOBALS['pagenow'] ) && $GLOBALS['pagenow'] == 'update.php' ) ) {
-				return true;
-			}
-			$sUrl = $this->getPluginUpgradeLink( $sPluginFile );
-			wp_redirect( $sUrl );
-			exit();
+		public function getPlugins() {
+			return function_exists( 'get_plugins' ) ? get_plugins() : array();
 		}
 
 		/**
@@ -324,8 +393,8 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 
 		/**
 		 * @param string $sKey
-		 * @param $sValue
-		 * @return mixed
+		 * @param string $sValue
+		 * @return bool
 		 */
 		public function addOption( $sKey, $sValue ) {
 			return $this->isMultisite() ? add_site_option( $sKey, $sValue ) : add_option( $sKey, $sValue );
@@ -358,6 +427,7 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		}
 
 		/**
+		 * @return string
 		 */
 		public function getCurrentWpAdminPage() {
 

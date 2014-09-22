@@ -21,9 +21,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 	abstract class ICWP_WPSF_FeatureHandler_Base_V2 extends ICWP_WPSF_Foundation {
 
 		/**
-		 * @var ICWP_Wordpress_Simple_Firewall_Plugin
+		 * @var ICWP_WPSF_Plugin_Controller
 		 */
-		protected $oPluginVo;
+		protected $oPluginController;
 
 		/**
 		 * @var ICWP_WPSF_OptionsVO
@@ -84,11 +84,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		protected $fOverrideState;
 
-		public function __construct( $oPluginVo, $sOptionsStoreKey = null ) {
-			if ( empty( $oPluginVo ) ) {
+		public function __construct( $oPluginController, $sOptionsStoreKey = null ) {
+			if ( empty( $oPluginController ) ) {
 				throw new Exception();
 			}
-			$this->oPluginVo = $oPluginVo;
+			$this->oPluginController = $oPluginController;
 			$this->sOptionsStoreKey = $this->prefixOptionKey(
 				( is_null( $sOptionsStoreKey ) ? $this->getFeatureSlug() : $sOptionsStoreKey )
 				.'_options'
@@ -147,7 +147,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return bool
 		 */
 		public function getIsUpgrading() {
-			return $this->getVersion() != $this->oPluginVo->getVersion();
+			return $this->getVersion() != $this->getController()->getVersion();
 		}
 
 		/**
@@ -158,7 +158,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			if ( ! $this->fPluginDeleting ) {
 				$this->savePluginOptions();
 
-				if ( $this->oPluginVo->getIsLoggingEnabled() ) {
+				if ( $this->getController()->getIsLoggingEnabled() ) {
 					$aLogData = apply_filters( $this->doPluginPrefix( 'flush_logs' ), array() );
 					$oLoggingProcessor = $this->getLoggingProcessor();
 					$oLoggingProcessor->addDataToWrite( $aLogData );
@@ -188,9 +188,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * @return ICWP_WPSF_FeatureHandler_Email
 		 */
-		public static function GetEmailHandler() {
+		public function getEmailHandler() {
 			if ( is_null( self::$oEmailHandler ) ) {
-				self::$oEmailHandler = new ICWP_WPSF_FeatureHandler_Email( ICWP_Wordpress_Simple_Firewall_Plugin::GetInstance() );
+				self::$oEmailHandler = new ICWP_WPSF_FeatureHandler_Email( $this->getController() );
 			}
 			return self::$oEmailHandler;
 		}
@@ -199,16 +199,16 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return ICWP_WPSF_Processor_Email
 		 */
 		public function getEmailProcessor() {
-			return $this->GetEmailHandler()->getProcessor();
+			return $this->getEmailHandler()->getProcessor();
 		}
 
 		/**
 		 * @return ICWP_WPSF_FeatureHandler_Logging
 		 */
-		public static function GetLoggingHandler() {
+		public function getLoggingHandler() {
 			if ( is_null( self::$oLoggingHandler ) ) {
 				require_once( 'icwp-optionshandler-logging.php' );
-				self::$oLoggingHandler = new ICWP_WPSF_FeatureHandler_Logging( ICWP_Wordpress_Simple_Firewall_Plugin::GetInstance() );
+				self::$oLoggingHandler = new ICWP_WPSF_FeatureHandler_Logging( $this->getController() );
 			}
 			return self::$oLoggingHandler;
 		}
@@ -217,7 +217,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return ICWP_WPSF_Processor_Logging
 		 */
 		public function getLoggingProcessor() {
-			return $this->GetLoggingHandler()->getProcessor();
+			return $this->getLoggingHandler()->getProcessor();
 		}
 
 		/**
@@ -248,7 +248,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			}
 
 			$oWpFs = $this->loadFileSystemProcessor();
-			if ( $oWpFs->fileExistsInDir( 'forceOff', $this->oPluginVo->getRootDir(), false ) ) {
+			if ( $oWpFs->fileExistsInDir( 'forceOff', $this->getController()->getRootDir(), false ) ) {
 				$this->fOverrideState = true;
 			}
 			else {
@@ -284,7 +284,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		public function getResourcesDir( $sSourceFile = '' ) {
-			return $this->oPluginVo->getRootDir().'resources'.ICWP_DS.ltrim( $sSourceFile, ICWP_DS );
+			return $this->getController()->getRootDir().'resources'.ICWP_DS.ltrim( $sSourceFile, ICWP_DS );
 		}
 
 		/**
@@ -342,7 +342,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return bool
 		 */
 		public function hasPluginManageRights() {
-			if ( !current_user_can( $this->oPluginVo->getBasePermissions() ) ) {
+			if ( !current_user_can( $this->getController()->getBasePermissions() ) ) {
 				return false;
 			}
 
@@ -531,7 +531,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 */
 		protected function updateOptionsVersion() {
-			$this->setOpt( self::PluginVersionKey, $this->oPluginVo->getVersion() );
+			$this->setOpt( self::PluginVersionKey, $this->getController()->getVersion() );
 		}
 
 		/**
@@ -611,7 +611,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			}
 
 			// Now verify this is really a valid submission.
-			return check_admin_referer( $this->getPluginVo()->getPluginPrefix() );
+			return check_admin_referer( $this->getController()->getPluginPrefix() );
 		}
 
 		/**
@@ -731,7 +731,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		public function doPluginPrefix( $sSuffix = '', $sGlue = '-' ) {
-			return $this->getPluginVo()->doPluginPrefix( $sSuffix, $sGlue );
+			return $this->getController()->doPluginPrefix( $sSuffix, $sGlue );
 		}
 
 		/**
@@ -739,7 +739,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		public function getOptionStoragePrefix() {
-			return $this->getPluginVo()->getOptionStoragePrefix();
+			return $this->getController()->getOptionStoragePrefix();
 		}
 
 		/**
@@ -817,11 +817,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		protected function getBaseDisplayData() {
 			return array(
-				'var_prefix'		=> $this->getPluginVo()->getOptionStoragePrefix(),
-				'sPluginName'		=> $this->getPluginVo()->getHumanName(),
+				'var_prefix'		=> $this->getController()->getOptionStoragePrefix(),
+				'sPluginName'		=> $this->getController()->getHumanName(),
 				'sFeatureName'		=> $this->getMainFeatureName(),
 				'fShowAds'			=> $this->getIsShowMarketing(),
-				'nonce_field'		=> $this->getPluginVo()->getPluginPrefix(),
+				'nonce_field'		=> $this->getController()->getPluginPrefix(),
 				'sFeatureSlug'		=> $this->doPluginPrefix( $this->getFeatureSlug() ),
 				'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->getFeatureSlug() ),
 				'nOptionsPerRow'	=> 1,
@@ -847,12 +847,12 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 			if ( empty( $sView ) ) {
 				$oWpFs = $this->loadFileSystemProcessor();
-				$sCustomViewSource = $this->getPluginVo()->getViewPath( $this->doPluginPrefix( 'config_'.$this->getFeatureSlug().'_index' ) );
-				$sNormalViewSource = $this->getPluginVo()->getViewPath( $this->doPluginPrefix( 'config_index' ) );
+				$sCustomViewSource = $this->getController()->getViewPath( $this->doPluginPrefix( 'config_'.$this->getFeatureSlug().'_index' ) );
+				$sNormalViewSource = $this->getController()->getViewPath( $this->doPluginPrefix( 'config_index' ) );
 				$sFile = $oWpFs->exists( $sCustomViewSource ) ? $sCustomViewSource : $sNormalViewSource;
 			}
 			else {
-				$sFile = $this->getPluginVo()->getViewPath( $this->doPluginPrefix( $sView ) );
+				$sFile = $this->getController()->getViewPath( $this->doPluginPrefix( $sView ) );
 			}
 
 			if ( !is_file( $sFile ) ) {
@@ -861,7 +861,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			}
 
 			if ( count( $aData ) > 0 ) {
-				extract( $aData, EXTR_PREFIX_ALL, $this->getPluginVo()->getParentSlug() ); //slug being 'icwp'
+				extract( $aData, EXTR_PREFIX_ALL, $this->getController()->getParentSlug() ); //slug being 'icwp'
 			}
 
 			ob_start();
@@ -878,7 +878,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		public function getViewSnippet( $sSnippet = '' ) {
-			return $this->getPluginVo()->getViewSnippet( $sSnippet );
+			return $this->getController()->getViewSnippet( $sSnippet );
 		}
 
 		/**
@@ -890,17 +890,10 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * @return ICWP_Wordpress_Simple_Firewall_Plugin
+		 * @return ICWP_WPSF_Plugin_Controller
 		 */
 		public function getController() {
-			return $this->oPluginVo;
-		}
-
-		/**
-		 * @return ICWP_Wordpress_Simple_Firewall_Plugin
-		 */
-		public function getPluginVo() {
-			return $this->getController();
+			return $this->oPluginController;
 		}
 	}
 

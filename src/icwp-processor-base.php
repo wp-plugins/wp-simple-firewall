@@ -296,7 +296,7 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 * @param $sStatKey
 		 */
 		protected function doStatIncrement( $sStatKey ) {
-			$this->oFeatureOptions->doStatIncrement( $sStatKey );
+			$this->getFeatureOptions()->doStatIncrement( $sStatKey );
 		}
 
 		/**
@@ -307,17 +307,22 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		}
 
 		/**
-		 * @return bool
+		 * Provides the basic HTML template for printing a WordPress Admin Notices
+		 *
+		 * @param $sNotice - The message to be displayed.
+		 * @param $sMessageClass - either error or updated
+		 * @param $infPrint - if true, will echo. false will return the string
+		 * @return boolean|string
 		 */
-		protected function isValidAdminArea() {
-			$oWp = $this->loadWpFunctionsProcessor();
-			if ( !$oWp->isMultisite() && is_admin() ) {
+		protected function getAdminNoticeHtml( $sNotice = '', $sMessageClass = 'updated', $infPrint = false ) {
+			$sWrapper = '<div class="%s icwp-admin-notice">%s</div>';
+			$sFullNotice = sprintf( $sWrapper, $sMessageClass, $sNotice );
+			if ( $infPrint ) {
+				echo $sFullNotice;
 				return true;
+			} else {
+				return $sFullNotice;
 			}
-			else if ( $oWp->isMultisite() && $this->getFeatureOptions()->getPluginVo()->getIsWpmsNetworkAdminOnly() && is_network_admin() ) {
-				return true;
-			}
-			return false;
 		}
 	}
 

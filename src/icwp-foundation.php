@@ -6,7 +6,7 @@ class ICWP_WPSF_Foundation {
 	 * @return ICWP_WPSF_DataProcessor
 	 */
 	public function loadDataProcessor() {
-		require_once( dirname(__FILE__).ICWP_DS.'icwp-data-processor.php' );
+		require_once( 'icwp-data-processor.php' );
 		return ICWP_WPSF_DataProcessor::GetInstance();
 	}
 
@@ -14,7 +14,7 @@ class ICWP_WPSF_Foundation {
 	 * @return ICWP_WPSF_WpFilesystem
 	 */
 	public function loadFileSystemProcessor() {
-		require_once( dirname(__FILE__).ICWP_DS.'icwp-wpfilesystem.php' );
+		require_once( 'icwp-wpfilesystem.php' );
 		return ICWP_WPSF_WpFilesystem::GetInstance();
 	}
 
@@ -22,7 +22,7 @@ class ICWP_WPSF_Foundation {
 	 * @return ICWP_WPSF_WpFunctions
 	 */
 	public function loadWpFunctionsProcessor() {
-		require_once( dirname(__FILE__).ICWP_DS.'icwp-wpfunctions.php' );
+		require_once( 'icwp-wpfunctions.php' );
 		return ICWP_WPSF_WpFunctions::GetInstance();
 	}
 
@@ -30,7 +30,7 @@ class ICWP_WPSF_Foundation {
 	 * @return ICWP_WPSF_YamlProcessor
 	 */
 	public function loadYamlProcessor() {
-		require_once( dirname(__FILE__).ICWP_DS.'icwp-processor-yaml.php' );
+		require_once( 'icwp-processor-yaml.php' );
 		return ICWP_WPSF_YamlProcessor::GetInstance();
 	}
 
@@ -38,7 +38,7 @@ class ICWP_WPSF_Foundation {
 	 * @return ICWP_Stats_WPSF
 	 */
 	public function loadStatsProcessor() {
-		require_once( dirname(__FILE__).ICWP_DS.'icwp-wpsf-stats.php' );
+		require_once( 'icwp-wpsf-stats.php' );
 	}
 
 }

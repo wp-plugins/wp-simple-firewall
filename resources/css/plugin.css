@@ -33,6 +33,7 @@
 }
 /* Form elements */
 .bootstrap-wpadmin form fieldset {
+	width: 80%;
 }
 .bootstrap-wpadmin .label {
 	vertical-align: baseline !important;
@@ -68,6 +69,28 @@ p.code-description {
 .row#developer_channel_promo #developer_channel_form h3 {
 	padding: 10px 20px;
 }
+
+.row.option_section_row {
+	margin-left: 0px;
+}
+.row.option_section_row.primary_section {
+	background-color: #f9f9f9;
+	border: 1px solid transparent;
+	box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+	margin-bottom: 20px;
+	padding-bottom: 30px;
+}
+/*
+.row.option_section_row.primary_section > div {
+	background-color: #f9f9f9;
+	border: 1px solid #ddd;
+	margin-bottom: 30px;
+	margin-top: 10px;
+	padding: 5px 30px 30px;
+}
+.row.option_section_row.non_primary_section > div {
+	margin-left: 0px;
+}*/
 
 /** LESS PAGE **/
 .enabled_section {
