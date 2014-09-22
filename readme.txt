@@ -233,12 +233,9 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 = 3.5.5 =
 
-*   FIXED:      Small bug with options default values.
-
-= 3.5.4 =
-
 *   ADDED:      Better admin notifications for events such as options saving etc.
 *   CHANGE:     Some plugin styling to highlight features and options better.
+*   FIXED:      Small bug with options default values.
 
 = 3.5.3 =
 
