@@ -399,7 +399,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	}
 
 	public function doPreFirewallBlock() {
-		
+
 		switch( $this->getOption( 'block_response' ) ) {
 			case 'redirect_die':
 				$this->logWarning(
@@ -422,7 +422,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 				);
 				break;
 		}
-			
+
 		if ( $this->getIsOption( 'block_send_email', 'Y' ) ) {
 			$this->sendBlockEmail();
 		}
@@ -553,9 +553,6 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	 * @param bool $fWhitelisted
 	 */
 	protected function setRequestIsWhiteListed( $fWhitelisted = true ) {
-		if (  $fWhitelisted){
-			throw new Exception();
-		}
 		$this->fRequestIsWhitelisted = $fWhitelisted;
 	}
 
@@ -642,7 +639,6 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	public function sendBlockEmail() {
 
 		$oEmailProcessor = $this->getEmailProcessor();
-
 		$sIp = long2ip( self::$nRequestIp );
 		$aMessage = array(
 			_wpsf__('WordPress Simple Firewall has blocked a page visit to your site.'),

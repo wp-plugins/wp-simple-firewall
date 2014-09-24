@@ -96,7 +96,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			$this->oPluginController = $oPluginController;
 
 			if ( isset( $aFeatureProperties['storage_key'] ) ) {
-				$this->sOptionsStoreKey = $this->prefixOptionKey( $aFeatureProperties['storage_key'] ).'_options';
+				$this->sOptionsStoreKey = $aFeatureProperties['storage_key'];
 			}
 
 			if ( isset( $aFeatureProperties['slug'] ) ) {
@@ -182,9 +182,10 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		protected function getOptionsStorageKey() {
 			if ( !isset( $this->sOptionsStoreKey ) ) {
 				// not ideal as it doesn't take into account custom storage keys as when passed into the constructor
-				$this->sOptionsStoreKey = $this->prefixOptionKey( $this->getFeatureSlug().'_options' );
+				$this->sOptionsStoreKey = $this->getOptionsVo()->getFeatureProperty( 'storage_key' );
 			}
-			return $this->sOptionsStoreKey;
+
+			return $this->prefixOptionKey( $this->sOptionsStoreKey ).'_options' ;
 		}
 
 		/**
