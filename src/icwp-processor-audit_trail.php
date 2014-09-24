@@ -94,18 +94,22 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		}
 
 		/**
+		 * @param string $sContext
+		 * @param int $nLimit
 		 * @return array|bool
 		 */
-		public function getAuditEntriesForContext( $sContext ) {
+		public function getAuditEntriesForContext( $sContext, $nLimit = 50 ) {
 			$sQuery = "
 				SELECT *
 				FROM `%s`
 				WHERE
 					`context`			= '%s'
 					AND `deleted_at`	= '0'
+				ORDER BY `created_at` DESC
+				LIMIT %s
 			";
-			$sQuery = sprintf( $sQuery, $this->getTableName(), $sContext );
-			return array_reverse( $this->selectCustomFromTable( $sQuery ) );
+			$sQuery = sprintf( $sQuery, $this->getTableName(), $sContext, $nLimit );
+			return $this->selectCustomFromTable( $sQuery );
 		}
 
 		/**

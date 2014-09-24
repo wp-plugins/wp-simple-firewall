@@ -823,7 +823,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 		/**
 		 */
-		public function displayFeatureConfigPage( ) {
+		public function displayFeatureConfigPage() {
 
 			if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true ) ) {
 				$this->displayViewAccessRestrictedPage();
@@ -839,18 +839,24 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
+		 */
+		public function displayViewAccessRestrictedPage( ) {
+
+			if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true ) ) {
+				$this->displayViewAccessRestrictedPage();
+				return;
+			}
+
+			$aData = $this->getBaseDisplayData();
+			$this->display( $aData, 'access_restricted_index' );
+		}
+
+		/**
 		 * @return bool
 		 */
 		public function getIsCurrentPageConfig() {
 			$oWpFunctions = $this->loadWpFunctionsProcessor();
 			return $oWpFunctions->getCurrentWpAdminPage() == $this->doPluginPrefix( $this->getFeatureSlug() );
-		}
-
-		/**
-		 */
-		public function displayViewAccessRestrictedPage( ) {
-			$aData = $this->getBaseDisplayData();
-			$this->display( $aData, 'access_restricted_index' );
 		}
 
 		/**
