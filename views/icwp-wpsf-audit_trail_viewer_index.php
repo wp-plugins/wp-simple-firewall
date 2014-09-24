@@ -51,6 +51,9 @@ function printAuditTrailTable( $aAuditData ) {
 			<h4 class="table-title"><?php _wpsf_e( 'Posts' ); ?></h4>
 			<?php printAuditTrailTable( $icwp_aAuditDataPosts ); ?>
 
+			<h4 class="table-title"><?php _wpsf_e( 'Emails' ); ?></h4>
+			<?php printAuditTrailTable( $icwp_aAuditDataEmails ); ?>
+
 		</div><!-- / span9 -->
 
 		<?php if ( $icwp_fShowAds ) : ?>

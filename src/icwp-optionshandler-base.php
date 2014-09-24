@@ -307,17 +307,43 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function filter_addPluginSubMenuItem( $aItems ) {
 			$sName = $this->getMainFeatureName();
-			if ( !$this->getIfShowFeatureMenuItem() || empty( $sName ) ) {
-				return $aItems;
-			}
+			if ( $this->getIfShowFeatureMenuItem() && !empty( $sName ) ) {
 
-			$sMenuPageTitle = $this->getController()->getHumanName().' - '.$sName;
-			$aItems[ $sMenuPageTitle ] = array(
-				$sName,
-				$this->doPluginPrefix( $this->getFeatureSlug() ),
-				array( $this, 'displayFeatureConfigPage' )
-			);
+				$sHumanName = $this->getController()->getHumanName();
+
+				$sMenuPageTitle = $sHumanName.' - '.$sName;
+				$aItems[ $sMenuPageTitle ] = array(
+					$sName,
+					$this->doPluginPrefix( $this->getFeatureSlug() ),
+					array( $this, 'displayFeatureConfigPage' )
+				);
+
+				$aAdditionalItems = $this->getOptionsVo()->getAdditionalMenuItems();
+				if ( !empty( $aAdditionalItems ) && is_array( $aAdditionalItems ) ) {
+
+					foreach( $aAdditionalItems as $aMenuItem ) {
+
+						if ( empty( $aMenuItem['callback'] ) || !method_exists( $this, $aMenuItem['callback'] ) ) {
+							continue;
+						}
+
+						$sMenuPageTitle = $sHumanName.' - '.$aMenuItem['title'];
+						$aItems[ $sMenuPageTitle ] = array(
+							$aMenuItem['title'],
+							$this->doPluginPrefix( $aMenuItem['slug'] ),
+							array( $this, $aMenuItem['callback'] )
+						);
+					}
+				}
+			}
 			return $aItems;
+		}
+
+		/**
+		 * @return array
+		 */
+		protected function getAdditionalMenuItem() {
+			return array();
 		}
 
 		/**

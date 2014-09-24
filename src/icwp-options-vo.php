@@ -147,6 +147,13 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getAdditionalMenuItems() {
+		return $this->getRawData_MenuItems();
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getNeedSave() {
@@ -235,6 +242,16 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 	protected function getRawData_AllOptions() {
 		$aAllRawOptions = $this->getRawData_FullFeatureConfig();
 		return isset( $aAllRawOptions['options'] ) ? $aAllRawOptions['options'] : array();
+	}
+
+	/**
+	 * Return the section of the Raw config that is the "options" key only.
+	 *
+	 * @return array
+	 */
+	protected function getRawData_MenuItems() {
+		$aAllRawOptions = $this->getRawData_FullFeatureConfig();
+		return isset( $aAllRawOptions['menu_items'] ) ? $aAllRawOptions['menu_items'] : array();
 	}
 
 	/**

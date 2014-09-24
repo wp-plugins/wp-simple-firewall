@@ -161,7 +161,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		 */
 		public function filter_addExtraAdminMenuItems( $aItems ) {
 			$aItems[ _wpsf__('Firewall Log' ) ] = array( 'Firewall Log', $this->doPluginPrefix('firewall_log'), array( $this, 'onDisplayAll' ) );
-//		$aItems[ _wpsf__('Audit Trail Viewer' ) ] = array( 'Audit Trail Viewer', $this->doPluginPrefix('audit_trail_viewer'), array( $this, 'onDisplayAll' ) );
 			return $aItems;
 		}
 
@@ -189,9 +188,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 					break;
 				case 'firewall_log' :
 					$this->onDisplayFirewallLog();
-					break;
-				case 'audit_trail_viewer' :
-					$this->onDisplayAuditTrailViewer();
 					break;
 				default:
 					$this->getFeatureHandler_MainPlugin()->displayFeatureConfigPage();
@@ -230,46 +226,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			);
 			$aData = array_merge( $this->getBaseDisplayData(), $aData );
 			$this->display( $this->doPluginPrefix( 'firewall_log_index' ), $aData );
-		}
-
-		protected function onDisplayAuditTrailViewer() {
-
-			$oAuditTrail = $this->getProcessor_AuditTrail();
-			$aAuditData = $oAuditTrail->getAllAuditEntries();
-
-			$aAuditDataUsers = array();
-			$aAuditDataPlugins = array();
-			$aAuditDataThemes = array();
-			$aAuditDataWordpress = array();
-			$aAuditDataPosts = array();
-			foreach( $aAuditData as $aAudit ) {
-				if ( $aAudit['context'] == 'users' ) {
-					$aAuditDataUsers[] = $aAudit;
-				}
-				if ( $aAudit['context'] == 'plugins' ) {
-					$aAuditDataPlugins[] = $aAudit;
-				}
-				if ( $aAudit['context'] == 'themes' ) {
-					$aAuditDataThemes[] = $aAudit;
-				}
-				if ( $aAudit['context'] == 'wordpress' ) {
-					$aAuditDataWordpress[] = $aAudit;
-				}
-				if ( $aAudit['context'] == 'posts' ) {
-					$aAuditDataPosts[] = $aAudit;
-				}
-			}
-
-			$aData = array(
-				'sFeatureName'		=> _wpsf__('Audit Trail Viewer'),
-				'aAuditDataUsers'	=> $aAuditDataUsers,
-				'aAuditDataPlugins'	=> $aAuditDataPlugins,
-				'aAuditDataThemes'	=> $aAuditDataThemes,
-				'aAuditDataWordpress'	=> $aAuditDataWordpress,
-				'aAuditDataPosts'	=> $aAuditDataPosts
-			);
-			$aData = array_merge( $this->getBaseDisplayData(), $aData );
-			$this->display( $this->doPluginPrefix( 'audit_trail_viewer_index' ), $aData );
 		}
 
 		public function onWpAdminInit() {

@@ -60,6 +60,13 @@ options:
     link_info: ''
     link_blog: ''
   -
+    key: 'enable_audit_context_emails'
+    section: 'section_enable_audit_contexts'
+    default: 'Y'
+    type: 'checkbox'
+    link_info: ''
+    link_blog: ''
+  -
     key: 'enable_audit_context_wpsf'
     section: 'section_enable_audit_contexts'
     default: 'Y'
@@ -73,3 +80,8 @@ options:
     key: 'audit_trail_table_name'
     section: 'section_non_ui'
     value: 'audit_trail'
+menu_items:
+  -
+    slug: 'audit_trail_viewer'
+    title: 'Audit Trail Viewer'
+    callback: 'displayAuditTrailViewer'

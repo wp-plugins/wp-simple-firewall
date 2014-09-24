@@ -33,7 +33,7 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 	}
 
 	/**
-	 * @return ICWP_WPSF_Processor_Autoupdates|null
+	 * @return ICWP_WPSF_Processor_AuditTrail|null
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
@@ -50,6 +50,50 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 
 	public function doPrePluginOptionsSave() {}
 
+	public function displayAuditTrailViewer() {
+
+		$oAuditTrail = $this->loadFeatureProcessor();
+		$aAuditData = $oAuditTrail->getAllAuditEntries();
+
+		$aAuditDataUsers = array();
+		$aAuditDataPlugins = array();
+		$aAuditDataThemes = array();
+		$aAuditDataWordpress = array();
+		$aAuditDataPosts = array();
+		$aAuditDataEmails = array();
+		foreach( $aAuditData as $aAudit ) {
+			if ( $aAudit['context'] == 'users' ) {
+				$aAuditDataUsers[] = $aAudit;
+			}
+			if ( $aAudit['context'] == 'plugins' ) {
+				$aAuditDataPlugins[] = $aAudit;
+			}
+			if ( $aAudit['context'] == 'themes' ) {
+				$aAuditDataThemes[] = $aAudit;
+			}
+			if ( $aAudit['context'] == 'wordpress' ) {
+				$aAuditDataWordpress[] = $aAudit;
+			}
+			if ( $aAudit['context'] == 'posts' ) {
+				$aAuditDataPosts[] = $aAudit;
+			}
+			if ( $aAudit['context'] == 'emails' ) {
+				$aAuditDataEmails[] = $aAudit;
+			}
+		}
+
+		$aData = array(
+			'sFeatureName'		=> _wpsf__('Audit Trail Viewer'),
+			'aAuditDataUsers'	=> $aAuditDataUsers,
+			'aAuditDataPlugins'	=> $aAuditDataPlugins,
+			'aAuditDataThemes'	=> $aAuditDataThemes,
+			'aAuditDataWordpress'	=> $aAuditDataWordpress,
+			'aAuditDataPosts'	=> $aAuditDataPosts,
+			'aAuditDataEmails'	=> $aAuditDataEmails
+		);
+		$aData = array_merge( $this->getBaseDisplayData(), $aData );
+		$this->display( $aData, $this->doPluginPrefix( 'audit_trail_viewer_index' ) );
+	}
 	/**
 	 * @return string
 	 */
@@ -107,31 +151,37 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 			case 'enable_audit_context_plugins' :
 				$sName = _wpsf__( 'Plugins' );
 				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'Plugins' ) );
-				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track activity relating to WordPress plugins.' );
 				break;
 
 			case 'enable_audit_context_themes' :
 				$sName = _wpsf__( 'Themes' );
 				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'Themes' ) );
-				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track activity relating to WordPress themes.' );
 				break;
 
 			case 'enable_audit_context_posts' :
 				$sName = _wpsf__( 'Posts And Pages' );
 				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'Posts And Pages' ) );
-				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track activity relating to the editing and publishing of posts and pages.' );
 				break;
 
 			case 'enable_audit_context_wordpress' :
 				$sName = _wpsf__( 'WordPress And Settings' );
 				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'WordPress And Settings' ) );
-				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track WordPress upgrades and changes to particular WordPress settings.' );
+				break;
+
+			case 'enable_audit_context_emails' :
+				$sName = _wpsf__( 'Emails' );
+				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'Emails' ) );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will attempt to track attempts at sending email.' );
 				break;
 
 			case 'enable_audit_context_wpsf' :
 				$sName = _wpsf__( 'Simple Firewall' );
 				$sSummary = sprintf( _wpsf__( 'Enable Audit Context - %s' ), _wpsf__( 'Simple Firewall' ) );
-				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track user activity and significant events such as user login etc.' );
+				$sDescription = _wpsf__( 'When this context is enabled, the audit trail will track activity directly related to the WordPress Simple Firewall plugin.' );
 				break;
 
 			default:

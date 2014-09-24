@@ -38,38 +38,46 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		 */
 		public function run() {
 
+			$oFo = $this->getFeatureOptions();
+
 			if ( $this->getIsOption( 'enable_audit_context_users', 'Y' ) ) {
 				require_once( 'icwp-processor-audit_trail_users.php' );
-				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Users( $this->oFeatureOptions );
+				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Users( $oFo );
 				$oUsers->run();
 			}
 
 			if ( $this->getIsOption( 'enable_audit_context_plugins', 'Y' ) ) {
 				require_once( 'icwp-processor-audit_trail_plugins.php' );
-				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Plugins( $this->oFeatureOptions );
+				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Plugins( $oFo );
 				$oUsers->run();
 			}
 
 			if ( $this->getIsOption( 'enable_audit_context_themes', 'Y' ) ) {
 				require_once( 'icwp-processor-audit_trail_themes.php' );
-				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Themes( $this->oFeatureOptions );
+				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Themes( $oFo );
 				$oUsers->run();
 			}
 
 			if ( $this->getIsOption( 'enable_audit_context_wordpress', 'Y' ) ) {
 				require_once( 'icwp-processor-audit_trail_wordpress.php' );
-				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Wordpress( $this->oFeatureOptions );
+				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Wordpress( $oFo );
 				$oUsers->run();
 			}
 
 			if ( $this->getIsOption( 'enable_audit_context_posts', 'Y' ) ) {
 				require_once( 'icwp-processor-audit_trail_posts.php' );
-				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Posts( $this->oFeatureOptions );
+				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Posts( $oFo );
+				$oUsers->run();
+			}
+
+			if ( $this->getIsOption( 'enable_audit_context_emails', 'Y' ) ) {
+				require_once( 'icwp-processor-audit_trail_emails.php' );
+				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Emails( $oFo );
 				$oUsers->run();
 			}
 //			if ( $this->getIsOption( 'enable_audit_context_wpsf', 'Y' ) ) {
 //				require_once( 'icwp-processor-audit_trail_wpsf.php' );
-//				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Wpsf( $this->oFeatureOptions );
+//				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Wpsf( $oFo );
 //				$oUsers->run();
 //			}
 		}
