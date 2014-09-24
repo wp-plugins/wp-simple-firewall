@@ -27,15 +27,6 @@ class ICWP_WPSF_FeatureHandler_Logging extends ICWP_WPSF_FeatureHandler_Base {
 	protected $oFeatureProcessor;
 
 	/**
-	 * @param $oPluginVo
-	 */
-	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('Logging');
-		$this->sFeatureSlug = 'logging';
-		parent::__construct( $oPluginVo );
-	}
-
-	/**
 	 * @return ICWP_WPSF_Processor_Logging|null
 	 */
 	protected function loadFeatureProcessor() {

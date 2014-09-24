@@ -31,7 +31,10 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		 */
 		public function __construct( ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions ) {
 			parent::__construct( $oFeatureOptions, $oFeatureOptions->getAuditTrailTableName() );
-			add_action( $this->oFeatureOptions->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'commitAuditTrial' ) );
+		}
+
+		public function action_doFeatureProcessorShutdown () {
+			$this->commitAuditTrial();
 		}
 
 		/**
@@ -48,38 +51,39 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 
 			if ( $this->getIsOption( 'enable_audit_context_plugins', 'Y' ) ) {
 				require_once( 'icwp-processor-audit_trail_plugins.php' );
-				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Plugins( $oFo );
-				$oUsers->run();
+				$oPlugins = new ICWP_WPSF_Processor_AuditTrail_Plugins( $oFo );
+				$oPlugins->run();
 			}
 
 			if ( $this->getIsOption( 'enable_audit_context_themes', 'Y' ) ) {
 				require_once( 'icwp-processor-audit_trail_themes.php' );
-				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Themes( $oFo );
-				$oUsers->run();
+				$oThemes = new ICWP_WPSF_Processor_AuditTrail_Themes( $oFo );
+				$oThemes->run();
 			}
 
 			if ( $this->getIsOption( 'enable_audit_context_wordpress', 'Y' ) ) {
 				require_once( 'icwp-processor-audit_trail_wordpress.php' );
-				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Wordpress( $oFo );
-				$oUsers->run();
+				$oWp = new ICWP_WPSF_Processor_AuditTrail_Wordpress( $oFo );
+				$oWp->run();
 			}
 
 			if ( $this->getIsOption( 'enable_audit_context_posts', 'Y' ) ) {
 				require_once( 'icwp-processor-audit_trail_posts.php' );
-				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Posts( $oFo );
-				$oUsers->run();
+				$oPosts = new ICWP_WPSF_Processor_AuditTrail_Posts( $oFo );
+				$oPosts->run();
 			}
 
 			if ( $this->getIsOption( 'enable_audit_context_emails', 'Y' ) ) {
 				require_once( 'icwp-processor-audit_trail_emails.php' );
-				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Emails( $oFo );
-				$oUsers->run();
+				$oEmails = new ICWP_WPSF_Processor_AuditTrail_Emails( $oFo );
+				$oEmails->run();
 			}
-//			if ( $this->getIsOption( 'enable_audit_context_wpsf', 'Y' ) ) {
-//				require_once( 'icwp-processor-audit_trail_wpsf.php' );
-//				$oUsers = new ICWP_WPSF_Processor_AuditTrail_Wpsf( $oFo );
-//				$oUsers->run();
-//			}
+
+			if ( $this->getIsOption( 'enable_audit_context_wpsf', 'Y' ) ) {
+				require_once( 'icwp-processor-audit_trail_wpsf.php' );
+				$oWpsf = new ICWP_WPSF_Processor_AuditTrail_Wpsf( $oFo );
+				$oWpsf->run();
+			}
 		}
 
 		/**
@@ -90,14 +94,34 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		}
 
 		/**
+		 * @return array|bool
+		 */
+		public function getAuditEntriesForContext( $sContext ) {
+			$sQuery = "
+				SELECT *
+				FROM `%s`
+				WHERE
+					`context`			= '%s'
+					AND `deleted_at`	= '0'
+			";
+			$sQuery = sprintf( $sQuery, $this->getTableName(), $sContext );
+			return array_reverse( $this->selectCustomFromTable( $sQuery ) );
+		}
+
+		/**
 		 */
 		public function commitAuditTrial() {
 			$aEntries = $this->getAuditTrailEntries()->getAuditTrailEntries( true );
+			$aEntries = apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'wpsf_audit_trail_gather' ), $aEntries );
 			if ( empty( $aEntries ) || !is_array( $aEntries ) ) {
 				return;
 			}
 
+			$nIp = $this->loadDataProcessor()->GetVisitorIpAddress();
 			foreach( $aEntries as $aEntry ) {
+				if ( empty( $aEntry['ip_long'] ) ) {
+					$aEntry['ip_long'] = $nIp;
+				}
 				$this->insertIntoTable( $aEntry );
 			}
 		}
@@ -116,6 +140,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 			$sSqlTables = "
 				CREATE TABLE IF NOT EXISTS `%s` (
 				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				`ip_long` bigint(20) NOT NULL DEFAULT '0',
 				`wp_username` VARCHAR(255) NOT NULL DEFAULT 'none',
 				`context` VARCHAR(25) NOT NULL DEFAULT 'none',
 				`event` VARCHAR(25) NOT NULL DEFAULT 'none',
@@ -163,12 +188,13 @@ class ICWP_WPSF_AuditTrail_Entries {
 		$oWp = $this->loadWpFunctionsProcessor();
 		$oCurrentUser = $oWp->getCurrentWpUser();
 		$aNewEntry = array(
+			'ip_long' => $oDp->GetVisitorIpAddress(),
 			'created_at' => $oDp->GetRequestTime(),
 			'wp_username' => empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
 			'context' => $sContext,
 			'event' => $sEvent,
 			'category' => $nCategory,
-			'message' => $sMessage,
+			'message' => $sMessage
 		);
 		$aEntries = $this->getAuditTrailEntries();
 		$aEntries[] = $aNewEntry;

@@ -26,12 +26,6 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected $oFeatureProcessor;
 
-	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('Firewall');
-		$this->sFeatureSlug = 'firewall';
-		parent::__construct( $oPluginVo );
-	}
-
 	/**
 	 * @return ICWP_WPSF_Processor_Firewall|null
 	 */

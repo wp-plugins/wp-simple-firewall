@@ -26,12 +26,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Autoupdates_V3') ):
 		 */
 		protected $oFeatureProcessor;
 
-		public function __construct( $oPluginVo ) {
-			$this->sFeatureName = _wpsf__('Automatic Updates');
-			$this->sFeatureSlug = 'autoupdates';
-			parent::__construct( $oPluginVo );
-		}
-
 		/**
 		 * @return ICWP_WPSF_Processor_Autoupdates|null
 		 */

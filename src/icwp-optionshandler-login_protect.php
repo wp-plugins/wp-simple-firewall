@@ -26,12 +26,6 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 	 */
 	protected $oFeatureProcessor;
 
-	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('Login Protection');
-		$this->sFeatureSlug = 'login_protect';
-		parent::__construct( $oPluginVo, 'loginprotect' ); //TODO: align this naming with the feature slug etc. as with the other features.
-	}
-
 	/**
 	 * @return ICWP_WPSF_Processor_LoginProtect|null
 	 */

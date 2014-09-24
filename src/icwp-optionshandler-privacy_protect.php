@@ -26,12 +26,6 @@ class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected $oFeatureProcessor;
 
-	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('Privacy Protect');
-		$this->sFeatureSlug = 'privacy_protect';
-		parent::__construct( $oPluginVo );
-	}
-
 	/**
 	 * @return ICWP_WPSF_Processor_PrivacyProtect|null
 	 */

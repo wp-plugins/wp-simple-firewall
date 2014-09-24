@@ -97,10 +97,10 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		 * @return ICWP_WPSF_FeatureHandler_Plugin
 		 */
 		protected function loadCorePluginFeature() {
-			if ( isset( $this->oPluginOptions ) ) {
-				return $this->oPluginOptions;
+			if ( !isset( $this->oFeatureHandlerPlugin ) ) {
+				$this->loadFeatureHandler( array( 'slug' => 'plugin' ) );
 			}
-			return $this->loadFeatureHandler( 'plugin' );
+			return $this->oFeatureHandlerPlugin;
 		}
 
 		/**
@@ -114,9 +114,9 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			$aPluginFeatures = $oMainPluginFeature->getActivePluginFeatures();
 
 			$fSuccess = true;
-			foreach( $aPluginFeatures as $sSlug => $sStorageKey ) {
+			foreach( $aPluginFeatures as $sSlug => $aFeatureProperties ) {
 				try {
-					$this->loadFeatureHandler( $sSlug, $fRecreate, $fFullBuild );
+					$this->loadFeatureHandler( $aFeatureProperties, $fRecreate, $fFullBuild );
 					$fSuccess = true;
 				}
 				catch( Exception $oE ) {
@@ -127,13 +127,15 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		}
 
 		/**
-		 * @param string $sFeatureSlug
+		 * @param array $aFeatureProperties
 		 * @param bool $fRecreate
 		 * @param bool $fFullBuild
 		 * @return mixed
 		 * @throws Exception
 		 */
-		protected function loadFeatureHandler( $sFeatureSlug, $fRecreate = false, $fFullBuild = false ) {
+		protected function loadFeatureHandler( $aFeatureProperties, $fRecreate = false, $fFullBuild = false ) {
+
+			$sFeatureSlug = $aFeatureProperties['slug'];
 
 			$sFeatureName = str_replace( ' ', '', ucwords( str_replace( '_', ' ', $sFeatureSlug ) ) );
 			$sOptionsVarName = sprintf( 'oFeatureHandler%s', $sFeatureName ); // e.g. oFeatureHandlerOptions
@@ -147,7 +149,7 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
 			require_once( $sSourceFile );
 			if ( $fRecreate || !isset( $this->{$sOptionsVarName} ) ) {
-				$this->{$sOptionsVarName} = new $sClassName( $this->getController() );
+				$this->{$sOptionsVarName} = new $sClassName( $this->getController(), $aFeatureProperties );
 			}
 			if ( $fFullBuild ) {
 				$this->{$sOptionsVarName}->buildOptions();

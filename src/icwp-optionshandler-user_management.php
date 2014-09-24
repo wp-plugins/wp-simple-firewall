@@ -28,12 +28,6 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected $oFeatureProcessor;
 
-	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('User Management');
-		$this->sFeatureSlug = 'user_management';
-		parent::__construct( $oPluginVo );
-	}
-
 	/**
 	 * @return ICWP_WPSF_FeatureHandler_UserManagement|null
 	 */

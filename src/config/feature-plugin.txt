@@ -1,6 +1,6 @@
 ---
-slug: 'plugin'
 properties:
+  slug: 'plugin'
   name: 'Dashboard'
   show_feature_menu_item: true
   storage_key: 'plugin' # should correspond exactly to that in the plugin.yaml
@@ -85,6 +85,7 @@ options:
       -
         slug: 'audit_trail'
         storage_key: 'audit_trail'
+        load_priority: 0
         hidden: false
       -
         slug: 'email'

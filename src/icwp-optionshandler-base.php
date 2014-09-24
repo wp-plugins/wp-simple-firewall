@@ -84,18 +84,28 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		protected $fOverrideState;
 
-		public function __construct( $oPluginController, $sOptionsStoreKey = null ) {
+		/**
+		 * @param ICWP_WPSF_Plugin_Controller $oPluginController
+		 * @param array $aFeatureProperties
+		 * @throws Exception
+		 */
+		public function __construct( $oPluginController, $aFeatureProperties = array() ) {
 			if ( empty( $oPluginController ) ) {
 				throw new Exception();
 			}
 			$this->oPluginController = $oPluginController;
-			$this->sOptionsStoreKey = $this->prefixOptionKey(
-				( is_null( $sOptionsStoreKey ) ? $this->getFeatureSlug() : $sOptionsStoreKey )
-				.'_options'
-			);
 
+			if ( isset( $aFeatureProperties['storage_key'] ) ) {
+				$this->sOptionsStoreKey = $this->prefixOptionKey( $aFeatureProperties['storage_key'] ).'_options';
+			}
+
+			if ( isset( $aFeatureProperties['slug'] ) ) {
+				$this->sFeatureSlug = $aFeatureProperties['slug'];
+			}
+
+			$nRunPriority = isset( $aFeatureProperties['load_priority'] ) ? $aFeatureProperties['load_priority'] : 100;
 			// Handle any upgrades as necessary (only go near this if it's the admin area)
-			add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ) );
+			add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ), $nRunPriority );
 			add_action( 'init', array( $this, 'onWpInit' ), 1 );
 			add_action( $this->doPluginPrefix( 'form_submit' ), array( $this, 'handleFormSubmit' ) );
 			add_filter( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array( $this, 'filter_addPluginSubMenuItem' ) );
@@ -154,16 +164,15 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * Hooked to the plugin's main plugin_shutdown action
 		 */
 		public function action_doFeatureShutdown() {
-
 			if ( ! $this->fPluginDeleting ) {
 				$this->savePluginOptions();
 
-				if ( $this->getController()->getIsLoggingEnabled() ) {
-					$aLogData = apply_filters( $this->doPluginPrefix( 'flush_logs' ), array() );
-					$oLoggingProcessor = $this->getLoggingProcessor();
-					$oLoggingProcessor->addDataToWrite( $aLogData );
-					$oLoggingProcessor->commitData();
-				}
+//				if ( $this->getController()->getIsLoggingEnabled() ) {
+//					$aLogData = apply_filters( $this->doPluginPrefix( 'flush_logs' ), array() );
+//					$oLoggingProcessor = $this->getLoggingProcessor();
+//					$oLoggingProcessor->addDataToWrite( $aLogData );
+//					$oLoggingProcessor->commitData();
+//				}
 			}
 		}
 
@@ -261,6 +270,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		protected function getMainFeatureName() {
+			if ( !isset( $this->sFeatureName ) ) {
+				$this->sFeatureName = $this->getOptionsVo()->getFeatureProperty( 'name' );
+			}
 			return $this->sFeatureName;
 		}
 
@@ -275,6 +287,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		public function getFeatureSlug() {
+			if ( !isset( $this->sFeatureSlug ) ) {
+				$this->sFeatureSlug = $this->getOptionsVo()->getFeatureProperty( 'slug' );
+			}
 			return $this->sFeatureSlug;
 		}
 

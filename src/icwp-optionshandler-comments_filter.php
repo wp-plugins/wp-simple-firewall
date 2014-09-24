@@ -26,12 +26,6 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 	 */
 	protected $oFeatureProcessor;
 
-	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('Comments Filter');
-		$this->sFeatureSlug = 'comments_filter';
-		parent::__construct( $oPluginVo, 'commentsfilter' ); //TODO: align this naming with the feature slug etc. as with the other features.
-	}
-
 	/**
 	 * @return ICWP_WPSF_Processor_CommentsFilter|null
 	 */

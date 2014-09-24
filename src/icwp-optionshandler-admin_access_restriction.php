@@ -28,11 +28,13 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	 */
 	protected $oFeatureProcessor;
 
-	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('Admin Access');
-		$this->sFeatureSlug = 'admin_access_restriction';
-		parent::__construct( $oPluginVo );
-
+	/**
+	 * @param $oPluginVo
+	 * @param array $aFeatureProperties
+	 * @throws Exception
+	 */
+	public function __construct( $oPluginVo, $aFeatureProperties = array() ) {
+		parent::__construct( $oPluginVo, $aFeatureProperties );
 		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'doCheckHasPermissionToSubmit' ) );
 		add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'doCheckHasPermissionToSubmit' ) );
 	}

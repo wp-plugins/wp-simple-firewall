@@ -58,8 +58,12 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 
 		public function __construct( ICWP_WPSF_FeatureHandler_Base $oFeatureOptions ) {
 			$this->oFeatureOptions = $oFeatureOptions;
+			add_action( $this->getFeatureOptions()->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureProcessorShutdown' ) );
+			add_filter( $this->getFeatureOptions()->doPluginPrefix( 'wpsf_audit_trail_gather' ), array( $this, 'getAuditEntry' ) );
 			$this->reset();
 		}
+
+		public function action_doFeatureProcessorShutdown() { }
 
 		/**
 		 * Resets the object values to be re-used anew
@@ -149,7 +153,7 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		public function getLogData() {
 
 			if ( $this->getIsLogging() ) {
-				$this->m_aLog = array( 'messages'			=> serialize( $this->m_aLogMessages ) );
+				$this->m_aLog = array( 'messages' => serialize( $this->m_aLogMessages ) );
 			}
 			else {
 				$this->m_aLog = false;
@@ -178,6 +182,35 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 			}
 			$this->m_aLogMessages[] = array( $sMessageType, $sLogMessage );
 		}
+
+		/**
+		 * @param string $sEvent
+		 * @param int $nCategory
+		 * @param string $sMessage
+		 */
+		public function writeAuditEntry( $sEvent, $nCategory = 1, $sMessage = '' ) {
+			$oWp = $this->loadWpFunctionsProcessor();
+			$oCurrentUser = $oWp->getCurrentWpUser();
+			$this->aAuditEntry = array(
+				'created_at' => $this->loadDataProcessor()->GetRequestTime(),
+				'wp_username' => empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
+				'context' => 'wpsf',
+				'event' => $sEvent,
+				'category' => $nCategory,
+				'message' => $sMessage
+			);
+		}
+
+		/**
+		 * @return array
+		 */
+		public function getAuditEntry( $aAuditEntries ) {
+			if ( isset( $this->aAuditEntry ) && is_array( $this->aAuditEntry ) ) {
+				$aAuditEntries[] = $this->aAuditEntry;
+			}
+			return $aAuditEntries;
+		}
+
 		/**
 		 * @param string $insLogMessage
 		 */

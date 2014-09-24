@@ -26,12 +26,6 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 	 */
 	protected $oFeatureProcessor;
 
-	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('Audit Trail');
-		$this->sFeatureSlug = 'audit_trail';
-		parent::__construct( $oPluginVo );
-	}
-
 	/**
 	 * @return ICWP_WPSF_Processor_AuditTrail|null
 	 */
@@ -53,43 +47,16 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 	public function displayAuditTrailViewer() {
 
 		$oAuditTrail = $this->loadFeatureProcessor();
-		$aAuditData = $oAuditTrail->getAllAuditEntries();
-
-		$aAuditDataUsers = array();
-		$aAuditDataPlugins = array();
-		$aAuditDataThemes = array();
-		$aAuditDataWordpress = array();
-		$aAuditDataPosts = array();
-		$aAuditDataEmails = array();
-		foreach( $aAuditData as $aAudit ) {
-			if ( $aAudit['context'] == 'users' ) {
-				$aAuditDataUsers[] = $aAudit;
-			}
-			if ( $aAudit['context'] == 'plugins' ) {
-				$aAuditDataPlugins[] = $aAudit;
-			}
-			if ( $aAudit['context'] == 'themes' ) {
-				$aAuditDataThemes[] = $aAudit;
-			}
-			if ( $aAudit['context'] == 'wordpress' ) {
-				$aAuditDataWordpress[] = $aAudit;
-			}
-			if ( $aAudit['context'] == 'posts' ) {
-				$aAuditDataPosts[] = $aAudit;
-			}
-			if ( $aAudit['context'] == 'emails' ) {
-				$aAuditDataEmails[] = $aAudit;
-			}
-		}
-
 		$aData = array(
+			'nYourIp'			=> $this->loadDataProcessor()->GetVisitorIpAddress(),
 			'sFeatureName'		=> _wpsf__('Audit Trail Viewer'),
-			'aAuditDataUsers'	=> $aAuditDataUsers,
-			'aAuditDataPlugins'	=> $aAuditDataPlugins,
-			'aAuditDataThemes'	=> $aAuditDataThemes,
-			'aAuditDataWordpress'	=> $aAuditDataWordpress,
-			'aAuditDataPosts'	=> $aAuditDataPosts,
-			'aAuditDataEmails'	=> $aAuditDataEmails
+			'aAuditDataUsers'	=> $oAuditTrail->getAuditEntriesForContext( 'users' ),
+			'aAuditDataPlugins'	=> $oAuditTrail->getAuditEntriesForContext( 'plugins' ),
+			'aAuditDataThemes'	=> $oAuditTrail->getAuditEntriesForContext( 'themes' ),
+			'aAuditDataWordpress'	=> $oAuditTrail->getAuditEntriesForContext( 'wordpress' ),
+			'aAuditDataPosts'	=> $oAuditTrail->getAuditEntriesForContext( 'posts' ),
+			'aAuditDataEmails'	=> $oAuditTrail->getAuditEntriesForContext( 'emails' ),
+			'aAuditDataWpsf'	=> $oAuditTrail->getAuditEntriesForContext( 'wpsf' )
 		);
 		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $aData, $this->doPluginPrefix( 'audit_trail_viewer_index' ) );

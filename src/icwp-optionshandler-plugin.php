@@ -26,10 +26,8 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected $oFeatureProcessor;
 
-	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('Dashboard');
-		$this->sFeatureSlug = 'plugin';
-		parent::__construct( $oPluginVo, 'plugin' );
+	public function __construct( $oPluginVo, $aFeatureProperties = array() ) {
+		parent::__construct( $oPluginVo, $aFeatureProperties );
 
 		add_action( 'deactivate_plugin', array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
 		add_filter( $this->doPluginPrefix( 'report_email_address' ), array( $this, 'getPluginReportEmail' ) );
@@ -40,7 +38,7 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->getController()->getSourceDir().'icwp-processor-plugin.php' );
+			require_once( $this->getController()->getSourceDir( sprintf( 'icwp-processor-%s.php', 'plugin' ) ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Plugin( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -75,11 +73,11 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 			return $aPluginFeatures;
 		}
 
-		foreach( $aActiveFeatures['value'] as $aFeature ) {
+		foreach( $aActiveFeatures['value'] as $nPosition => $aFeature ) {
 			if ( isset( $aFeature['hidden'] ) && $aFeature['hidden'] ) {
 				continue;
 			}
-			$aPluginFeatures[ $aFeature['slug'] ] = $aFeature['storage_key'];
+			$aPluginFeatures[ $aFeature['slug'] ] = $aFeature;
 		}
 		return $aPluginFeatures;
 	}

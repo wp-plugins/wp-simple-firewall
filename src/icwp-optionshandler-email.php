@@ -27,15 +27,6 @@ class ICWP_WPSF_FeatureHandler_Email extends ICWP_WPSF_FeatureHandler_Base {
 	protected $oFeatureProcessor;
 
 	/**
-	 * @param $oPluginVo
-	 */
-	public function __construct( $oPluginVo ) {
-		$this->sFeatureName = _wpsf__('Email');
-		$this->sFeatureSlug = 'email';
-		parent::__construct( $oPluginVo );
-	}
-
-	/**
 	 * @return ICWP_WPSF_Processor_Email|null
 	 */
 	protected function loadFeatureProcessor() {
