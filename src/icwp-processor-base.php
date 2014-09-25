@@ -294,6 +294,7 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 * @return ICWP_WPSF_Processor_Email
 		 */
 		public function getEmailProcessor() {
+
 			return $this->getFeatureOptions()->getEmailProcessor();
 		}
 

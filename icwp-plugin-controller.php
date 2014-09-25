@@ -227,6 +227,9 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		);
 	}
 
+	/**
+	 * @return bool
+	 */
 	protected function doPluginFormSubmit() {
 		if ( !$this->getIsPluginFormSubmit() ) {
 			return false;
@@ -476,4 +479,58 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	public function getViewSnippet( $sSnippet ) {
 		return $this->getViewDir().'snippets'.ICWP_DS.$sSnippet.'.php';
 	}
+
+	/**
+	 * @return ICWP_WPSF_FeatureHandler_Plugin
+	 */
+	public function loadCorePluginFeatureHandler() {
+		if ( !isset( $this->oFeatureHandlerPlugin ) ) {
+			$this->loadFeatureHandler( array( 'slug' => 'plugin' ) );
+		}
+		return $this->oFeatureHandlerPlugin;
+	}
+
+	/**
+	 * @param array $aFeatureProperties
+	 * @param bool $fRecreate
+	 * @param bool $fFullBuild
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function loadFeatureHandler( $aFeatureProperties, $fRecreate = false, $fFullBuild = false ) {
+
+		$sFeatureSlug = $aFeatureProperties['slug'];
+
+		$sFeatureName = str_replace( ' ', '', ucwords( str_replace( '_', ' ', $sFeatureSlug ) ) );
+		$sOptionsVarName = sprintf( 'oFeatureHandler%s', $sFeatureName ); // e.g. oFeatureHandlerPlugin
+
+		if ( isset( $this->{$sOptionsVarName} ) ) {
+			return $this->{$sOptionsVarName};
+		}
+
+		// todo: remove ICWP and WPSF dependencies
+		$sSourceFile = $this->getSourceDir(
+			sprintf(
+				'%s-optionshandler-%s.php',
+				$this->getParentSlug(),
+				$sFeatureSlug
+			)
+		); // e.g. icwp-optionshandler-plugin.php
+		$sClassName = sprintf(
+			'%s_%s_FeatureHandler_%s',
+			strtoupper( $this->getParentSlug() ),
+			strtoupper( $this->getPluginSlug() ),
+			$sFeatureName
+		); // e.g. ICWP_WPSF_FeatureHandler_Plugin
+
+		require_once( $sSourceFile );
+		if ( $fRecreate || !isset( $this->{$sOptionsVarName} ) ) {
+			$this->{$sOptionsVarName} = new $sClassName( $this, $aFeatureProperties );
+		}
+		if ( $fFullBuild ) {
+			$this->{$sOptionsVarName}->buildOptions();
+		}
+		return $this->{$sOptionsVarName};
+	}
+
 }

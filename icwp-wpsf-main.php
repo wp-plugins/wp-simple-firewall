@@ -94,23 +94,13 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		}
 
 		/**
-		 * @return ICWP_WPSF_FeatureHandler_Plugin
-		 */
-		protected function loadCorePluginFeature() {
-			if ( !isset( $this->oFeatureHandlerPlugin ) ) {
-				$this->loadFeatureHandler( array( 'slug' => 'plugin' ) );
-			}
-			return $this->oFeatureHandlerPlugin;
-		}
-
-		/**
 		 * @param bool $fRecreate
 		 * @param bool $fFullBuild
 		 * @return bool
 		 */
 		protected function loadAllFeatures( $fRecreate = false, $fFullBuild = false ) {
 
-			$oMainPluginFeature = $this->loadCorePluginFeature();
+			$oMainPluginFeature = $this->getController()->loadCorePluginFeatureHandler();
 			$aPluginFeatures = $oMainPluginFeature->getActivePluginFeatures();
 
 			$fSuccess = true;
@@ -271,14 +261,14 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		 * @return bool
 		 */
 		protected function getShowAdminNotices() {
-			return $this->loadCorePluginFeature()->getOpt( 'enable_upgrade_admin_notice' ) == 'Y';
+			return $this->getController()->loadCorePluginFeatureHandler()->getOpt( 'enable_upgrade_admin_notice' ) == 'Y';
 		}
 
 		/**
 		 * @return int
 		 */
 		protected function getInstallationDays() {
-			$nTimeInstalled = $this->loadCorePluginFeature()->getOpt( 'installation_time' );
+			$nTimeInstalled = $this->getController()->loadCorePluginFeatureHandler()->getOpt( 'installation_time' );
 			if ( empty($nTimeInstalled) ) {
 				return 0;
 			}

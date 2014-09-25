@@ -58,7 +58,6 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 			'aAuditDataEmails'	=> $oAuditTrail->getAuditEntriesForContext( 'emails' ),
 			'aAuditDataWpsf'	=> $oAuditTrail->getAuditEntriesForContext( 'wpsf' )
 		);
-		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $aData, $this->doPluginPrefix( 'audit_trail_viewer_index' ) );
 	}
 	/**

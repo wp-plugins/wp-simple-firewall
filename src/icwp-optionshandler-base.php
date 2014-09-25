@@ -200,7 +200,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function getEmailHandler() {
 			if ( is_null( self::$oEmailHandler ) ) {
-				self::$oEmailHandler = new ICWP_WPSF_FeatureHandler_Email( $this->getController() );
+				self::$oEmailHandler = $this->getController()->loadFeatureHandler( array( 'slug' => 'email' ) );
 			}
 			return self::$oEmailHandler;
 		}
@@ -825,31 +825,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 */
 		public function displayFeatureConfigPage() {
-
-			if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true ) ) {
-				$this->displayViewAccessRestrictedPage();
-				return;
-			}
-
 //		$aPluginSummaryData = apply_filters( $this->doPluginPrefix( 'get_feature_summary_data' ), array() );
 			$aData = array(
 				'aSummaryData'		=> isset( $aPluginSummaryData ) ? $aPluginSummaryData : array()
 			);
-			$aData = array_merge( $this->getBaseDisplayData(), $aData );
 			$this->display( $aData );
-		}
-
-		/**
-		 */
-		public function displayViewAccessRestrictedPage( ) {
-
-			if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true ) ) {
-				$this->displayViewAccessRestrictedPage();
-				return;
-			}
-
-			$aData = $this->getBaseDisplayData();
-			$this->display( $aData, 'access_restricted_index' );
 		}
 
 		/**
@@ -892,6 +872,14 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return bool
 		 */
 		protected function display( $aData = array(), $sView = '' ) {
+
+			// Get Base Data
+			$aData = array_merge( $this->getBaseDisplayData(), $aData );
+			$fPermissionToView = apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true );
+
+			if ( !$fPermissionToView ) {
+				$sView = 'access_restricted_index';
+			}
 
 			if ( empty( $sView ) ) {
 				$oWpFs = $this->loadFileSystemProcessor();

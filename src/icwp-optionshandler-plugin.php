@@ -100,18 +100,10 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	/**
 	 */
 	public function displayFeatureConfigPage( ) {
-
-		if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true ) ) {
-			$this->displayViewAccessRestrictedPage();
-			return;
-		}
-
 		$aPluginSummaryData = apply_filters( $this->doPluginPrefix( 'get_feature_summary_data' ), array() );
-
 		$aData = array(
 			'aSummaryData'		=> $aPluginSummaryData
 		);
-		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $aData );
 	}
 

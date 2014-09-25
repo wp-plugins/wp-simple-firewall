@@ -638,7 +638,6 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	 */
 	public function sendBlockEmail() {
 
-		$oEmailProcessor = $this->getEmailProcessor();
 		$sIp = long2ip( self::$nRequestIp );
 		$aMessage = array(
 			_wpsf__('WordPress Simple Firewall has blocked a page visit to your site.'),
@@ -652,6 +651,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		$aMessage[] = sprintf( _wpsf__('You can look up the offending IP Address here: %s'), 'http://ip-lookup.net/?ip='.$sIp );
 
 		$sEmailSubject = sprintf( _wpsf__('Firewall Block Email Alert: %s'), home_url() );
+		$oEmailProcessor = $this->getEmailProcessor();
 		$fSendSuccess = $oEmailProcessor->sendEmail( $sEmailSubject, $aMessage );
 		return $fSendSuccess;
 	}

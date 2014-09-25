@@ -59,17 +59,10 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 	/**
 	 */
 	public function displayFeatureConfigPage( ) {
-
-		if ( !apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true ) ) {
-			$this->displayViewAccessRestrictedPage();
-			return;
-		}
-
 		$aData = array(
 			'aActiveSessions'		=> $this->getIsMainFeatureEnabled()? $this->oFeatureProcessor->getActiveUserSessionRecords() : array(),
 			'aFailedSessions'		=> $this->getIsMainFeatureEnabled()? $this->oFeatureProcessor->getPendingOrFailedUserSessionRecordsSince() : array()
 		);
-		$aData = array_merge( $this->getBaseDisplayData(), $aData );
 		$this->display( $aData );
 	}
 
