@@ -4,6 +4,7 @@ properties:
   name: 'Admin Access Restriction'
   show_feature_menu_item: true
   storage_key: 'admin_access_restriction' # should correspond exactly to that in the plugin.yaml
+  menu_title: 'Admin Access'
 # Options Sections
 sections:
   -

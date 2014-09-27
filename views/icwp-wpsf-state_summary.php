@@ -72,7 +72,7 @@ function printFeatureSummaryBlock( $fOn, $sName, $sSettingsHref= '', $sInnerSpan
 		vertical-align: top;
 	}
 	#feature-dashboard .feature-icon:before,
-	#feature-adminaccess .feature-icon:before {
+	#feature-adminaccessrestriction .feature-icon:before {
 		content: "\f332";
 	}
 	#feature-firewall .feature-icon:before {
@@ -92,6 +92,9 @@ function printFeatureSummaryBlock( $fOn, $sName, $sSettingsHref= '', $sInnerSpan
 	}
 	#feature-lockdown .feature-icon:before {
 		content: "\f160";
+	}
+	#feature-audittrail .feature-icon:before {
+		content: "\f115";
 	}
 
 </style>

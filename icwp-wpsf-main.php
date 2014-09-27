@@ -106,7 +106,7 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			$fSuccess = true;
 			foreach( $aPluginFeatures as $sSlug => $aFeatureProperties ) {
 				try {
-					$this->loadFeatureHandler( $aFeatureProperties, $fRecreate, $fFullBuild );
+					$this->getController()->loadFeatureHandler( $aFeatureProperties, $fRecreate, $fFullBuild );
 					$fSuccess = true;
 				}
 				catch( Exception $oE ) {
@@ -116,109 +116,28 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			return $fSuccess;
 		}
 
-		/**
-		 * @param array $aFeatureProperties
-		 * @param bool $fRecreate
-		 * @param bool $fFullBuild
-		 * @return mixed
-		 * @throws Exception
-		 */
-		protected function loadFeatureHandler( $aFeatureProperties, $fRecreate = false, $fFullBuild = false ) {
-
-			$sFeatureSlug = $aFeatureProperties['slug'];
-
-			$sFeatureName = str_replace( ' ', '', ucwords( str_replace( '_', ' ', $sFeatureSlug ) ) );
-			$sOptionsVarName = sprintf( 'oFeatureHandler%s', $sFeatureName ); // e.g. oFeatureHandlerOptions
-
-			if ( isset( $this->{$sOptionsVarName} ) ) {
-				return $this->{$sOptionsVarName};
-			}
-
-			$sSourceFile = $this->getController()->getSourceDir( sprintf( 'icwp-optionshandler-%s.php', $sFeatureSlug ) ); // e.g. icwp-optionshandler-plugin.php
-			$sClassName = sprintf( 'ICWP_WPSF_FeatureHandler_%s', $sFeatureName ); // e.g. ICWP_WPSF_FeatureHandler_Plugin
-
-			require_once( $sSourceFile );
-			if ( $fRecreate || !isset( $this->{$sOptionsVarName} ) ) {
-				$this->{$sOptionsVarName} = new $sClassName( $this->getController(), $aFeatureProperties );
-			}
-			if ( $fFullBuild ) {
-				$this->{$sOptionsVarName}->buildOptions();
-			}
-			return $this->{$sOptionsVarName};
-		}
-
-		/**
-		 * @param array $aItems
-		 * @return array $aItems
-		 */
-		public function filter_addExtraAdminMenuItems( $aItems ) {
-			$aItems[ _wpsf__('Firewall Log' ) ] = array( 'Firewall Log', $this->doPluginPrefix('firewall_log'), array( $this, 'onDisplayAll' ) );
-			return $aItems;
-		}
-
-		/**
-		 * Displaying all views now goes through this central function and we work out
-		 * what to display based on the name of current hook/filter being processed.
-		 */
-		public function onDisplayAll() {
-
-			if ( !$this->hasPermissionToView() ) {
-				$this->onDisplayAccessKeyRequest();
-				return;
-			}
-
-			// Just to ensure the nag bar disappears if/when they visit the dashboard
-			// regardless of clicking the button.
-			$this->updateVersionUserMeta();
-
-			$sPrefix = str_replace(' ', '-', strtolower( $this->getController()->getAdminMenuTitle() ) ) .'_page_'.$this->getPluginPrefix().'-';
-			$sCurrent = str_replace( $sPrefix, '', current_filter() );
-
-			switch( $sCurrent ) {
-				case 'privacy_protect_log' :
-					$this->onDisplayPrivacyProtectLog();
-					break;
-				case 'firewall_log' :
-					$this->onDisplayFirewallLog();
-					break;
-				default:
-					$this->getFeatureHandler_MainPlugin()->displayFeatureConfigPage();
-					break;
-			}
-		}
-
-		protected function onDisplayPrivacyProtectLog() {
-
-			$oPrivacyProcessor = $this->getProcessor_PrivacyProtect();
-			$aData = array(
-				'urlrequests_log'	=> $oPrivacyProcessor->getLogs( true )
-			);
-			$aData = array_merge( $this->getBaseDisplayData(), $aData );
-			$this->display( $this->doPluginPrefix( 'privacy_protect_log_index' ), $aData );
-		}
-
-		protected function onDisplayFirewallLog() {
-
-			$oFirewallHandler = $this->loadFeatureHandler( 'firewall' );
-			if ( $oFirewallHandler instanceof ICWP_WPSF_FeatureHandler_Firewall ) {
-				$aIpWhitelist = $oFirewallHandler->getOpt( 'ips_whitelist' );
-				$aIpBlacklist = $oFirewallHandler->getOpt( 'ips_blacklist' );
-			}
-
-			$oLoggingProcessor = $this->getProcessor_Logging();
-			if ( $oLoggingProcessor instanceof ICWP_WPSF_Processor_Logging ) {
-				$aLogData = $oLoggingProcessor->getLogs( true );
-			}
-
-			$aData = array(
-				'sFeatureName'		=> _wpsf__('Firewall Log'),
-				'firewall_log'		=> $aLogData,
-				'ip_whitelist'		=> isset( $aIpWhitelist['ips'] )? $aIpWhitelist['ips'] : array(),
-				'ip_blacklist'		=> isset( $aIpBlacklist['ips'] )? $aIpBlacklist['ips'] : array(),
-			);
-			$aData = array_merge( $this->getBaseDisplayData(), $aData );
-			$this->display( $this->doPluginPrefix( 'firewall_log_index' ), $aData );
-		}
+//		protected function onDisplayFirewallLog() {
+//
+//			$oFirewallHandler = $this->loadFeatureHandler( 'firewall' );
+//			if ( $oFirewallHandler instanceof ICWP_WPSF_FeatureHandler_Firewall ) {
+//				$aIpWhitelist = $oFirewallHandler->getOpt( 'ips_whitelist' );
+//				$aIpBlacklist = $oFirewallHandler->getOpt( 'ips_blacklist' );
+//			}
+//
+//			$oLoggingProcessor = $this->getProcessor_Logging();
+//			if ( $oLoggingProcessor instanceof ICWP_WPSF_Processor_Logging ) {
+//				$aLogData = $oLoggingProcessor->getLogs( true );
+//			}
+//
+//			$aData = array(
+//				'sFeatureName'		=> _wpsf__('Firewall Log'),
+//				'firewall_log'		=> $aLogData,
+//				'ip_whitelist'		=> isset( $aIpWhitelist['ips'] )? $aIpWhitelist['ips'] : array(),
+//				'ip_blacklist'		=> isset( $aIpBlacklist['ips'] )? $aIpBlacklist['ips'] : array(),
+//			);
+//			$aData = array_merge( $this->getBaseDisplayData(), $aData );
+//			$this->display( $this->doPluginPrefix( 'firewall_log_index' ), $aData );
+//		}
 
 		public function onWpAdminInit() {
 			parent::onWpAdminInit();
@@ -264,17 +183,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			return $this->getController()->loadCorePluginFeatureHandler()->getOpt( 'enable_upgrade_admin_notice' ) == 'Y';
 		}
 
-		/**
-		 * @return int
-		 */
-		protected function getInstallationDays() {
-			$nTimeInstalled = $this->getController()->loadCorePluginFeatureHandler()->getOpt( 'installation_time' );
-			if ( empty($nTimeInstalled) ) {
-				return 0;
-			}
-			return round( ( time() - $nTimeInstalled ) / DAY_IN_SECONDS );
-		}
-
 		protected function getAdminBarNodes() {
 			return array(); //disabled for now
 			$aMenu = array(
@@ -286,23 +194,16 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		}
 
 		public function onWpDeactivatePlugin() {
-			if ( $this->getFeatureHandler_MainPlugin()->getOpt( 'delete_on_deactivate' ) == 'Y' && current_user_can( $this->getController()->getBasePermissions() ) ) {
+			if ( $this->getController()->loadCorePluginFeatureHandler()->getOpt( 'delete_on_deactivate' ) == 'Y' && current_user_can( $this->getController()->getBasePermissions() ) ) {
 				do_action( $this->doPluginPrefix( 'delete_plugin' ) );
 			}
-		}
-
-		/**
-		 * @return ICWP_WPSF_FeatureHandler_Plugin|null
-		 */
-		public function getFeatureHandler_MainPlugin() {
-			return $this->loadFeatureHandler( 'plugin' );
 		}
 
 		/**
 		 * @return ICWP_WPSF_FeatureHandler_AdminAccessRestriction|null
 		 */
 		public function getFeatureHandler_AdminAccessRestriction() {
-			return $this->loadFeatureHandler( 'admin_access_restriction' );
+			return $this->getController()->loadFeatureHandler( array( 'slug' => 'admin_access_restriction' ) );
 		}
 
 		/**
@@ -316,55 +217,42 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		 * @return ICWP_WPSF_Processor_Firewall|null
 		 */
 		public function getProcessor_Firewall() {
-			$this->loadFeatureHandler( 'firewall' );
-			return $this->oFeatureHandlerFirewall->getProcessor();
+			return $this->getController()->loadFeatureHandler( array( 'slug' => 'firewall' ) )->getProcessor();
 		}
 
 		/**
 		 * @return ICWP_WPSF_Processor_LoginProtect|null
 		 */
 		public function getProcessor_LoginProtect() {
-			$this->loadFeatureHandler( 'login_protect' );
-			return $this->oFeatureHandlerLoginProtect->getProcessor();
+			return $this->getController()->loadFeatureHandler( array( 'slug' => 'login_protect' ) )->getProcessor();
 		}
 
 		/**
 		 * @return ICWP_WPSF_Processor_Autoupdates|null
 		 */
 		public function getProcessor_Autoupdates() {
-			$this->loadFeatureHandler( 'autoupdates' );
-			return $this->oFeatureHandlerAutoupdates->getProcessor();
+			return $this->getController()->loadFeatureHandler( array( 'slug' => 'autoupdates' ) )->getProcessor();
 		}
 
 		/**
 		 * @return ICWP_WPSF_Processor_PrivacyProtect|null
 		 */
 		public function getProcessor_PrivacyProtect() {
-			$this->loadFeatureHandler( 'privacy_protect' );
-			return $this->oFeatureHandlerPrivacyProtect->getProcessor();
+			return $this->getController()->loadFeatureHandler( array( 'slug' => 'privacy_protect' ) )->getProcessor();
 		}
 
 		/**
 		 * @return ICWP_WPSF_Processor_AuditTrail|null
 		 */
 		public function getProcessor_AuditTrail() {
-			$this->loadFeatureHandler( 'audit_trail' );
-			return $this->oFeatureHandlerAuditTrail->getProcessor();
+			return $this->getController()->loadFeatureHandler( array( 'slug' => 'audit_trail' ) )->getProcessor();
 		}
 
 		/**
 		 * @return ICWP_WPSF_Processor_Logging|null
 		 */
 		public function getProcessor_Logging() {
-			$this->loadFeatureHandler( 'logging' );
-			return $this->oFeatureHandlerLogging->getProcessor();
-		}
-
-		/**
-		 * @return ICWP_WPSF_Processor_Email|null
-		 */
-		public function getProcessor_Email() {
-			return $this->oFeatureHandlerEmail->getEmailProcessor();
+			return $this->getController()->loadFeatureHandler( array( 'slug' => 'logging' ) )->getProcessor();
 		}
 	}
 

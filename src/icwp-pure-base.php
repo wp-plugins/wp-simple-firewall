@@ -149,9 +149,6 @@ if ( !class_exists('ICWP_Pure_Base_V6') ):
 			);
 			//Create and Add the submenu items
 
-			// allow for any plugin menu items that don't come from filters
-			add_filter( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array( $this, 'filter_addExtraAdminMenuItems' ) );
-
 			$aPluginMenuItems = apply_filters( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array() );
 			if ( !empty( $aPluginMenuItems ) ) {
 				foreach ( $aPluginMenuItems as $sMenuTitle => $aMenu ) {
@@ -169,14 +166,6 @@ if ( !class_exists('ICWP_Pure_Base_V6') ):
 			$this->fixSubmenu();
 		}
 
-		/**
-		 * @param array $aItems
-		 * @return array
-		 */
-		public function filter_addExtraAdminMenuItems( $aItems ) {
-			return $aItems;
-		}
-
 		protected function fixSubmenu() {
 			global $submenu;
 			$sFullParentMenuId = $this->getPluginPrefix();
@@ -190,18 +179,6 @@ if ( !class_exists('ICWP_Pure_Base_V6') ):
 		 * what to display based on the name of current hook/filter being processed.
 		 */
 		public function onDisplayAll() { }
-
-		protected function getBaseDisplayData() {
-			$oWp = $this->loadWpFunctionsProcessor();
-			return array(
-				'plugin_url'		=> $this->getController()->getPluginUrl(),
-				'var_prefix'		=> $this->getController()->getOptionStoragePrefix(),
-				'sPluginName'		=> $this->getController()->getHumanName(),
-				'fShowAds'			=> $this->isShowMarketing(),
-				'nonce_field'		=> $this->getPluginPrefix(),
-				'form_action'		=> 'admin.php?page='.$oWp->getCurrentWpAdminPage()
-			);
-		}
 
 		/**
 		 * @return bool

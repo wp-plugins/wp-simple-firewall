@@ -322,14 +322,17 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return array
 		 */
 		public function filter_addPluginSubMenuItem( $aItems ) {
-			$sName = $this->getMainFeatureName();
-			if ( $this->getIfShowFeatureMenuItem() && !empty( $sName ) ) {
+			$sMenuTitleName = $this->getOptionsVo()->getFeatureProperty( 'menu_title' );
+			if ( is_null( $sMenuTitleName ) ) {
+				$sMenuTitleName = $this->getMainFeatureName();
+			}
+			if ( $this->getIfShowFeatureMenuItem() && !empty( $sMenuTitleName ) ) {
 
 				$sHumanName = $this->getController()->getHumanName();
 
-				$sMenuPageTitle = $sHumanName.' - '.$sName;
+				$sMenuPageTitle = $sHumanName.' - '.$sMenuTitleName;
 				$aItems[ $sMenuPageTitle ] = array(
-					$sName,
+					$sMenuTitleName,
 					$this->doPluginPrefix( $this->getFeatureSlug() ),
 					array( $this, 'displayFeatureConfigPage' )
 				);
