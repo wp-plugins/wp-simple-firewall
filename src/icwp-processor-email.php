@@ -62,6 +62,8 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		parent::reset();
 		self::$sModeFile_EmailThrottled = dirname( __FILE__ ).'/../mode.email_throttled';
 	}
+
+	public function run() {}
 	
 	/**
 	 * @param string $sEmailAddress

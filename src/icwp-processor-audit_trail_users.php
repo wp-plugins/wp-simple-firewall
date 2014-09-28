@@ -36,14 +36,12 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Users') ):
 		/**
 		 */
 		public function run() {
-
 			if ( $this->getIsOption( 'enable_audit_context_users', 'Y' ) ) {
 				add_action( 'wp_login_failed', array( $this, 'auditUserLoginFail' ) );
 				add_action( 'wp_login', array( $this, 'auditUserLoginSuccess' ) );
 				add_action( 'user_register', array( $this, 'auditNewUserRegistered' ) );
 				add_action( 'delete_user', array( $this, 'auditDeleteUser' ), 30, 2 );
 			}
-
 		}
 
 		/**

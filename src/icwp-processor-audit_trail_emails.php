@@ -36,11 +36,9 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Emails') ):
 		/**
 		 */
 		public function run() {
-
 			if ( $this->getIsOption( 'enable_audit_context_emails', 'Y' ) ) {
 				add_filter( 'wp_mail', array( $this, 'auditEmailSend' ) );
 			}
-
 		}
 
 		/**

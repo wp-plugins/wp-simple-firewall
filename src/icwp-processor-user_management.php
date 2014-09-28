@@ -47,10 +47,10 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	/**
 	 */
 	public function run() {
-		parent::run();
-		$oDp = $this->loadDataProcessor();
 
-		$oWp = $this->oFeatureOptions->loadWpFunctionsProcessor();
+		$oDp = $this->loadDataProcessor();
+		$oWp = $this->loadWpFunctionsProcessor();
+
 		// XML-RPC Compatibility
 		if ( $oWp->getIsXmlrpc() && $this->getIsOption( 'enable_xmlrpc_compatibility', 'Y' ) ) {
 			return true;
@@ -58,7 +58,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 		if ( is_email( $this->getOption( 'enable_admin_login_email_notification' ) ) ) {
 			require_once('icwp-processor-usermanagement_adminloginnotification.php');
-			$oNotificationProcessor = new ICWP_WPSF_Processor_UserManagement_AdminLoginNotification( $this->oFeatureOptions );
+			$oNotificationProcessor = new ICWP_WPSF_Processor_UserManagement_AdminLoginNotification( $this->getFeatureOptions() );
 			$oNotificationProcessor->run();
 		}
 
@@ -601,7 +601,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	protected function getSessionId() {
 		if ( empty( $this->sSessionId ) ) {
 			$oDp = $this->loadDataProcessor();
-			$this->sSessionId = $oDp->FetchCookie( $this->oFeatureOptions->getUserSessionCookieName() );
+			$this->sSessionId = $oDp->FetchCookie( $this->getFeatureOptions()->getUserSessionCookieName() );
 			if ( empty( $this->sSessionId ) ) {
 				$this->sSessionId = md5( uniqid() );
 				$this->setSessionCookie();
@@ -646,7 +646,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	}
 
 	/**
-	 * @param $nTimeStamp
+	 * @param int $nTimeStamp
+	 * @return bool|int
 	 */
 	protected function deleteAllRowsOlderThan( $nTimeStamp ) {
 		$sQuery = "
@@ -659,7 +660,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			$this->getTableName(),
 			esc_sql( $nTimeStamp )
 		);
-		$this->doSql( $sQuery );
+		return $this->doSql( $sQuery );
 	}
 
 }

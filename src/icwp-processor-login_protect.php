@@ -64,7 +64,6 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 	/**
 	 */
 	public function run() {
-		parent::run();
 		$oDp = $this->loadDataProcessor();
 		$fIsPost = $oDp->GetIsRequestPost();
 

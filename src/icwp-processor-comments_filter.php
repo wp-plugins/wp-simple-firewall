@@ -31,7 +31,6 @@ class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 	/**
 	 */
 	public function run() {
-		parent::run();
 
 		if ( $this->getIsOption( 'enable_comments_gasp_protection', 'Y' ) ) {
 			require_once('icwp-processor-commentsfilter_antibotspam.php');

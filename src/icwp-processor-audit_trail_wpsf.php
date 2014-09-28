@@ -35,8 +35,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Wpsf') ):
 
 		/**
 		 */
-		public function run() {
-		}
+		public function run() { }
 
 		/**
 		 * @return ICWP_WPSF_AuditTrail_Entries

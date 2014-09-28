@@ -49,11 +49,6 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	}
 
 	/**
-	 * Override to set what this processor does when it's "run"
-	 */
-	public function run() { }
-
-	/**
 	 */
 	public function deleteDatabase() {
 		if ( apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'has_permission_to_submit' ), true ) && $this->getTableExists() ) {

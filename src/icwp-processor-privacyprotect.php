@@ -34,7 +34,6 @@ class ICWP_PrivacyProtectProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 	/**
 	 */
 	public function run() {
-		parent::run();
 		if ( $this->getOption('enable_privacy_protect') == 'Y' ) {
 			add_action( 'http_api_debug',			array( $this, 'logHttpRequest' ), 1000, 5 );
 			add_filter( 'http_request_args',		array( $this, 'cleanHttpRequestData' ), 1000, 2 );

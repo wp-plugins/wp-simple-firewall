@@ -18,7 +18,7 @@
 
 if ( !class_exists('ICWP_BaseProcessor_V3') ):
 
-	class ICWP_BaseProcessor_V3 extends ICWP_WPSF_Foundation {
+	abstract class ICWP_BaseProcessor_V3 extends ICWP_WPSF_Foundation {
 
 		const PcreDelimiter = '/';
 
@@ -77,7 +77,7 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		/**
 		 * Override to set what this processor does when it's "run"
 		 */
-		public function run() { }
+		abstract public function run();
 
 		/**
 		 * @param $sOptionKey

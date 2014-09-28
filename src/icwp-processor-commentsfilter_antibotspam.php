@@ -61,7 +61,6 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	/**
 	 */
 	public function run() {
-		parent::run();
 
 		// Add GASP checking to the comment form.
 		add_action(	'comment_form',					array( $this, 'printGaspFormHook_Action' ), 1 );

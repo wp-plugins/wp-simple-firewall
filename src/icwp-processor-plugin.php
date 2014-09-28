@@ -40,7 +40,7 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 		$this->removePluginConflicts();
 		add_filter( $oFO->doPluginPrefix( 'show_marketing' ), array( $this, 'getIsShowMarketing' ) );
 
-		if ( $oFO->getController()->getIsValidAdminArea() ) {
+		if ( $this->getController()->getIsValidAdminArea() ) {
 
 			// always show this notice
 			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeForceOffActive' ) );

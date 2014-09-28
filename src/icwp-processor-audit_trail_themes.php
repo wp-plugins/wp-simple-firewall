@@ -36,12 +36,10 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Themes') ):
 		/**
 		 */
 		public function run() {
-
 			if ( $this->getIsOption( 'enable_audit_context_themes', 'Y' ) ) {
 				add_action( 'switch_theme', array( $this, 'auditSwitchTheme' ) );
 //				add_action( 'upgrader_process_complete', array( $this, 'auditInstalledTheme' ) );
 			}
-
 		}
 
 		/**

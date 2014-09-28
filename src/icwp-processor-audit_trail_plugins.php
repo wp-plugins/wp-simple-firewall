@@ -36,12 +36,10 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
 		/**
 		 */
 		public function run() {
-
 			if ( $this->getIsOption( 'enable_audit_context_plugins', 'Y' ) ) {
 				add_action( 'deactivated_plugin', array( $this, 'auditDeactivatedPlugin' ) );
 				add_action( 'activated_plugin', array( $this, 'auditActivatedPlugin' ) );
 			}
-
 		}
 
 		/**
