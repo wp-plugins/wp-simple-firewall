@@ -110,7 +110,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			add_action( $this->doPluginPrefix( 'form_submit' ), array( $this, 'handleFormSubmit' ) );
 			add_filter( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array( $this, 'filter_addPluginSubMenuItem' ) );
 			add_filter( $this->doPluginPrefix( 'get_feature_summary_data' ), array( $this, 'filter_getFeatureSummaryData' ) );
-			add_filter( $this->doPluginPrefix( 'flush_logs' ), array( $this, 'filter_flushFeatureLogs' ) );
 			add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
 			add_action( $this->doPluginPrefix( 'delete_plugin' ), array( $this, 'deletePluginOptions' )  );
 			add_filter( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array( $this, 'aggregateOptionsValues' ) );
@@ -166,13 +165,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		public function action_doFeatureShutdown() {
 			if ( ! $this->fPluginDeleting ) {
 				$this->savePluginOptions();
-
-//				if ( $this->getController()->getIsLoggingEnabled() ) {
-//					$aLogData = apply_filters( $this->doPluginPrefix( 'flush_logs' ), array() );
-//					$oLoggingProcessor = $this->getLoggingProcessor();
-//					$oLoggingProcessor->addDataToWrite( $aLogData );
-//					$oLoggingProcessor->commitData();
-//				}
 			}
 		}
 
@@ -221,13 +213,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 				self::$oLoggingHandler = new ICWP_WPSF_FeatureHandler_Logging( $this->getController() );
 			}
 			return self::$oLoggingHandler;
-		}
-
-		/**
-		 * @return ICWP_WPSF_Processor_Logging
-		 */
-		public function getLoggingProcessor() {
-			return $this->getLoggingHandler()->getProcessor();
 		}
 
 		/**
@@ -301,20 +286,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function getResourcesDir( $sSourceFile = '' ) {
 			return $this->getController()->getRootDir().'resources'.ICWP_DS.ltrim( $sSourceFile, ICWP_DS );
-		}
-
-		/**
-		 * @param array $aLogs
-		 * @return array
-		 */
-		public function filter_flushFeatureLogs( $aLogs ) {
-			if ( $this->getIsMainFeatureEnabled() ) {
-				$aFeatureLogs = $this->getProcessor()->flushLogData();
-				if ( !empty( $aFeatureLogs ) ) {
-					$aLogs = array_merge( $aLogs, $aFeatureLogs );
-				}
-			}
-			return $aLogs;
 		}
 
 		/**

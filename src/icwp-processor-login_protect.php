@@ -168,26 +168,6 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 	}
 
 	/**
-	 * Should return false when logging is disabled.
-	 *
-	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_WPSF_Processor_Base::getLogData()
-	 */
-	public function flushLogData() {
-
-		if ( !$this->getIsLogging() || empty( $this->m_aLogMessages ) ) {
-			return false;
-		}
-
-		$this->m_aLog = array(
-			'category'			=> self::LOG_CATEGORY_LOGINPROTECT,
-			'messages'			=> serialize( $this->m_aLogMessages )
-		);
-		$this->resetLog();
-		return $this->m_aLog;
-	}
-
-	/**
 	 * @return ICWP_WPSF_Processor_LoginProtect_Cooldown
 	 */
 	protected function getProcessorCooldown() {

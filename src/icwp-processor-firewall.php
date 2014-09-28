@@ -28,7 +28,22 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	protected $m_aRequestUriParts;
 	
 	private $m_nLoopProtect;
-	private $m_sFirewallMessage;
+	private $sFirewallDieMessage;
+
+	/**
+	 * @var array
+	 */
+	private $aAuditMessage;
+
+	/**
+	 * @var int
+	 */
+	private $nAuditMessageLevel = 1;
+
+	/**
+	 * @var string
+	 */
+	private $sAuditEvent = '';
 
 	/**
 	 * @var boolean
@@ -70,8 +85,13 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	public function __construct( ICWP_WPSF_FeatureHandler_Firewall $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 		
-		$sMessage = _wpsf__( "You were blocked by the %sWordPress Simple Firewall%s." );
-		$this->m_sFirewallMessage = sprintf( $sMessage, '<a href="http://wordpress.org/plugins/wp-simple-firewall/" target="_blank">', '</a>');
+		$sMessage = _wpsf__( "You were blocked by the %s." );
+		$this->sFirewallDieMessage = sprintf(
+			$sMessage,
+			'<a href="http://wordpress.org/plugins/wp-simple-firewall/" target="_blank">'
+			.( $this->getController()->getHumanName() )
+			.'</a>'
+		);
 	}
 
 	public function reset() {
@@ -86,37 +106,41 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	public function getIsLogging() {
 		return $this->getIsOption( 'enable_firewall_log', 'Y' );
 	}
-	
-	/**
-	 * Should return false when logging is disabled.
-	 * 
-	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_WPSF_Processor_Base::getLogData()
-	 */
-	public function flushLogData() {
-		
-		if ( !$this->getIsLogging() || empty( $this->m_aLogMessages ) ) {
-			return false;
-		}
-
-		$this->m_aLog = array(
-			'category'			=> self::LOG_CATEGORY_FIREWALL,
-			'messages'			=> serialize( $this->m_aLogMessages ),
-			'created_at'		=> self::$nRequestTimestamp,
-			'ip'				=> long2ip( self::$nRequestIp ),
-			'ip_long'			=> self::$nRequestIp,
-		);
-		$this->resetLog();
-		return $this->m_aLog;
-	}
 
 	public function run() {
 		$fIfFirewallBlockUser = !$this->doFirewallCheck();
+		$this->doAuditEntry( $this->getAuditMessage(), $this->nAuditMessageLevel, $this->sAuditEvent );
 
 		if ( $fIfFirewallBlockUser ) {
 			$this->doPreFirewallBlock();
 			$this->doFirewallBlock();
 		}
+	}
+
+	/**
+	 * @param string $sAddition
+	 * @param int $nLevel
+	 * @param string $sEvent
+	 */
+	protected function addToAuditEntry( $sAddition = '', $nLevel = 1, $sEvent = '' ) {
+		if ( !isset( $this->aAuditMessage ) ) {
+			$this->aAuditMessage = array();
+		}
+		$this->aAuditMessage[] = $sAddition;
+		if ( $nLevel > $this->nAuditMessageLevel ) {
+			$this->nAuditMessageLevel = $nLevel;
+		}
+		if ( !empty( $sEvent ) ) {
+			$this->sAuditEvent = $sEvent;
+		}
+	}
+
+	/**
+	 * @param string $sSeparator
+	 * @return string
+	 */
+	protected function getAuditMessage( $sSeparator = ' ' ) {
+		return implode( $sSeparator, isset( $this->aAuditMessage ) ? $this->aAuditMessage : array() );
 	}
 
 	/**
@@ -126,7 +150,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		
 		if ( $this->getOption('whitelist_admins') == 'Y' && is_super_admin() ) {
 			$sAuditMessage = _wpsf__('Logged-in administrators currently by-pass all firewall checking.');
-			$this->doAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
 			return true;
 		}
 
@@ -134,14 +158,14 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		$this->setRequestUriPageParts();
 		if ( empty( $this->m_aRequestUriParts ) ) {
 			$sAuditMessage = _wpsf__('Cannot Run Firewall checking because parsing the URI failed.');
-			$this->doAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
 			return true;
 		}
 
 		$oDp = $this->loadDataProcessor();
 		if ( $this->getOption('ignore_search_engines') == 'Y' && $oDp->IsSearchEngineBot() ) {
 			$sAuditMessage = _wpsf__('Visitor detected as Search Engine Bot so by-passing Firewall Checking.');
-			$this->doAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
 			return true;
 		}
 
@@ -149,14 +173,14 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		$this->getPageParams();
 		if ( empty( $this->m_aPageParams ) ) {
 			$sAuditMessage = _wpsf__('After whitelist options were applied, there were no page parameters to check on this visit.');
-			$this->doAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
+			$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
 			return true;
 		}
 		$this->m_aPageParamValuesToCheck = array_values( $this->m_aPageParams );
 		
 		if ( self::$nRequestIp === false ) {
 			$sAuditMessage = _wpsf__('Visitor IP address could not be determined, so by-passing the Firewall.');
-			$this->doAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
 			return true;
 		}
 		
@@ -164,17 +188,17 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		if ( $this->isVisitorOnWhitelist() ) {
 			$sAuditMessage =  _wpsf__('Visitor is white-listed by IP Address.')
 				.' '.sprintf( _wpsf__('Label: %s'), empty( $this->m_sListItemLabel )? _wpsf__('No label.') : $this->m_sListItemLabel );
-			$this->doAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
+			$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
 			$this->doStatIncrement( 'firewall.allowed.whitelist' );
 			return true;
 		}
 		
 		// Check if the visitor is excluded from the firewall from the outset.
 		if ( $this->isVisitorOnBlacklist() ) {
-			$this->m_sFirewallMessage .= ' Your IP is Blacklisted.';
+			$this->sFirewallDieMessage .= ' Your IP is Blacklisted.';
 			$sAuditMessage =  _wpsf__('Visitor was black-listed by IP Address.')
 				.' '.sprintf( _wpsf__('Label: %s'), empty( $this->m_sListItemLabel )? _wpsf__('No label.') : $this->m_sListItemLabel );
-			$this->doAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
 			$this->doStatIncrement( 'firewall.blocked.blacklist' );
 			return false;
 		}
@@ -183,7 +207,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		// Check if the page and its parameters are whitelisted.
 		if ( $fIsPermittedVisitor && $this->isPageWhitelisted() ) {
 			$sAuditMessage = _wpsf__('All page request parameters were white-listed.');
-			$this->doAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
+			$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
 			$this->doStatIncrement( 'firewall.allowed.pagewhitelist' );
 			return true;
 		}
@@ -235,7 +259,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms );
 		if ( !$fPass ) {
 			$sAuditMessage = sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('Directory Traversal') );
-			$this->doAuditEntry( $sAuditMessage, 3, 'firewall_block' );
+			$this->addToAuditEntry( $sAuditMessage, 3, 'firewall_block' );
 			$this->doStatIncrement( 'firewall.blocked.dirtraversal' );
 		}
 		return $fPass;
@@ -250,7 +274,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$sAuditMessage = sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('SQL Queries') );
-			$this->doAuditEntry( $sAuditMessage, 3, 'firewall_block' );
+			$this->addToAuditEntry( $sAuditMessage, 3, 'firewall_block' );
 			$this->doStatIncrement( 'firewall.blocked.sqlqueries' );
 		}
 		return $fPass;
@@ -271,7 +295,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$sAuditMessage = sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('WordPress Terms') );
-			$this->doAuditEntry( $sAuditMessage, 3, 'firewall_block' );
+			$this->addToAuditEntry( $sAuditMessage, 3, 'firewall_block' );
 			$this->doStatIncrement( 'firewall.blocked.wpterms' );
 		}
 		return $fPass;
@@ -288,7 +312,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$sAuditMessage = sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('Field Truncation') );
-			$this->doAuditEntry( $sAuditMessage, 3, 'firewall_block' );
+			$this->addToAuditEntry( $sAuditMessage, 3, 'firewall_block' );
 			$this->doStatIncrement( 'firewall.blocked.fieldtruncation' );
 		}
 		return $fPass;
@@ -301,7 +325,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$sAuditMessage = sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('PHP Code') );
-			$this->doAuditEntry( $sAuditMessage, 3, 'firewall_block' );
+			$this->addToAuditEntry( $sAuditMessage, 3, 'firewall_block' );
 			$this->doStatIncrement( 'firewall.blocked.phpcode' );
 		}
 		return $fPass;
@@ -323,7 +347,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 			$fPass = $this->doPassCheck( $aFileNames, $aTerms, true );
 			if ( !$fPass ) {
 				$sAuditMessage = sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('EXE File Uploads') );
-				$this->doAuditEntry( $sAuditMessage, 3, 'firewall_block' );
+				$this->addToAuditEntry( $sAuditMessage, 3, 'firewall_block' );
 				$this->doStatIncrement( 'firewall.blocked.exefile' );
 			}
 			return $fPass;
@@ -338,7 +362,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 		$fPass = $this->doPassCheck( $this->m_aPageParamValuesToCheck, $aTerms, true );
 		if ( !$fPass ) {
 			$sAuditMessage = sprintf( _wpsf__('Firewall Blocked: %s'), _wpsf__('Leading Schema') );
-			$this->doAuditEntry( $sAuditMessage, 3, 'firewall_block' );
+			$this->addToAuditEntry( $sAuditMessage, 3, 'firewall_block' );
 			$this->doStatIncrement( 'firewall.blocked.schema' );
 		}
 		return $fPass;
@@ -347,15 +371,15 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	/**
 	 * Returns false when check fails - that is to say, it should be blocked by the firewall.
 	 * 
-	 * @param array $inaParamValues
-	 * @param array $inaMatchTerms
-	 * @param boolean $infRegex
+	 * @param array $aParamValues
+	 * @param array $aMatchTerms
+	 * @param boolean $fRegex
 	 * @return boolean
 	 */
-	private function doPassCheck( $inaParamValues, $inaMatchTerms, $infRegex = false ) {
+	private function doPassCheck( $aParamValues, $aMatchTerms, $fRegex = false ) {
 		
 		$fFAIL = false;
-		foreach ( $inaParamValues as $mValue ) {
+		foreach ( $aParamValues as $mValue ) {
 			if ( is_array( $mValue ) ) {
 		
 				// Protection against an infinite loop and we limit depth to 3.
@@ -366,7 +390,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 					$this->m_nLoopProtect++;
 				}
 				
-				if ( !$this->doPassCheck( $mValue, $inaMatchTerms, $infRegex ) ) {
+				if ( !$this->doPassCheck( $mValue, $aMatchTerms, $fRegex ) ) {
 					return false;
 				}
 				
@@ -374,9 +398,9 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 			}
 			else {
 				$mValue = (string) $mValue;
-				foreach ( $inaMatchTerms as $sTerm ) {
+				foreach ( $aMatchTerms as $sTerm ) {
 					
-					if ( $infRegex && preg_match( $sTerm, $mValue ) ) { //dodgy term pattern found in a parameter value
+					if ( $fRegex && preg_match( $sTerm, $mValue ) ) { //dodgy term pattern found in a parameter value
 						$fFAIL = true;
 					}
 					else if ( strpos( $mValue, $sTerm ) !== false ) { //dodgy term found in a parameter value
@@ -384,10 +408,9 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 					}
 					
 					if ( $fFAIL ) {
-						$this->m_sFirewallMessage .= " Something in the URL, Form or Cookie data wasn't appropriate.";
-						$this->logWarning(
-							sprintf( 'Page parameter failed firewall check. The offending value was %s', $mValue )
-						);
+						$this->sFirewallDieMessage .= " Something in the URL, Form or Cookie data wasn't appropriate.";
+						$sAuditMessage = _wpsf__('Page parameter failed firewall check.').' '.sprintf( _wpsf__( 'The offending value was "%s".' ), $mValue );
+						$this->addToAuditEntry( $sAuditMessage, 3 );
 						return false;
 					}
 					
@@ -402,27 +425,20 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 
 		switch( $this->getOption( 'block_response' ) ) {
 			case 'redirect_die':
-				$this->logWarning(
-					sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor connection was killed with wp_die()') )
-				);
+				$sEntry = sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor connection was killed with wp_die()') );
 				break;
 			case 'redirect_die_message':
-				$this->logWarning(
-					sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor connection was killed with wp_die() and message') )
-				);
+				$sEntry = sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor connection was killed with wp_die() and message') );
 				break;
 			case 'redirect_home':
-				$this->logWarning(
-					sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor was sent HOME') )
-				);
+				$sEntry = sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor was sent HOME') );
 				break;
 			case 'redirect_404':
-				$this->logWarning(
-					sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor was sent 404') )
-				);
+				$sEntry = sprintf( _wpsf__('Firewall Block Response: %s'), _wpsf__('Visitor was sent 404') );
 				break;
 		}
 
+		$this->addToAuditEntry( $sEntry );
 		if ( $this->getIsOption( 'block_send_email', 'Y' ) ) {
 			$this->sendBlockEmail();
 		}
@@ -434,7 +450,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 			case 'redirect_die':
 				break;
 			case 'redirect_die_message':
-				wp_die( $this->m_sFirewallMessage );
+				wp_die( $this->sFirewallDieMessage );
 				break;
 			case 'redirect_home':
 				header( "Location: ".home_url() );
@@ -644,10 +660,7 @@ class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 			_wpsf__('Log details for this visitor are below:'),
 			'- '.sprintf( _wpsf__('IP Address: %s'), $sIp )
 		);
-		foreach( $this->m_aLogMessages as $aLogItem ) {
-			list( $sLogType, $sLogMessage ) = $aLogItem;
-			$aMessage[] = '- '.$sLogMessage;
-		}
+		// TODO: Get audit trail messages
 		$aMessage[] = sprintf( _wpsf__('You can look up the offending IP Address here: %s'), 'http://ip-lookup.net/?ip='.$sIp );
 
 		$sEmailSubject = sprintf( _wpsf__('Firewall Block Email Alert: %s'), home_url() );

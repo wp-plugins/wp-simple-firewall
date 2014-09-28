@@ -21,22 +21,6 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 	class ICWP_BaseProcessor_V3 extends ICWP_WPSF_Foundation {
 
 		const PcreDelimiter = '/';
-		const LOG_MESSAGE_LEVEL_INFO = 0;
-		const LOG_MESSAGE_LEVEL_WARNING = 1;
-		const LOG_MESSAGE_LEVEL_CRITICAL = 2;
-
-		const LOG_CATEGORY_DEFAULT = 0;
-		const LOG_CATEGORY_FIREWALL = 1;
-		const LOG_CATEGORY_LOGINPROTECT = 2;
-
-		/**
-		 * @var array
-		 */
-		protected $m_aLog;
-		/**
-		 * @var array
-		 */
-		protected $m_aLogMessages;
 
 		/**
 		 * @var long
@@ -63,6 +47,13 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 			$this->reset();
 		}
 
+		/**
+		 * @return ICWP_WPSF_Plugin_Controller
+		 */
+		public function getController() {
+			return $this->getFeatureOptions()->getController();
+		}
+
 		public function action_doFeatureProcessorShutdown() { }
 
 		/**
@@ -76,7 +67,6 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 			if ( !isset( self::$nRequestTimestamp ) ) {
 				self::$nRequestTimestamp = $oDp->GetRequestTime();
 			}
-			$this->resetLog();
 		}
 
 		/**
@@ -119,89 +109,6 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		}
 
 		/**
-		 * Resets the log
-		 */
-		public function resetLog() {
-			$this->m_aLogMessages = array();
-		}
-
-		/**
-		 * @return bool
-		 */
-		public function getIsLogging() {
-			return false;
-		}
-
-		/**
-		 * Should return false when logging is disabled.
-		 *
-		 * @return false|array	- false when logging is disabled, array with log data otherwise
-		 * @see ICWP_WPSF_Processor_Base::getLogData()
-		 */
-		public function flushLogData() {
-			if ( !$this->getIsLogging() ) {
-				return false;
-			}
-			return false;
-		}
-
-		/**
-		 * Builds and returns the full log.
-		 *
-		 * @return array (associative)
-		 */
-		public function getLogData() {
-
-			if ( $this->getIsLogging() ) {
-				$this->m_aLog = array( 'messages' => serialize( $this->m_aLogMessages ) );
-			}
-			else {
-				$this->m_aLog = false;
-			}
-
-			return $this->m_aLog;
-		}
-
-		/**
-		 * @return array
-		 */
-		public function getLogMessages() {
-			if ( !is_array( $this->m_aLogMessages ) ) {
-				$this->m_aLogMessages = array();
-			}
-			return $this->m_aLogMessages;
-		}
-
-		/**
-		 * @param string $sLogMessage
-		 * @param integer $sMessageType
-		 */
-		public function writeLog( $sLogMessage = '', $sMessageType = self::LOG_MESSAGE_LEVEL_INFO ) {
-			if ( !is_array( $this->m_aLogMessages ) ) {
-				$this->resetLog();
-			}
-			$this->m_aLogMessages[] = array( $sMessageType, $sLogMessage );
-		}
-
-		/**
-		 * @param string $sEvent
-		 * @param int $nCategory
-		 * @param string $sMessage
-		 */
-		public function writeAuditEntry( $sEvent, $nCategory = 1, $sMessage = '' ) {
-			$oWp = $this->loadWpFunctionsProcessor();
-			$oCurrentUser = $oWp->getCurrentWpUser();
-			$this->aAuditEntry = array(
-				'created_at' => $this->loadDataProcessor()->GetRequestTime(),
-				'wp_username' => empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
-				'context' => 'wpsf',
-				'event' => $sEvent,
-				'category' => $nCategory,
-				'message' => $sMessage
-			);
-		}
-
-		/**
 		 * @return array
 		 */
 		public function getAuditEntry( $aAuditEntries ) {
@@ -212,22 +119,24 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		}
 
 		/**
-		 * @param string $insLogMessage
+		 * @param string $sEvent
+		 * @param int $nCategory
+		 * @param string $sMessage
 		 */
-		public function logInfo( $insLogMessage ) {
-			$this->writeLog( $insLogMessage, self::LOG_MESSAGE_LEVEL_INFO );
-		}
-		/**
-		 * @param string $insLogMessage
-		 */
-		public function logWarning( $insLogMessage ) {
-			$this->writeLog( $insLogMessage, self::LOG_MESSAGE_LEVEL_WARNING );
-		}
-		/**
-		 * @param string $insLogMessage
-		 */
-		public function logCritical( $insLogMessage ) {
-			$this->writeLog( $insLogMessage, self::LOG_MESSAGE_LEVEL_CRITICAL );
+		public function writeAuditEntry( $sEvent, $nCategory = 1, $sMessage = '' ) {
+			if ( empty( $sMessage ) ) {
+				return;
+			}
+			$oWp = $this->loadWpFunctionsProcessor();
+			$oCurrentUser = $oWp->getCurrentWpUser();
+			$this->aAuditEntry = array(
+				'created_at' => $this->loadDataProcessor()->GetRequestTime(),
+				'wp_username' => empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
+				'context' => 'wpsf',
+				'event' => $sEvent,
+				'category' => $nCategory,
+				'message' => $sMessage
+			);
 		}
 
 		/**
@@ -294,15 +203,7 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 * @return ICWP_WPSF_Processor_Email
 		 */
 		public function getEmailProcessor() {
-
 			return $this->getFeatureOptions()->getEmailProcessor();
-		}
-
-		/**
-		 * @return ICWP_WPSF_Processor_Logging
-		 */
-		public function getLoggingProcessor() {
-			return $this->getFeatureOptions()->getLoggingProcessor();
 		}
 
 		/**

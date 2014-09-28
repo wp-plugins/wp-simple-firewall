@@ -76,7 +76,28 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 			self::$oPluginSpec = $oPluginSpec;
 			add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 			add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
+			$this->registerActivationHooks();
 		}
+	}
+
+	/**
+	 * Registers the plugins activation, deactivate and uninstall hooks.
+	 */
+	protected function registerActivationHooks() {
+		register_activation_hook( $this->getRootFile(), array( $this, 'onWpActivatePlugin' ) );
+		register_deactivation_hook( $this->getRootFile(), array( $this, 'onWpDeactivatePlugin' ) );
+		//	register_uninstall_hook( $this->oPluginVo->getRootFile(), array( $this, 'onWpUninstallPlugin' ) );
+	}
+
+	// TODO: this is dependent on a specific plugin option variable - need to move it into the handlers
+	public function onWpDeactivatePlugin() {
+		if ( $this->loadCorePluginFeatureHandler()->getOptIs( 'delete_on_deactivate', 'Y' ) && current_user_can( $this->getBasePermissions() ) ) {
+			do_action( $this->doPluginPrefix( 'delete_plugin' ) );
+		}
+	}
+
+	public function onWpActivatePlugin() {
+		$this->loadAllFeatures( true, true );
 	}
 
 	/**
@@ -301,9 +322,17 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	/**
 	 * @return bool
 	 */
-	protected function getIsPage_PluginAdmin() {
+	public function getIsPage_PluginAdmin() {
 		$oWp = $this->loadWpFunctionsProcessor();
 		return ( strpos( $oWp->getCurrentWpAdminPage(), $this->getPluginPrefix() ) === 0 );
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getIsPage_PluginMainDashboard() {
+		$oWp = $this->loadWpFunctionsProcessor();
+		return ( $oWp->getCurrentWpAdminPage() == $this->getPluginPrefix() );
 	}
 
 	/**
@@ -488,6 +517,29 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 			$this->loadFeatureHandler( array( 'slug' => 'plugin' ) );
 		}
 		return $this->oFeatureHandlerPlugin;
+	}
+
+	/**
+	 * @param bool $fRecreate
+	 * @param bool $fFullBuild
+	 * @return bool
+	 */
+	public function loadAllFeatures( $fRecreate = false, $fFullBuild = false ) {
+
+		$oMainPluginFeature = $this->loadCorePluginFeatureHandler();
+		$aPluginFeatures = $oMainPluginFeature->getActivePluginFeatures();
+
+		$fSuccess = true;
+		foreach( $aPluginFeatures as $sSlug => $aFeatureProperties ) {
+			try {
+				$this->loadFeatureHandler( $aFeatureProperties, $fRecreate, $fFullBuild );
+				$fSuccess = true;
+			}
+			catch( Exception $oE ) {
+				wp_die( $oE->getMessage() );
+			}
+		}
+		return $fSuccess;
 	}
 
 	/**

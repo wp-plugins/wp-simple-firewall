@@ -35,10 +35,6 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * @var string
 	 */
 	protected $sFullTableName;
-	/**
-	 * @var array 
-	 */
-	protected $m_aDataToWrite;
 
 	/**
 	 * @var boolean
@@ -106,61 +102,6 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 		else {
 			$this->createTable();
 		}
-	}
-	
-	/**
-	 * @param array $inaLogData
-	 * @return type
-	 */
-	public function addDataToWrite( $inaLogData ) {
-		if ( empty( $inaLogData ) ) {
-			return;
-		}
-		if ( empty( $this->m_aDataToWrite ) ) {
-			$this->m_aDataToWrite = array();
-		}
-		$this->m_aDataToWrite[] = $this->completeDataForWrite( $inaLogData );
-	}
-	
-	/**
-	 * Ensures the data provided for writing to the db meets all the requirements.
-	 * 
-	 * This should be overridden per implementation
-	 * 
-	 * @param array $aLogData
-	 * @return array
-	 */
-	protected function completeDataForWrite( $aLogData ) {
-		if ( is_null( $aLogData ) ) {
-			return array();
-		}
-		return $aLogData;
-	}
-	
-	/**
-	 * @return boolean - whether the write to the DB was successful.
-	 */
-	public function commitData() {
-		if ( empty( $this->m_aDataToWrite ) || !$this->getTableExists() ) {
-			return;
-		}
-		$fSuccess = true;
-		foreach( $this->m_aDataToWrite as $aDataEntry ) {
-			if ( empty( $aDataEntry ) ) {
-				continue;
-			}
-			$fSuccess = $fSuccess && $this->insertIntoTable( $aDataEntry );
-		}
-		if ( $fSuccess ) {
-			$this->flushData();
-		}
-		return $fSuccess;
-	}
-	
-	/**
-	 */
-	protected function flushData() {
-		$this->m_aDataToWrite = null;
 	}
 
 	/**

@@ -101,12 +101,6 @@ class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_B
 	}
 
 	protected function doExtraSubmitProcessing() {
-		$oDp = $this->loadDataProcessor();
-		if ( $oDp->FetchPost( 'clear_log_submit' ) ) {
-			$oLoggingProcessor = $this->getLoggingProcessor();
-			$oLoggingProcessor->recreateTable();
-			return true;
-		}
 		return true;
 	}
 }

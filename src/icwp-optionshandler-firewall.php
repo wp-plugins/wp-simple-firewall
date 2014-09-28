@@ -241,17 +241,10 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 	protected function doExtraSubmitProcessing() {
 		$oDp = $this->loadDataProcessor();
 
-		if ( $oDp->FetchPost( 'clear_log_submit' ) ) {
-			$oLoggingProcessor = $this->getLoggingProcessor();
-			$oLoggingProcessor->recreateTable();
-			return true;
-		}
-
 		$this->addRawIpsToFirewallList( 'ips_whitelist', array( $oDp->FetchGet( 'whiteip' ) ) );
 		$this->removeRawIpsFromFirewallList( 'ips_whitelist', array( $oDp->FetchGet( 'unwhiteip' ) ) );
 		$this->addRawIpsToFirewallList( 'ips_blacklist', array( $oDp->FetchGet( 'blackip' ) ) );
 		$this->removeRawIpsFromFirewallList( 'ips_blacklist', array( $oDp->FetchGet( 'unblackip' ) ) );
-
 		return true;
 	}
 

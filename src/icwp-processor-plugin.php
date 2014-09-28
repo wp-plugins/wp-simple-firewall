@@ -130,7 +130,7 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 			return $aAdminNotices;
 		}
 
-		$sNoticeMessage = '<p>'.sprintf( _wpsf__( 'There is an update available for your WordPress Security plugin: %s.' ), '<strong>'.$this->getFeatureOptions()->getController()->getHumanName().'</strong>' ).'</p>';
+		$sNoticeMessage = '<p>'.sprintf( _wpsf__( 'There is an update available for your WordPress Security plugin: %s.' ), '<strong>'.$this->getController()->getHumanName().'</strong>' ).'</p>';
 		$sNoticeMessage .= sprintf( '<a href="%s" class="button">'._wpsf__( 'Please click to update immediately' ).'</a>', $oWp->getPluginUpgradeLink( $this->getFeatureOptions()->getPluginBaseFile() ) );
 
 		$aAdminNotices[] = $this->getAdminNoticeHtml( $sNoticeMessage, 'updated', false );
@@ -142,7 +142,7 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 	 * @return array
 	 */
 	public function adminNoticePostPluginUpgrade( $aAdminNotices ) {
-		$oController = $this->getFeatureOptions()->getController();
+		$oController = $this->getController();
 		$oWp = $this->loadWpFunctionsProcessor();
 
 		$sCurrentMetaValue = $oWp->getUserMeta( $oController->doPluginOptionPrefix( 'current_version' ) );
@@ -191,7 +191,7 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 			return $aAdminNotices;
 		}
 
-		$oController = $this->getFeatureOptions()->getController();
+		$oController = $this->getController();
 
 		$oWp = $this->loadWpFunctionsProcessor();
 		$sCurrentMetaValue = $oWp->getUserMeta( $oController->doPluginOptionPrefix( 'plugin_translation_notice' ) );

@@ -203,26 +203,6 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	}
 
 	/**
-	 * Should return false when logging is disabled.
-	 *
-	 * @return false|array	- false when logging is disabled, array with log data otherwise
-	 * @see ICWP_WPSF_Processor_Base::getLogData()
-	 */
-	public function flushLogData() {
-	
-		if ( !$this->getIsLogging() || empty( $this->m_aLogMessages ) ) {
-			return false;
-		}
-
-		$this->m_aLog = array(
-			'category'			=> self::LOG_CATEGORY_LOGINPROTECT,
-			'messages'			=> serialize( $this->m_aLogMessages )
-		);
-		$this->resetLog();
-		return $this->m_aLog;
-	}
-
-	/**
 	 * If $oUser is a valid WP_User object, then the user logged in correctly.
 	 *
 	 * @param WP_User|string $oUser	- the docs say the first parameter a string, WP actually gives a WP_User object (or null)
