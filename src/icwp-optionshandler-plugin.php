@@ -233,6 +233,18 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 				$wpdb->query( $sQuery );
 			}
 		}
+
+		// clean out old database tables as we've moved to the audit trail now.
+		if ( version_compare( $this->getVersion(), '4.0.0', '<' ) ) {
+			$aOldTables = array(
+				'icwp_wpsf_general_logging'
+			);
+			global $wpdb;
+			foreach( $aOldTables as $sTable ) {
+				$sQuery = sprintf( 'DROP TABLE IF EXISTS `%s%s`', $wpdb->prefix, $sTable ) ;
+				$wpdb->query( $sQuery );
+			}
+		}
 	}
 }
 

@@ -344,13 +344,13 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
 		public function enqueuePluginAdminCss() {
 			$sUnique = $this->doPluginPrefix( 'plugin_css' );
-			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('plugin.css'), array( $this->doPluginPrefix( 'bootstrap_wpadmin_css_fixes' ) ), $this->getController()->getVersion().rand() );
+			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('plugin.css'), array( $this->doPluginPrefix( 'bootstrap_wpadmin_css_fixes' ) ), $this->getController()->getVersion() );
 			wp_enqueue_style( $sUnique );
 		}
 
 		public function enqueuePluginGlobalAdminCss() {
 			$sUnique = $this->doPluginPrefix( 'global_plugin_css' );
-			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('global-plugin.css'), false, $this->getController()->getVersion().rand() );
+			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('global-plugin.css'), false, $this->getController()->getVersion() );
 			wp_enqueue_style( $sUnique );
 		}
 	}

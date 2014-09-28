@@ -163,6 +163,10 @@ p.code-description {
 	background-color: #f6f6f6;
 	border-color: #dddddd;
 }
+table.table th {
+	border-bottom: 1px solid #777777;
+}
+
 table.tbl_tbs_options {
 	width: 100%;
 	border: 1px solid transparent;

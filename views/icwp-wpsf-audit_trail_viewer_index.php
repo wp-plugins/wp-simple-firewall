@@ -1,19 +1,16 @@
 <?php
 include_once( 'icwp-wpsf-config_header.php' );
 
-$aLogTypes = array(
-	0	=>	_wpsf__('Info'),
-	1	=>	_wpsf__('Warning'),
-	2	=>	_wpsf__('Critical')
-);
-
 function printAuditTrailTable( $sTitle, $aAuditData, $nYourIp = -1 ) {
+
+	?><h4 class="table-title"><?php echo $sTitle; ?></h4><?php
+
 	if ( empty( $aAuditData ) ) {
+		_wpsf_e( 'There are currently no audit entries this is section.' );
 		return;
 	}
-	?>
-	<h4 class="table-title"><?php echo $sTitle; ?></h4>
 
+	?>
 	<table class="table table-hover table-striped table-audit_trail">
 		<tr>
 			<th class="cell-time"><?php _wpsf_e('Time'); ?></th>

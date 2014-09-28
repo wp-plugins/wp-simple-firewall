@@ -227,9 +227,15 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *   KNOWN ISSUE:      Login Protection logs are not being properly created.
 
+= 4.0.1 (Coming Soon) =
+
+*   ADDED:      Audit Trail for more WordPress Simple Firewall events such as User Sessions, Login Protections, Comments Filtering etc.
+
 = 4.0.0 =
 
-*   ADDED:      New Feature - Audit Trail ( Coming Soon! )
+*   ADDED:      New Feature - Audit Trail
+*   ADDED:      Audit Trail options include: Plugins, Themes, Email, WordPress Core, Posts/Pages, WordPress Simple Firewall
+*   CHANGED:    Firewall Log is no longer an option and instead integrated into the "WordPress Simple Firewall" Audit Trail option.
 
 = 3.5.5 =
 
