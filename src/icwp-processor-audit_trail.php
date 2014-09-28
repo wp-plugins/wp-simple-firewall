@@ -126,6 +126,9 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 				if ( empty( $aEntry['ip_long'] ) ) {
 					$aEntry['ip_long'] = $nIp;
 				}
+				if ( is_array( $aEntry['message'] ) ) {
+					$aEntry['message'] = implode( ' ', $aEntry['message'] );
+				}
 				$this->insertIntoTable( $aEntry );
 			}
 		}

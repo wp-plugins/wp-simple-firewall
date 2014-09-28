@@ -142,23 +142,15 @@ class ICWP_WPSF_Processor_LoginProtect_Gasp extends ICWP_WPSF_Processor_Base {
 		$sHoney = $oDp->FetchPost( 'icwp_wpsf_login_email' );
 
 		if ( empty( $sGaspCheckBox ) ) {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but GASP checkbox was not present. Bot Perhaps? IP Address: "%s".'),
-					$sUsername,
-					$oDp->FetchPost( false )
-				)
-			);
+			$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but GASP checkbox was not present.'), $sUsername ).' '._wpsf__('Probably a BOT.');
+			$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_block_gasp_checkbox' );
 			$this->doStatIncrement( 'login.gasp.checkbox.fail' );
-			wp_die( "You must check that box to say you're not a bot." );
+			wp_die( _wpsf__( "You must check that box to say you're not a bot." ) );
 			return false;
 		}
 		else if ( !empty( $sHoney ) ) {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but they were caught by the GASP honey pot. Bot Perhaps? IP Address: "%s".'),
-					$sUsername,
-					$oDp->FetchPost( false )
-				)
-			);
+			$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but they were caught by the GASP honeypot.'), $sUsername ).' '._wpsf__('Probably a BOT.');
+			$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_block_gasp_honeypot' );
 			$this->doStatIncrement( 'login.gasp.honeypot.fail' );
 			wp_die( _wpsf__('You appear to be a bot - terminating login attempt.') );
 			return false;

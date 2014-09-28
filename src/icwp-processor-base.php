@@ -36,6 +36,11 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		protected static $nRequestTimestamp;
 
 		/**
+		 * @var array
+		 */
+		private $aAuditEntry;
+
+		/**
 		 * @var ICWP_WPSF_FeatureHandler_Base
 		 */
 		protected $oFeatureOptions;
@@ -116,6 +121,58 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 				$aAuditEntries[] = $this->aAuditEntry;
 			}
 			return $aAuditEntries;
+		}
+
+		/**
+		 * @param string $sAdditionalMessage
+		 * @param int $nCategory
+		 * @param string $sEvent
+		 */
+		protected function addToAuditEntry( $sAdditionalMessage = '', $nCategory = 1, $sEvent = '' ) {
+			if ( !isset( $this->aAuditEntry ) ) {
+				$oWp = $this->loadWpFunctionsProcessor();
+				$oCurrentUser = $oWp->getCurrentWpUser();
+				$this->aAuditEntry = array(
+					'created_at' => $this->loadDataProcessor()->GetRequestTime(),
+					'wp_username' => empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
+					'context' => 'wpsf',
+					'event' => $sEvent,
+					'category' => $nCategory,
+					'message' => array()
+				);
+			}
+
+			$this->aAuditEntry['message'][] = $sAdditionalMessage;
+
+			if ( $nCategory > $this->aAuditEntry['category'] ) {
+				$this->aAuditEntry['category'] = $nCategory;
+			}
+			if ( !empty( $sEvent ) ) {
+				$this->aAuditEntry['event'] = $sEvent;
+			}
+		}
+
+		/**
+		 * @param string $sSeparator
+		 * @return string
+		 */
+		protected function getAuditMessage( $sSeparator = ' ' ) {
+			return implode( $sSeparator, $this->getRawAuditMessage() );
+		}
+
+		/**
+		 * @param string $sLinePrefix
+		 * @return array
+		 */
+		protected function getRawAuditMessage( $sLinePrefix = '' ) {
+			if ( isset( $this->aAuditEntry['message'] ) && is_array( $this->aAuditEntry['message'] ) && !empty( $sLinePrefix ) ) {
+				$aAuditMessages = array();
+				foreach( $this->aAuditEntry['message'] as $sMessage ) {
+					$aAuditMessages[] = $sLinePrefix.$sMessage;
+				}
+				return $aAuditMessages;
+			}
+			return isset( $this->aAuditEntry['message'] ) ? $this->aAuditEntry['message'] : array();
 		}
 
 		/**

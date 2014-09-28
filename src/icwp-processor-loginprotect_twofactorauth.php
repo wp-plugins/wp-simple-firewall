@@ -75,10 +75,8 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 
 				if ( $this->getIsUserLevelSubjectToTwoFactorAuth( $oUser->user_level ) && !$this->getUserHasValidAuth( $oUser ) ) {
 
-					$this->logWarning(
-						sprintf( _wpsf__('User "%s" was forcefully logged out as they are not verified by either cookie or IP address (or both).'), $oUser->user_login )
-					);
-
+					$sAuditMessage = sprintf( _wpsf__('User "%s" was forcefully logged out as they were not verified by either cookie or IP address (or both).'), $oUser->user_login );
+					$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_logout_unverified' );
 					$this->doStatIncrement( 'login.userverify.fail' );
 					$oWp->forceUserRelogin( array( 'wpsf-forcelogout' => 6 ) );
 				}
@@ -111,9 +109,8 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 		}
 
 		if ( !$fVerified ) {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address "%s"'), $oUser->user_login, long2ip( self::$nRequestIp ) )
-			);
+			$sAuditMessage = sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address: "%s".'), $oUser->user_login, long2ip( self::$nRequestIp ) );
+			$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_two_factor_unverified_ip' );
 		}
 
 		return $fVerified;
@@ -139,9 +136,8 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 
 		$oWp = $this->loadWpFunctionsProcessor();
 		if ( $this->setLoginAuthActive( $sUniqueId, $sUsername ) ) {
-			$this->logInfo(
-				sprintf( _wpsf__('User "%s" verified their identity using Two-Factor Authentication.'), $sUsername )
-			);
+			$sAuditMessage = sprintf( _wpsf__('User "%s" verified their identity using Two-Factor Authentication.'), $sUsername );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_two_factor_verified' );
 			$this->doStatIncrement( 'login.twofactor.verified' );
 			$oWp->setUserLoggedIn( $sUsername );
 			$oWp->redirectToAdmin();
@@ -459,14 +455,12 @@ class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbPro
 
 		$fResult = $this->getEmailProcessor()->sendEmailTo( $sEmail, $sEmailSubject, $aMessage );
 		if ( $fResult ) {
-			$this->logInfo(
-				sprintf( _wpsf__('User "%s" was sent an email to verify their Identity using Two-Factor Login Auth for IP address "%s".'), $oUser->user_login, $sIpAddress )
-			);
+			$sAuditMessage = sprintf( _wpsf__('User "%s" was sent an email to verify their Identity using Two-Factor Login Auth for IP address "%s".'), $oUser->user_login, $sIpAddress );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_two_factor_email_send' );
 		}
 		else {
-			$this->logCritical(
-				sprintf( _wpsf__('Tried to send User "%s" email to verify their Identity using Two-Factor Login Auth for IP Address "%s", but email sending failed.'), $oUser->user_login, $sIpAddress )
-			);
+			$sAuditMessage = sprintf( _wpsf__('Tried to send email to User "%s" to verify their identity using Two-Factor Login Auth for IP address "%s", but email sending failed.'), $oUser->user_login, $sIpAddress );
+			$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_two_factor_email_send_fail' );
 		}
 		return $fResult;
 	}

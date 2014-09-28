@@ -143,10 +143,10 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 			}
 		}
 
-		$this->logWarning(
-			sprintf( _wpsf__('User "%s" attempted to login but the HTTP REFERER was either empty or it was a remote login attempt. Bot Perhaps? HTTP REFERER: "%s".'), $sUsername, $sHttpRef )
-		);
 		$this->doStatIncrement( 'login.remotepost.fail' );
+		$sAuditMessage = sprintf( _wpsf__( 'Blocked Remote Login Attempt by user "%s", where HTTP_REFERER was "%s".' ), $sUsername, $sHttpRef );
+		$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_block_remote' );
+
 		wp_die(
 			_wpsf__( 'Sorry, you must login directly from within the site.' )
 			.' '._wpsf__( 'Remote login is not supported.' )

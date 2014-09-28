@@ -79,9 +79,8 @@ class ICWP_WPSF_Processor_LoginProtect_Yubikey extends ICWP_WPSF_Processor_Base 
 
 		// If no yubikey-username pair found for given username, we by-pass Yubikey auth.
 		if ( !$fUsernameFound ) {
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" logged in without a Yubikey One Time Password because no username-yubikey pair was found for this user.'), $oUser->user_login )
-			);
+			$sAuditMessage = sprintf( _wpsf__('User "%s" logged in without a Yubikey One Time Password because no username-yubikey pair was found for this user.'), $oUser->user_login );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_yubikey_bypass' );
 			return $oUser;
 		}
 
@@ -91,9 +90,8 @@ class ICWP_WPSF_Processor_LoginProtect_Yubikey extends ICWP_WPSF_Processor_Base 
 				'yubikey_not_allowed',
 				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey provided is not on the list of permitted keys for this user.') )
 			);
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but Yubikey ID used was not in list of authorised keys: "%s".'), $oUser->user_login, $sYubikey12 )
-			);
+			$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but Yubikey ID "%s" used was not in list of authorised keys.'), $oUser->user_login, $sYubikey12 );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_yubikey_fail_permitted_id' );
 			return $oError;
 		}
 
@@ -112,9 +110,8 @@ class ICWP_WPSF_Processor_LoginProtect_Yubikey extends ICWP_WPSF_Processor_Base 
 				'yubikey_validate_fail',
 				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
 			);
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API.'), $oUser->user_login )
-			);
+			$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API.'), $oUser->user_login );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_yubikey_fail_invalid_api' );
 			return $oError;
 		}
 
@@ -129,15 +126,13 @@ class ICWP_WPSF_Processor_LoginProtect_Yubikey extends ICWP_WPSF_Processor_Base 
 				'yubikey_validate_fail',
 				sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
 			);
-			$this->logWarning(
-				sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API response status: %s.'), $oUser->user_login, $sStatus )
-			);
+			$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API response status: "%s".'), $oUser->user_login, $sStatus );
+			$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_yubikey_fail_invalid_api_response' );
 			return $oError;
 		}
 
-		$this->logInfo(
-			sprintf( _wpsf__('User "%s" successfully logged in using a validated Yubikey One Time Password.'), $oUser->user_login )
-		);
+		$sAuditMessage = sprintf( _wpsf__('User "%s" successfully logged in using a validated Yubikey One Time Password.'), $oUser->user_login );
+		$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_yubikey_login_success' );
 		return $oUser;
 	}
 

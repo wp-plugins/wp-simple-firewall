@@ -40,8 +40,7 @@ class ICWP_WPSF_Processor_AdminAccessRestriction extends ICWP_WPSF_Processor_Bas
 
 	public function run() {
 		$oWp = $this->loadWpFunctionsProcessor();
-		if ( ! $this->oFeatureOptions->getIsUpgrading() && ! $oWp->getIsLoginRequest() ) {
-			$this->sOptionRegexPattern = '/^'. $this->oFeatureOptions->getOptionStoragePrefix() . '.*_options$/';
+		if ( ! $this->getFeatureOptions()->getIsUpgrading() && ! $oWp->getIsLoginRequest() ) {
 			add_filter( 'pre_update_option', array( $this, 'blockOptionsSaves' ), 1, 3 );
 		}
 	}
@@ -50,16 +49,34 @@ class ICWP_WPSF_Processor_AdminAccessRestriction extends ICWP_WPSF_Processor_Bas
 	 * Right before a plugin option is due to update it will check that we have permissions to do so and if not, will
 	 * revert the option to save to the previous one.
 	 *
-	 * @param $mValue
-	 * @param $sOption
-	 * @param $mOldValue
+	 * @param mixed $mNewOptionValue
+	 * @param string $sOption
+	 * @param mixed $mOldValue
 	 * @return mixed
 	 */
-	public function blockOptionsSaves( $mValue, $sOption, $mOldValue ) {
-		if ( !preg_match( $this->sOptionRegexPattern, $sOption ) ) {
-			return $mValue;
+	public function blockOptionsSaves( $mNewOptionValue, $sOption, $mOldValue ) {
+		if ( !preg_match( $this->getOptionRegexPattern(), $sOption ) ) {
+			return $mNewOptionValue;
 		}
-		return apply_filters( $this->oFeatureOptions->doPluginPrefix( 'has_permission_to_submit' ), true )? $mValue : $mOldValue;
+
+		$fHasPermissionToChangeOptions = apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'has_permission_to_submit' ), true );
+		if ( !$fHasPermissionToChangeOptions ) {
+			$sAuditMessage = sprintf( _wpsf__('Attempt to save/update option "%s" was blocked.'), $sOption );
+			$this->addToAuditEntry( $sAuditMessage, 3, 'admin_access_option_block' );
+			return $mOldValue;
+		}
+
+		return $mNewOptionValue;
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function getOptionRegexPattern() {
+		if ( !isset( $this->sOptionRegexPattern ) ) {
+			$this->sOptionRegexPattern = '/^'. $this->getFeatureOptions()->getOptionStoragePrefix() . '.*_options$/';
+		}
+		return $this->sOptionRegexPattern;
 	}
 }
 
