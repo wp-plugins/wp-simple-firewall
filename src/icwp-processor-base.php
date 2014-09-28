@@ -124,9 +124,6 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 * @param string $sMessage
 		 */
 		public function writeAuditEntry( $sEvent, $nCategory = 1, $sMessage = '' ) {
-			if ( empty( $sMessage ) ) {
-				return;
-			}
 			$oWp = $this->loadWpFunctionsProcessor();
 			$oCurrentUser = $oWp->getCurrentWpUser();
 			$this->aAuditEntry = array(
@@ -197,6 +194,14 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 				$aIps[] = $sEnd;
 			}
 			return $aIps;
+		}
+
+		/**
+		 * @return mixed
+		 */
+		public function getPluginDefaultRecipientAddress() {
+			$oWp = $this->loadWpFunctionsProcessor();
+			return apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'report_email_address' ), $oWp->getSiteAdminEmail() );
 		}
 
 		/**

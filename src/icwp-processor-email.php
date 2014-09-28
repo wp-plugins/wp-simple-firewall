@@ -94,12 +94,12 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	/**
 	 * Will send email to the default recipient setup in the object.
 	 *
-	 * @param string $insEmailSubject
-	 * @param array $inaMessage
+	 * @param string $sEmailSubject
+	 * @param array $aMessage
 	 * @return boolean
 	 */
-	public function sendEmail( $insEmailSubject, $inaMessage ) {
-		return $this->sendEmailTo( null, $insEmailSubject, $inaMessage );
+	public function sendEmail( $sEmailSubject, $aMessage ) {
+		return $this->sendEmailTo( null, $sEmailSubject, $aMessage );
 	}
 
 	/**
@@ -172,14 +172,6 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_Processor_Base {
 	 */
 	public function verifyEmailAddress( $sEmailAddress = '' ) {
 		return ( empty( $sEmailAddress ) || !is_email( $sEmailAddress ) ) ? $this->getDefaultRecipientAddress() : $sEmailAddress;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getDefaultRecipientAddress() {
-		$oWpFunctions = $this->loadWpFunctionsProcessor();
-		return apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'report_email_address' ), $oWpFunctions->getSiteAdminEmail() );
 	}
 
 	/**

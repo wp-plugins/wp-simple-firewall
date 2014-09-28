@@ -106,19 +106,6 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 	}
 
 	/**
-	 * @param string $sEvent
-	 * @param int $nCategory
-	 * @param string $sMessage
-	 */
-	protected function doAuditEntry( $sMessage = '', $nCategory = 1, $sEvent = 'login_protect' ) {
-		$this->writeAuditEntry(
-			$sEvent,
-			$nCategory,
-			$sMessage
-		);
-	}
-
-	/**
 	 * @param WP_Error $oError
 	 * @return WP_Error
 	 */

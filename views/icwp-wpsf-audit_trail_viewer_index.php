@@ -7,11 +7,13 @@ $aLogTypes = array(
 	2	=>	_wpsf__('Critical')
 );
 
-function printAuditTrailTable( $aAuditData, $nYourIp = -1 ) {
+function printAuditTrailTable( $sTitle, $aAuditData, $nYourIp = -1 ) {
 	if ( empty( $aAuditData ) ) {
 		return;
 	}
 	?>
+	<h4 class="table-title"><?php echo $sTitle; ?></h4>
+
 	<table class="table table-hover table-striped table-audit_trail">
 		<tr>
 			<th class="cell-time"><?php _wpsf_e('Time'); ?></th>
@@ -41,26 +43,13 @@ function printAuditTrailTable( $aAuditData, $nYourIp = -1 ) {
 	<div class="row">
 		<div class="<?php echo $icwp_fShowAds? 'span9' : 'span12'; ?>">
 
-			<h4 class="table-title"><?php _wpsf_e( 'WordPress Simple Firewall' ); ?></h4>
-			<?php printAuditTrailTable( $icwp_aAuditDataWpsf, $icwp_nYourIp ); ?>
-
-			<h4 class="table-title"><?php _wpsf_e( 'Users' ); ?></h4>
-			<?php printAuditTrailTable( $icwp_aAuditDataUsers, $icwp_nYourIp ); ?>
-
-			<h4 class="table-title"><?php _wpsf_e( 'Plugins' ); ?></h4>
-			<?php printAuditTrailTable( $icwp_aAuditDataPlugins, $icwp_nYourIp ); ?>
-
-			<h4 class="table-title"><?php _wpsf_e( 'Themes' ); ?></h4>
-			<?php printAuditTrailTable( $icwp_aAuditDataThemes, $icwp_nYourIp ); ?>
-
-			<h4 class="table-title"><?php _wpsf_e( 'WordPress' ); ?></h4>
-			<?php printAuditTrailTable( $icwp_aAuditDataWordpress, $icwp_nYourIp ); ?>
-
-			<h4 class="table-title"><?php _wpsf_e( 'Posts' ); ?></h4>
-			<?php printAuditTrailTable( $icwp_aAuditDataPosts, $icwp_nYourIp ); ?>
-
-			<h4 class="table-title"><?php _wpsf_e( 'Emails' ); ?></h4>
-			<?php printAuditTrailTable( $icwp_aAuditDataEmails, $icwp_nYourIp ); ?>
+			<?php printAuditTrailTable( _wpsf__( 'WordPress Simple Firewall' ), $icwp_aAuditDataWpsf, $icwp_nYourIp ); ?>
+			<?php printAuditTrailTable( _wpsf__( 'Users' ), $icwp_aAuditDataUsers, $icwp_nYourIp ); ?>
+			<?php printAuditTrailTable( _wpsf__( 'Plugins' ), $icwp_aAuditDataPlugins, $icwp_nYourIp ); ?>
+			<?php printAuditTrailTable( _wpsf__( 'Themes' ), $icwp_aAuditDataThemes, $icwp_nYourIp ); ?>
+			<?php printAuditTrailTable( _wpsf__( 'WordPress' ), $icwp_aAuditDataWordpress, $icwp_nYourIp ); ?>
+			<?php printAuditTrailTable( _wpsf__( 'Posts' ), $icwp_aAuditDataPosts, $icwp_nYourIp ); ?>
+			<?php printAuditTrailTable( _wpsf__( 'Emails' ), $icwp_aAuditDataEmails, $icwp_nYourIp ); ?>
 
 		</div><!-- / span9 -->
 
