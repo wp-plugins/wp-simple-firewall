@@ -107,7 +107,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 
 			if ( !$fVerified ) {
 				$sAuditMessage = sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address: "%s".'), $oUser->user_login, long2ip( self::$nRequestIp ) );
-				$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_two_factor_unverified_ip' );
+				$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_two_factor_unverified_ip', $oUser->user_login );
 			}
 
 			return $fVerified;

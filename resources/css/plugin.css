@@ -120,7 +120,7 @@ p.code-description {
 .form-horizontal legend {
 	border-bottom: 1px dashed #aaa;
 	margin-bottom: 8px;
-	margin-top: 10px;
+	padding-top: 10px;
 }
 .form-horizontal .item_group .control-group {
 	margin-bottom: 0;

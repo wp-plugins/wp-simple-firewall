@@ -22,7 +22,7 @@ options:
     section: 'section_enable_plugin_feature_audit_trail'
     default: 'N'
     type: 'checkbox'
-    link_info: ''
+    link_info: 'http://icwp.io/5p'
     link_blog: ''
   -
     key: 'enable_audit_context_users'

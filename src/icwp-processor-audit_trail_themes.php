@@ -38,6 +38,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Themes') ):
 		public function run() {
 			if ( $this->getIsOption( 'enable_audit_context_themes', 'Y' ) ) {
 				add_action( 'switch_theme', array( $this, 'auditSwitchTheme' ) );
+				add_action( 'check_admin_referer', array( $this, 'auditEditedThemeFile' ), 10, 2 );
 //				add_action( 'upgrader_process_complete', array( $this, 'auditInstalledTheme' ) );
 			}
 		}
@@ -58,6 +59,28 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Themes') ):
 				'theme_activated',
 				1,
 				sprintf( _wpsf__( 'Theme "%s" was activated.' ), $sThemeName )
+			);
+		}
+
+		/**
+		 * @param string $sAction
+		 * @param boolean $fResult
+		 */
+		public function auditEditedThemeFile( $sAction, $fResult ) {
+
+			$sStub = 'edit-theme_';
+			if ( strpos( $sAction, $sStub ) !== 0 ) {
+				return;
+			}
+
+			$sFileName = str_replace( $sStub, '', $sAction );
+
+			$oAuditTrail = $this->getAuditTrailEntries();
+			$oAuditTrail->add(
+				'themes',
+				'file_edited',
+				2,
+				sprintf( _wpsf__( 'An attempt was made to edit the theme file "%s" directly through the WordPress editor.' ), $sFileName )
 			);
 		}
 

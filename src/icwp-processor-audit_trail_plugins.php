@@ -39,6 +39,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
 			if ( $this->getIsOption( 'enable_audit_context_plugins', 'Y' ) ) {
 				add_action( 'deactivated_plugin', array( $this, 'auditDeactivatedPlugin' ) );
 				add_action( 'activated_plugin', array( $this, 'auditActivatedPlugin' ) );
+				add_action( 'check_admin_referer', array( $this, 'auditEditedPluginFile' ), 10, 2 );
 			}
 		}
 
@@ -77,6 +78,28 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
 				'plugin_deactivated',
 				1,
 				sprintf( _wpsf__( 'Plugin "%s" was deactivated.' ), $sPlugin )
+			);
+		}
+
+		/**
+		 * @param string $sAction
+		 * @param boolean $fResult
+		 */
+		public function auditEditedPluginFile( $sAction, $fResult ) {
+
+			$sStub = 'edit-plugin_';
+			if ( strpos( $sAction, $sStub ) !== 0 ) {
+				return;
+			}
+
+			$sFileName = str_replace( $sStub, '', $sAction );
+
+			$oAuditTrail = $this->getAuditTrailEntries();
+			$oAuditTrail->add(
+				'plugins',
+				'file_edited',
+				2,
+				sprintf( _wpsf__( 'An attempt was made to edit the plugin file "%s" directly through the WordPress editor.' ), $sFileName )
 			);
 		}
 

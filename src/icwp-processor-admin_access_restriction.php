@@ -16,70 +16,67 @@
  */
 
 require_once( dirname(__FILE__).ICWP_DS.'icwp-processor-base.php' );
-
 if ( !class_exists('ICWP_WPSF_Processor_AdminAccessRestriction') ):
 
-class ICWP_WPSF_Processor_AdminAccessRestriction extends ICWP_WPSF_Processor_Base {
+	class ICWP_WPSF_Processor_AdminAccessRestriction extends ICWP_WPSF_Processor_Base {
 
-	/**
-	 * @var ICWP_WPSF_FeatureHandler_AdminAccessRestriction
-	 */
-	protected $oFeatureOptions;
+		/**
+		 * @var ICWP_WPSF_FeatureHandler_AdminAccessRestriction
+		 */
+		protected $oFeatureOptions;
 
-	/**
-	 * @var string
-	 */
-	protected $sOptionRegexPattern;
+		/**
+		 * @var string
+		 */
+		protected $sOptionRegexPattern;
 
-	/**
-	 * @param ICWP_WPSF_FeatureHandler_AdminAccessRestriction  $oFeatureOptions
-	 */
-	public function __construct( ICWP_WPSF_FeatureHandler_AdminAccessRestriction $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions );
-	}
-
-	public function run() {
-		$oWp = $this->loadWpFunctionsProcessor();
-		if ( ! $this->getFeatureOptions()->getIsUpgrading() && ! $oWp->getIsLoginRequest() ) {
-			add_filter( 'pre_update_option', array( $this, 'blockOptionsSaves' ), 1, 3 );
+		/**
+		 * @param ICWP_WPSF_FeatureHandler_AdminAccessRestriction  $oFeatureOptions
+		 */
+		public function __construct( ICWP_WPSF_FeatureHandler_AdminAccessRestriction $oFeatureOptions ) {
+			parent::__construct( $oFeatureOptions );
 		}
-	}
 
-	/**
-	 * Right before a plugin option is due to update it will check that we have permissions to do so and if not, will
-	 * revert the option to save to the previous one.
-	 *
-	 * @param mixed $mNewOptionValue
-	 * @param string $sOption
-	 * @param mixed $mOldValue
-	 * @return mixed
-	 */
-	public function blockOptionsSaves( $mNewOptionValue, $sOption, $mOldValue ) {
-		if ( !preg_match( $this->getOptionRegexPattern(), $sOption ) ) {
+		public function run() {
+			$oWp = $this->loadWpFunctionsProcessor();
+			if ( ! $this->getFeatureOptions()->getIsUpgrading() && ! $oWp->getIsLoginRequest() ) {
+				add_filter( 'pre_update_option', array( $this, 'blockOptionsSaves' ), 1, 3 );
+			}
+		}
+
+		/**
+		 * Right before a plugin option is due to update it will check that we have permissions to do so and if not, will
+		 * revert the option to save to the previous one.
+		 *
+		 * @param mixed $mNewOptionValue
+		 * @param string $sOption
+		 * @param mixed $mOldValue
+		 * @return mixed
+		 */
+		public function blockOptionsSaves( $mNewOptionValue, $sOption, $mOldValue ) {
+			if ( !preg_match( $this->getOptionRegexPattern(), $sOption ) ) {
+				return $mNewOptionValue;
+			}
+
+			$fHasPermissionToChangeOptions = apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'has_permission_to_submit' ), true );
+			if ( !$fHasPermissionToChangeOptions ) {
+				$sAuditMessage = sprintf( _wpsf__('Attempt to save/update option "%s" was blocked.'), $sOption );
+//			$this->addToAuditEntry( $sAuditMessage, 3, 'admin_access_option_block' );
+				return $mOldValue;
+			}
+
 			return $mNewOptionValue;
 		}
 
-		$fHasPermissionToChangeOptions = apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'has_permission_to_submit' ), true );
-		if ( !$fHasPermissionToChangeOptions ) {
-			var_dump( $mOldValue );
-			var_dump( $mNewOptionValue );
-			$sAuditMessage = sprintf( _wpsf__('Attempt to save/update option "%s" was blocked.'), $sOption );
-			$this->addToAuditEntry( $sAuditMessage, 3, 'admin_access_option_block' );
-			return $mOldValue;
+		/**
+		 * @return string
+		 */
+		protected function getOptionRegexPattern() {
+			if ( !isset( $this->sOptionRegexPattern ) ) {
+				$this->sOptionRegexPattern = '/^'. $this->getFeatureOptions()->getOptionStoragePrefix() . '.*_options$/';
+			}
+			return $this->sOptionRegexPattern;
 		}
-
-		return $mNewOptionValue;
 	}
-
-	/**
-	 * @return string
-	 */
-	protected function getOptionRegexPattern() {
-		if ( !isset( $this->sOptionRegexPattern ) ) {
-			$this->sOptionRegexPattern = '/^'. $this->getFeatureOptions()->getOptionStoragePrefix() . '.*_options$/';
-		}
-		return $this->sOptionRegexPattern;
-	}
-}
 
 endif;

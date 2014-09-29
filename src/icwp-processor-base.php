@@ -128,13 +128,17 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 * @param int $nCategory
 		 * @param string $sEvent
 		 */
-		protected function addToAuditEntry( $sAdditionalMessage = '', $nCategory = 1, $sEvent = '' ) {
+		protected function addToAuditEntry( $sAdditionalMessage = '', $nCategory = 1, $sEvent = '', $sWpUsername = '' ) {
 			if ( !isset( $this->aAuditEntry ) ) {
-				$oWp = $this->loadWpFunctionsProcessor();
-				$oCurrentUser = $oWp->getCurrentWpUser();
+
+				if ( empty( $sWpUsername ) ) {
+					$oCurrentUser = $this->loadWpFunctionsProcessor()->getCurrentWpUser();
+					$sWpUsername = empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' );
+				}
+
 				$this->aAuditEntry = array(
 					'created_at' => $this->loadDataProcessor()->GetRequestTime(),
-					'wp_username' => empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
+					'wp_username' => $sWpUsername,
 					'context' => 'wpsf',
 					'event' => $sEvent,
 					'category' => $nCategory,
