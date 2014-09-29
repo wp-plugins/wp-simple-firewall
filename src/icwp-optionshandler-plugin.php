@@ -38,7 +38,7 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->getController()->getSourceDir( sprintf( 'icwp-processor-%s.php', 'plugin' ) ) );
+			require_once( $this->getController()->getPath_SourceFile( sprintf( 'icwp-processor-%s.php', 'plugin' ) ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Plugin( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -198,8 +198,6 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	 * This is the point where you would want to do any options verification
 	 */
 	protected function doPrePluginOptionsSave() {
-
-		$this->setOpt( 'enable_logging', 'Y' );
 
 		$nInstalledAt = $this->getOpt( 'installation_time' );
 		if ( empty($nInstalledAt) || $nInstalledAt <= 0 ) {

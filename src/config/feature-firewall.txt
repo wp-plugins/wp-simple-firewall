@@ -82,6 +82,13 @@ options:
     link_info: ''
     link_blog: ''
   -
+    key: 'block_leading_schema'
+    section: 'section_firewall_blocking_options'
+    default: 'N'
+    type: 'checkbox'
+    link_info: ''
+    link_blog: ''
+  -
     key: 'block_response'
     section: 'section_choose_firewall_block_response'
     default: 'redirect_die_message'

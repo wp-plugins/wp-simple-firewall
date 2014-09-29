@@ -117,7 +117,7 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 		$oDp = $this->loadDataProcessor();
 		$sForceLogout = $oDp->FetchGet( 'wpsf-forcelogout' );
 		if ( $sForceLogout == 6 ) {
-			$oError->add( 'wpsf-forcelogout', _wpsf__('Your Two-Factor Authentication Was Verified.').'<br />'._wpsf__('Please login again.') );
+			$oError->add( 'wpsf-forcelogout', _wpsf__('Your Two-Factor Authentication was un-verified or invalidated by a login from another location or browser.').'<br />'._wpsf__('Please login again.') );
 		}
 		return $oError;
 	}

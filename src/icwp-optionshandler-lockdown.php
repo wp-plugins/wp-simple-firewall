@@ -31,7 +31,7 @@ class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected function loadFeatureProcessor() {
 		if ( !isset( $this->oFeatureProcessor ) ) {
-			require_once( $this->getController()->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
+			require_once( $this->getController()->getPath_SourceFile( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 			$this->oFeatureProcessor = new ICWP_WPSF_Processor_Lockdown( $this );
 		}
 		return $this->oFeatureProcessor;
@@ -39,12 +39,12 @@ class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 
 	public function doPrePluginOptionsSave() {
 		
-		if ( $this->getOpt( 'action_reset_auth_salts' ) == 'Y' ) {
-			$this->setOpt( 'action_reset_auth_salts', 'P' );
-		}
-		else if ( $this->getOpt( 'action_reset_auth_salts' ) == 'P' ) {
-			$this->setOpt( 'action_reset_auth_salts', 'N' );
-		}
+//		if ( $this->getOpt( 'action_reset_auth_salts' ) == 'Y' ) {
+//			$this->setOpt( 'action_reset_auth_salts', 'P' );
+//		}
+//		else if ( $this->getOpt( 'action_reset_auth_salts' ) == 'P' ) {
+//			$this->setOpt( 'action_reset_auth_salts', 'N' );
+//		}
 
 		$sCurrent = $this->getOpt( 'mask_wordpress_version' );
 		if ( !empty( $sCurrent ) ) {

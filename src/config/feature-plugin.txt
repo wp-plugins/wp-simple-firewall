@@ -90,6 +90,3 @@ options:
       -
         slug: 'email'
         storage_key: 'email'
-      -
-        slug: 'logging'
-        storage_key: 'logging'

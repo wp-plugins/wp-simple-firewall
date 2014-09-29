@@ -70,11 +70,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		protected static $oEmailHandler;
 
 		/**
-		 * @var ICWP_WPSF_FeatureHandler_Email
-		 */
-		protected static $oLoggingHandler;
-
-		/**
 		 * @var ICWP_WPSF_Processor_Base
 		 */
 		protected $oFeatureProcessor;
@@ -202,17 +197,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function getEmailProcessor() {
 			return $this->getEmailHandler()->getProcessor();
-		}
-
-		/**
-		 * @return ICWP_WPSF_FeatureHandler_Logging
-		 */
-		public function getLoggingHandler() {
-			if ( is_null( self::$oLoggingHandler ) ) {
-				require_once( 'icwp-optionshandler-logging.php' );
-				self::$oLoggingHandler = new ICWP_WPSF_FeatureHandler_Logging( $this->getController() );
-			}
-			return self::$oLoggingHandler;
 		}
 
 		/**
@@ -857,12 +841,12 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 			if ( empty( $sView ) ) {
 				$oWpFs = $this->loadFileSystemProcessor();
-				$sCustomViewSource = $this->getController()->getViewPath( $this->doPluginPrefix( 'config_'.$this->getFeatureSlug().'_index' ) );
-				$sNormalViewSource = $this->getController()->getViewPath( $this->doPluginPrefix( 'config_index' ) );
+				$sCustomViewSource = $this->getController()->getPath_ViewsFile( $this->doPluginPrefix( 'config_'.$this->getFeatureSlug().'_index' ) );
+				$sNormalViewSource = $this->getController()->getPath_ViewsFile( $this->doPluginPrefix( 'config_index' ) );
 				$sFile = $oWpFs->exists( $sCustomViewSource ) ? $sCustomViewSource : $sNormalViewSource;
 			}
 			else {
-				$sFile = $this->getController()->getViewPath( $this->doPluginPrefix( $sView ) );
+				$sFile = $this->getController()->getPath_ViewsFile( $this->doPluginPrefix( $sView ) );
 			}
 
 			if ( !is_file( $sFile ) ) {
@@ -888,7 +872,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return string
 		 */
 		public function getViewSnippet( $sSnippet = '' ) {
-			return $this->getController()->getViewSnippet( $sSnippet );
+			return $this->getController()->getPath_ViewsSnippet( $sSnippet );
 		}
 
 		/**

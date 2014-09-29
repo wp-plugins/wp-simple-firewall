@@ -61,6 +61,8 @@ class ICWP_WPSF_Processor_AdminAccessRestriction extends ICWP_WPSF_Processor_Bas
 
 		$fHasPermissionToChangeOptions = apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'has_permission_to_submit' ), true );
 		if ( !$fHasPermissionToChangeOptions ) {
+			var_dump( $mOldValue );
+			var_dump( $mNewOptionValue );
 			$sAuditMessage = sprintf( _wpsf__('Attempt to save/update option "%s" was blocked.'), $sOption );
 			$this->addToAuditEntry( $sAuditMessage, 3, 'admin_access_option_block' );
 			return $mOldValue;

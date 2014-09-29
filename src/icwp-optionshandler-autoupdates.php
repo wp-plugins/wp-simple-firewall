@@ -31,7 +31,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Autoupdates_V3') ):
 		 */
 		protected function loadFeatureProcessor() {
 			if ( !isset( $this->oFeatureProcessor ) ) {
-				require_once( $this->getController()->getSourceDir( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
+				require_once( $this->getController()->getPath_SourceFile( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 				$this->oFeatureProcessor = new ICWP_WPSF_Processor_Autoupdates( $this );
 			}
 			return $this->oFeatureProcessor;

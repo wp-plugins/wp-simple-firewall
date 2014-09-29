@@ -19,28 +19,38 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+if ( !defined('ICWP_DS') ) {
+	define( 'ICWP_DS', DIRECTORY_SEPARATOR );
+}
+
+if ( !function_exists( '_wpsf_e' ) ) {
+	function _wpsf_e( $insStr ) {
+		_e( $insStr, 'wp-simple-firewall' );
+	}
+}
+if ( !function_exists( '_wpsf__' ) ) {
+	function _wpsf__( $insStr ) {
+		return __( $insStr, 'wp-simple-firewall' );
+	}
+}
+
 require_once(dirname(__FILE__).ICWP_DS.'src'.ICWP_DS.'icwp-foundation.php');
 class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 
 	/**
-	 * @var ICWP_WPSF_Spec
+	 * @var array
 	 */
-	private static $oPluginSpec;
-
-	/**
-	 * @const string
-	 */
-	const ViewDir				= 'views';
-
-	/**
-	 * @const string
-	 */
-	const SrcDir				= 'src';
+	private static $aPluginSpec;
 
 	/**
 	 * @var string
 	 */
-	protected static $fLoggingEnabled;
+	private static $sRootFile;
+
+	/**
+	 * @var ICWP_WPSF_Plugin_Controller
+	 */
+	public static $oInstance;
 
 	/**
 	 * @var string
@@ -53,27 +63,20 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	private $sPluginBaseFile;
 
 	/**
-	 * @var ICWP_WPSF_Plugin_Controller
-	 */
-	public static $oInstance;
-
-	/**
-	 * @param ICWP_WPSF_Spec $oPluginSpec
 	 * @return ICWP_WPSF_Plugin_Controller
 	 */
-	public static function GetInstance( $oPluginSpec ) {
+	public static function GetInstance() {
 		if ( !isset( self::$oInstance ) ) {
-			self::$oInstance = new self( $oPluginSpec );
+			self::$oInstance = new self();
 		}
 		return self::$oInstance;
 	}
 
 	/**
-	 * @param ICWP_WPSF_Spec $oPluginSpec
 	 */
-	private function __construct( $oPluginSpec ) {
-		if ( empty( self::$oPluginSpec ) ) {
-			self::$oPluginSpec = $oPluginSpec;
+	private function __construct() {
+		if ( empty( self::$aPluginSpec ) ) {
+			self::$aPluginSpec = $this->readPluginConfiguration();
 			add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 			add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 			$this->registerActivationHooks();
@@ -206,39 +209,6 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getAdminMenuTitle() {
-		return self::$oPluginSpec->getAdminMenuTitle();;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getBasePermissions() {
-		return self::$oPluginSpec->getBasePermissions();
-	}
-
-	/**
-	 * @param bool $fCheckUserPermissions
-	 * @return bool
-	 */
-	public function getIsValidAdminArea( $fCheckUserPermissions = true ) {
-		if ( $fCheckUserPermissions && !current_user_can( $this->getBasePermissions() ) ) {
-			return false;
-		}
-
-		$oWp = $this->loadWpFunctionsProcessor();
-		if ( !$oWp->isMultisite() && is_admin() ) {
-			return true;
-		}
-		else if ( $oWp->isMultisite() && $this->getIsWpmsNetworkAdminOnly() && is_network_admin() ) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
 	 */
 	protected function doLoadTextDomain() {
 		return load_plugin_textdomain(
@@ -290,6 +260,55 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	/**
+	 * @param string $sKey
+	 * @return mixed|null
+	 */
+	protected function getProperty( $sKey ) {
+		return isset( self::$aPluginSpec['properties'][$sKey] ) ? self::$aPluginSpec['properties'][$sKey] : null;
+	}
+
+	/**
+	 * @param string $sKey
+	 * @return mixed|null
+	 */
+	protected function getPath( $sKey ) {
+		return isset( self::$aPluginSpec['paths'][$sKey] ) ? self::$aPluginSpec['paths'][$sKey] : null;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getAdminMenuTitle() {
+		return $this->getProperty( 'menu_title' );
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getBasePermissions() {
+		return $this->getProperty( 'base_permissions' );
+	}
+
+	/**
+	 * @param bool $fCheckUserPermissions
+	 * @return bool
+	 */
+	public function getIsValidAdminArea( $fCheckUserPermissions = true ) {
+		if ( $fCheckUserPermissions && !current_user_can( $this->getBasePermissions() ) ) {
+			return false;
+		}
+
+		$oWp = $this->loadWpFunctionsProcessor();
+		if ( !$oWp->isMultisite() && is_admin() ) {
+			return true;
+		}
+		else if ( $oWp->isMultisite() && $this->getIsWpmsNetworkAdminOnly() && is_network_admin() ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * @param string
 	 * @return string
 	 */
@@ -309,14 +328,14 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getHumanName() {
-		return self::$oPluginSpec->getHumanName();
+		return $this->getProperty( 'human_name' );
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getIsLoggingEnabled() {
-		return self::$oPluginSpec->getIsLoggingEnabled();
+		return $this->getProperty( 'logging_enabled' );
 	}
 
 	/**
@@ -358,17 +377,17 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	/**
-	 * @return string
+	 * @return boolean
 	 */
 	public function getIsWpmsNetworkAdminOnly() {
-		return self::$oPluginSpec->getIsWpmsNetworkAdminOnly();
+		return $this->getProperty( 'wpms_network_admin_only' );
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getParentSlug() {
-		return self::$oPluginSpec->getParentSlug();
+		return $this->getProperty( 'slug_parent' );
 	}
 
 	/**
@@ -387,7 +406,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getPluginSlug() {
-		return self::$oPluginSpec->getPluginSlug();
+		return $this->getProperty( 'slug_plugin' );
 	}
 
 	/**
@@ -438,8 +457,63 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 *
 	 * @return string
 	 */
+	public function getPath_Assets() {
+		return $this->getRootDir().$this->getPath( 'assets' ).ICWP_DS;
+	}
+
+	/**
+	 * get the root directory for the plugin with the trailing slash
+	 *
+	 * @return string
+	 */
 	public function getPath_Languages() {
-		return $this->getRootDir().'languages'.ICWP_DS;
+		return $this->getRootDir().$this->getPath( 'languages' ).ICWP_DS;
+	}
+
+	/**
+	 * get the root directory for the plugin with the trailing slash
+	 *
+	 * @return string
+	 */
+	public function getPath_Source() {
+		return $this->getRootDir().$this->getPath( 'source' ).ICWP_DS;
+	}
+
+	/**
+	 * Get the directory for the plugin source files with the trailing slash
+	 *
+	 * @param string $sSourceFile
+	 * @return string
+	 */
+	public function getPath_SourceFile( $sSourceFile = '' ) {
+		return $this->getPath_Source().$sSourceFile;
+	}
+
+	/**
+	 * get the root directory for the plugin with the trailing slash
+	 *
+	 * @return string
+	 */
+	public function getPath_Views() {
+		return $this->getRootDir().$this->getPath( 'views' ).ICWP_DS;
+	}
+
+	/**
+	 * Retrieve the full path to the plugin view
+	 *
+	 * @param string $sView
+	 * @return string
+	 */
+	public function getPath_ViewsFile( $sView ) {
+		return $this->getPath_Views().$sView.'.php';
+	}
+
+	/**
+	 * @param string $sSnippet
+	 * @return string
+	 */
+	public function getPath_ViewsSnippet( $sSnippet ) {
+		return $this->getPath_Views().'snippets'.ICWP_DS.$sSnippet.'.php';
 	}
 
 	/**
@@ -455,58 +529,24 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getRootFile() {
-		return self::$oPluginSpec->getRootFile();
-	}
-
-	/**
-	 * Get the directory for the plugin source files with the trailing slash
-	 *
-	 * @param string $sSourceFile
-	 * @return string
-	 */
-	public function getSourceDir( $sSourceFile = '' ) {
-		return $this->getRootDir().self::SrcDir.ICWP_DS.$sSourceFile;
+		if ( !isset( self::$sRootFile ) ) {
+			self::$sRootFile = __FILE__;
+		}
+		return self::$sRootFile;
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getTextDomain() {
-		return self::$oPluginSpec->getTextDomain();
+		return $this->getProperty( 'text_domain' );
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getVersion() {
-		return self::$oPluginSpec->getVersion();
-	}
-
-	/**
-	 * get the directory for the plugin view with the trailing slash
-	 *
-	 * @return string
-	 */
-	public function getViewDir() {
-		return $this->getRootDir().self::ViewDir.ICWP_DS;
-	}
-
-	/**
-	 * Retrieve the full path to the plugin view
-	 *
-	 * @param string $sView
-	 * @return string
-	 */
-	public function getViewPath( $sView ) {
-		return $this->getViewDir().$sView.'.php';
-	}
-
-	/**
-	 * @param string $sSnippet
-	 * @return string
-	 */
-	public function getViewSnippet( $sSnippet ) {
-		return $this->getViewDir().'snippets'.ICWP_DS.$sSnippet.'.php';
+		return $this->getProperty( 'version' );
 	}
 
 	/**
@@ -561,7 +601,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		}
 
 		// todo: remove ICWP and WPSF dependencies
-		$sSourceFile = $this->getSourceDir(
+		$sSourceFile = $this->getPath_SourceFile(
 			sprintf(
 				'%s-optionshandler-%s.php',
 				$this->getParentSlug(),
@@ -585,4 +625,23 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		return $this->{$sOptionsVarName};
 	}
 
+	/**
+	 * @return array
+	 * @throws Exception
+	 */
+	private function readPluginConfiguration() {
+		$oFs = $this->loadFileSystemProcessor();
+
+		$aConfig = array();
+		$sConfigFile = $this->getRootDir().'plugin-spec.txt';
+		$sContents = $oFs->getFileContent( $sConfigFile );
+		if ( !empty( $sContents ) ) {
+			$oYaml = $this->loadYamlProcessor();
+			$aConfig = $oYaml->parseYamlString( $sContents );
+			if ( is_null( $aConfig ) ) {
+				throw new Exception( 'YAML parser could not load to process the plugin spec configuration.' );
+			}
+		}
+		return $aConfig;
+	}
 }
