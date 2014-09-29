@@ -192,14 +192,19 @@ class ICWP_WPSF_AuditTrail_Entries {
 	 */
 	protected $aEntries;
 
-	public function add( $sContext, $sEvent, $nCategory, $sMessage = '' ) {
+	public function add( $sContext, $sEvent, $nCategory, $sMessage = '', $sWpUsername = '' ) {
 		$oDp = $this->loadDataProcessor();
-		$oWp = $this->loadWpFunctionsProcessor();
-		$oCurrentUser = $oWp->getCurrentWpUser();
+
+		if ( empty( $sWpUsername ) ) {
+			$oWp = $this->loadWpFunctionsProcessor();
+			$oCurrentUser = $oWp->getCurrentWpUser();
+			$sWpUsername = empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' );
+		}
+
 		$aNewEntry = array(
 			'ip_long' => $oDp->GetVisitorIpAddress(),
 			'created_at' => $oDp->GetRequestTime(),
-			'wp_username' => empty( $oCurrentUser ) ? 'unknown' : $oCurrentUser->get( 'user_login' ),
+			'wp_username' => $sWpUsername,
 			'context' => $sContext,
 			'event' => $sEvent,
 			'category' => $nCategory,

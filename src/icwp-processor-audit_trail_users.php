@@ -59,7 +59,8 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Users') ):
 				'users',
 				'login_success',
 				1,
-				sprintf( _wpsf__( 'Attempted user login by "%s" was successful.' ), $sUsername )
+				sprintf( _wpsf__( 'Attempted user login by "%s" was successful.' ), $sUsername ),
+				$sUsername
 			);
 		}
 
@@ -78,7 +79,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Users') ):
 				'users',
 				'login_failure',
 				2,
-				sprintf( _wpsf__( 'Attempted user login by "%s" was failed.' ), $sUsername )
+				sprintf( _wpsf__( 'Attempted user login by "%s" failed.' ), $sUsername )
 			);
 		}
 
