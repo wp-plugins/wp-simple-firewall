@@ -25,3 +25,11 @@ includes:
       - plugin
   frontend:
     css:
+
+menu:
+  show: true
+  top_level: true # to-do is allow for non-top-level menu items.
+  do_submenu_fix: true
+  callback: 'onDisplayTopMenu'
+  icon_image: 'pluginlogo_16x16.png'
+  has_submenu: true # to-do is allow for non-top-level menu items.

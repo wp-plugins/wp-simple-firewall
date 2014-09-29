@@ -76,6 +76,8 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 			}
 			add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 			add_action( 'admin_init',				array( $this, 'onWpAdminInit' ) );
+			add_action( 'admin_menu',				array( $this, 'onWpAdminMenu' ) );
+			add_action(	'network_admin_menu',		array( $this, 'onWpAdminMenu' ) );
 			add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 			$this->registerActivationHooks();
 		}
@@ -120,8 +122,76 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * Hooked to 'plugins_loaded'
 	 */
 	public function onWpAdminInit() {
-		add_action( 'admin_enqueue_scripts', array( $this, 'onWpEnqueueAdminCss' ), 99 );
+		add_action( 'admin_enqueue_scripts', 	array( $this, 'onWpEnqueueAdminCss' ), 99 );
 	}
+
+	/**
+	 * @return bool|void
+	 */
+	public function onWpAdminMenu() {
+		if ( !$this->getIsValidAdminArea() ) {
+			return true;
+		}
+		return $this->createPluginMenu();
+	}
+
+	/**
+	 */
+	protected function createPluginMenu() {
+
+		if ( !$this->getPluginSpec_Menu( 'show' ) ) {
+			return true;
+		}
+
+		if ( $this->getPluginSpec_Menu( 'top_level' ) ) {
+
+			$sFullParentMenuId = $this->getPluginPrefix();
+			add_menu_page(
+				$this->getHumanName(),
+				$this->getAdminMenuTitle(),
+				$this->getBasePermissions(),
+				$sFullParentMenuId,
+				array( $this, $this->getPluginSpec_Menu( 'callback' ) ),
+				$this->getPluginUrl_Image( $this->getPluginSpec_Menu( 'icon_image' ) )
+			);
+
+			if ( $this->getPluginSpec_Menu( 'has_submenu' ) ) {
+
+				$aPluginMenuItems = apply_filters( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array() );
+				if ( !empty( $aPluginMenuItems ) ) {
+					foreach ( $aPluginMenuItems as $sMenuTitle => $aMenu ) {
+						list( $sMenuItemText, $sMenuItemId, $aMenuCallBack ) = $aMenu;
+						add_submenu_page(
+							$sFullParentMenuId,
+							$sMenuTitle,
+							$sMenuItemText,
+							$this->getBasePermissions(),
+							$sMenuItemId,
+							$aMenuCallBack
+						);
+					}
+				}
+			}
+
+			if ( $this->getPluginSpec_Menu( 'do_submenu_fix' ) ) {
+				$this->fixSubmenu();
+			}
+		}
+	}
+
+	protected function fixSubmenu() {
+		global $submenu;
+		$sFullParentMenuId = $this->getPluginPrefix();
+		if ( isset( $submenu[$sFullParentMenuId] ) ) {
+			unset( $submenu[$sFullParentMenuId][0] );
+		}
+	}
+
+	/**
+	 * Displaying all views now goes through this central function and we work out
+	 * what to display based on the name of current hook/filter being processed.
+	 */
+	public function onDisplayTopMenu() { }
 
 	/**
 	 */
@@ -307,6 +377,14 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	protected function getPluginSpec_Include( $sKey ) {
 		return isset( self::$aPluginSpec['includes'][$sKey] ) ? self::$aPluginSpec['includes'][$sKey] : null;
+	}
+
+	/**
+	 * @param string $sKey
+	 * @return mixed|null
+	 */
+	protected function getPluginSpec_Menu( $sKey ) {
+		return isset( self::$aPluginSpec['menu'][$sKey] ) ? self::$aPluginSpec['menu'][$sKey] : null;
 	}
 
 	/**
@@ -642,7 +720,6 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 			return $this->{$sOptionsVarName};
 		}
 
-		// todo: remove ICWP and WPSF dependencies
 		$sSourceFile = $this->getPath_SourceFile(
 			sprintf(
 				'%s-optionshandler-%s.php',

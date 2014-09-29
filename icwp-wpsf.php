@@ -113,8 +113,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 //			add_action( 'init',						array( $this, 'onWpInit' ), 0 );
 			if ( $this->getController()->getIsValidAdminArea( false ) ) {
 				add_action( 'admin_init',				array( $this, 'onWpAdminInit' ) );
-				add_action( 'admin_menu',				array( $this, 'onWpAdminMenu' ) );
-				add_action(	'network_admin_menu',		array( $this, 'onWpAdminMenu' ) );
 				add_action( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 			}
 
@@ -215,61 +213,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			// first a basic admin check
 			return $fHasPermission && is_super_admin() && current_user_can( $this->getController()->getBasePermissions() );
 		}
-
-		/**
-		 * @return bool|void
-		 */
-		public function onWpAdminMenu() {
-			if ( !$this->getController()->getIsValidAdminArea() ) {
-				return true;
-			}
-			return $this->createMenu();
-		}
-
-		protected function createMenu() {
-			$oPluginController = $this->getController();
-
-			$sFullParentMenuId = $this->getPluginPrefix();
-			add_menu_page(
-				$oPluginController->getHumanName(),
-				$oPluginController->getAdminMenuTitle(),
-				$oPluginController->getBasePermissions(),
-				$sFullParentMenuId,
-				array( $this, 'onDisplayAll' ),
-				$this->getController()->getPluginUrl_Image( 'pluginlogo_16x16.png' )
-			);
-			//Create and Add the submenu items
-
-			$aPluginMenuItems = apply_filters( $this->doPluginPrefix( 'filter_plugin_submenu_items' ), array() );
-			if ( !empty( $aPluginMenuItems ) ) {
-				foreach ( $aPluginMenuItems as $sMenuTitle => $aMenu ) {
-					list( $sMenuItemText, $sMenuItemId, $aMenuCallBack ) = $aMenu;
-					add_submenu_page(
-						$sFullParentMenuId,
-						$sMenuTitle,
-						$sMenuItemText,
-						$oPluginController->getBasePermissions(),
-						$sMenuItemId,
-						$aMenuCallBack
-					);
-				}
-			}
-			$this->fixSubmenu();
-		}
-
-		protected function fixSubmenu() {
-			global $submenu;
-			$sFullParentMenuId = $this->getPluginPrefix();
-			if ( isset( $submenu[$sFullParentMenuId] ) ) {
-				unset( $submenu[$sFullParentMenuId][0] );
-			}
-		}
-
-		/**
-		 * Displaying all views now goes through this central function and we work out
-		 * what to display based on the name of current hook/filter being processed.
-		 */
-		public function onDisplayAll() { }
 
 		/**
 		 * On the plugins listing page, hides the edit and deactivate links
