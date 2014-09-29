@@ -19,19 +19,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !defined('ICWP_DS') ) {
-	define( 'ICWP_DS', DIRECTORY_SEPARATOR );
-}
-
-if ( !function_exists( '_wpsf_e' ) ) {
-	function _wpsf_e( $insStr ) {
-		_e( $insStr, 'wp-simple-firewall' );
-	}
-}
-if ( !function_exists( '_wpsf__' ) ) {
-	function _wpsf__( $insStr ) {
-		return __( $insStr, 'wp-simple-firewall' );
-	}
+if ( class_exists( 'ICWP_WPSF_Plugin_Controller' ) ) {
+	return;
 }
 
 require_once(dirname(__FILE__).ICWP_DS.'src'.ICWP_DS.'icwp-foundation.php');
@@ -76,8 +65,17 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	private function __construct() {
 		if ( empty( self::$aPluginSpec ) ) {
-			self::$aPluginSpec = $this->readPluginConfiguration();
+			try {
+				self::$aPluginSpec = $this->readPluginConfiguration();
+				if ( empty( self::$aPluginSpec ) ) {
+					return null;
+				}
+			}
+			catch( Exception $oE ) {
+				return null;
+			}
 			add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
+			add_action( 'admin_init',				array( $this, 'onWpAdminInit' ) );
 			add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 			$this->registerActivationHooks();
 		}
@@ -119,6 +117,13 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	/**
+	 * Hooked to 'plugins_loaded'
+	 */
+	public function onWpAdminInit() {
+		add_action( 'admin_enqueue_scripts', array( $this, 'onWpEnqueueAdminCss' ), 99 );
+	}
+
+	/**
 	 */
 	public function onWpAdminNotices() {
 		// Do we have admin priviledges?
@@ -131,6 +136,35 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		}
 		foreach( $aAdminNotices as $sAdminNotice ) {
 			echo $sAdminNotice;
+		}
+	}
+
+	public function onWpEnqueueAdminCss() {
+
+		$sDependent = '';
+
+		if ( $this->getIsValidAdminArea() ) {
+			$aAdminCss = $this->getPluginSpec_Include( 'admin' );
+			if ( isset( $aAdminCss['css'] ) && !empty( $aAdminCss['css'] ) && is_array( $aAdminCss['css'] ) ) {
+				foreach( $aAdminCss['css'] as $sCssAsset ) {
+					$sUnique = $this->doPluginPrefix( $sCssAsset );
+					wp_register_style( $sUnique, $this->getPluginUrl_Css( $sCssAsset.'.css' ), ( empty( $sDependent ) ? false : $sDependent ), $this->getVersion() );
+					wp_enqueue_style( $sUnique );
+					$sDependent = $sUnique;
+				}
+			}
+		}
+
+		if ( $this->getIsPage_PluginAdmin() ) {
+			$aAdminCss = $this->getPluginSpec_Include( 'plugin_admin' );
+			if ( isset( $aAdminCss['css'] ) && !empty( $aAdminCss['css'] ) && is_array( $aAdminCss['css'] ) ) {
+				foreach( $aAdminCss['css'] as $sCssAsset ) {
+					$sUnique = $this->doPluginPrefix( $sCssAsset );
+					wp_register_style( $sUnique, $this->getPluginUrl_Css( $sCssAsset.'.css' ), ( empty( $sDependent ) ? false : $sDependent ), $this->getVersion() );
+					wp_enqueue_style( $sUnique );
+					$sDependent = $sUnique;
+				}
+			}
 		}
 	}
 
@@ -263,7 +297,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @param string $sKey
 	 * @return mixed|null
 	 */
-	protected function getProperty( $sKey ) {
+	protected function getPluginSpec_Property( $sKey ) {
 		return isset( self::$aPluginSpec['properties'][$sKey] ) ? self::$aPluginSpec['properties'][$sKey] : null;
 	}
 
@@ -271,7 +305,15 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @param string $sKey
 	 * @return mixed|null
 	 */
-	protected function getPath( $sKey ) {
+	protected function getPluginSpec_Include( $sKey ) {
+		return isset( self::$aPluginSpec['includes'][$sKey] ) ? self::$aPluginSpec['includes'][$sKey] : null;
+	}
+
+	/**
+	 * @param string $sKey
+	 * @return mixed|null
+	 */
+	protected function getPluginSpec_Path( $sKey ) {
 		return isset( self::$aPluginSpec['paths'][$sKey] ) ? self::$aPluginSpec['paths'][$sKey] : null;
 	}
 
@@ -279,14 +321,14 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getAdminMenuTitle() {
-		return $this->getProperty( 'menu_title' );
+		return $this->getPluginSpec_Property( 'menu_title' );
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getBasePermissions() {
-		return $this->getProperty( 'base_permissions' );
+		return $this->getPluginSpec_Property( 'base_permissions' );
 	}
 
 	/**
@@ -328,14 +370,14 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getHumanName() {
-		return $this->getProperty( 'human_name' );
+		return $this->getPluginSpec_Property( 'human_name' );
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getIsLoggingEnabled() {
-		return $this->getProperty( 'logging_enabled' );
+		return $this->getPluginSpec_Property( 'logging_enabled' );
 	}
 
 	/**
@@ -380,14 +422,14 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return boolean
 	 */
 	public function getIsWpmsNetworkAdminOnly() {
-		return $this->getProperty( 'wpms_network_admin_only' );
+		return $this->getPluginSpec_Property( 'wpms_network_admin_only' );
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getParentSlug() {
-		return $this->getProperty( 'slug_parent' );
+		return $this->getPluginSpec_Property( 'slug_parent' );
 	}
 
 	/**
@@ -406,7 +448,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getPluginSlug() {
-		return $this->getProperty( 'slug_plugin' );
+		return $this->getPluginSpec_Property( 'slug_plugin' );
 	}
 
 	/**
@@ -458,7 +500,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getPath_Assets() {
-		return $this->getRootDir().$this->getPath( 'assets' ).ICWP_DS;
+		return $this->getRootDir().$this->getPluginSpec_Path( 'assets' ).ICWP_DS;
 	}
 
 	/**
@@ -467,7 +509,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getPath_Languages() {
-		return $this->getRootDir().$this->getPath( 'languages' ).ICWP_DS;
+		return $this->getRootDir().$this->getPluginSpec_Path( 'languages' ).ICWP_DS;
 	}
 
 	/**
@@ -476,7 +518,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getPath_Source() {
-		return $this->getRootDir().$this->getPath( 'source' ).ICWP_DS;
+		return $this->getRootDir().$this->getPluginSpec_Path( 'source' ).ICWP_DS;
 	}
 
 	/**
@@ -495,7 +537,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getPath_Views() {
-		return $this->getRootDir().$this->getPath( 'views' ).ICWP_DS;
+		return $this->getRootDir().$this->getPluginSpec_Path( 'views' ).ICWP_DS;
 	}
 
 	/**
@@ -539,14 +581,14 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @return string
 	 */
 	public function getTextDomain() {
-		return $this->getProperty( 'text_domain' );
+		return $this->getPluginSpec_Property( 'text_domain' );
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getVersion() {
-		return $this->getProperty( 'version' );
+		return $this->getPluginSpec_Property( 'version' );
 	}
 
 	/**

@@ -144,13 +144,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
 		public function onWpAdminInit() {
 
-			//Do Plugin-Specific Admin Work
-			add_action( 'admin_enqueue_scripts', array( $this, 'enqueuePluginGlobalAdminCss' ), 99 );
-			if ( $this->getController()->getIsPage_PluginAdmin() ) {
-				add_action( 'admin_enqueue_scripts', array( $this, 'enqueueBootstrapLegacyAdminCss' ), 99 );
-				add_action( 'admin_enqueue_scripts', array( $this, 'enqueuePluginAdminCss' ), 99 );
-			}
-
 			if ( $this->getController()->getIsValidAdminArea() ) {
 				$oDp = $this->loadDataProcessor();
 				$oWp = $this->loadWpFunctionsProcessor();
@@ -207,15 +200,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		}
 
 		/**
-		 * This is the path to the main plugin file relative to the WordPress plugins directory.
-		 *
-		 * @return string
-		 */
-		public function getPluginBaseFile() {
-			return $this->getController()->getPluginBaseFile();
-		}
-
-		/**
 		 * @param boolean $fHasPermission
 		 * @return boolean
 		 */
@@ -232,11 +216,14 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			return $fHasPermission && is_super_admin() && current_user_can( $this->getController()->getBasePermissions() );
 		}
 
+		/**
+		 * @return bool|void
+		 */
 		public function onWpAdminMenu() {
 			if ( !$this->getController()->getIsValidAdminArea() ) {
 				return true;
 			}
-			$this->createMenu();
+			return $this->createMenu();
 		}
 
 		protected function createMenu() {
@@ -294,7 +281,7 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		 */
 		public function onWpPluginActionLinks( $aActionLinks, $sPluginFile ) {
 
-			if ( $sPluginFile == $this->getPluginBaseFile() ) {
+			if ( $sPluginFile == $this->getController()->getPluginBaseFile() ) {
 				if ( !$this->hasPermissionToSubmit() ) {
 					if ( array_key_exists( 'edit', $aActionLinks ) ) {
 						unset( $aActionLinks['edit'] );
@@ -341,37 +328,13 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			$oWp = $this->loadWpFunctionsProcessor();
 			$oWp->updateUserMeta( $this->getController()->doPluginOptionPrefix( 'current_version' ), $this->getController()->getVersion(), $nId );
 		}
-
-		public function enqueueBootstrapAdminCss() {
-			$sUnique = $this->doPluginPrefix( 'bootstrap_wpadmin_css' );
-			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css( 'bootstrap-wpadmin.css' ), false, $this->getController()->getVersion() );
-			wp_enqueue_style( $sUnique );
-		}
-
-		public function enqueueBootstrapLegacyAdminCss() {
-			$sUnique = $this->doPluginPrefix( 'bootstrap_wpadmin_legacy_css' );
-			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css( 'bootstrap-wpadmin-legacy.css' ), false, $this->getController()->getVersion() );
-			wp_enqueue_style( $sUnique );
-
-			$sUnique = $this->doPluginPrefix( 'bootstrap_wpadmin_css_fixes' );
-			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('bootstrap-wpadmin-fixes.css'),  array( $this->doPluginPrefix( 'bootstrap_wpadmin_legacy_css' ) ), $this->getController()->getVersion() );
-			wp_enqueue_style( $sUnique );
-		}
-
-		public function enqueuePluginAdminCss() {
-			$sUnique = $this->doPluginPrefix( 'plugin_css' );
-			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('plugin.css'), array( $this->doPluginPrefix( 'bootstrap_wpadmin_css_fixes' ) ), $this->getController()->getVersion() );
-			wp_enqueue_style( $sUnique );
-		}
-
-		public function enqueuePluginGlobalAdminCss() {
-			$sUnique = $this->doPluginPrefix( 'global_plugin_css' );
-			wp_register_style( $sUnique, $this->getController()->getPluginUrl_Css('global-plugin.css'), false, $this->getController()->getVersion() );
-			wp_enqueue_style( $sUnique );
-		}
 	}
 
 endif;
 
 require_once( 'icwp-plugin-controller.php' );
-$oICWP_Wpsf = new ICWP_Wordpress_Simple_Firewall( ICWP_WPSF_Plugin_Controller::GetInstance() );
+
+$oICWP_Wpsf_Controller = ICWP_WPSF_Plugin_Controller::GetInstance();
+if ( !is_null( $oICWP_Wpsf_Controller ) ) {
+	$oICWP_Wpsf = new ICWP_Wordpress_Simple_Firewall( ICWP_WPSF_Plugin_Controller::GetInstance() );
+}

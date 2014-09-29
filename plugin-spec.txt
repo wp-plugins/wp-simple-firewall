@@ -1,0 +1,27 @@
+---
+properties:
+  version: '4.0.0'
+  slug_parent: 'icwp'
+  slug_plugin: 'wpsf'
+  human_name: 'WordPress Simple Firewall'
+  menu_title: 'Simple Firewall'
+  text_domain: 'wp-simple-firewall'
+  base_permissions: 'manage_options'
+  wpms_network_admin_only: true
+  logging_enabled: true
+paths:
+  source: 'src'
+  assets: 'resources'
+  languages: 'languages'
+  views: 'views'
+includes:
+  admin:
+    css:
+      - global-plugin
+  plugin_admin:
+    css:
+      - bootstrap-wpadmin-legacy
+      - bootstrap-wpadmin-fixes
+      - plugin
+  frontend:
+    css:
