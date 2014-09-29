@@ -158,9 +158,16 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * Hooked to the plugin's main plugin_shutdown action
 		 */
 		public function action_doFeatureShutdown() {
-			if ( ! $this->fPluginDeleting ) {
+			if ( ! $this->getIsPluginDeleting() ) {
 				$this->savePluginOptions();
 			}
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function getIsPluginDeleting() {
+			return $this->fPluginDeleting;
 		}
 
 		/**

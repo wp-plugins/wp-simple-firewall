@@ -34,7 +34,9 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		}
 
 		public function action_doFeatureProcessorShutdown () {
-			$this->commitAuditTrial();
+			if ( ! $this->getFeatureOptions()->getIsPluginDeleting() ) {
+				$this->commitAuditTrial();
+			}
 		}
 
 		/**
@@ -114,7 +116,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 
 		/**
 		 */
-		public function commitAuditTrial() {
+		protected function commitAuditTrial() {
 			$aEntries = $this->getAuditTrailEntries()->getAuditTrailEntries( true );
 			$aEntries = apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'wpsf_audit_trail_gather' ), $aEntries );
 			if ( empty( $aEntries ) || !is_array( $aEntries ) ) {
