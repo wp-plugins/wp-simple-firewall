@@ -108,18 +108,13 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
 			// All core values of the plugin are derived from the values stored in this value object.
 			$this->oPluginController				= $oPluginController;
+			$this->oPluginController->loadAllFeatures();
+			add_filter( $this->oPluginController->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
+			add_filter( $this->oPluginController->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
+			add_filter( $this->oPluginController->doPluginPrefix( 'plugin_update_message' ), array( $this, 'getPluginsListUpdateMessage' ) );
 
-//			add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
-//			add_action( 'init',						array( $this, 'onWpInit' ), 0 );
-			if ( $this->getController()->getIsValidAdminArea( false ) ) {
-				add_action( 'admin_init',				array( $this, 'onWpAdminInit' ) );
-				add_action( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
-			}
-
-			$this->getController()->loadAllFeatures();
-			add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
-			add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
-			add_filter( $this->doPluginPrefix( 'plugin_update_message' ), array( $this, 'getPluginsListUpdateMessage' ) );
+			add_action( 'admin_init',				array( $this, 'onWpAdminInit' ) );
+			add_action( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 		}
 
 //		protected function onDisplayFirewallLog() {
@@ -141,25 +136,25 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 //		}
 
 		public function onWpAdminInit() {
-
-			if ( $this->getController()->getIsValidAdminArea() ) {
-				$oDp = $this->loadDataProcessor();
-				$oWp = $this->loadWpFunctionsProcessor();
+			$oCon = $this->getController();
+			if ( $oCon->getIsValidAdminArea() ) {
+				$oDp = $oCon->loadDataProcessor();
+				$oWp = $oCon->loadWpFunctionsProcessor();
 
 				$sRedirect = $oDp->FetchPost( 'redirect_page' );
 				$sRedirect = empty( $sRedirect ) ? $this->getController()->getPluginUrl_AdminPage() : $sRedirect;
 				//Someone clicked the button to acknowledge the update
-				if ( $oDp->FetchRequest( $this->doPluginPrefix( 'hide_update_notice' ) ) == 1 ) {
+				if ( $oDp->FetchRequest( $oCon->doPluginPrefix( 'hide_update_notice' ) ) == 1 ) {
 					$this->updateVersionUserMeta();
 					$oWp->doRedirect( $sRedirect );
 				}
 
-				if ( $oDp->FetchRequest( $this->doPluginPrefix( 'hide_translation_notice' ) ) == 1 ) {
+				if ( $oDp->FetchRequest( $oCon->doPluginPrefix( 'hide_translation_notice' ) ) == 1 ) {
 					$this->updateTranslationNoticeShownUserMeta();
 					$oWp->doRedirect( $sRedirect );
 				}
 
-				if ( $oDp->FetchRequest( $this->doPluginPrefix( 'hide_mailing_list_signup' ) ) == 1 ) {
+				if ( $oDp->FetchRequest( $oCon->doPluginPrefix( 'hide_mailing_list_signup' ) ) == 1 ) {
 					$this->updateMailingListSignupShownUserMeta();
 				}
 			}
@@ -174,17 +169,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		 */
 		public function getController() {
 			return $this->oPluginController;
-		}
-
-		/**
-		 * Will prefix and return any string with the unique plugin prefix.
-		 *
-		 * @param string $sSuffix
-		 * @param string $sGlue
-		 * @return string
-		 */
-		public function doPluginPrefix( $sSuffix = '', $sGlue = '-' ) {
-			return $this->getController()->doPluginPrefix( $sSuffix, $sGlue );
 		}
 
 		/**
@@ -213,8 +197,12 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		 * @return mixed
 		 */
 		public function onWpPluginActionLinks( $aActionLinks, $sPluginFile ) {
+			$oCon = $this->getController();
+			if ( !$oCon->getIsValidAdminArea() ) {
+				return $aActionLinks;
+			}
 
-			if ( $sPluginFile == $this->getController()->getPluginBaseFile() ) {
+			if ( $sPluginFile == $oCon->getPluginBaseFile() ) {
 				if ( !$this->hasPermissionToSubmit() ) {
 					if ( array_key_exists( 'edit', $aActionLinks ) ) {
 						unset( $aActionLinks['edit'] );
@@ -234,8 +222,8 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		 * @param $sValue
 		 */
 		protected function updateTranslationNoticeShownUserMeta( $nId = '', $sValue = 'Y' ) {
-			$oWp = $this->loadWpFunctionsProcessor();
-			$oWp->updateUserMeta( $this->getController()->doPluginOptionPrefix( 'plugin_translation_notice' ), $sValue, $nId );
+			$oCon = $this->getController();
+			$oCon->loadWpFunctionsProcessor()->updateUserMeta( $oCon->doPluginOptionPrefix( 'plugin_translation_notice' ), $sValue, $nId );
 		}
 
 		/**
@@ -245,8 +233,8 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		 * @param $sValue
 		 */
 		protected function updateMailingListSignupShownUserMeta( $nId = '', $sValue = 'Y' ) {
-			$oWp = $this->loadWpFunctionsProcessor();
-			$oWp->updateUserMeta( $this->getController()->doPluginOptionPrefix( 'plugin_mailing_list_signup' ), $sValue, $nId );
+			$oCon = $this->getController();
+			$oCon->loadWpFunctionsProcessor()->updateUserMeta( $oCon->doPluginOptionPrefix( 'plugin_mailing_list_signup' ), $sValue, $nId );
 		}
 
 		/**
@@ -255,8 +243,8 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		 * @param integer $nId
 		 */
 		protected function updateVersionUserMeta( $nId = null ) {
-			$oWp = $this->loadWpFunctionsProcessor();
-			$oWp->updateUserMeta( $this->getController()->doPluginOptionPrefix( 'current_version' ), $this->getController()->getVersion(), $nId );
+			$oCon = $this->getController();
+			$oCon->loadWpFunctionsProcessor()->updateUserMeta( $oCon->doPluginOptionPrefix( 'current_version' ), $oCon->getVersion(), $nId );
 		}
 	}
 

@@ -233,7 +233,8 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 *   ADDED:      New Feature - Audit Trail
 *   ADDED:      Audit Trail options include: Plugins, Themes, Email, WordPress Core, Posts/Pages, WordPress Simple Firewall
-*   CHANGED:    Firewall Log is no longer an option and instead integrated into the "WordPress Simple Firewall" Audit Trail option.
+*   REMOVED:    Firewall Log. This is no longer an option and is instead integrated into the "WordPress Simple Firewall" Audit Trail.
+*   FIXED:      Full and proper cleanup of plugin options, crons, and database upon deactivation.
 
 = 3.5.5 =
 

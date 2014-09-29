@@ -106,7 +106,7 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 		// We should only use setPermissionToSubmit() here, before any headers elsewhere are sent out.
 		if ( $this->checkAdminAccessKeySubmission() ) {
 			$this->setPermissionToSubmit( true );
-			wp_safe_redirect( network_admin_url() );
+//			wp_safe_redirect( network_admin_url() );
 		}
 	}
 

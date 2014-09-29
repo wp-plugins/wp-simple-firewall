@@ -242,6 +242,9 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 				$sQuery = sprintf( 'DROP TABLE IF EXISTS `%s%s`', $wpdb->prefix, $sTable ) ;
 				$wpdb->query( $sQuery );
 			}
+
+			// remove old database cleanup crons
+			wp_clear_scheduled_hook( 'icwp_wpsf_cron_cleanupactionhook' );
 		}
 	}
 }

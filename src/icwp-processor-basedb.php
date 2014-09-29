@@ -22,8 +22,6 @@ if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 
 abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	
-	const CleanupCronActionHook = 'icwp_wpsf_cron_cleanupactionhook';
-
 	/**
 	 * A link to the WordPress Database object so we don't have to "global" that every time.
 	 * @var wpdb
@@ -52,6 +50,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 */
 	public function deleteDatabase() {
 		if ( apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'has_permission_to_submit' ), true ) && $this->getTableExists() ) {
+			$this->deleteCleanupCron();
 			$this->dropTable();
 		}
 	}
@@ -91,7 +90,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 */
 	protected function initializeTable() {
 		if ( $this->getTableExists() ) {
-			$sFullHookName = $this->getFeatureOptions()->doPluginPrefix( self::CleanupCronActionHook, '_' );
+			$sFullHookName = $this->getDbCleanupHookName();
 			add_action( $sFullHookName, array( $this, 'cleanupDatabase' ) );
 		}
 		else {
@@ -247,11 +246,25 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * Will setup the cleanup cron to clean out old entries. This should be overridden per implementation.
 	 */
 	protected function createCleanupCron() {
-		$sFullHookName = $this->getFeatureOptions()->doPluginPrefix( self::CleanupCronActionHook, '_' );
+		$sFullHookName = $this->getDbCleanupHookName();
 		if ( ! wp_next_scheduled( $sFullHookName ) && ! defined( 'WP_INSTALLING' ) ) {
 			$nNextRun = strtotime( 'tomorrow 6am' ) - get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
 			wp_schedule_event( $nNextRun, 'daily', $sFullHookName );
 		}
+	}
+
+	/**
+	 * Will setup the cleanup cron to clean out old entries. This should be overridden per implementation.
+	 */
+	protected function deleteCleanupCron() {
+		wp_clear_scheduled_hook( $this->getDbCleanupHookName() );
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function getDbCleanupHookName() {
+		return $this->getController()->doPluginPrefix( $this->getFeatureOptions()->getFeatureSlug().'_db_cleanup' );
 	}
 
 	// by default does nothing - override this method

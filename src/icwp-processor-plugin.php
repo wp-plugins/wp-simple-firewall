@@ -152,7 +152,7 @@ class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 
 		if ( $this->getInstallationDays() <= 1 ) {
 			$sMessage = sprintf(
-				_wpsf__( "Note: The %s plugin does not automatically turn on feature when you install." ),
+				_wpsf__( "Note: The %s plugin does not automatically turn on features when you install." ),
 				$oController->getHumanName()
 			);
 		}
