@@ -225,8 +225,6 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 == Changelog ==
 
-*   KNOWN ISSUE:      Login Protection logs are not being properly created.
-
 = 4.0.1 (Coming Soon) =
 
 *   ADDED:      Audit Trail for more WordPress Simple Firewall events such as User Sessions, Login Protections, Comments Filtering etc.

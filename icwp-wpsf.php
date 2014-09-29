@@ -177,16 +177,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		}
 
 		/**
-		 * Returns this unique plugin prefix
-		 *
-		 * @param string $sGlue
-		 * @return string
-		 */
-		public function getPluginPrefix( $sGlue = '-' ) {
-			return $this->getController()->getPluginPrefix( $sGlue );
-		}
-
-		/**
 		 * Will prefix and return any string with the unique plugin prefix.
 		 *
 		 * @param string $sSuffix
@@ -233,9 +223,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 						unset( $aActionLinks['deactivate'] );
 					}
 				}
-
-				$sSettingsLink = sprintf( '<a href="%s">%s</a>', $this->getController()->getPluginUrl_AdminPage(), 'Dashboard' ); ;
-				array_unshift( $aActionLinks, $sSettingsLink );
 			}
 			return $aActionLinks;
 		}
@@ -277,7 +264,7 @@ endif;
 
 require_once( 'icwp-plugin-controller.php' );
 
-$oICWP_Wpsf_Controller = ICWP_WPSF_Plugin_Controller::GetInstance();
+$oICWP_Wpsf_Controller = ICWP_WPSF_Plugin_Controller::GetInstance( __FILE__ );
 if ( !is_null( $oICWP_Wpsf_Controller ) ) {
-	$oICWP_Wpsf = new ICWP_Wordpress_Simple_Firewall( ICWP_WPSF_Plugin_Controller::GetInstance() );
+	$oICWP_Wpsf = new ICWP_Wordpress_Simple_Firewall( $oICWP_Wpsf_Controller );
 }

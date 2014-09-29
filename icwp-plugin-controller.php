@@ -54,16 +54,18 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	/**
 	 * @return ICWP_WPSF_Plugin_Controller
 	 */
-	public static function GetInstance() {
+	public static function GetInstance( $sRootFile ) {
 		if ( !isset( self::$oInstance ) ) {
-			self::$oInstance = new self();
+			self::$oInstance = new self( $sRootFile );
 		}
 		return self::$oInstance;
 	}
 
 	/**
+	 * @param string $sRootFile
 	 */
-	private function __construct() {
+	private function __construct( $sRootFile ) {
+		self::$sRootFile = $sRootFile;
 		if ( empty( self::$aPluginSpec ) ) {
 			try {
 				self::$aPluginSpec = $this->readPluginConfiguration();
@@ -76,8 +78,10 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 			}
 			add_action( 'plugins_loaded',			array( $this, 'onWpPluginsLoaded' ) );
 			add_action( 'admin_init',				array( $this, 'onWpAdminInit' ) );
+			add_filter( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 			add_action( 'admin_menu',				array( $this, 'onWpAdminMenu' ) );
 			add_action(	'network_admin_menu',		array( $this, 'onWpAdminMenu' ) );
+			add_action( 'init',			        	array( $this, 'onWpInit' ) );
 			add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 			$this->registerActivationHooks();
 		}
@@ -123,6 +127,12 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	public function onWpAdminInit() {
 		add_action( 'admin_enqueue_scripts', 	array( $this, 'onWpEnqueueAdminCss' ), 99 );
+	}
+
+	/**
+	 */
+	public function onWpInit() {
+		add_action( 'wp_enqueue_scripts',		array( $this, 'onWpEnqueueFrontendCss' ), 0 );
 	}
 
 	/**
@@ -194,18 +204,60 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	public function onDisplayTopMenu() { }
 
 	/**
+	 * On the plugins listing page, hides the edit and deactivate links
+	 * for this plugin based on permissions
+	 *
+	 * @param $aActionLinks
+	 * @param $sPluginFile
+	 * @return mixed
+	 */
+	public function onWpPluginActionLinks( $aActionLinks, $sPluginFile ) {
+
+		if ( $this->getIsValidAdminArea() && $sPluginFile == $this->getPluginBaseFile() ) {
+
+			$aLinksToAdd = $this->getPluginSpec_ActionLinks( 'add' );
+			if ( !empty( $aLinksToAdd ) && is_array( $aLinksToAdd ) ) {
+				foreach( $aLinksToAdd as $aLink ){
+					if ( empty( $aLink['name'] ) || empty( $aLink['url_method_name'] ) ) {
+						continue;
+					}
+					$sMethod = $aLink['url_method_name'];
+					if ( method_exists( $this, $sMethod ) ) {
+						$sSettingsLink = sprintf( '<a href="%s">%s</a>', $this->{$sMethod}(), $aLink['name'] ); ;
+						array_unshift( $aActionLinks, $sSettingsLink );
+					}
+				}
+			}
+		}
+		return $aActionLinks;
+	}
+
+	/**
 	 */
 	public function onWpAdminNotices() {
-		// Do we have admin priviledges?
 		if ( !$this->getIsValidAdminArea() ) {
 			return true;
 		}
 		$aAdminNotices = apply_filters( $this->doPluginPrefix( 'admin_notices' ), array() );
-		if ( empty( $aAdminNotices ) || !is_array( $aAdminNotices ) ) {
-			return;
+		if ( !empty( $aAdminNotices ) && is_array( $aAdminNotices ) ) {
+
+			foreach( $aAdminNotices as $sAdminNotice ) {
+				echo $sAdminNotice;
+			}
 		}
-		foreach( $aAdminNotices as $sAdminNotice ) {
-			echo $sAdminNotice;
+		return true;
+	}
+
+	public function onWpEnqueueFrontendCss() {
+
+		$aFrontendIncludes = $this->getPluginSpec_Include( 'frontend' );
+		if ( isset( $aFrontendIncludes['css'] ) && !empty( $aFrontendIncludes['css'] ) && is_array( $aFrontendIncludes['css'] ) ) {
+			foreach( $aFrontendIncludes['css'] as $sCssAsset ) {
+				$sUnique = $this->doPluginPrefix( $sCssAsset );
+				wp_register_style( $sUnique, $this->getPluginUrl_Css( $sCssAsset.'.css' ), ( empty( $sDependent ) ? false : $sDependent ), $this->getVersion() );
+				wp_enqueue_style( $sUnique );
+				$sDependent = $sUnique;
+			}
 		}
 	}
 
@@ -367,8 +419,8 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * @param string $sKey
 	 * @return mixed|null
 	 */
-	protected function getPluginSpec_Property( $sKey ) {
-		return isset( self::$aPluginSpec['properties'][$sKey] ) ? self::$aPluginSpec['properties'][$sKey] : null;
+	protected function getPluginSpec_ActionLinks( $sKey ) {
+		return isset( self::$aPluginSpec['action_links'][$sKey] ) ? self::$aPluginSpec['action_links'][$sKey] : null;
 	}
 
 	/**
@@ -393,6 +445,14 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	protected function getPluginSpec_Path( $sKey ) {
 		return isset( self::$aPluginSpec['paths'][$sKey] ) ? self::$aPluginSpec['paths'][$sKey] : null;
+	}
+
+	/**
+	 * @param string $sKey
+	 * @return mixed|null
+	 */
+	protected function getPluginSpec_Property( $sKey ) {
+		return isset( self::$aPluginSpec['properties'][$sKey] ) ? self::$aPluginSpec['properties'][$sKey] : null;
 	}
 
 	/**
@@ -570,6 +630,13 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	public function getPluginUrl_AdminPage( $sFeature = '' ) {
 		return network_admin_url( sprintf( 'admin.php?page=%s', $this->doPluginPrefix( $sFeature ) ) );
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getPluginUrl_AdminMainPage() {
+		return $this->getPluginUrl_AdminPage( 'plugin' );
 	}
 
 	/**

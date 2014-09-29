@@ -33,3 +33,11 @@ menu:
   callback: 'onDisplayTopMenu'
   icon_image: 'pluginlogo_16x16.png'
   has_submenu: true # to-do is allow for non-top-level menu items.
+
+# This is on the plugins.php page with the option to remove or add custom links.
+action_links:
+  remove:
+  add:
+    -
+      name: 'Dashboard'
+      url_method_name: 'getPluginUrl_AdminMainPage'
