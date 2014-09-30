@@ -130,6 +130,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	public function onWpAdminInit() {
 		add_action( 'admin_enqueue_scripts', 	array( $this, 'onWpEnqueueAdminCss' ), 99 );
+		add_action( 'admin_enqueue_scripts', 	array( $this, 'onWpEnqueueAdminJs' ), 99 );
 	}
 
 	/**
@@ -258,6 +259,21 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 				wp_register_style( $sUnique, $this->getPluginUrl_Css( $sCssAsset.'.css' ), ( empty( $sDependent ) ? false : $sDependent ), $this->getVersion() );
 				wp_enqueue_style( $sUnique );
 				$sDependent = $sUnique;
+			}
+		}
+	}
+
+	public function onWpEnqueueAdminJs() {
+
+		if ( $this->getIsPage_PluginAdmin() ) {
+			$aAdminJs = $this->getPluginSpec_Include( 'plugin_admin' );
+			if ( isset( $aAdminJs['js'] ) && !empty( $aAdminJs['js'] ) && is_array( $aAdminJs['js'] ) ) {
+				foreach( $aAdminJs['js'] as $sJsAsset ) {
+					$sUnique = $this->doPluginPrefix( $sJsAsset );
+					wp_register_script( $sUnique, $this->getPluginUrl_Js( $sJsAsset.'.js' ), ( empty( $sDependent ) ? false : $sDependent ), $this->getVersion() );
+					wp_enqueue_script( $sUnique );
+					$sDependent = $sUnique;
+				}
 			}
 		}
 	}

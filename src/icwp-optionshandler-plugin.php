@@ -26,8 +26,8 @@ class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 	 */
 	protected $oFeatureProcessor;
 
-	public function __construct( $oPluginVo, $aFeatureProperties = array() ) {
-		parent::__construct( $oPluginVo, $aFeatureProperties );
+	public function __construct( $oPluginController, $aFeatureProperties = array() ) {
+		parent::__construct( $oPluginController, $aFeatureProperties );
 
 		add_action( 'deactivate_plugin', array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );
 		add_filter( $this->doPluginPrefix( 'report_email_address' ), array( $this, 'getPluginReportEmail' ) );

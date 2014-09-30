@@ -37,13 +37,6 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 		return $this->oFeatureProcessor;
 	}
 
-	/**
-	 * @return bool|void
-	 */
-	public function doExtraSubmitProcessing() { }
-
-	public function doPrePluginOptionsSave() {}
-
 	public function displayAuditTrailViewer() {
 
 		$oAuditTrail = $this->loadFeatureProcessor();
