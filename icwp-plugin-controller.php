@@ -52,6 +52,8 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	private $sPluginBaseFile;
 
 	/**
+	 * @param $sRootFile
+	 *
 	 * @return ICWP_WPSF_Plugin_Controller
 	 */
 	public static function GetInstance( $sRootFile ) {
@@ -96,9 +98,10 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		//	register_uninstall_hook( $this->oPluginVo->getRootFile(), array( $this, 'onWpUninstallPlugin' ) );
 	}
 
-	// TODO: this is dependent on a specific plugin option variable - need to move it into the handlers
+	/**
+	 */
 	public function onWpDeactivatePlugin() {
-		if ( $this->loadCorePluginFeatureHandler()->getOptIs( 'delete_on_deactivate', 'Y' ) && current_user_can( $this->getBasePermissions() ) ) {
+		if ( current_user_can( $this->getBasePermissions() ) && apply_filters( $this->doPluginPrefix( 'delete_on_deactivate' ), false ) ) {
 			do_action( $this->doPluginPrefix( 'delete_plugin' ) );
 		}
 	}
@@ -204,11 +207,9 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	public function onDisplayTopMenu() { }
 
 	/**
-	 * On the plugins listing page, hides the edit and deactivate links
-	 * for this plugin based on permissions
-	 *
 	 * @param $aActionLinks
 	 * @param $sPluginFile
+	 *
 	 * @return mixed
 	 */
 	public function onWpPluginActionLinks( $aActionLinks, $sPluginFile ) {
