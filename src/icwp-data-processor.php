@@ -546,6 +546,37 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 			}
 			return self::ArrayFetch( $_SERVER, $sKey, $mDefault );
 		}
+
+		/**
+		 * @param $sKey
+		 * @param $mValue
+		 * @param int $nExpireLength
+		 * @param null $sPath
+		 * @param null $sDomain
+		 * @param bool $fSsl
+		 *
+		 * @return bool
+		 */
+		public function setCookie( $sKey, $mValue, $nExpireLength = 3600, $sPath = null, $sDomain = null, $fSsl = false ) {
+			return setcookie(
+				$sKey,
+				$mValue,
+				$this->GetRequestTime() + $nExpireLength,
+				( is_null( $sPath ) && defined( 'COOKIEPATH' ) ) ? COOKIEPATH : $sPath,
+				( is_null( $sDomain ) && defined( 'COOKIE_DOMAIN' ) ) ? COOKIE_DOMAIN : $sDomain,
+				$fSsl
+			);
+		}
+
+		/**
+		 * @param string $sKey
+		 *
+		 * @return bool
+		 */
+		public function setDeleteCookie( $sKey ) {
+			unset( $_COOKIE[ $sKey ] );
+			return $this->setCookie( $sKey, '', -3600 );
+		}
 	}
 endif;
 

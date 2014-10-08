@@ -231,6 +231,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 = 4.1.0 (Coming Soon) =
 
 *   ADDED:      Audit Trail for more WordPress Simple Firewall events such as User Sessions, Login Protections, Comments Filtering etc.
+*   FIXED:      Prevention against redirect loops under certain conditions.
 
 = 4.0.0 =
 

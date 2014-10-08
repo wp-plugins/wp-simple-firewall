@@ -244,7 +244,17 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 * @uses exit()
 		 */
 		public function doRedirect( $sUrl, $aQueryParams = array() ) {
-			$sUrl = empty( $aQueryParams ) ? $sUrl : add_query_arg( $aQueryParams, $sUrl ) ;
+			$sUrl = empty( $aQueryParams ) ? $sUrl : add_query_arg( $aQueryParams, $sUrl );
+
+			$oDp = $this->loadDataProcessor();
+			// we prevent any repetitive redirect loops
+			if ( $oDp->FetchCookie( 'wpsf-isredirect' ) == 'yes' ) {
+				return;
+			}
+			else {
+				$oDp->setCookie( 'wpsf-isredirect', 'yes', 7 );
+			}
+
 			wp_safe_redirect( $sUrl );
 			exit();
 		}
@@ -524,7 +534,7 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 */
 		public function loadDataProcessor() {
 			if ( !class_exists('ICWP_WPSF_DataProcessor') ) {
-				require_once( dirname(__FILE__).'/icwp-data-processor.php' );
+				require_once( dirname(__FILE__).ICWP_DS.'icwp-data-processor.php' );
 			}
 			return ICWP_WPSF_DataProcessor::GetInstance();
 		}

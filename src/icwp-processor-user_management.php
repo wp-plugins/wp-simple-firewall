@@ -76,7 +76,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		// Check login attempts
 		// At this stage (30,3) WordPress has already (20) authenticated the user. So if the login
 		// is valid, the filter will have a valid WP_User object passed to it.
-		add_filter( 'authenticate', array( $this, 'createNewUserSession_Filter' ), 30, 3);
+		add_filter( 'authenticate', array( $this, 'createNewUserSession_Filter' ), 30, 3 );
 
 		// When we know user has successfully authenticated and we activate the session entry in the database
 		add_action( 'wp_login', array( $this, 'handleUserSession' ) );
@@ -124,6 +124,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 */
 	public function checkCurrentUser_Action() {
 		$this->getSessionId();
+		$oDp = $this->loadDataProcessor();
+
 		if ( is_user_logged_in() ) {
 			$oWp = $this->loadWpFunctionsProcessor();
 			$oUser = $oWp->getCurrentWpUser();
@@ -137,12 +139,11 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			// At this point session is validated
 
 			// This used to be an option, but to simplify, we've removed it and do it anyway.
-			if ( true || $this->getIsOption( 'session_auto_forward_to_admin_area', 'Y' ) ) {
-				$oDp = $this->loadDataProcessor();
-				$sWpLogin = 'wp-login.php';
-				if ( $oDp->FetchGet( 'action' ) != 'logout' && ( substr( $oWp->getCurrentPage(), -strlen( $sWpLogin ) ) === $sWpLogin ) ) {
-					$oWp->redirectToAdmin();
-				}
+//			if ( true || $this->getIsOption( 'session_auto_forward_to_admin_area', 'Y' ) ) {
+			$sWpLogin = 'wp-login.php';
+			if ( $oDp->FetchGet( 'action' ) != 'logout' && ( substr( $oWp->getCurrentPage(), -strlen( $sWpLogin ) ) === $sWpLogin ) ) {
+				// send query arg to prevent redirect loop here.
+				$oWp->redirectToAdmin();
 			}
 
 			// always track activity
@@ -211,6 +212,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 * @return WP_Error|WP_User|null	- WP_User when the login success AND the IP is authenticated. null when login not successful but IP is valid. WP_Error otherwise.
 	 */
 	public function createNewUserSession_Filter( $oUser, $sUsername, $sPassword ) {
+
+		//TODO: review is this the correct filter and processing?
 		if ( empty( $sUsername ) ) {
 			return $oUser;
 		}
@@ -340,6 +343,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		}
 		$this->activateUserSession( $sUsername );
 		$this->doLimitUserSession( $sUsername );
+		return true;
 	}
 
 	/**
@@ -383,6 +387,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			return true;
 		}
 
+		$mResult = true;
 		for( $nCount = 0; $nCount < $nSessionsToKill; $nCount++ ) {
 			$mResult = $this->doTerminateUserSession( $aSessions[$nCount]['wp_username'], $aSessions[$nCount]['session_id'] );
 		}
@@ -420,7 +425,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		$aNewData = array(
 			'last_activity_at'	=> self::$nRequestTimestamp
 		);
-		return $this->updateCurrentSession( $oUser->user_login, $aNewData );
+		return $this->updateCurrentSession( $oUser->get( 'user_login' ), $aNewData );
 	}
 
 	/**
