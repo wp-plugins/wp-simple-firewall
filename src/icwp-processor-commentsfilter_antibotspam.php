@@ -41,11 +41,32 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	protected $sCommentStatusExplanation;
 
 	/**
+	 * @var array
+	 */
+	private $aRawCommentData;
+
+	/**
 	 * @param ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions, $oFeatureOptions->getCommentsFilterTableName() );
-		$this->reset();
+	}
+
+	/**
+	 * @param bool $fIfDoCheck
+	 *
+	 * @return bool
+	 */
+	public function getIfDoCommentsCheck( $fIfDoCheck ) {
+		if ( !$fIfDoCheck ) {
+			return $fIfDoCheck;
+		}
+
+		$oWp = $this->loadWpFunctionsProcessor();
+		if ( $oWp->comments_getIfCommentAuthorPreviouslyApproved( $this->getRawCommentData( 'comment_author_email' ) ) ) {
+			return false;
+		}
+		return $fIfDoCheck;
 	}
 
 	/**
@@ -53,7 +74,6 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	 */
 	public function reset() {
 		parent::reset();
-		$this->sUniqueCommentToken = '';
 		$this->sCommentStatus = '';
 		$this->sCommentStatusExplanation = '';
 	}
@@ -61,6 +81,9 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	/**
 	 */
 	public function run() {
+		$this->reset();
+
+		add_filter( $this->getFeatureOptions()->doPluginPrefix( 'if-do-comments-check' ), array( $this, 'getIfDoCommentsCheck' ) );
 
 		// Add GASP checking to the comment form.
 		add_action(	'comment_form',					array( $this, 'printGaspFormHook_Action' ), 1 );
@@ -69,6 +92,21 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 
 		add_filter( $this->getFeatureOptions()->doPluginPrefix( 'comments_filter_status' ), array( $this, 'getCommentStatus' ), 1 );
 		add_filter( $this->getFeatureOptions()->doPluginPrefix( 'comments_filter_status_explanation' ), array( $this, 'getCommentStatusExplanation' ), 1 );
+	}
+
+	/**
+	 * @param string $sKey
+	 *
+	 * @return array|mixed
+	 */
+	public function getRawCommentData( $sKey = '' ) {
+		if ( !isset( $this->aRawCommentData ) ) {
+			$this->aRawCommentData = array();
+		}
+		if ( !empty( $sKey ) && isset( $this->aRawCommentData[$sKey] ) ) {
+			return $this->aRawCommentData[$sKey];
+		}
+		return $this->aRawCommentData;
 	}
 
 	/**
@@ -96,8 +134,9 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	 * @return array
 	 */
 	public function doCommentChecking( $aCommentData ) {
+		$this->aRawCommentData = $aCommentData;
 
-		if ( !$this->getIfDoCommentsCheck() ) {
+		if ( !apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'if-do-comments-check' ), true ) ) {
 			return $aCommentData;
 		}
 
@@ -166,42 +205,13 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	 * @return void
 	 */
 	public function printGaspFormHook_Action() {
-		
-		if ( !$this->getIfDoCommentsCheck() ) {
+		if ( !$this->getIfDoGaspCheck() ) {
 			return;
 		}
 
 		$this->deleteOldPostCommentTokens();
 		$this->insertUniquePostCommentToken();
 		echo $this->getGaspCommentsHookHtml();
-	}
-	
-	/**
-	 * Tells us whether, for this particular comment post, if we should do comments checking.
-	 * 
-	 * @return boolean
-	 */
-	protected function getIfDoCommentsCheck() {
-
-		// Compatibility with shoutbox WP Wall Plugin
-		// http://wordpress.org/plugins/wp-wall/
-		if ( !$this->getIfDoGaspCheck() ) {
-			return false;
-		}
-
-		//First, are comments allowed on this post?
-		global $post;
-		if ( !isset( $post ) || $post->comment_status != 'open' ) {
-			return false;
-		}
-
-		if ( !is_user_logged_in() ) {
-			return true;
-		}
-		else if ( $this->getIsOption('enable_comments_gasp_protection_for_logged_in', 'Y') ) {
-			return true;
-		}
-		return false;
 	}
 
 	/**
@@ -211,6 +221,14 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	 */
 	protected function getIfDoGaspCheck() {
 
+		if ( !$this->getIsOption( 'enable_comments_gasp_protection', 'Y' ) ) {
+			return false;
+		}
+
+		if ( is_user_logged_in() ) {
+			return false;
+		}
+
 		// Compatibility with shoutbox WP Wall Plugin
 		// http://wordpress.org/plugins/wp-wall/
 		if ( function_exists( 'WPWall_Init' ) ) {
@@ -219,6 +237,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 				return false;
 			}
 		}
+
 		return true;
 	}
 
@@ -236,9 +255,10 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	 * @return void
 	 */
 	public function printGaspFormParts_Action() {
-		if ( $this->getIfDoCommentsCheck() ) {
-			echo $this->getGaspCommentsHtml();
+		if ( !$this->getIfDoGaspCheck() ) {
+			return;
 		}
+		echo $this->getGaspCommentsHtml();
 	}
 	
 	/**

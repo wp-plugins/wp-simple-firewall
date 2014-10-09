@@ -231,6 +231,8 @@ You can either manually upgrade, or WordPress will handle it in due course.
 = 4.1.0 (Coming Soon) =
 
 *   ADDED:      Audit Trail for more WordPress Simple Firewall events such as User Sessions, Login Protections, Comments Filtering etc.
+*   IMPROVED:   Comments Filtering - never processes comments by authors who already have previously approved comments.
+*   REMOVED:    Option to enable GASP Comments Filtering for logged-in users. Simplifies and reduces plugin options and complexity. All logged-in users by-pass **all** comments filtering.
 *   FIXED:      Prevention against redirect loops under certain conditions.
 
 = 4.0.0 =

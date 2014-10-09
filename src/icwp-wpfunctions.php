@@ -51,6 +51,48 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		public function __construct() {}
 
 		/**
+		 * @param WP_Post $oPost
+		 *
+		 * @return bool
+		 */
+		public function comments_getIfCommentsOpen( $oPost = null ) {
+			if ( is_null( $oPost ) ) {
+				global $post;
+				$oPost = $post;
+			}
+			return $oPost->comment_status == 'open';
+		}
+
+		/**
+		 * @param string $sAuthorEmail
+		 *
+		 * @return bool
+		 */
+		public function comments_getIfCommentAuthorPreviouslyApproved( $sAuthorEmail ) {
+
+			if ( empty( $sAuthorEmail ) || !is_email( $sAuthorEmail ) ) {
+				return false;
+			}
+
+			$oDb = $this->loadDbProcessor();
+			$sQuery = "
+				SELECT comment_approved
+				FROM %s
+				WHERE
+					comment_author_email = '%s'
+					AND comment_approved = '1'
+					LIMIT 1
+			";
+
+			$sQuery = sprintf(
+				$sQuery,
+				$oDb->getTable_Comments(),
+				$sAuthorEmail
+			);
+			return $oDb->getVar( $sQuery ) == 1;
+		}
+
+		/**
 		 * The full plugin file to be upgraded.
 		 *
 		 * @param string $sPluginFile
@@ -537,6 +579,14 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 				require_once( dirname(__FILE__).ICWP_DS.'icwp-data-processor.php' );
 			}
 			return ICWP_WPSF_DataProcessor::GetInstance();
+		}
+
+		/**
+		 * @return ICWP_WPSF_WpDb
+		 */
+		public function loadDbProcessor() {
+			require_once( 'icwp-wpdb.php' );
+			return ICWP_WPSF_WpDb::GetInstance();
 		}
 	}
 endif;

@@ -96,6 +96,7 @@ options:
   -
     key: 'enable_comments_gasp_protection_for_logged_in'
     section: 'section_enable_automatic_bot_comment_spam_protection_filter'
+    hidden: true #since version v4.0.1 this has been removed.
     default: 'N'
     type: 'checkbox'
     link_info: ''

@@ -26,6 +26,11 @@ class ICWP_WPSF_Processor_CommentsFilter_HumanSpam extends ICWP_WPSF_Processor_B
 	const TWODAYS = 172800;
 
 	/**
+	 * @var array
+	 */
+	private $aRawCommentData;
+
+	/**
 	 * @var string
 	 */
 	static protected $sSpamBlacklistFile;
@@ -48,6 +53,38 @@ class ICWP_WPSF_Processor_CommentsFilter_HumanSpam extends ICWP_WPSF_Processor_B
 	}
 
 	/**
+	 * @param bool $fIfDoCheck
+	 *
+	 * @return bool
+	 */
+	public function getIfDoCommentsCheck( $fIfDoCheck ) {
+		if ( !$fIfDoCheck ) {
+			return $fIfDoCheck;
+		}
+
+		$oWp = $this->loadWpFunctionsProcessor();
+		if ( $oWp->comments_getIfCommentAuthorPreviouslyApproved( $this->getRawCommentData( 'comment_author_email' ) ) ) {
+			return false;
+		}
+		return $fIfDoCheck;
+	}
+
+	/**
+	 * @param string $sKey
+	 *
+	 * @return array|mixed
+	 */
+	public function getRawCommentData( $sKey = '' ) {
+		if ( !isset( $this->aRawCommentData ) ) {
+			$this->aRawCommentData = array();
+		}
+		if ( !empty( $sKey ) && isset( $this->aRawCommentData[$sKey] ) ) {
+			return $this->aRawCommentData[$sKey];
+		}
+		return $this->aRawCommentData;
+	}
+
+	/**
 	 * Resets the object values to be re-used anew
 	 */
 	public function reset() {
@@ -62,6 +99,7 @@ class ICWP_WPSF_Processor_CommentsFilter_HumanSpam extends ICWP_WPSF_Processor_B
 	public function run() {
 
 		add_filter( $this->getFeatureOptions()->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeWarningAkismetRunning' ) );
+		add_filter( $this->getFeatureOptions()->doPluginPrefix( 'if-do-comments-check' ), array( $this, 'getIfDoCommentsCheck' ) );
 
 		$oDp = $this->loadDataProcessor();
 		$oWp = $this->loadWpFunctionsProcessor();
@@ -111,34 +149,13 @@ class ICWP_WPSF_Processor_CommentsFilter_HumanSpam extends ICWP_WPSF_Processor_B
 	}
 
 	/**
-	 * Tells us whether, for this particular comment post, if we should do comments checking.
-	 *
-	 * @return boolean
-	 */
-	protected function getIfDoCommentsCheck() {
-
-		// First, are comments allowed on this post?
-		global $post;
-		if ( !isset( $post ) || $post->comment_status != 'open' ) {
-			return false;
-		}
-
-		if ( !is_user_logged_in() ) {
-			return true;
-		}
-		else if ( $this->getIsOption('enable_comments_gasp_protection_for_logged_in', 'Y') ) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
 	 * @param array $aCommentData
 	 * @return array
 	 */
 	public function doCommentChecking( $aCommentData ) {
+		$this->aRawCommentData = $aCommentData;
 
-		if ( !$this->getIfDoCommentsCheck() ) {
+		if ( !apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'if-do-comments-check' ), true ) ) {
 			return $aCommentData;
 		}
 

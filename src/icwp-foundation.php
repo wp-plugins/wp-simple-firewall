@@ -27,6 +27,14 @@ class ICWP_WPSF_Foundation {
 	}
 
 	/**
+	 * @return ICWP_WPSF_WpDb
+	 */
+	public function loadDbProcessor() {
+		require_once( 'icwp-wpdb.php' );
+		return ICWP_WPSF_WpDb::GetInstance();
+	}
+
+	/**
 	 * @return ICWP_WPSF_YamlProcessor
 	 */
 	public function loadYamlProcessor() {

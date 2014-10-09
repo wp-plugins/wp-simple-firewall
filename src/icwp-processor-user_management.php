@@ -441,7 +441,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		$aNewData = array(
 			'last_activity_uri'	=> $oDp->FetchServer( 'REQUEST_URI' )
 		);
-		$mResult = $this->updateCurrentSession( $oUser->user_login, $aNewData );
+		$mResult = $this->updateCurrentSession( $oUser->get( 'user_login' ), $aNewData );
 		return $mResult;
 	}
 
