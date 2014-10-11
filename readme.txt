@@ -18,7 +18,7 @@ The WordPress Simple Firewall is [all you need to secure your WordPress](http://
 The **only** WordPress security plugin with a WordPress-independent security key to protects itself. [more info](http://icwp.io/wpsf05)
 
 = Audit Trail Activity Monitor =
-The **only** WordPress security plugin with a WordPress-independent security key to protects itself. [more info](http://icwp.io/wpsf05)
+With the Audit Trail you can review all major actions that have taken place on your WordPress site, by all users.
 
 = Firewall Protection =
 Blocks all web requests to the site that violate the firewall rules with easy setup! [more info](http://icwp.io/wpsf06)
