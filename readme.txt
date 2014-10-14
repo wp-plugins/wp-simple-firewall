@@ -228,11 +228,18 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 == Changelog ==
 
-= 4.1.0 (Coming Soon) =
-
+= 4.2.0 (Coming Soon) =
+*   ADDED:      Audit Trail Improvements for auto-cleaning and export
 *   ADDED:      Audit Trail for more WordPress Simple Firewall events such as User Sessions, Login Protections, Comments Filtering etc.
-*   IMPROVED:   Comments Filtering - never processes comments by authors who already have previously approved comments.
-*   REMOVED:    Option to enable GASP Comments Filtering for logged-in users. Simplifies and reduces plugin options and complexity. All logged-in users by-pass **all** comments filtering.
+
+= 4.1.0 =
+
+*   WARNING:    Due to new IPv6 support, all databases tables will be rebuilt - all user sessions will be destroyed.
+*   ADDED:      Preliminary support for IPv6 addresses throughout. We don't support whitelist ranges but IPv6 addresses are handled much more reliably in general.
+*   ADDED:      New audit trail concept added called "immutable" that represents entries that will never be deleted - such entries would usually involve actions taken on the audit trail itself.
+*   FIXED:      Support for audit trail events with longer names
+*   IMPROVED:   Comments Filtering - It now honours the WordPress settings for previously approved comment authors and never filters such comments.
+*   REMOVED:    Option to enable GASP Comments Filtering for logged-in users has been completely removed - this reduces plugin options complexity. All logged-in users by-pass **all** comments filtering.
 *   FIXED:      Prevention against redirect loops under certain conditions.
 
 = 4.0.0 =

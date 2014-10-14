@@ -123,10 +123,10 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 				return;
 			}
 
-			$nIp = $this->loadDataProcessor()->GetVisitorIpAddress();
+			$sIp = $this->loadDataProcessor()->getVisitorIpAddress( true );
 			foreach( $aEntries as $aEntry ) {
-				if ( empty( $aEntry['ip_long'] ) ) {
-					$aEntry['ip_long'] = $nIp;
+				if ( empty( $aEntry['ip'] ) ) {
+					$aEntry['ip'] = $sIp;
 				}
 				if ( is_array( $aEntry['message'] ) ) {
 					$aEntry['message'] = implode( ' ', $aEntry['message'] );
@@ -148,15 +148,16 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		protected function getCreateTableSql() {
 			$sSqlTables = "
 				CREATE TABLE IF NOT EXISTS `%s` (
-				`id` INT(11) NOT NULL AUTO_INCREMENT,
-				`ip_long` bigint(20) NOT NULL DEFAULT '0',
+				`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				`ip` VARCHAR(40) NOT NULL DEFAULT '0',
 				`wp_username` VARCHAR(255) NOT NULL DEFAULT 'none',
-				`context` VARCHAR(25) NOT NULL DEFAULT 'none',
-				`event` VARCHAR(25) NOT NULL DEFAULT 'none',
-				`category` INT(3) NOT NULL DEFAULT '0',
+				`context` VARCHAR(32) NOT NULL DEFAULT 'none',
+				`event` VARCHAR(50) NOT NULL DEFAULT 'none',
+				`category` INT(3) UNSIGNED NOT NULL DEFAULT '0',
 				`message` TEXT,
-				`created_at` INT(15) NOT NULL DEFAULT '0',
-				`deleted_at` INT(15) NOT NULL DEFAULT '0',
+				`immutable` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
+				`created_at` INT(15) UNSIGNED NOT NULL DEFAULT '0',
+				`deleted_at` INT(15) UNSIGNED NOT NULL DEFAULT '0',
 				PRIMARY KEY (`id`)
 			) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
@@ -202,7 +203,7 @@ class ICWP_WPSF_AuditTrail_Entries {
 		}
 
 		$aNewEntry = array(
-			'ip_long' => $oDp->GetVisitorIpAddress(),
+			'ip' => $oDp->getVisitorIpAddress( true ),
 			'created_at' => $oDp->GetRequestTime(),
 			'wp_username' => $sWpUsername,
 			'context' => $sContext,

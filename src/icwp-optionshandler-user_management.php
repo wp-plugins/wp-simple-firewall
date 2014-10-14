@@ -198,6 +198,15 @@ class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_B
 	public function getUserSessionCookieName() {
 		return $this->getOpt( 'user_session_cookie_name' );
 	}
+
+	/**
+	 */
+	protected function updateHandler() {
+		parent::updateHandler();
+		if ( version_compare( $this->getVersion(), '4.1.0', '<' ) ) {
+			$this->setOpt( 'recreate_database_table', true );
+		}
+	}
 }
 
 endif;

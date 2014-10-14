@@ -92,11 +92,13 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 			$fVerified = false;
 			$aUserAuthData = $this->query_GetActiveAuthForUser( $oUser );
 
+			$oDp = $this->loadDataProcessor();
+			$sVisitorIp = $oDp->getVisitorIpAddress( true );
 			if ( !is_null( $aUserAuthData ) ) {
 
 				// Now we test based on which types of 2-factor auth is enabled
 				$fVerified = true;
-				if ( $this->getFeatureOptions()->getIsTwoFactorAuthOn('ip') && ( self::$nRequestIp != $aUserAuthData['ip_long'] ) ) {
+				if ( $this->getFeatureOptions()->getIsTwoFactorAuthOn('ip') && ( $sVisitorIp != $aUserAuthData['ip'] ) ) {
 					$fVerified = false;
 				}
 
@@ -106,7 +108,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 			}
 
 			if ( !$fVerified ) {
-				$sAuditMessage = sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address: "%s".'), $oUser->user_login, long2ip( self::$nRequestIp ) );
+				$sAuditMessage = sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address: "%s".'), $oUser->user_login, $oDp->getVisitorIpAddress( true ) );
 				$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_two_factor_unverified_ip', $oUser->user_login );
 			}
 
@@ -286,8 +288,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 			// Now add new pending entry
 			$aNewData = array();
 			$aNewData[ 'unique_id' ]	= uniqid();
-			$aNewData[ 'ip_long' ]		= self::$nRequestIp;
-			$aNewData[ 'ip' ]			= long2ip( self::$nRequestIp );
+			$aNewData[ 'ip' ]			= $this->loadDataProcessor()->getVisitorIpAddress( true );
 			$aNewData[ 'wp_username' ]	= $sUsername;
 			$aNewData[ 'pending' ]		= 1;
 			$aNewData[ 'created_at' ]	= self::$nRequestTimestamp;
@@ -478,15 +479,14 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 		 */
 		public function getCreateTableSql() {
 			$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
-				`id` int(11) NOT NULL AUTO_INCREMENT,
+				`id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 				`unique_id` varchar(20) NOT NULL DEFAULT '',
 				`wp_username` varchar(255) NOT NULL DEFAULT '',
-				`ip` varchar(20) NOT NULL DEFAULT '',
-				`ip_long` bigint(20) NOT NULL DEFAULT '0',
-				`pending` int(1) NOT NULL DEFAULT '0',
-				`created_at` int(15) NOT NULL DEFAULT '0',
-				`deleted_at` int(15) NOT NULL DEFAULT '0',
-				`expired_at` int(15) NOT NULL DEFAULT '0',
+				`ip` varchar(40) NOT NULL DEFAULT '',
+				`pending` TINYINT(1) NOT NULL DEFAULT '0',
+				`created_at` INT(15) UNSIGNED NOT NULL DEFAULT '0',
+				`deleted_at` INT(15) UNSIGNED NOT NULL DEFAULT '0',
+				`expired_at` INT(15) UNSIGNED NOT NULL DEFAULT '0',
 				PRIMARY KEY (`id`)
 			) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 			return sprintf( $sSqlTables, $this->getTableName() );

@@ -41,7 +41,7 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 
 		$oAuditTrail = $this->loadFeatureProcessor();
 		$aData = array(
-			'nYourIp'			=> $this->loadDataProcessor()->GetVisitorIpAddress(),
+			'nYourIp'			=> $this->loadDataProcessor()->getVisitorIpAddress( true ),
 			'sFeatureName'		=> _wpsf__('Audit Trail Viewer'),
 			'aAuditDataUsers'	=> $oAuditTrail->getAuditEntriesForContext( 'users' ),
 			'aAuditDataPlugins'	=> $oAuditTrail->getAuditEntriesForContext( 'plugins' ),
@@ -151,6 +151,15 @@ class ICWP_WPSF_FeatureHandler_AuditTrail_V1 extends ICWP_WPSF_FeatureHandler_Ba
 		$aOptionsParams['summary'] = $sSummary;
 		$aOptionsParams['description'] = $sDescription;
 		return $aOptionsParams;
+	}
+
+	/**
+	 */
+	protected function updateHandler() {
+		parent::updateHandler();
+		if ( version_compare( $this->getVersion(), '4.1.0', '<' ) ) {
+			$this->setOpt( 'recreate_database_table', true );
+		}
 	}
 }
 

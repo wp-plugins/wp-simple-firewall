@@ -27,6 +27,7 @@ class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base
 	protected $oFeatureOptions;
 
 	/**
+	 * @param ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
@@ -73,7 +74,7 @@ class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base
 	 * @param null|WP_User|WP_Error $oUser
 	 * @param string $sUsername
 	 * @param string $sPassword
-	 * @return unknown|WP_Error
+	 * @return WP_User|WP_Error
 	 */
 	public function checkLoginInterval( $oUser, $sUsername, $sPassword ) {
 		// No login attempt was made and we do nothing

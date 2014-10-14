@@ -171,3 +171,7 @@ options:
     key: 'spambot_comments_filter_table_name'
     section: 'section_non_ui'
     value: 'spambot_comments_filter'
+  -
+    key: 'recreate_database_table'
+    section: 'section_non_ui'
+    default: false

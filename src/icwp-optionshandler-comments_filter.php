@@ -202,6 +202,15 @@ class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_B
 	public function getCommentsFilterTableName() {
 		return $this->doPluginPrefix( $this->getOpt( 'spambot_comments_filter_table_name' ), '_' );
 	}
+
+	/**
+	 */
+	protected function updateHandler() {
+		parent::updateHandler();
+		if ( version_compare( $this->getVersion(), '4.1.0', '<' ) ) {
+			$this->setOpt( 'recreate_database_table', true );
+		}
+	}
 }
 
 endif;

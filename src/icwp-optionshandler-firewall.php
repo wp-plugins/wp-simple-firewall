@@ -192,7 +192,7 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 				$sName = _wpsf__( 'Whitelist IP Addresses' );
 				$sSummary = _wpsf__( 'Choose IP Addresses that are never subjected to Firewall Rules' );
 				$sDescription = _wpsf__( 'Take a new line per address.' )
-					.'<br />'.sprintf( _wpsf__( 'Your IP address is: %s' ), '<span class="code">'.( $oDp->GetVisitorIpAddress( false ) ).'</span>' );
+					.'<br />'.sprintf( _wpsf__( 'Your IP address is: %s' ), '<span class="code">'.( $oDp->getVisitorIpAddress( true ) ).'</span>' );
 				break;
 
 			case 'page_params_whitelist' :
@@ -266,7 +266,7 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 			$aNewList[ $sAddress ] = '';
 		}
 		$oDp = $this->loadDataProcessor();
-		$this->setOpt( $insListName, $oDp->Add_New_Raw_Ips( $aIplist, $aNewList ) );
+		$this->setOpt( $insListName, $oDp->addNewRawIps( $aIplist, $aNewList ) );
 	}
 
 	public function removeRawIpsFromFirewallList( $insListName, $inaRemoveIps ) {
@@ -279,7 +279,7 @@ class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 			return;
 		}
 		$oDp = $this->loadDataProcessor();
-		$this->setOpt( $insListName, $oDp->Remove_Raw_Ips( $aIplist, $inaRemoveIps ) );
+		$this->setOpt( $insListName, $oDp->removeRawIps( $aIplist, $inaRemoveIps ) );
 	}
 	
 }

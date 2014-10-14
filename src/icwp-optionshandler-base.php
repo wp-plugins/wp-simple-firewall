@@ -551,18 +551,24 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			}
 		}
 
-		protected function convertIpListForDisplay( $inaIpList = array() ) {
+		/**
+		 * @param array $aIpList
+		 *
+		 * @return array
+		 */
+		protected function convertIpListForDisplay( $aIpList = array() ) {
 
 			$aDisplay = array();
-			if ( empty( $inaIpList ) || empty( $inaIpList['ips'] ) ) {
+			if ( empty( $aIpList ) || empty( $aIpList['ips'] ) ) {
 				return $aDisplay;
 			}
-			foreach( $inaIpList['ips'] as $sAddress ) {
+
+			foreach( $aIpList['ips'] as $sAddress ) {
 				// offset=1 in the case that it's a range and the first number is negative on 32-bit systems
 				$mPos = strpos( $sAddress, '-', 1 );
 
 				if ( $mPos === false ) { //plain IP address
-					$sDisplayText = long2ip( $sAddress );
+					$sDisplayText = is_long( $sAddress ) ? long2ip( $sAddress ) : $sAddress;
 				}
 				else {
 					//we remove the first character in case this is '-'
@@ -570,7 +576,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 					list( $nStart, $nEnd ) = explode( '-', $aParts[1], 2 );
 					$sDisplayText = long2ip( $aParts[0].$nStart ) .'-'. long2ip( $nEnd );
 				}
-				$sLabel = $inaIpList['meta'][ md5($sAddress) ];
+				$sLabel = $aIpList['meta'][ md5($sAddress) ];
 				$sLabel = trim( $sLabel, '()' );
 				$aDisplay[] = $sDisplayText . ' ('.$sLabel.')';
 			}
@@ -680,7 +686,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 						$sOptionValue = md5( $sTempValue );
 					}
 					else if ( $sOptionType == 'ip_addresses' ) { //ip addresses are textareas, where each is separated by newline
-						$sOptionValue = $oDp->ExtractIpAddresses( $sOptionValue );
+						$sOptionValue = $oDp->extractIpAddresses( $sOptionValue );
 					}
 					else if ( $sOptionType == 'yubikey_unique_keys' ) { //ip addresses are textareas, where each is separated by newline and are 12 chars long
 						$sOptionValue = $oDp->CleanYubikeyUniqueKeys( $sOptionValue );
@@ -689,7 +695,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 						$sOptionValue = '';
 					}
 					else if ( $sOptionType == 'comma_separated_lists' ) {
-						$sOptionValue = $oDp->ExtractCommaSeparatedList( $sOptionValue );
+						$sOptionValue = $oDp->extractCommaSeparatedList( $sOptionValue );
 					}
 					else if ( $sOptionType == 'multiple_select' ) {
 					}
@@ -750,12 +756,12 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * @param string $insExistingListKey
-		 * @param string $insFilterName
+		 * @param string $sExistingListKey
+		 * @param string $sFilterName
 		 * @return array|false
 		 */
-		protected function processIpFilter( $insExistingListKey, $insFilterName ) {
-			$aFilterIps = apply_filters( $insFilterName, array() );
+		protected function processIpFilter( $sExistingListKey, $sFilterName ) {
+			$aFilterIps = apply_filters( $sFilterName, array() );
 			if ( empty( $aFilterIps ) ) {
 				return false;
 			}
@@ -774,16 +780,16 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			}
 
 			// now add and store the new IPs
-			$aExistingIpList = $this->getOpt( $insExistingListKey );
+			$aExistingIpList = $this->getOpt( $sExistingListKey );
 			if ( !is_array( $aExistingIpList ) ) {
 				$aExistingIpList = array();
 			}
 
 			$oDp = $this->loadDataProcessor();
 			$nNewAddedCount = 0;
-			$aNewList = $oDp->Add_New_Raw_Ips( $aExistingIpList, $aNewIps, $nNewAddedCount );
+			$aNewList = $oDp->addNewRawIps( $aExistingIpList, $aNewIps, $nNewAddedCount );
 			if ( $nNewAddedCount > 0 ) {
-				$this->setOpt( $insExistingListKey, $aNewList );
+				$this->setOpt( $sExistingListKey, $aNewList );
 			}
 		}
 

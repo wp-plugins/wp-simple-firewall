@@ -23,11 +23,11 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		const PcreDelimiter = '/';
 
 		/**
-		 * @var long
+		 * @var int
 		 */
 		protected static $nRequestIp;
 		/**
-		 * @var long
+		 * @var int
 		 */
 		protected static $nRequestPostId;
 		/**
@@ -66,9 +66,6 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 */
 		public function reset() {
 			$oDp = $this->loadDataProcessor();
-			if ( !isset( self::$nRequestIp ) ) {
-				self::$nRequestIp = $oDp->GetVisitorIpAddress();
-			}
 			if ( !isset( self::$nRequestTimestamp ) ) {
 				self::$nRequestTimestamp = $oDp->GetRequestTime();
 			}
@@ -81,8 +78,8 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 
 		/**
 		 * @param $sOptionKey
-		 * @param bool $mDefault
-		 * @return bool
+		 * @param mixed $mDefault
+		 * @return mixed
 		 */
 		public function getOption( $sOptionKey, $mDefault = false ) {
 			return $this->getFeatureOptions()->getOpt( $sOptionKey, $mDefault );
@@ -100,7 +97,7 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		}
 
 		/**
-		 * @return bool|long
+		 * @return bool|int
 		 */
 		public function getRequestPostId() {
 			if ( !isset( self::$nRequestPostId ) ) {
@@ -114,6 +111,8 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		}
 
 		/**
+		 * @param array $aAuditEntries
+		 *
 		 * @return array
 		 */
 		public function getAuditEntry( $aAuditEntries ) {
@@ -127,6 +126,7 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 * @param string $sAdditionalMessage
 		 * @param int $nCategory
 		 * @param string $sEvent
+		 * @param string $sWpUsername
 		 */
 		protected function addToAuditEntry( $sAdditionalMessage = '', $nCategory = 1, $sEvent = '', $sWpUsername = '' ) {
 			if ( !isset( $this->aAuditEntry ) ) {
@@ -198,30 +198,30 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		}
 
 		/**
-		 * @param array $inaIpList
-		 * @param integer $innIpAddress
+		 * @param array $aIpList
+		 * @param integer $nIpAddress
 		 * @param string $outsLabel
 		 * @return boolean
 		 */
-		public function isIpOnlist( $inaIpList, $innIpAddress = 0, &$outsLabel = '' ) {
+		public function isIpOnlist( $aIpList, $nIpAddress = 0, &$outsLabel = '' ) {
 
-			if ( empty( $innIpAddress ) || !isset( $inaIpList['ips'] ) ) {
+			if ( empty( $nIpAddress ) || empty( $aIpList['ips'] ) || !is_array( $aIpList['ips'] ) ) {
 				return false;
 			}
 
 			$outsLabel = '';
-			foreach( $inaIpList['ips'] as $mWhitelistAddress ) {
+			foreach( $aIpList['ips'] as $mWhitelistAddress ) {
 
 				$aIps = $this->parseIpAddress( $mWhitelistAddress );
 				if ( count( $aIps ) === 1 ) { //not a range
-					if ( $innIpAddress == $aIps[0] ) {
-						$outsLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
+					if ( $nIpAddress == $aIps[0] ) {
+						$outsLabel = $aIpList['meta'][ md5( $mWhitelistAddress ) ];
 						return true;
 					}
 				}
 				else if ( count( $aIps ) == 2 ) {
-					if ( $aIps[0] <= $innIpAddress && $innIpAddress <= $aIps[1] ) {
-						$outsLabel = $inaIpList['meta'][ md5( $mWhitelistAddress ) ];
+					if ( $aIps[0] <= $nIpAddress && $nIpAddress <= $aIps[1] ) {
+						$outsLabel = $aIpList['meta'][ md5( $mWhitelistAddress ) ];
 						return true;
 					}
 				}
@@ -236,15 +236,14 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		protected function parseIpAddress( $sIpAddress ) {
 
 			$aIps = array();
-
-			if ( empty($sIpAddress) ) {
+			if ( empty( $sIpAddress ) ) {
 				return $aIps;
 			}
 
 			// offset=1 in the case that it's a range and the first number is negative on 32-bit systems
 			$mPos = strpos( $sIpAddress, '-', 1 );
 
-			if ( $mPos === false ) { //plain IP address
+			if ( $mPos === false ) { // plain IP address
 				$aIps[] = $sIpAddress;
 			}
 			else {
@@ -324,6 +323,16 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 			} else {
 				return $sFullNotice;
 			}
+		}
+
+		/**
+		 * @return bool|int
+		 */
+		protected function ip() {
+			if ( empty( self::$nRequestIp ) ) {
+				self::$nRequestIp = $this->loadDataProcessor()->getVisitorIpAddress( false );
+			}
+			return self::$nRequestIp;
 		}
 	}
 

@@ -68,11 +68,11 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 		$fIsPost = $oDp->GetIsRequestPost();
 
 		$aWhitelist = $this->getOption( 'ips_whitelist', array() );
-		if ( !empty( $aWhitelist ) && $this->isIpOnlist( $aWhitelist, self::$nRequestIp ) ) {
+		if ( $this->isIpOnlist( $aWhitelist, $this->ip() ) ) {
 			return true;
 		}
 
-		$oWp = $this->oFeatureOptions->loadWpFunctionsProcessor();
+		$oWp = $this->loadWpFunctionsProcessor();
 		// XML-RPC Compatibility
 		if ( $oWp->getIsXmlrpc() && $this->getIsOption( 'enable_xmlrpc_compatibility', 'Y' ) ) {
 			return true;
@@ -102,6 +102,7 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 		}
 
 		add_filter( 'wp_login_errors', array( $this, 'addLoginMessage' ) );
+		return true;
 	}
 
 	/**

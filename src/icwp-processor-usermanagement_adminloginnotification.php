@@ -63,7 +63,7 @@ class ICWP_WPSF_Processor_UserManagement_AdminLoginNotification extends ICWP_WPS
 			_wpsf__( 'Details for this user are below:' ),
 			'- '.sprintf( _wpsf__( 'Site URL: %s' ), home_url() ),
 			'- '.sprintf( _wpsf__( 'Username: %s' ), $sUsername ),
-			'- '.sprintf( _wpsf__( 'IP Address: %s' ), $oDp->GetVisitorIpAddress( false ) ),
+			'- '.sprintf( _wpsf__( 'IP Address: %s' ), $oDp->getVisitorIpAddress( true ) ),
 			_wpsf__( 'Thanks.' )
 		);
 

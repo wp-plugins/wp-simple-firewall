@@ -129,7 +129,7 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 				$sSummary = _wpsf__( 'Specify IP Addresses that by-pass all Login Protect rules' );
 				$sDescription = sprintf(
 					_wpsf__( 'Take a new line per address. Your IP address is: %s' ),
-					'<span class="code">'.( $oDp->GetVisitorIpAddress( false ) ).'</span>'
+					'<span class="code">'.( $oDp->getVisitorIpAddress( true ) ).'</span>'
 				);
 				break;
 
@@ -331,6 +331,15 @@ class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Bas
 			default:
 				return $fIp || $fCookie;
 				break;
+		}
+	}
+
+	/**
+	 */
+	protected function updateHandler() {
+		parent::updateHandler();
+		if ( version_compare( $this->getVersion(), '4.1.0', '<' ) ) {
+			$this->setOpt( 'recreate_database_table', true );
 		}
 	}
 }

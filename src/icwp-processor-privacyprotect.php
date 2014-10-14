@@ -144,15 +144,15 @@ if ( !class_exists('ICWP_PrivacyProtectProcessor_V1') ):
 		 */
 		public function getCreateTableSql() {
 			$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
-				`id` int(11) NOT NULL AUTO_INCREMENT,
+				`id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 				`request_url` varchar(255) NOT NULL DEFAULT '',
 				`request_port` mediumint(5) UNSIGNED NOT NULL DEFAULT 80,
 				`request_method` varchar(4) NOT NULL DEFAULT 'GET',
 				`request_args` text NOT NULL DEFAULT '',
 				`is_ssl` tinyint(1) NOT NULL DEFAULT 0,
 				`is_error` tinyint(1) NOT NULL DEFAULT 0,
-				`requested_at` int(15) NOT NULL DEFAULT 0,
-				`deleted_at` int(15) NOT NULL DEFAULT 0,
+				`requested_at` int(15) UNSIGNED NOT NULL DEFAULT 0,
+				`deleted_at` int(15) UNSIGNED NOT NULL DEFAULT 0,
 				PRIMARY KEY (`id`)
 			) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 			return sprintf( $sSqlTables, $this->getTableName() );

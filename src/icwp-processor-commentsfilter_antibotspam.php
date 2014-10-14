@@ -63,7 +63,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 		}
 
 		$oWp = $this->loadWpFunctionsProcessor();
-		if ( $oWp->comments_getIfCommentAuthorPreviouslyApproved( $this->getRawCommentData( 'comment_author_email' ) ) ) {
+		if ( ( $oWp->getOption( 'comment_whitelist' ) == 1 ) && $oWp->comments_getIfCommentAuthorPreviouslyApproved( $this->getRawCommentData( 'comment_author_email' ) ) ) {
 			return false;
 		}
 		return $fIfDoCheck;
@@ -383,14 +383,14 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 			WHERE
 				`unique_token`		= '%s'
 				AND `post_id`		= '%s'
-				AND `ip_long`		= '%s'
+				AND `ip`			= '%s'
 				AND `deleted_at`	= '0'
 		";
 		$sQuery = sprintf( $sQuery,
 			$this->getTableName(),
 			$sToken,
 			$sPostId,
-			self::$nRequestIp
+			$this->loadDataProcessor()->getVisitorIpAddress( true )
 		);
 		$mResult = $this->selectCustomFromTable( $sQuery );
 
@@ -416,25 +416,25 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	public function getCreateTableSql() {
 		// Set up comments ID table
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
-			`id` int(11) NOT NULL AUTO_INCREMENT,
+			`id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 			`post_id` int(11) NOT NULL DEFAULT '0',
-			`unique_token` varchar(32) NOT NULL DEFAULT '',
-			`ip_long` bigint(20) NOT NULL DEFAULT '0',
-			`created_at` int(15) NOT NULL DEFAULT '0',
-			`deleted_at` int(15) NOT NULL DEFAULT '0',
+			`unique_token` VARCHAR(32) NOT NULL DEFAULT '',
+			`ip` VARCHAR(40) NOT NULL DEFAULT '0',
+			`created_at` int(15) UNSIGNED NOT NULL DEFAULT '0',
+			`deleted_at` int(15) UNSIGNED NOT NULL DEFAULT '0',
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 		return sprintf( $sSqlTables, $this->getTableName() );
 	}
 
 	/**
-	 * @param string $insUniqueToken
-	 * @param string $insPostId
-	 * @param boolean $infSoftDelete
+	 * @param string $sUniqueToken
+	 * @param string $sPostId
+	 * @param boolean $fSoftDelete
 	 */
-	protected function deleteUniquePostCommentToken( $insUniqueToken, $insPostId, $infSoftDelete = false ) {
+	protected function deleteUniquePostCommentToken( $sUniqueToken, $sPostId, $fSoftDelete = false ) {
 
-		if ( $infSoftDelete ) {
+		if ( $fSoftDelete ) {
 			$sQuery = "
 					UPDATE `%s`
 						SET `deleted_at`	= '%s'
@@ -445,14 +445,14 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 			$sQuery = sprintf( $sQuery,
 				$this->getTableName(),
 				self::$nRequestTimestamp,
-				$insUniqueToken,
-				$insPostId
+				$sUniqueToken,
+				$sPostId
 			);
 			$this->doSql( $sQuery );
 		}
 		else {
-			$aWhere['unique_token']	= $insUniqueToken;
-			$aWhere['post_id']		= $insPostId;
+			$aWhere['unique_token']	= $sUniqueToken;
+			$aWhere['post_id']		= $sPostId;
 			$this->deleteRowsFromTable( $aWhere );
 		}
 	}
@@ -465,25 +465,26 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 
 		$nPostIdToDelete = empty( $sPostId ) ? $this->getRequestPostId() : $sPostId;
 
+		$sIp = $this->loadDataProcessor()->getVisitorIpAddress( true );
 		if ( $fSoftDelete ) {
 			$sQuery = "
 					UPDATE `%s`
 						SET `deleted_at`	= '%s'
 					WHERE
-						`ip_long`			= '%s'
+						`ip`			= '%s'
 						AND `post_id`		= '%s'
 				";
 			$sQuery = sprintf( $sQuery,
 				$this->getTableName(),
 				self::$nRequestTimestamp,
-				self::$nRequestIp,
+				$sIp,
 				$nPostIdToDelete
 			);
 			$this->doSql( $sQuery );
 		}
 		else {
 			$aWhere = array();
-			$aWhere['ip_long']		= self::$nRequestIp;
+			$aWhere['ip']	    	= $sIp;
 			$aWhere['post_id']		= $nPostIdToDelete;
 			$this->deleteRowsFromTable( $aWhere );
 		}
@@ -497,7 +498,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 		$aData = array();
 		$aData[ 'post_id' ]			= $this->getRequestPostId();
 		$aData[ 'unique_token' ]	= $this->getUniqueCommentToken();
-		$aData[ 'ip_long' ]			= self::$nRequestIp;
+		$aData[ 'ip' ]		    	= $this->loadDataProcessor()->getVisitorIpAddress( true );
 		$aData[ 'created_at' ]		= self::$nRequestTimestamp;
 		
 		$mResult = $this->insertIntoTable( $aData );
@@ -508,7 +509,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	 * @return string
 	 */
 	protected function generateUniqueToken() {
-		$sToken = uniqid( self::$nRequestIp.self::$nRequestTimestamp.$this->getRequestPostId() );
+		$sToken = uniqid( $this->ip().self::$nRequestTimestamp.$this->getRequestPostId() );
 		return md5( $sToken );
 	}
 

@@ -20,8 +20,8 @@ function printSessionTable( $aSessionsData ) {
 				<td><?php echo date( 'Y/m/d H:i:s', $aSessionData['last_activity_at'] ); ?></td>
 				<td><?php echo $aSessionData['last_activity_uri']; ?></td>
 				<td>
-					<a href="http://whois.domaintools.com/<?php echo long2ip( $aSessionData['ip_long'] ); ?>" target="_blank">
-						<?php echo long2ip( $aSessionData['ip_long'] ); ?>
+					<a href="http://whois.domaintools.com/<?php echo $aSessionData['ip']; ?>" target="_blank">
+						<?php echo $aSessionData['ip']; ?>
 					</a>
 				</td>
 				<td><?php echo $aSessionData['login_attempts']; ?></td>

@@ -106,7 +106,7 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 			}
 
 			// Check if the visitor is excluded from the firewall from the outset.
-			if ( self::$nRequestIp !== false && $this->isVisitorOnWhitelist() ) {
+			if ( $this->isVisitorOnWhitelist() ) {
 				$sAuditMessage =  _wpsf__('Visitor is white-listed by IP Address.')
 					.' '.sprintf( _wpsf__('Label: %s.'), empty( $this->m_sListItemLabel )? _wpsf__('No label') : $this->m_sListItemLabel );
 				$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
@@ -115,7 +115,7 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 			}
 
 			// Check if the visitor is excluded from the firewall from the outset.
-			if ( self::$nRequestIp !== false && $this->isVisitorOnBlacklist() ) {
+			if ( $this->isVisitorOnBlacklist() ) {
 				$this->sFirewallDieMessage .= ' Your IP is Blacklisted.';
 				$sAuditMessage =  _wpsf__('Visitor was black-listed by IP Address.')
 					.' '.sprintf( _wpsf__('Label: %s.'), empty( $this->m_sListItemLabel )? _wpsf__('No label') : $this->m_sListItemLabel );
@@ -603,11 +603,11 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 		}
 
 		public function isVisitorOnWhitelist() {
-			return $this->isIpOnlist( $this->getOption( 'ips_whitelist', array() ), self::$nRequestIp, $this->m_sListItemLabel );
+			return $this->isIpOnlist( $this->getOption( 'ips_whitelist', array() ), $this->ip(), $this->m_sListItemLabel );
 		}
 
 		public function isVisitorOnBlacklist() {
-			return $this->isIpOnlist( $this->getOption( 'ips_blacklist', array() ), self::$nRequestIp, $this->m_sListItemLabel );
+			return $this->isIpOnlist( $this->getOption( 'ips_blacklist', array() ), $this->ip(), $this->m_sListItemLabel );
 		}
 
 		/**
@@ -616,7 +616,7 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 		 */
 		protected function sendBlockEmail( $sRecipient ) {
 
-			$sIp = long2ip( self::$nRequestIp );
+			$sIp = $this->loadDataProcessor()->getVisitorIpAddress( true );
 			$aMessage = array(
 				_wpsf__('WordPress Simple Firewall has blocked a page visit to your site.'),
 				_wpsf__('Log details for this visitor are below:'),

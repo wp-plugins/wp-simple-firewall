@@ -28,8 +28,8 @@ function printAuditTrailTable( $sTitle, $aAuditData, $nYourIp = -1 ) {
 				<td><?php echo $aAuditEntry['wp_username']; ?></td>
 				<td><?php echo $aAuditEntry['category']; ?></td>
 				<td>
-					<?php echo long2ip( $aAuditEntry['ip_long'] ); ?>
-					<?php echo ( $nYourIp == $aAuditEntry['ip_long'] ) ? '<br />('._wpsf__('You').')' : ''; ?>
+					<?php echo $aAuditEntry['ip']; ?>
+					<?php echo ( $nYourIp == $aAuditEntry['ip'] ) ? '<br />('._wpsf__('You').')' : ''; ?>
 				</td>
 			</tr>
 		<?php endforeach; ?>

@@ -17,12 +17,12 @@
  *
  */
 
-if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
+if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 
-	class ICWP_WPSF_DataProcessor_V3 {
+	class ICWP_WPSF_DataProcessor_V4 {
 
 		/**
-		 * @var ICWP_WPSF_DataProcessor_V3
+		 * @var ICWP_WPSF_DataProcessor_V4
 		 */
 		protected static $oInstance = NULL;
 
@@ -34,7 +34,12 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 		/**
 		 * @var string
 		 */
-		protected static $sIpAddress;
+		protected static $sIpAddress = false;
+
+		/**
+		 * @var string
+		 */
+		protected static $nIpAddressVersion = false;
 
 		/**
 		 * @var integer
@@ -52,16 +57,30 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 		}
 
 		/**
-		 * Cloudflare compatible.
 		 *
-		 * @param boolean $fAsLong
+		 * @param boolean $fAsHuman
 		 * @return bool|integer - visitor IP Address as IP2Long
 		 */
-		public static function GetVisitorIpAddress( $fAsLong = true ) {
+		public function getVisitorIpAddress( $fAsHuman = true ) {
 
-			if ( !empty( self::$sIpAddress ) ) {
-				return $fAsLong? ip2long( self::$sIpAddress ) : self::$sIpAddress;
+			if ( empty( self::$sIpAddress ) ) {
+				self::$sIpAddress = $this->findViableVisitorIp();
 			}
+
+			if ( !self::$sIpAddress || $fAsHuman ) {
+				return self::$sIpAddress;
+			}
+
+			// If it's IPv6 we never return as long (we can't!)
+			return ( $this->getVisitorIpVersion() == 4 ) ? ip2long( self::$sIpAddress ) : self::$sIpAddress;
+		}
+
+		/**
+		 * Cloudflare compatible.
+		 *
+		 * @return string|bool
+		 */
+		protected function findViableVisitorIp() {
 
 			$aAddressSourceOptions = array(
 				'HTTP_CF_CONNECTING_IP',
@@ -71,8 +90,8 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 				'HTTP_FORWARDED',
 				'REMOTE_ADDR'
 			);
-			$fCanUseFilter = function_exists( 'filter_var' ) && defined( 'FILTER_FLAG_NO_PRIV_RANGE' ) && defined( 'FILTER_FLAG_IPV4' );
 
+			$sIpToReturn = false;
 			foreach( $aAddressSourceOptions as $sOption ) {
 
 				$sIpAddressToTest = self::FetchServer( $sOption );
@@ -82,50 +101,30 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 
 				$aIpAddresses = explode( ',', $sIpAddressToTest ); //sometimes a comma-separated list is returned
 				foreach( $aIpAddresses as $sIpAddress ) {
-
-					if ( $fCanUseFilter && !self::IsAddressInPublicIpRange( $sIpAddress ) ) {
+					if ( empty( $sIpAddress ) ) {
 						continue;
 					}
-					else {
-						self::$sIpAddress = $sIpAddress;
-						return $fAsLong? ip2long( self::$sIpAddress ) : self::$sIpAddress;
+
+					// this version checking serves to weed out IPv6 if filter_var isn't supported by their PHP.
+					// I.e. We ONLY support IPv6 if filter_var() is supported.
+					$nVersion = $this->getIpAddressVersion( $sIpAddress );
+					if ( $nVersion != false ) {
+						$sIpToReturn = $sIpAddress;
+						break(2);
 					}
 				}
 			}
-			return false;
+			return $sIpToReturn;
 		}
 
 		/**
-		 * For now will return true when it's a valid IPv4 or IPv6 address and you have access to filter_var()
-		 *
-		 * otherwise, if it's Ipv6 it'll return false always or will attempt to manually parse IPv4.
-		 *
-		 * @param string
-		 * @return boolean
+		 * @return bool|int|string
 		 */
-		public static function GetIsValidIpAddress( $sIpAddress ) {
-			if ( function_exists('filter_var') && defined('FILTER_VALIDATE_IP') && defined('FILTER_FLAG_IPV4') && defined('FILTER_FLAG_IPV6') ) {
-
-				if ( filter_var( $sIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
-					return true;
-				}
-				else {
-					return filter_var( $sIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 );
-				}
+		public function getVisitorIpVersion() {
+			if ( !isset( self::$nIpAddressVersion ) ) {
+				self::$nIpAddressVersion = $this->getIpAddressVersion( $this->getVisitorIpAddress( true ) );
 			}
-
-			if ( preg_match( '/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/', $sIpAddress ) ) { //It's a valid IPv4 format, now check components
-				$aParts = explode( '.', $sIpAddress );
-				foreach ( $aParts as $sPart ) {
-					$sPart = intval( $sPart );
-					if ( $sPart < 0 || $sPart > 255 ) {
-						return false;
-					}
-				}
-				return true;
-			}
-
-			return false;
+			return self::$nIpAddressVersion;
 		}
 
 		/**
@@ -141,15 +140,16 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 
 		/**
 		 * @param string $sAddresses
-		 * @return Ambigous|array|unknown
+		 *
+		 * @return array
 		 */
-		static public function ExtractIpAddresses( $sAddresses = '' ) {
+		public function extractIpAddresses( $sAddresses = '' ) {
 
 			$aRawAddresses = array();
-
 			if ( empty( $sAddresses ) ) {
 				return $aRawAddresses;
 			}
+
 			$aRawList = array_map( 'trim', explode( "\n", $sAddresses ) );
 
 			foreach( $aRawList as $sKey => $sRawAddressLine ) {
@@ -165,14 +165,14 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 				}
 				$aRawAddresses[ $aParts[0] ] = trim( $aParts[1] );
 			}
-			return self::Add_New_Raw_Ips( array(), $aRawAddresses );
+			return $this->addNewRawIps( array(), $aRawAddresses );
 		}
 
 		/**
 		 * @param string $sRawList
 		 * @return array
 		 */
-		static public function ExtractCommaSeparatedList( $sRawList = '' ) {
+		public function extractCommaSeparatedList( $sRawList = '' ) {
 
 			$aRawList = array();
 			if ( empty( $sRawList ) ) {
@@ -214,100 +214,112 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 		 * Given a list of new IPv4 address ($inaNewRawAddresses) it'll add them to the existing list
 		 * ($inaCurrent) where they're not already found
 		 *
-		 * @param array $inaCurrent			- the list to which to add the new addresses
-		 * @param array $inaNewRawAddresses	- the new IPv4 addresses
-		 * @param int $outnNewAdded			- the count of newly added IPs
-		 * @return unknown|Ambigous <multitype:multitype: , string>
+		 * @param array $aCurrent			- the list to which to add the new addresses
+		 * @param array $aNewRawAddresses	- the new IPv4 addresses
+		 * @param int $outnNewAddedCount	- the count of newly added IPs
+		 * @return array
 		 */
-		public static function Add_New_Raw_Ips( $inaCurrent, $inaNewRawAddresses, &$outnNewAdded = 0 ) {
+		public function addNewRawIps( $aCurrent, $aNewRawAddresses, &$outnNewAddedCount = 0 ) {
 
-			$outnNewAdded = 0;
+			$outnNewAddedCount = 0;
 
-			if ( empty( $inaNewRawAddresses ) ) {
-				return $inaCurrent;
+			if ( empty( $aNewRawAddresses ) ) {
+				return $aCurrent;
 			}
 
-			if ( !array_key_exists( 'ips', $inaCurrent ) ) {
-				$inaCurrent['ips'] = array();
+			if ( !array_key_exists( 'ips', $aCurrent ) ) {
+				$aCurrent['ips'] = array();
 			}
-			if ( !array_key_exists( 'meta', $inaCurrent ) ) {
-				$inaCurrent['meta'] = array();
+			if ( !array_key_exists( 'meta', $aCurrent ) ) {
+				$aCurrent['meta'] = array();
 			}
 
-			foreach( $inaNewRawAddresses as $sRawIpAddress => $sLabel ) {
-				$mVerifiedIp = self::Verify_Ip( $sRawIpAddress );
-				if ( $mVerifiedIp !== false && !in_array( $mVerifiedIp, $inaCurrent['ips'] ) ) {
-					$inaCurrent['ips'][] = $mVerifiedIp;
+			foreach( $aNewRawAddresses as $sRawIpAddress => $sLabel ) {
+				$mVerifiedIp = $this->verifyIp( $sRawIpAddress );
+				if ( $mVerifiedIp !== false && !in_array( $mVerifiedIp, $aCurrent['ips'] ) ) {
+					$aCurrent['ips'][] = $mVerifiedIp;
 					if ( empty($sLabel) ) {
 						$sLabel = 'no label';
 					}
-					$inaCurrent['meta'][ md5( $mVerifiedIp ) ] = $sLabel;
-					$outnNewAdded++;
+					$aCurrent['meta'][ md5( $mVerifiedIp ) ] = $sLabel;
+					$outnNewAddedCount++;
 				}
 			}
-			return $inaCurrent;
+			return $aCurrent;
 		}
 
 		/**
-		 * @param array $inaCurrent
-		 * @param array $inaRawAddresses - should be a plain numerical array of IPv4 addresses
+		 * @param array $aCurrent
+		 * @param array $aRawAddresses - should be a plain numerical array of IPv4 addresses
 		 * @return array:
 		 */
-		public static function Remove_Raw_Ips( $inaCurrent, $inaRawAddresses ) {
-			if ( empty( $inaRawAddresses ) ) {
-				return $inaCurrent;
+		public function removeRawIps( $aCurrent, $aRawAddresses ) {
+			if ( empty( $aRawAddresses ) ) {
+				return $aCurrent;
 			}
 
-			if ( !array_key_exists( 'ips', $inaCurrent ) ) {
-				$inaCurrent['ips'] = array();
+			if ( !array_key_exists( 'ips', $aCurrent ) ) {
+				$aCurrent['ips'] = array();
 			}
-			if ( !array_key_exists( 'meta', $inaCurrent ) ) {
-				$inaCurrent['meta'] = array();
+			if ( !array_key_exists( 'meta', $aCurrent ) ) {
+				$aCurrent['meta'] = array();
 			}
 
-			foreach( $inaRawAddresses as $sRawIpAddress ) {
-				$mVerifiedIp = self::Verify_Ip( $sRawIpAddress );
+			foreach( $aRawAddresses as $sRawIpAddress ) {
+				$mVerifiedIp = $this->verifyIp( $sRawIpAddress );
 				if ( $mVerifiedIp === false ) {
 					continue;
 				}
-				$mKey = array_search( $mVerifiedIp, $inaCurrent['ips'] );
+				$mKey = array_search( $mVerifiedIp, $aCurrent['ips'] );
 				if ( $mKey !== false ) {
-					unset( $inaCurrent['ips'][$mKey] );
-					unset( $inaCurrent['meta'][ md5( $mVerifiedIp ) ] );
+					unset( $aCurrent['ips'][$mKey] );
+					unset( $aCurrent['meta'][ md5( $mVerifiedIp ) ] );
 				}
 			}
-			return $inaCurrent;
+			return $aCurrent;
 		}
 
 		/**
 		 * @param string $sIpAddress
 		 * @return bool|int|string
 		 */
-		public static function Verify_Ip( $sIpAddress ) {
+		public function verifyIp( $sIpAddress ) {
 
 			$sAddress = self::Clean_Ip( $sIpAddress );
 
 			// Now, determine if this is an IP range, or just a plain IP address.
-			if ( strpos( $sAddress, '-' ) === false ) { //plain IP address
-				return self::Verify_Ip_Address( $sAddress );
+			if ( strpos( $sAddress, '-' ) === false ) { // not an IP range
+
+				$nVersion = $this->getIpAddressVersion( $sIpAddress );
+				if ( $nVersion == 4 ) {
+					return ip2long( $sIpAddress );
+				}
+				else if ( $nVersion == 6 ) {
+					return $sIpAddress;
+				}
+				return false;
+
 			}
 			else {
-				return self::Verify_Ip_Range( $sAddress );
+				return $this->verifyIpRange( $sAddress );
 			}
 		}
 
 		/**
-		 * @param string $insRawAddress
-		 * @return mixed
+		 * @param string $sRawAddress
+		 *
+		 * @return string
 		 */
-		public static function Clean_Ip( $insRawAddress ) {
-			$insRawAddress = preg_replace( '/[a-z\s]/i', '', $insRawAddress );
-			$insRawAddress = str_replace( '.', 'PERIOD', $insRawAddress );
-			$insRawAddress = str_replace( '-', 'HYPEN', $insRawAddress );
-			$insRawAddress = preg_replace( '/[^a-z0-9]/i', '', $insRawAddress );
-			$insRawAddress = str_replace( 'PERIOD', '.', $insRawAddress );
-			$insRawAddress = str_replace( 'HYPEN', '-', $insRawAddress );
-			return $insRawAddress;
+		public static function Clean_Ip( $sRawAddress ) {
+			$sRawAddress = preg_replace( '/[a-z\s]/i', '', $sRawAddress );
+			$sRawAddress = str_replace( '.', 'PERIOD', $sRawAddress );
+			$sRawAddress = str_replace( '-', 'HYPEN', $sRawAddress );
+			$sRawAddress = str_replace( ':', 'COLON', $sRawAddress );
+			$sRawAddress = preg_replace( '/[^a-z0-9]/i', '', $sRawAddress );
+			$sRawAddress = str_replace( 'PERIOD', '.', $sRawAddress );
+			$sRawAddress = str_replace( 'HYPEN', '-', $sRawAddress );
+			$sRawAddress = str_replace( 'COLON', ':', $sRawAddress );
+			return $sRawAddress;
 		}
 
 		/**
@@ -327,44 +339,45 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 		}
 
 		/**
-		 * Returns IP Address as long if verified.
-		 *
-		 * @param string $sIpAddress
-		 * @return bool|int
-		 */
-		public static function Verify_Ip_Address( $sIpAddress ) {
-			return self::GetIsValidIpAddress( $sIpAddress ) ? ip2long( $sIpAddress ) : false;
-		}
-
-		/**
 		 * The only ranges currently accepted are a.b.c.d-f.g.h.j
 		 *
 		 * @param string $sIpAddressRange
 		 * @return string|boolean
 		 */
-		public static function Verify_Ip_Range( $sIpAddressRange ) {
+		public function verifyIpRange( $sIpAddressRange ) {
 
 			list( $sIpRangeStart, $sIpRangeEnd ) = explode( '-', $sIpAddressRange, 2 );
 
-			if ( $sIpRangeStart == $sIpRangeEnd ) {
-				return self::Verify_Ip_Address( $sIpRangeStart );
-			}
-			else if ( self::Verify_Ip_Address( $sIpRangeStart ) && self::Verify_Ip_Address( $sIpRangeEnd ) ) {
-				$nStart = ip2long( $sIpRangeStart );
-				$nEnd = ip2long( $sIpRangeEnd );
+			$nStartVersion = $this->getIpAddressVersion( $sIpRangeStart );
+			$nEndVersion = $this->getIpAddressVersion( $sIpRangeEnd );
 
-				// do our best to order it
-				if (
-					( $nStart > 0 && $nEnd > 0 && $nStart > $nEnd )
-					|| ( $nStart < 0 && $nEnd < 0 && $nStart > $nEnd )
-				) {
-					$nTemp = $nStart;
-					$nStart = $nEnd;
-					$nEnd = $nTemp;
-				}
-				return $nStart.'-'.$nEnd;
+			if ( !$nStartVersion || !$nEndVersion || ( $nStartVersion != $nEndVersion ) ) {
+				return false;
 			}
-			return false;
+
+			if ( $nStartVersion == 4 ) {
+				$sIpRangeStart = ip2long( $sIpRangeStart );
+				$sIpRangeEnd = ip2long( $sIpRangeEnd );
+
+				// reorder if possible
+				if ( ( $sIpRangeStart > 0 && $sIpRangeEnd > 0 && $sIpRangeStart > $sIpRangeEnd )
+				     || ( $sIpRangeStart < 0 && $sIpRangeEnd < 0 && $sIpRangeStart > $sIpRangeEnd ) ) {
+					$nTemp = $sIpRangeStart;
+					$sIpRangeStart = $sIpRangeEnd;
+					$sIpRangeEnd = $nTemp;
+				}
+			}
+			else {
+				// IPv6 RANGES are not supported (yet)
+				return false;
+			}
+
+			if ( $sIpRangeStart == $sIpRangeEnd ) {
+				return $sIpRangeStart;
+			}
+			else {
+				return $sIpRangeStart.'-'.$sIpRangeEnd;
+			}
 		}
 
 		/**
@@ -577,12 +590,48 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V3') ):
 			unset( $_COOKIE[ $sKey ] );
 			return $this->setCookie( $sKey, '', -3600 );
 		}
+
+		/**
+		 * Effectively validates and IP Address.
+		 *
+		 * With IPv6, we only support this if filter_var() is supported.
+		 *
+		 * @param string $sIpAddress
+		 *
+		 * @return bool|int
+		 */
+		public function getIpAddressVersion( $sIpAddress ) {
+
+			if ( function_exists( 'filter_var' ) && defined( 'FILTER_FLAG_NO_PRIV_RANGE' ) ) {
+
+				if ( defined( 'FILTER_FLAG_IPV4' ) && filter_var( $sIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+					return 4;
+				}
+
+				if ( defined( 'FILTER_FLAG_IPV6' ) && filter_var( $sIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ) {
+					return 6;
+				}
+			}
+
+			if ( preg_match( '/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/', $sIpAddress ) ) { //It's a valid IPv4 format, now check components
+				$aParts = explode( '.', $sIpAddress );
+				foreach ( $aParts as $sPart ) {
+					$sPart = intval( $sPart );
+					if ( $sPart < 0 || $sPart > 255 ) {
+						return false;
+					}
+				}
+				return 4;
+			}
+
+			return false;
+		}
 	}
 endif;
 
 if ( !class_exists('ICWP_WPSF_DataProcessor') ):
 
-	class ICWP_WPSF_DataProcessor extends ICWP_WPSF_DataProcessor_V3 {
+	class ICWP_WPSF_DataProcessor extends ICWP_WPSF_DataProcessor_V4 {
 		/**
 		 * @return ICWP_WPSF_DataProcessor
 		 */

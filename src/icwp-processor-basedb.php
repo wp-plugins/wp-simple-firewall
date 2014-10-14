@@ -90,6 +90,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 */
 	protected function initializeTable() {
 		if ( $this->getTableExists() ) {
+			$this->recreateTable();
 			$sFullHookName = $this->getDbCleanupHookName();
 			add_action( $sFullHookName, array( $this, 'cleanupDatabase' ) );
 		}
@@ -191,8 +192,12 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * Will recreate the whole table
 	 */
 	public function recreateTable() {
-		$this->dropTable();
-		$this->createTable();
+		if ( $this->getFeatureOptions()->getOpt( 'recreate_database_table', false ) ) {
+			$this->getFeatureOptions()->setOpt( 'recreate_database_table', false );
+			$this->getFeatureOptions()->savePluginOptions();
+			$this->dropTable();
+			$this->createTable();
+		}
 	}
 	
 	/**

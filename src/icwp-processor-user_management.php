@@ -45,10 +45,10 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	}
 
 	/**
+	 * @return bool
 	 */
 	public function run() {
 
-		$oDp = $this->loadDataProcessor();
 		$oWp = $this->loadWpFunctionsProcessor();
 
 		// XML-RPC Compatibility
@@ -61,9 +61,6 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			$oNotificationProcessor = new ICWP_WPSF_Processor_UserManagement_AdminLoginNotification( $this->getFeatureOptions() );
 			$oNotificationProcessor->run();
 		}
-
-		$sRequestMethod = $oDp->FetchServer( 'REQUEST_METHOD' );
-		$fIsPost = strtolower( empty($sRequestMethod)? '' : $sRequestMethod ) == 'post';
 
 		// Check the current logged-in user every page load.
 		add_action( 'init', array( $this, 'checkCurrentUser_Action' ) );
@@ -86,6 +83,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		add_action( 'wp_logout', array( $this, 'onWpLogout' ) );
 
 		add_filter( 'wp_login_errors', array( $this, 'addLoginMessage' ) );
+
+		return true;
 	}
 
 
@@ -152,7 +151,12 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	}
 
 	/**
+	/**
 	 * If it cannot verify current user, will forcefully log them out and redirect to login
+	 *
+	 * @param WP_User $oUser
+	 *
+	 * @return bool
 	 */
 	public function doVerifyCurrentUser( $oUser ) {
 		if ( !is_object( $oUser ) || ! ( $oUser instanceof WP_User ) ) {
@@ -161,7 +165,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 		$oWp = $this->loadWpFunctionsProcessor();
 
-		$aLoginSessionData = $this->getUserSessionRecord( $oUser->user_login );
+		$aLoginSessionData = $this->getUserSessionRecord( $oUser->get( 'user_login' ) );
 		if ( !$aLoginSessionData ) {
 			$oWp->forceUserRelogin( array( 'wpsf-forcelogout' => 4 ) );
 		}
@@ -180,7 +184,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 		// check login ip address
 		$fLockToIp = $this->getIsOption( 'session_lock_location', 'Y' );
-		if ( $fLockToIp && self::$nRequestIp != $aLoginSessionData['ip_long'] ) {
+		$sVisitorIp = $this->loadDataProcessor()->getVisitorIpAddress( true );
+		if ( $fLockToIp && $sVisitorIp != $aLoginSessionData['ip'] ) {
 			$oWp->forceUserRelogin( array( 'wpsf-forcelogout' => 3 ) );
 		}
 
@@ -288,7 +293,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		// First set any other entries for the given user to be deleted.
 		$aNewData = array();
 		$aNewData[ 'session_id' ]			= $this->getSessionId();
-		$aNewData[ 'ip_long' ]				= self::$nRequestIp;
+		$aNewData[ 'ip' ]			    	= $oDp->getVisitorIpAddress( true );
 		$aNewData[ 'wp_username' ]			= $sUsername;
 		$aNewData[ 'login_attempts' ]		= 0;
 		$aNewData[ 'pending' ]				= 1;
@@ -410,7 +415,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			'last_activity_at'	=> self::$nRequestTimestamp,
 			'last_activity_uri'	=> $oDp->FetchServer( 'REQUEST_URI' )
 		);
-		return $this->updateCurrentSession( $oUser->user_login, $aNewData );
+		return $this->updateCurrentSession( $oUser->get( 'user_login' ), $aNewData );
 	}
 
 	/**
@@ -620,18 +625,18 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	 */
 	public function getCreateTableSql() {
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
-			`id` int(11) NOT NULL AUTO_INCREMENT,
-			`session_id` varchar(32) NOT NULL DEFAULT '',
-			`wp_username` varchar(255) NOT NULL DEFAULT '',
-			`ip_long` bigint(20) NOT NULL DEFAULT '0',
-			`logged_in_at` int(15) NOT NULL DEFAULT '0',
-			`last_activity_at` int(15) NOT NULL DEFAULT '0',
+			`id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`session_id` VARCHAR(32) NOT NULL DEFAULT '',
+			`wp_username` VARCHAR(255) NOT NULL DEFAULT '',
+			`ip` VARCHAR(40) NOT NULL DEFAULT '0',
+			`logged_in_at` INT(15) NOT NULL DEFAULT '0',
+			`last_activity_at` INT(15) UNSIGNED NOT NULL DEFAULT '0',
 			`last_activity_uri` text NOT NULL DEFAULT '',
-			`used_mfa` int(1) NOT NULL DEFAULT '0',
-			`pending` int(1) NOT NULL DEFAULT '0',
-			`login_attempts` int(1) NOT NULL DEFAULT '0',
-			`created_at` int(15) NOT NULL DEFAULT '0',
-			`deleted_at` int(15) NOT NULL DEFAULT '0',
+			`used_mfa` INT(1) NOT NULL DEFAULT '0',
+			`pending` TINYINT(1) NOT NULL DEFAULT '0',
+			`login_attempts` INT(1) NOT NULL DEFAULT '0',
+			`created_at` INT(15) UNSIGNED NOT NULL DEFAULT '0',
+			`deleted_at` INT(15) UNSIGNED NOT NULL DEFAULT '0',
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 		return sprintf( $sSqlTables, $this->getTableName() );

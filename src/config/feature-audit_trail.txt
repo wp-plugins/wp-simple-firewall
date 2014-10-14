@@ -80,6 +80,10 @@ options:
     key: 'audit_trail_table_name'
     section: 'section_non_ui'
     value: 'audit_trail'
+  -
+    key: 'recreate_database_table'
+    section: 'section_non_ui'
+    default: false
 menu_items:
   -
     slug: 'audit_trail_viewer'
