@@ -3,8 +3,6 @@
  * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
- * Version: 2013-08-14_A
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -19,7 +17,7 @@
 
 if ( !class_exists('ICWP_WpDb_V1') ):
 
-	abstract class ICWP_WpDb_V1 {
+	class ICWP_WpDb_V1 {
 
 		/**
 		 * @var ICWP_WpDb_V1
@@ -29,22 +27,52 @@ if ( !class_exists('ICWP_WpDb_V1') ):
 		/**
 		 * @var wpdb
 		 */
-		protected static $oWpdb;
+		protected $oWpdb;
 
 		/**
-		 * @return ICWP_WpFunctions_V5
+		 * @return ICWP_WPSF_WpDb
 		 */
-		abstract public static function GetInstance();
+		public static function GetInstance() {
+			if ( is_null( self::$oInstance ) ) {
+				self::$oInstance = new self;
+			}
+			return self::$oInstance;
+		}
 
 		public function __construct() {}
 
 		/**
-		 * @param $sSql
+		 * @param string $sTable
+		 * @param array $aWhere - delete where (associative array)
 		 *
-		 * @return null|mixed
+		 * @return false|int
 		 */
-		public function getVar( $sSql ) {
-			return $this->loadWpdb()->get_var( $sSql );
+		public function deleteRowsFromTableWhere( $sTable, $aWhere ) {
+			$oDb = $this->loadWpdb();
+			return $oDb->delete( $sTable, $aWhere );
+		}
+
+		/**
+		 * Will completely remove this table from the database
+		 *
+		 * @param string $sTable
+		 *
+		 * @return bool|int
+		 */
+		public function doDropTable( $sTable ) {
+			$sQuery = sprintf( 'DROP TABLE IF EXISTS `%s`', $sTable ) ;
+			return $this->doSql( $sQuery );
+		}
+
+		/**
+		 * Alias for doTruncateTable()
+		 *
+		 * @param string $sTable
+		 *
+		 * @return bool|int
+		 */
+		public function doEmptyTable( $sTable ) {
+			return $this->doTruncateTable( $sTable );
 		}
 
 		/**
@@ -59,11 +87,106 @@ if ( !class_exists('ICWP_WpDb_V1') ):
 		}
 
 		/**
+		 * @param string $sTable
+		 *
+		 * @return bool|int
+		 */
+		public function doTruncateTable( $sTable ) {
+			if ( !$this->getIfTableExists( $sTable ) ) {
+				return;
+			}
+			$sQuery = sprintf( 'TRUNCATE TABLE `%s`', $sTable );
+			return $this->doSql( $sQuery );
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function getIfTableExists( $sTable ) {
+			$oDb = $this->loadWpdb();
+			$sQuery = "SHOW TABLES LIKE '%s'";
+			$sQuery = sprintf( $sQuery, $sTable );
+			$mResult = $oDb->get_var( $sQuery );
+			return !is_null( $mResult );
+		}
+
+		/**
+		 * @return string
+		 */
+		public function getPrefix() {
+			$oDb = $this->loadWpdb();
+			return $oDb->prefix;
+		}
+
+		/**
 		 * @return string
 		 */
 		public function getTable_Comments() {
 			$oDb = $this->loadWpdb();
 			return $oDb->comments;
+		}
+
+		/**
+		 * @param $sSql
+		 *
+		 * @return null|mixed
+		 */
+		public function getVar( $sSql ) {
+			return $this->loadWpdb()->get_var( $sSql );
+		}
+
+		/**
+		 * @param string $sTable
+		 * @param array $aData
+		 *
+		 * @return int|boolean
+		 */
+		public function insertDataIntoTable( $sTable, $aData ) {
+			$oDb = $this->loadWpdb();
+			return $oDb->insert( $sTable, $aData );
+		}
+
+		/**
+		 * @param $nFormat
+		 * @return array|boolean
+		 */
+		public function selectAll( $nFormat = ARRAY_A ) {
+			$oDb = $this->loadWpdb();
+			$sQuery = sprintf( "SELECT * FROM `%s` WHERE `deleted_at` = '0'", $this->getTableName() );
+			return $oDb->get_results( $sQuery, $nFormat );
+		}
+
+		/**
+		 * @param string $sQuery
+		 * @param $nFormat
+		 * @return array|boolean
+		 */
+		public function selectCustom( $sQuery, $nFormat = ARRAY_A ) {
+			$oDb = $this->loadWpdb();
+			return $oDb->get_results( $sQuery, $nFormat );
+		}
+
+		/**
+		 * @param $sQuery
+		 * @param string $nFormat
+		 *
+		 * @return null|object|array
+		 */
+		public function selectRow( $sQuery, $nFormat = ARRAY_A ) {
+			$oDb = $this->loadWpdb();
+			return $oDb->get_row( $sQuery, $nFormat );
+		}
+
+		/**
+		 * @param string $sTable
+		 * @param array $aData - new insert data (associative array, column=>data)
+		 * @param array $aWhere - insert where (associative array)
+		 *
+		 * @return integer|boolean (number of rows affected)
+		 */
+		public function updateRowsFromTableWhere( $sTable, $aData, $aWhere ) {
+			$oDb = $this->loadWpdb();
+			return $oDb->update( $sTable, $aData, $aWhere );
 		}
 
 		/**

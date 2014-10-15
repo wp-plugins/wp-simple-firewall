@@ -259,7 +259,7 @@ class ICWP_WPSF_Processor_CommentsFilter_HumanSpam extends ICWP_WPSF_Processor_B
 			$this->doSpamBlacklistImport();
 		}
 		// second, if it exists and it's older than 48hrs, update
-		else if ( self::$nRequestTimestamp - $oFs->getModifiedTime( self::$sSpamBlacklistFile ) > self::TWODAYS ) {
+		else if ( $this->time() - $oFs->getModifiedTime( self::$sSpamBlacklistFile ) > self::TWODAYS ) {
 			$this->doSpamBlacklistUpdate();
 		}
 

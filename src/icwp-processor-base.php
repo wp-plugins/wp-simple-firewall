@@ -64,12 +64,7 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		/**
 		 * Resets the object values to be re-used anew
 		 */
-		public function reset() {
-			$oDp = $this->loadDataProcessor();
-			if ( !isset( self::$nRequestTimestamp ) ) {
-				self::$nRequestTimestamp = $oDp->GetRequestTime();
-			}
-		}
+		public function reset() { }
 
 		/**
 		 * Override to set what this processor does when it's "run"
@@ -333,6 +328,16 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 				self::$nRequestIp = $this->loadDataProcessor()->getVisitorIpAddress( false );
 			}
 			return self::$nRequestIp;
+		}
+
+		/**
+		 * @return int
+		 */
+		protected function time() {
+			if ( !isset( self::$nRequestTimestamp ) ) {
+				self::$nRequestTimestamp = $this->loadDataProcessor()->GetRequestTime();
+			}
+			return self::$nRequestTimestamp;
 		}
 	}
 

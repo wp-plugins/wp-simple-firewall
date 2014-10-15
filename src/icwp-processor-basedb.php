@@ -38,11 +38,18 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * @var boolean
 	 */
 	protected $fTableExists;
-	
+
+	/**
+	 * @param ICWP_WPSF_FeatureHandler_Base $oFeatureOptions
+	 * @param null $sTableName
+	 *
+	 * @throws Exception
+	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_Base $oFeatureOptions, $sTableName = null ) {
 		parent::__construct( $oFeatureOptions );
 		$this->setTableName( $sTableName );
 		$this->createCleanupCron();
+		$this->initializeTable();
 		add_action( $this->getFeatureOptions()->doPluginPrefix( 'delete_plugin' ), array( $this, 'deleteDatabase' )  );
 	}
 
@@ -54,26 +61,6 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 			$this->dropTable();
 		}
 	}
-	
-	/**
-	 * Loads our WPDB object if required.
-	 *
-	 * @return wpdb
-	 */
-	protected function loadWpdb() {
-		if ( is_null( $this->oWpdb ) ) {
-			$this->oWpdb = $this->getWpdb();
-			$this->initializeTable();
-		}
-		return $this->oWpdb;
-	}
-
-	/**
-	 */
-	private function getWpdb() {
-		global $wpdb;
-		return $wpdb;
-	}
 
 	/**
 	 * @return bool|int
@@ -81,7 +68,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	protected function createTable() {
 		$sSql = $this->getCreateTableSql();
 		if ( !empty( $sSql ) ) {
-			return $this->doSql( $sSql );
+			return $this->loadDbProcessor()->doSql( $sSql );
 		}
 		return true;
 	}
@@ -100,32 +87,23 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	}
 
 	/**
-	 * @param $aData
-	 * @return boolean
+	 * @param array $aData
+	 *
+	 * @return bool|int
 	 */
-	public function insertIntoTable( $aData ) {
-		$oDb = $this->loadWpdb();
-		return $oDb->insert( $this->getTableName(), $aData );
+	public function insertData( $aData ) {
+		return $this->loadDbProcessor()->insertDataIntoTable( $this->getTableName(), $aData );
 	}
 
 	/**
+	 * @param boolean $fIncludeDeleted
 	 * @param $nFormat
+	 *
 	 * @return array|boolean
 	 */
-	public function selectAllFromTable( $nFormat = ARRAY_A ) {
-		$oDb = $this->loadWpdb();
-		$sQuery = sprintf( "SELECT * FROM `%s` WHERE `deleted_at` = '0'", $this->getTableName() );
-		return $oDb->get_results( $sQuery, $nFormat );
-	}
-
-	/**
-	 * @param string $sQuery
-	 * @param $nFormat
-	 * @return array|boolean
-	 */
-	public function selectCustomFromTable( $sQuery, $nFormat = ARRAY_A ) {
-		$oDb = $this->loadWpdb();
-		return $oDb->get_results( $sQuery, $nFormat );
+	public function selectAllRows( $fIncludeDeleted = false, $nFormat = ARRAY_A ) {
+		$sQuery = sprintf( "SELECT * FROM `%s` WHERE %s ( `deleted_at` = '0' )", $this->getTableName(), $fIncludeDeleted ? 'NOT' : '' );
+		return $this->selectCustom( $sQuery, $nFormat );
 	}
 
 	/**
@@ -133,9 +111,8 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * @param $nFormat
 	 * @return array|boolean
 	 */
-	public function selectRowFromTable( $sQuery, $nFormat = ARRAY_A ) {
-		$oDb = $this->loadWpdb();
-		return $oDb->get_row( $sQuery, $nFormat );
+	public function selectCustom( $sQuery, $nFormat = ARRAY_A ) {
+		return $this->loadDbProcessor()->selectCustom( $sQuery, $nFormat );
 	}
 
 	/**
@@ -143,36 +120,35 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * @param array $aWhere - insert where (associative array)
 	 * @return integer|boolean (number of rows affected)
 	 */
-	public function updateRowsFromTable( $aData, $aWhere ) {
-		$oDb = $this->loadWpdb();
-		return $oDb->update( $this->getTableName(), $aData, $aWhere );
+	public function updateRowsWhere( $aData, $aWhere ) {
+		return $this->loadDbProcessor()->updateRowsFromTableWhere( $this->getTableName(), $aData, $aWhere );
 	}
 
 	/**
 	 * @param array $aWhere - delete where (associative array)
+	 *
 	 * @return integer|boolean (number of rows affected)
 	 */
-	public function deleteRowsFromTable( $aWhere ) {
-		$oDb = $this->loadWpdb();
-		return $oDb->delete( $this->getTableName(), $aWhere );
+	public function deleteRowsWhere( $aWhere ) {
+		return $this->loadDbProcessor()->deleteRowsFromTableWhere( $this->getTableName(), $aWhere );
 	}
 
 	/**
-	 * @param integer $nTime
+	 * @param integer $nTimeStamp
 	 * @return bool|int
 	 */
-	protected function deleteAllRowsOlderThan( $nTime ) {
+	protected function deleteAllRowsOlderThan( $nTimeStamp ) {
 		$sQuery = "
 			DELETE from `%s`
 			WHERE
-				`created_at`		< '%s'
+				`created_at` < '%s'
 		";
 		$sQuery = sprintf(
 			$sQuery,
 			$this->getTableName(),
-			$nTime
+			esc_sql( $nTimeStamp )
 		);
-		return $this->doSql( $sQuery );
+		return $this->loadDbProcessor()->doSql( $sQuery );
 	}
 
 	/**
@@ -184,8 +160,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * Will remove all data from this table (to delete the table see dropTable)
 	 */
 	public function emptyTable() {
-		$sQuery = sprintf( "TRUNCATE TABLE `%s`", $this->getTableName() );
-		return $this->doSql( $sQuery );
+		return $this->loadDbProcessor()->doEmptyTable( $this->getTableName() );
 	}
 
 	/**
@@ -204,19 +179,18 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * Will completely remove this table from the database
 	 */
 	public function dropTable() {
-		$sQuery = sprintf( 'DROP TABLE IF EXISTS `%s`', $this->getTableName() ) ;
-		return $this->doSql( $sQuery );
+		return $this->loadDbProcessor()->doDropTable( $this->getTableName() );
 	}
 
 	/**
 	 * Given any SQL query, will perform it using the WordPress database object.
 	 * 
 	 * @param string $sSqlQuery
+	 *
 	 * @return integer|boolean (number of rows affected or just true/false)
 	 */
 	public function doSql( $sSqlQuery ) {
-		$oDb = $this->loadWpdb();
-		$mResult = $oDb->query( $sSqlQuery );
+		$mResult = $this->loadDbProcessor()->doSql( $sSqlQuery );
 		return $mResult;
 	}
 
@@ -239,11 +213,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 		if ( empty( $sTableName ) ) {
 			throw new Exception( 'Database Table Name is EMPTY' );
 		}
-		$oDb = $this->getWpdb();
-		$sTableString =
-			$oDb->prefix
-			. $sTableName;
-		$this->sFullTableName = esc_sql( $sTableString );
+		$this->sFullTableName = $this->loadDbProcessor()->getPrefix() . esc_sql( $sTableName );
 		return $this->sFullTableName;
 	}
 
@@ -285,14 +255,7 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 			return true;
 		}
 
-		$oDb = $this->loadWpdb();
-		$sQuery = "
-			SHOW TABLES LIKE '%s'
-		";
-		$sQuery = sprintf( $sQuery, $this->getTableName() );
-		$mResult = $oDb->get_var( $sQuery );
-
-		$this->fTableExists = !is_null( $mResult );
+		$this->fTableExists = $this->loadDbProcessor()->getIfTableExists( $this->getTableName() );
 		return $this->fTableExists;
 	}
 }

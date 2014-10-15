@@ -61,9 +61,9 @@ if ( !class_exists('ICWP_PrivacyProtectProcessor_V1') ):
 			$aData[ 'is_ssl' ]			= strpos( $sRequestUrl, 'https' ) === 0? 1 : 0;
 			$aData[ 'is_error' ]		= is_wp_error( $oHttpResponse )? 1 : 0;
 			$aData[ 'request_args' ]	= serialize( $aRequestArgs );
-			$aData[ 'requested_at' ]	= self::$nRequestTimestamp;
+			$aData[ 'requested_at' ]	= $this->time();
 
-			$mResult = $this->insertIntoTable( $aData );
+			$mResult = $this->insertData( $aData );
 			return $mResult;
 		}
 
@@ -132,7 +132,7 @@ if ( !class_exists('ICWP_PrivacyProtectProcessor_V1') ):
 		 * @return array - numerical array of all log data entries.
 		 */
 		public function getLogs( $infReverseOrder = false ) {
-			$aLogData = $this->selectAllFromTable();
+			$aLogData = $this->selectAllRows();
 			if ( $infReverseOrder && $aLogData && is_array( $aLogData ) ) {
 				$aLogData = array_reverse( $aLogData );
 			}

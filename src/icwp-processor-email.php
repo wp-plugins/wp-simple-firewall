@@ -130,17 +130,17 @@ class ICWP_EmailProcessor_V1 extends ICWP_WPSF_Processor_Base {
 			}
 		}
 		
-		if ( !isset($this->m_nEmailThrottleTime) || $this->m_nEmailThrottleTime > self::$nRequestTimestamp ) {
-			$this->m_nEmailThrottleTime = self::$nRequestTimestamp;
+		if ( !isset($this->m_nEmailThrottleTime) || $this->m_nEmailThrottleTime > $this->time() ) {
+			$this->m_nEmailThrottleTime = $this->time();
 		}
 		if ( !isset($this->m_nEmailThrottleCount) ) {
 			$this->m_nEmailThrottleCount = 0;
 		}
 		
 		// If $nNow is greater than throttle interval (1s) we turn off the file throttle and reset the count
-		$nDiff = self::$nRequestTimestamp - $this->m_nEmailThrottleTime;
+		$nDiff = $this->time() - $this->m_nEmailThrottleTime;
 		if ( $nDiff > self::$nThrottleInterval ) {
-			$this->m_nEmailThrottleTime = self::$nRequestTimestamp;
+			$this->m_nEmailThrottleTime = $this->time();
 			$this->m_nEmailThrottleCount = 1;	//we set to 1 assuming that this was called because we're about to send, or have just sent, an email.
 			$this->setThrottledFile( false );
 		}

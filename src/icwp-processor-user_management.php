@@ -172,13 +172,13 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 		// check timeout interval
 		$nSessionTimeoutInterval = $this->getSessionTimeoutInterval();
-		if ( $nSessionTimeoutInterval > 0 && ( self::$nRequestTimestamp - $aLoginSessionData['logged_in_at'] > $nSessionTimeoutInterval ) ) {
+		if ( $nSessionTimeoutInterval > 0 && ( $this->time() - $aLoginSessionData['logged_in_at'] > $nSessionTimeoutInterval ) ) {
 			$oWp->forceUserRelogin( array( 'wpsf-forcelogout' => 1 ) );
 		}
 
 		// check idle timeout interval
 		$nSessionIdleTimeoutInterval = $this->getOption( 'session_idle_timeout_interval', 0 ) * HOUR_IN_SECONDS;
-		if ( intval($nSessionIdleTimeoutInterval) > 0 && ( (self::$nRequestTimestamp - $aLoginSessionData['last_activity_at']) > $nSessionIdleTimeoutInterval ) ) {
+		if ( intval($nSessionIdleTimeoutInterval) > 0 && ( ($this->time() - $aLoginSessionData['last_activity_at']) > $nSessionIdleTimeoutInterval ) ) {
 			$oWp->forceUserRelogin( array( 'wpsf-forcelogout' => 2 ) );
 		}
 
@@ -268,14 +268,14 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	protected function doTerminateUserSession( $sUsername, $sSessionId ) {
 
 		$aNewData = array(
-			'deleted_at'	=> self::$nRequestTimestamp
+			'deleted_at'	=> $this->time()
 		);
 		$aWhere = array(
 			'session_id'	=> $sSessionId,
 			'wp_username'	=> $sUsername,
 			'deleted_at'	=> 0
 		);
-		return $this->updateRowsFromTable( $aNewData, $aWhere );
+		return $this->updateRowsWhere( $aNewData, $aWhere );
 	}
 
 	/**
@@ -297,11 +297,11 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		$aNewData[ 'wp_username' ]			= $sUsername;
 		$aNewData[ 'login_attempts' ]		= 0;
 		$aNewData[ 'pending' ]				= 1;
-		$aNewData[ 'logged_in_at' ]			= self::$nRequestTimestamp;
-		$aNewData[ 'last_activity_at' ]		= self::$nRequestTimestamp;
+		$aNewData[ 'logged_in_at' ]			= $this->time();
+		$aNewData[ 'last_activity_at' ]		= $this->time();
 		$aNewData[ 'last_activity_uri' ]	= $oDp->FetchServer( 'REQUEST_URI' );
-		$aNewData[ 'created_at' ]			= self::$nRequestTimestamp;
-		$mResult = $this->insertIntoTable( $aNewData );
+		$aNewData[ 'created_at' ]			= $this->time();
+		$mResult = $this->insertData( $aNewData );
 
 		return $mResult;
 	}
@@ -314,7 +314,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			setcookie(
 				$this->oFeatureOptions->getUserSessionCookieName(),
 				$this->getSessionId(),
-				self::$nRequestTimestamp + $this->getSessionTimeoutInterval(),
+				$this->time() + $this->getSessionTimeoutInterval(),
 				$oWp->getCookiePath(),
 				$oWp->getCookieDomain(),
 				false
@@ -359,8 +359,8 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 		$aNewData = array(
 			'pending'			=> 0,
-			'logged_in_at'		=> self::$nRequestTimestamp,
-			'last_activity_at'	=> self::$nRequestTimestamp,
+			'logged_in_at'		=> $this->time(),
+			'last_activity_at'	=> $this->time()
 		);
 		$aWhere = array(
 			'session_id'	=> $this->getSessionId(),
@@ -368,7 +368,7 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			'wp_username'	=> $sUsername,
 			'deleted_at'	=> 0
 		);
-		$mResult = $this->updateRowsFromTable( $aNewData, $aWhere );
+		$mResult = $this->updateRowsWhere( $aNewData, $aWhere );
 
 		// Now set session Cookie so it reflects the correct expiry
 		$this->setSessionCookie();
@@ -412,42 +412,10 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 
 		$oDp = $this->loadDataProcessor();
 		$aNewData = array(
-			'last_activity_at'	=> self::$nRequestTimestamp,
+			'last_activity_at'	=> $this->time(),
 			'last_activity_uri'	=> $oDp->FetchServer( 'REQUEST_URI' )
 		);
 		return $this->updateCurrentSession( $oUser->get( 'user_login' ), $aNewData );
-	}
-
-	/**
-	 * @param WP_User $oUser
-	 * @return boolean
-	 */
-	protected function updateSessionLastActivityAt( $oUser ) {
-		if ( !is_object( $oUser ) || ! ( $oUser instanceof WP_User ) ) {
-			return false;
-		}
-
-		$aNewData = array(
-			'last_activity_at'	=> self::$nRequestTimestamp
-		);
-		return $this->updateCurrentSession( $oUser->get( 'user_login' ), $aNewData );
-	}
-
-	/**
-	 * @param WP_User $oUser
-	 * @return boolean
-	 */
-	protected function updateSessionLastActivityUri( $oUser ) {
-		if ( !is_object( $oUser ) || ! ( $oUser instanceof WP_User ) ) {
-			return false;
-		}
-
-		$oDp = $this->loadDataProcessor();
-		$aNewData = array(
-			'last_activity_uri'	=> $oDp->FetchServer( 'REQUEST_URI' )
-		);
-		$mResult = $this->updateCurrentSession( $oUser->get( 'user_login' ), $aNewData );
-		return $mResult;
 	}
 
 	/**
@@ -471,16 +439,16 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			'deleted_at'	=> 0,
 			'wp_username'	=> $sUsername
 		);
-		$mResult = $this->updateRowsFromTable( $aUpdateData, $aWhere );
+		$mResult = $this->updateRowsWhere( $aUpdateData, $aWhere );
 		return $mResult;
 	}
 
 	/**
-	 * Checks for and gets a user session.
-	 * 
-	 * @return array|boolean
+	 * @param string $sWpUsername
+	 *
+	 * @return array|bool
 	 */
-	public function getActiveUserSessionRecords() {
+	public function getActiveUserSessionRecords( $sWpUsername = '' ) {
 
 		$sQuery = "
 			SELECT *
@@ -488,38 +456,25 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 			WHERE
 				`pending`			= '0'
 				AND `deleted_at`	= '0'
-		";
-		$sQuery = sprintf(
-			$sQuery,
-			$this->getTableName()
-		);
-
-		return $this->selectCustomFromTable( $sQuery );
-	}
-
-	/**
-	 * Checks for and gets a user session.
-	 *
-	 * @param string $sUsername
-	 * @return array|boolean
-	 */
-	public function getActiveSessionRecordsForUser( $sUsername ) {
-
-		$sQuery = "
-			SELECT *
-			FROM `%s`
-			WHERE
-				`wp_username`		= '%s'
-				AND `pending`		= '0'
-				AND `deleted_at`	= '0'
+				%s
 			ORDER BY `last_activity_at` ASC
 		";
 		$sQuery = sprintf(
 			$sQuery,
 			$this->getTableName(),
-			$sUsername
+			empty( $sWpUsername ) ? '' : "AND `wp_username`		= '".esc_sql( $sWpUsername )."'"
 		);
-		return $this->selectCustomFromTable( $sQuery );
+		return $this->selectCustom( $sQuery );
+	}
+
+	/**
+	 * Checks for and gets a user session.
+	 *
+	 * @param string $sWpUsername
+	 * @return array|boolean
+	 */
+	public function getActiveSessionRecordsForUser( $sWpUsername ) {
+		return $this->getActiveUserSessionRecords( $sWpUsername );
 	}
 
 	/**
@@ -543,37 +498,10 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		$sQuery = sprintf(
 			$sQuery,
 			$this->getTableName(),
-			( self::$nRequestTimestamp - $nTime )
+			( $this->time() - $nTime )
 		);
 
-		return $this->selectCustomFromTable( $sQuery );
-	}
-
-	/**
-	 * Checks for and gets a user session.
-	 *
-	 * @param string $sSessionId
-	 * @return array|boolean
-	 */
-	protected function getSessionRecord( $sSessionId = null ) {
-
-		$sQuery = "
-			SELECT *
-			FROM `%s`
-			WHERE
-				`session_id`	= '%s'
-				AND `deleted_at`	= '0'
-		";
-		$sQuery = sprintf( $sQuery,
-			$this->getTableName(),
-			empty( $sSessionId ) ? $this->getSessionId() : $sSessionId
-		);
-
-		$mResult = $this->selectCustomFromTable( $sQuery );
-		if ( is_array( $mResult ) && count( $mResult ) == 1 ) {
-			return $mResult[0];
-		}
-		return false;
+		return $this->selectCustom( $sQuery );
 	}
 
 	/**
@@ -592,13 +520,14 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 				AND `session_id`	= '%s'
 				AND `deleted_at`	= '0'
 		";
-		$sQuery = sprintf( $sQuery,
+		$sQuery = sprintf(
+			$sQuery,
 			$this->getTableName(),
-			$sUsername,
-			$this->getSessionId()
+			esc_sql( $sUsername ),
+			esc_sql( $this->getSessionId() )
 		);
 
-		$mResult = $this->selectCustomFromTable( $sQuery );
+		$mResult = $this->selectCustom( $sQuery );
 		if ( is_array( $mResult ) && count( $mResult ) == 1 ) {
 			return $mResult[0];
 		}
@@ -651,28 +580,9 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 		if ( !$this->getTableExists() ) {
 			return;
 		}
-		$nTimeStamp = self::$nRequestTimestamp - (DAY_IN_SECONDS * $this->nDaysToKeepLog);
+		$nTimeStamp = $this->time() - (DAY_IN_SECONDS * $this->nDaysToKeepLog);
 		$this->deleteAllRowsOlderThan( $nTimeStamp );
 	}
-
-	/**
-	 * @param int $nTimeStamp
-	 * @return bool|int
-	 */
-	protected function deleteAllRowsOlderThan( $nTimeStamp ) {
-		$sQuery = "
-			DELETE from `%s`
-			WHERE
-				`created_at`		< '%s'
-				AND `pending`		= '1'
-		";
-		$sQuery = sprintf( $sQuery,
-			$this->getTableName(),
-			esc_sql( $nTimeStamp )
-		);
-		return $this->doSql( $sQuery );
-	}
-
 }
 endif;
 

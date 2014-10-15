@@ -161,7 +161,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 		 * 		b) then, we give back a message saying that if the login was successful, they would have received a verification email. In this way we give nothing away.
 		 * 		c) note at this stage, if the username was empty, we give back nothing (this happens when wp-login.php is loaded as normal.
 		 *
-		 * @param WP_User|string $oUser	- the docs say the first parameter a string, WP actually gives a WP_User object (or null)
+		 * @param WP_User|WP_Error|string $oUser	- the docs say the first parameter a string, WP actually gives a WP_User object (or null)
 		 * @param string $sUsername
 		 * @param string $sPassword
 		 * @return WP_Error|WP_User|null	- WP_User when the login success AND the IP is authenticated. null when login not successful but IP is valid. WP_Error otherwise.
@@ -219,7 +219,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 		 */
 		public function setLoginAuthActive( $sUniqueId, $sUsername ) {
 			// 1. Terminate old entries
-			$this->query_DoTerminateActiveLoginForUser( $sUsername );
+			$this->query_DoTerminateActiveLogins( $sUsername );
 
 			// 2. Authenticate new entry
 			$aWhere = array(
@@ -275,15 +275,15 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 
 			// First set any other pending entries for the given user to be deleted.
 			$aSetDeleted = array(
-				'deleted_at'	=> self::$nRequestTimestamp,
-				'expired_at'	=> self::$nRequestTimestamp,
+				'deleted_at'	=> $this->time(),
+				'expired_at'	=> $this->time(),
 			);
 			$aOldPendingAuth = array(
 				'pending'		=> 1,
 				'deleted_at'	=> 0,
 				'wp_username'	=> $sUsername
 			);
-			$this->updateRowsFromTable( $aSetDeleted, $aOldPendingAuth );
+			$this->updateRowsWhere( $aSetDeleted, $aOldPendingAuth );
 
 			// Now add new pending entry
 			$aNewData = array();
@@ -291,9 +291,9 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 			$aNewData[ 'ip' ]			= $this->loadDataProcessor()->getVisitorIpAddress( true );
 			$aNewData[ 'wp_username' ]	= $sUsername;
 			$aNewData[ 'pending' ]		= 1;
-			$aNewData[ 'created_at' ]	= self::$nRequestTimestamp;
+			$aNewData[ 'created_at' ]	= $this->time();
 
-			$mResult = $this->insertIntoTable( $aNewData );
+			$mResult = $this->insertData( $aNewData );
 			return $mResult ? $aNewData : $mResult;
 		}
 
@@ -313,7 +313,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 			// Activate the new one.
 			$aWhere['pending'] 		= 1;
 			$aWhere['deleted_at']	= 0;
-			$mResult = $this->updateRowsFromTable( array( 'pending' => 0 ), $aWhere );
+			$mResult = $this->updateRowsWhere( array( 'pending' => 0 ), $aWhere );
 			return $mResult;
 		}
 
@@ -321,39 +321,16 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 		 * Invalidates all currently active two-factor logins and redirects to admin (->login)
 		 */
 		public function doTerminateAllVerifiedLogins() {
-			$this->query_DoTerminateAllVerifiedLogins();
-			$oWp = $this->loadWpFunctionsProcessor();
-			$oWp->redirectToAdmin();
+			$this->query_DoTerminateActiveLogins();
+			$this->loadWpFunctionsProcessor()->redirectToAdmin();
 		}
 
 		/**
-		 * Given a username will soft-delete any currently active two-factor authentication.
+		 * @param string $sWpUsername Specify a username to terminate only those logins
 		 *
-		 * @param $sUsername
+		 * @return bool|int
 		 */
-		protected function query_DoTerminateActiveLoginForUser( $sUsername ) {
-			$sQuery = "
-			UPDATE `%s`
-			SET `deleted_at`	= '%s',
-				`expired_at`	= '%s'
-			WHERE
-				`wp_username`		= '%s'
-				AND `deleted_at`	= '0'
-				AND `pending`		= '0'
-		";
-			$sQuery = sprintf( $sQuery,
-				$this->getTableName(),
-				self::$nRequestTimestamp,
-				self::$nRequestTimestamp,
-				esc_sql( $sUsername )
-			);
-			$this->doSql( $sQuery );
-		}
-
-		/**
-		 *
-		 */
-		protected function query_DoTerminateAllVerifiedLogins() {
+		protected function query_DoTerminateActiveLogins( $sWpUsername = '' ) {
 			$sQuery = "
 			UPDATE `%s`
 			SET `deleted_at`	= '%s',
@@ -361,11 +338,13 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 			WHERE
 				`deleted_at`	= '0'
 				AND `pending`	= '0'
-		";
+				%s
+			";
 			$sQuery = sprintf( $sQuery,
 				$this->getTableName(),
-				self::$nRequestTimestamp,
-				self::$nRequestTimestamp
+				$this->time(),
+				$this->time(),
+				empty( $sWpUsername ) ? '' : "AND `wp_username`		= '".esc_sql( $sWpUsername )."'"
 			);
 			return $this->doSql( $sQuery );
 		}
@@ -375,7 +354,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 		 */
 		public function setAuthActiveCookie( $sUniqueId ) {
 			$nWeek = defined( 'WEEK_IN_SECONDS' )? WEEK_IN_SECONDS : 24*60*60;
-			setcookie( $this->getFeatureOptions()->getTwoFactorAuthCookieName(), $sUniqueId, self::$nRequestTimestamp+$nWeek, COOKIEPATH, COOKIE_DOMAIN, false );
+			setcookie( $this->getFeatureOptions()->getTwoFactorAuthCookieName(), $sUniqueId, $this->time()+$nWeek, COOKIEPATH, COOKIE_DOMAIN, false );
 		}
 
 		/**
@@ -395,9 +374,9 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 
 			$sQuery = sprintf( $sQuery,
 				$this->getTableName(),
-				$oUser->user_login
+				$oUser->get( 'user_login' )
 			);
-			$mResult = $this->selectCustomFromTable( $sQuery );
+			$mResult = $this->selectCustom( $sQuery );
 			return ( is_array( $mResult ) && count( $mResult ) == 1 ) ? $mResult[0] : null ;
 		}
 
@@ -493,19 +472,6 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 		}
 
 		/**
-		 * Assumes that unique_id AND wp_username have been set correctly in the data array (no checking done).
-		 *
-		 * @param array $inaData
-		 * @return array
-		 */
-		protected function getLoginAuthData( $inaData ) {
-
-			$sQuery = "SELECT * FROM %s WHERE `unique_id` = `%s` AND `wp_username` = %s";
-			$sQuery = sprintf( $sQuery, $this->getTableName(), $inaData['unique_id'], $inaData['wp_username'] );
-			return $this->selectRowFromTable( $sQuery );
-		}
-
-		/**
 		 * This is hooked into a cron in the base class and overrides the parent method.
 		 *
 		 * It'll delete everything older than 24hrs.
@@ -514,7 +480,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 			if ( !$this->getTableExists() ) {
 				return;
 			}
-			$nTimeStamp = self::$nRequestTimestamp - (DAY_IN_SECONDS * $this->nDaysToKeepLog);
+			$nTimeStamp = $this->time() - (DAY_IN_SECONDS * $this->nDaysToKeepLog);
 			$this->deleteAllRowsOlderThan( $nTimeStamp );
 		}
 

@@ -92,7 +92,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		 * @return array|bool
 		 */
 		public function getAllAuditEntries() {
-			return array_reverse( $this->selectAllFromTable() );
+			return array_reverse( $this->selectAllRows() );
 		}
 
 		/**
@@ -111,7 +111,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 				LIMIT %s
 			";
 			$sQuery = sprintf( $sQuery, $this->getTableName(), $sContext, $nLimit );
-			return $this->selectCustomFromTable( $sQuery );
+			return $this->selectCustom( $sQuery );
 		}
 
 		/**
@@ -131,7 +131,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 				if ( is_array( $aEntry['message'] ) ) {
 					$aEntry['message'] = implode( ' ', $aEntry['message'] );
 				}
-				$this->insertIntoTable( $aEntry );
+				$this->insertData( $aEntry );
 			}
 		}
 
