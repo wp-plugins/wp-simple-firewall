@@ -172,7 +172,7 @@ if ( !class_exists('ICWP_WPSF_Processor_Plugin') ):
 			$sButtonText = _wpsf__( 'Okay, hide this notice and go to the plugin dashboard.' );
 
 			$sMetaFlag = $oController->doPluginPrefix( 'hide_update_notice' );
-			$sAction = $oController->getPluginUrl_AdminPage().'&'.$sMetaFlag.'=1';
+			$sAction = $oController->getPluginUrl_AdminMainPage().'&'.$sMetaFlag.'=1';
 			$sRedirectPage = $oWp->getUrl_CurrentAdminPage();
 			ob_start();
 			include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_plugin_upgraded' ) );
