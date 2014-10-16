@@ -98,7 +98,6 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 		 * @return boolean - true if visitor is permitted, false if it should be blocked.
 		 */
 		public function doFirewallCheck() {
-
 			if ( $this->getOption('whitelist_admins') == 'Y' && is_super_admin() ) {
 				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('Logged-in administrators by-pass firewall') );
 				$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );

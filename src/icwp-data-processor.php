@@ -121,7 +121,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 		 * @return bool|int|string
 		 */
 		public function getVisitorIpVersion() {
-			if ( !isset( self::$nIpAddressVersion ) ) {
+			if ( empty( self::$nIpAddressVersion ) ) {
 				self::$nIpAddressVersion = $this->getIpAddressVersion( $this->getVisitorIpAddress( true ) );
 			}
 			return self::$nIpAddressVersion;
@@ -602,7 +602,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 		 */
 		public function getIpAddressVersion( $sIpAddress ) {
 
-			if ( function_exists( 'filter_var' ) && defined( 'FILTER_FLAG_NO_PRIV_RANGE' ) ) {
+			if ( function_exists( 'filter_var' ) ) {
 
 				if ( defined( 'FILTER_FLAG_IPV4' ) && filter_var( $sIpAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
 					return 4;

@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, audit trail, ddos, brute force, protection, activity monitor, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack
 Requires at least: 3.2.0
 Tested up to: 4.0
-Stable tag: 4.1.0
+Stable tag: 4.1.1
 
 Complete and Simple WordPress Security. Unrestricted. No Premium Features.
 
@@ -233,7 +233,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 *   ADDED:      Audit Trail Improvements for auto-cleaning and export
 *   ADDED:      Audit Trail for more WordPress Simple Firewall events such as User Sessions, Login Protections, Comments Filtering etc.
 
-= 4.1.0 =
+= 4.1.1 =
 
 Note: This release comes before further Audit Trail improvements due to necessity for IPv6, which is becoming increasingly more common.
 
@@ -244,6 +244,7 @@ Note: This release comes before further Audit Trail improvements due to necessit
 *   IMPROVED:   Comments Filtering - It now honours the WordPress settings for previously approved comment authors and never filters such comments.
 *   REMOVED:    Option to enable GASP Comments Filtering for logged-in users has been completely removed - this reduces plugin options complexity. All logged-in users by-pass **all** comments filtering.
 *   FIXED:      Prevention against plugin redirect loops under certain conditions.
+*   FIXED:      IP whitelisting wasn't working under certain cases.
 
 = 4.0.0 =
 
