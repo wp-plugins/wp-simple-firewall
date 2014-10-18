@@ -511,12 +511,18 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 * @param $sUsername
 		 */
 		public function setUserLoggedIn( $sUsername ) {
-			$oUser = version_compare( $this->getWordpressVersion(), '2.8.0', '<' )? get_userdatabylogin( $sUsername ) : get_user_by( 'login', $sUsername );
+
+			if ( version_compare( $this->getWordpressVersion(), '2.8.0', '<' ) ) {
+				$oUser = get_userdatabylogin( $sUsername );
+			}
+			else {
+				$oUser = get_user_by( 'login', $sUsername );
+			}
 
 			wp_clear_auth_cookie();
-			wp_set_current_user ( $oUser->ID, $oUser->user_login );
+			wp_set_current_user ( $oUser->ID, $oUser->get( 'user_login' ) );
 			wp_set_auth_cookie  ( $oUser->ID, true );
-			do_action( 'wp_login', $oUser->user_login, $oUser );
+			do_action( 'wp_login', $oUser->get( 'user_login' ), $oUser );
 		}
 
 		/**

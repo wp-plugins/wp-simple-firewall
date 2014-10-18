@@ -572,6 +572,26 @@ class ICWP_WPSF_Processor_UserManagement_V1 extends ICWP_WPSF_BaseDbProcessor {
 	}
 
 	/**
+	 * @return array
+	 */
+	protected function getTableColumnsByDefinition() {
+		return array(
+			'id',
+			'session_id',
+			'wp_username',
+			'ip',
+			'logged_in_at',
+			'last_activity_at',
+			'last_activity_uri',
+			'used_mfa',
+			'pending',
+			'login_attempts',
+			'created_at',
+			'deleted_at'
+		);
+	}
+
+	/**
 	 * This is hooked into a cron in the base class and overrides the parent method.
 	 * 
 	 * It'll delete everything older than 24hrs.

@@ -230,6 +230,7 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 = 4.2.0 (Coming Soon) =
 
+*   ADDED:      Self-correcting database table validation.
 *   ADDED:      Audit Trail Improvements for auto-cleaning and export
 *   ADDED:      Audit Trail for more WordPress Simple Firewall events such as User Sessions, Login Protections, Comments Filtering etc.
 

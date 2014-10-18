@@ -413,6 +413,9 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 		}
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getCreateTableSql() {
 		// Set up comments ID table
 		$sSqlTables = "CREATE TABLE IF NOT EXISTS `%s` (
@@ -425,6 +428,20 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
  			PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 		return sprintf( $sSqlTables, $this->getTableName() );
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getTableColumnsByDefinition() {
+		return array(
+			'id',
+			'post_id',
+			'unique_token',
+			'ip',
+			'created_at',
+			'deleted_at'
+		);
 	}
 
 	/**

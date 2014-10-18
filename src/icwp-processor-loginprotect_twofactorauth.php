@@ -472,6 +472,22 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 		}
 
 		/**
+		 * @return array
+		 */
+		protected function getTableColumnsByDefinition() {
+			return array(
+				'id',
+				'unique_id',
+				'wp_username',
+				'ip',
+				'pending',
+				'expired_at',
+				'created_at',
+				'deleted_at'
+			);
+		}
+
+		/**
 		 * This is hooked into a cron in the base class and overrides the parent method.
 		 *
 		 * It'll delete everything older than 24hrs.

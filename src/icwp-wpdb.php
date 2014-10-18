@@ -111,6 +111,20 @@ if ( !class_exists('ICWP_WpDb_V1') ):
 		}
 
 		/**
+		 * @param string $sTable
+		 *
+		 * @return array
+		 */
+		public function getColumnsForTable( $sTable ) {
+			$oDb = $this->loadWpdb();
+			$aColumns = array();
+			foreach( $oDb->get_col( "DESC " . $sTable, 0 ) as $sColumnName ) {
+				$aColumns[] = $sColumnName;
+			}
+			return $aColumns;
+		}
+
+		/**
 		 * @return string
 		 */
 		public function getPrefix() {

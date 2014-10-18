@@ -21,12 +21,6 @@ require_once( dirname(__FILE__).'/icwp-processor-base.php' );
 if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 
 abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
-	
-	/**
-	 * A link to the WordPress Database object so we don't have to "global" that every time.
-	 * @var wpdb
-	 */
-	protected $oWpdb;
 
 	/**
 	 * The full database table name.
@@ -167,13 +161,30 @@ abstract class ICWP_WPSF_BaseDbProcessor extends ICWP_WPSF_Processor_Base {
 	 * Will recreate the whole table
 	 */
 	public function recreateTable() {
-		if ( $this->getFeatureOptions()->getOpt( 'recreate_database_table', false ) ) {
+		if ( $this->getFeatureOptions()->getOpt( 'recreate_database_table', false ) || !$this->tableIsValid() ) {
 			$this->getFeatureOptions()->setOpt( 'recreate_database_table', false );
 			$this->getFeatureOptions()->savePluginOptions();
 			$this->dropTable();
 			$this->createTable();
 		}
 	}
+
+	/**
+	 * @return bool
+	 */
+	protected function tableIsValid() {
+
+		$aColumnsByDefinition = $this->getTableColumnsByDefinition();
+		$aActualColumns = $this->loadDbProcessor()->getColumnsForTable( $this->getTableName() );
+		foreach( $aColumnsByDefinition as $sDefinedColumns ) {
+			if ( !in_array( $sDefinedColumns, $aActualColumns ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	abstract protected function getTableColumnsByDefinition();
 	
 	/**
 	 * Will completely remove this table from the database
