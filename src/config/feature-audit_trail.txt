@@ -81,6 +81,20 @@ options:
     section: 'section_non_ui'
     value: 'audit_trail'
   -
+    key: 'audit_trail_table_columns'
+    section: 'section_non_ui'
+    value:
+      - 'id'
+      - 'wp_username'
+      - 'ip'
+      - 'context'
+      - 'event'
+      - 'category'
+      - 'message'
+      - 'immutable'
+      - 'created_at'
+      - 'deleted_at'
+  -
     key: 'recreate_database_table'
     section: 'section_non_ui'
     default: false

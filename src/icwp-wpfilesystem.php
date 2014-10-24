@@ -27,14 +27,14 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		protected static $oInstance = NULL;
 
 		/**
-		 * @var WP_Filesystem
+		 * @var WP_Filesystem_Base
 		 */
 		protected $oWpfs = null;
 
 		/**
 		 * @var string
 		 */
-		protected $m_sWpConfigPath = null;
+		protected $sWpConfigPath = null;
 
 		/**
 		 * @return ICWP_WPSF_WpFilesystem
@@ -61,8 +61,8 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		 */
 		public function exists( $sFilePath ) {
 			$oFs = $this->getWpfs();
-			if ( $oFs ) {
-				return $oFs->exists( $sFilePath );
+			if ( $oFs && $oFs->exists( $sFilePath ) ) {
+				return true;
 			}
 			return function_exists( 'file_exists' ) ? file_exists( $sFilePath ) : null;
 		}
@@ -94,17 +94,17 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		}
 
 		protected function setWpConfigPath() {
-			$this->m_sWpConfigPath = ABSPATH.'wp-config.php';
-			if ( !$this->exists($this->m_sWpConfigPath)  ) {
-				$this->m_sWpConfigPath = ABSPATH.'..'.ICWP_DS.'wp-config.php';
-				if ( !$this->exists($this->m_sWpConfigPath)  ) {
-					$this->m_sWpConfigPath = false;
+			$this->sWpConfigPath = ABSPATH.'wp-config.php';
+			if ( !$this->exists($this->sWpConfigPath)  ) {
+				$this->sWpConfigPath = ABSPATH.'..'.ICWP_DS.'wp-config.php';
+				if ( !$this->exists($this->sWpConfigPath)  ) {
+					$this->sWpConfigPath = false;
 				}
 			}
 		}
 
 		public function getContent_WpConfig() {
-			return $this->getFileContent( $this->m_sWpConfigPath );
+			return $this->getFileContent( $this->sWpConfigPath );
 		}
 
 		/**
@@ -112,7 +112,7 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		 * @return bool
 		 */
 		public function putContent_WpConfig( $sContent ) {
-			return $this->putFileContent( $this->m_sWpConfigPath, $sContent );
+			return $this->putFileContent( $this->sWpConfigPath, $sContent );
 		}
 
 		/**
@@ -130,7 +130,7 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		 * @return string
 		 */
 		public function getWpConfigPath() {
-			return $this->m_sWpConfigPath;
+			return $this->sWpConfigPath;
 		}
 
 		/**
@@ -324,6 +324,7 @@ if ( !class_exists('ICWP_WPSF_WpFilesystem') ):
 		}
 
 		/**
+		 * @return WP_Filesystem_Base
 		 */
 		protected function getWpfs() {
 			if ( is_null( $this->oWpfs ) ) {

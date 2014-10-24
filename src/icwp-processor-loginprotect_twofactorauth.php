@@ -70,9 +70,9 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 				$oUser = $oWp->getCurrentWpUser();
 				if ( !is_null( $oUser ) ) {
 
-					if ( $this->getIsUserLevelSubjectToTwoFactorAuth( $oUser->user_level ) && !$this->getUserHasValidAuth( $oUser ) ) {
+					if ( $this->getIsUserLevelSubjectToTwoFactorAuth( $oUser->get( 'user_level' ) ) && !$this->getUserHasValidAuth( $oUser ) ) {
 
-						$sAuditMessage = sprintf( _wpsf__('User "%s" was forcefully logged out as they were not verified by either cookie or IP address (or both).'), $oUser->user_login );
+						$sAuditMessage = sprintf( _wpsf__('User "%s" was forcefully logged out as they were not verified by either cookie or IP address (or both).'), $oUser->get( 'user_login' ) );
 						$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_logout_unverified' );
 						$this->doStatIncrement( 'login.userverify.fail' );
 						$oWp->forceUserRelogin( array( 'wpsf-forcelogout' => 6 ) );
@@ -108,8 +108,8 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 			}
 
 			if ( !$fVerified ) {
-				$sAuditMessage = sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address: "%s".'), $oUser->user_login, $oDp->getVisitorIpAddress( true ) );
-				$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_two_factor_unverified_ip', $oUser->user_login );
+				$sAuditMessage = sprintf( _wpsf__('User "%s" was found to be un-verified at the given IP Address: "%s".'), $oUser->get( 'user_login' ), $oDp->getVisitorIpAddress( true ) );
+				$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_two_factor_unverified_ip', $oUser->get( 'user_login' ) );
 			}
 
 			return $fVerified;
@@ -144,6 +144,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 			else {
 				$oWp->redirectToLogin();
 			}
+			return true;
 		}
 
 		/**
@@ -176,7 +177,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 
 			if ( $fUserLoginSuccess ) {
 
-				if ( !$this->getIsUserLevelSubjectToTwoFactorAuth( $oUser->user_level ) ) {
+				if ( !$this->getIsUserLevelSubjectToTwoFactorAuth( $oUser->get( 'user_level' ) ) ) {
 					return $oUser;
 				}
 				if ( $this->getUserHasValidAuth( $oUser ) ) {
@@ -184,7 +185,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 				}
 
 				// Create a new 2-factor auth pending entry
-				$aNewAuthData = $this->query_DoCreatePendingLoginAuth( $oUser->user_login );
+				$aNewAuthData = $this->query_DoCreatePendingLoginAuth( $oUser->get( 'user_login' ) );
 
 				// Now send email with authentication link for user.
 				if ( is_array( $aNewAuthData ) ) {
@@ -409,19 +410,19 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 		/**
 		 * @param WP_User $oUser
 		 * @param string $sIpAddress
-		 * @param string $insUniqueId
+		 * @param string $sUniqueId
 		 * @return boolean
 		 */
-		public function sendEmailTwoFactorVerify( WP_User $oUser, $sIpAddress, $insUniqueId ) {
+		public function sendEmailTwoFactorVerify( WP_User $oUser, $sIpAddress, $sUniqueId ) {
 
-			$sEmail = $oUser->user_email;
-			$sAuthLink = $this->generateTwoFactorVerifyLink( $oUser->user_login, $insUniqueId );
+			$sEmail = $oUser->get( 'user_email' );
+			$sAuthLink = $this->generateTwoFactorVerifyLink( $oUser->get( 'user_login' ), $sUniqueId );
 
 			$aMessage = array(
 				_wpsf__('You, or someone pretending to be you, just attempted to login into your WordPress site.'),
 				_wpsf__('The IP Address / Cookie from which they tried to login is not currently verified.'),
 				_wpsf__('Click the following link to validate and complete the login process.') .' '._wpsf__('You will be logged in automatically upon successful authentication.'),
-				sprintf( _wpsf__('Username: %s'), $oUser->user_login ),
+				sprintf( _wpsf__('Username: %s'), $oUser->get( 'user_login' ) ),
 				sprintf( _wpsf__('IP Address: %s'), $sIpAddress ),
 				sprintf( _wpsf__('Authentication Link: %s'), $sAuthLink ),
 			);
@@ -432,11 +433,11 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 
 			$fResult = $this->getEmailProcessor()->sendEmailTo( $sEmail, $sEmailSubject, $aMessage );
 			if ( $fResult ) {
-				$sAuditMessage = sprintf( _wpsf__('User "%s" was sent an email to verify their Identity using Two-Factor Login Auth for IP address "%s".'), $oUser->user_login, $sIpAddress );
+				$sAuditMessage = sprintf( _wpsf__('User "%s" was sent an email to verify their Identity using Two-Factor Login Auth for IP address "%s".'), $oUser->get( 'user_login' ), $sIpAddress );
 				$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_two_factor_email_send' );
 			}
 			else {
-				$sAuditMessage = sprintf( _wpsf__('Tried to send email to User "%s" to verify their identity using Two-Factor Login Auth for IP address "%s", but email sending failed.'), $oUser->user_login, $sIpAddress );
+				$sAuditMessage = sprintf( _wpsf__('Tried to send email to User "%s" to verify their identity using Two-Factor Login Auth for IP address "%s", but email sending failed.'), $oUser->get( 'user_login' ), $sIpAddress );
 				$this->addToAuditEntry( $sAuditMessage, 3, 'login_protect_two_factor_email_send_fail' );
 			}
 			return $fResult;
@@ -475,16 +476,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 		 * @return array
 		 */
 		protected function getTableColumnsByDefinition() {
-			return array(
-				'id',
-				'unique_id',
-				'wp_username',
-				'ip',
-				'pending',
-				'expired_at',
-				'created_at',
-				'deleted_at'
-			);
+			return $this->getOption( 'two_factor_auth_table_columns' );
 		}
 
 		/**

@@ -84,6 +84,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 			add_action( 'admin_menu',				array( $this, 'onWpAdminMenu' ) );
 			add_action(	'network_admin_menu',		array( $this, 'onWpAdminMenu' ) );
 			add_action( 'init',			        	array( $this, 'onWpInit' ) );
+			add_filter( 'auto_update_plugin',		array( $this, 'onWpAutoUpdate' ), 10000, 2 );
 			add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
 			$this->registerActivationHooks();
 		}
@@ -107,6 +108,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	public function onWpActivatePlugin() {
+		do_action( $this->doPluginPrefix( 'plugin_activate' ) );
 		$this->loadAllFeatures( true, true );
 	}
 
@@ -136,7 +138,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	/**
 	 */
 	public function onWpInit() {
-		add_action( 'wp_enqueue_scripts',		array( $this, 'onWpEnqueueFrontendCss' ), 0 );
+		add_action( 'wp_enqueue_scripts',		array( $this, 'onWpEnqueueFrontendCss' ), 99 );
 	}
 
 	/**
@@ -324,6 +326,40 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 			);
 		}
 		echo $sMessage;
+	}
+
+	/**
+	 * This is a filter method designed to say whether WordPress plugin upgrades should be permitted,
+	 * based on the plugin settings.
+	 *
+	 * @param boolean $fDoUpdate
+	 * @param string|object $mItemToUpdate
+	 * @return boolean
+	 */
+	public function onWpAutoUpdate( $fDoUpdate, $mItemToUpdate ) {
+
+		if ( is_object( $mItemToUpdate ) && !empty( $mItemToUpdate->plugin ) ) { // 3.8.2+
+			$sItemFile = $mItemToUpdate->plugin;
+		}
+		else if ( is_string( $mItemToUpdate ) && !empty( $mItemToUpdate ) ) { //pre-3.8.2
+			$sItemFile = $mItemToUpdate;
+		}
+		else {
+			// at this point we don't have a slug/file to use so we just return the current update setting
+			return $fDoUpdate;
+		}
+
+		if ( $sItemFile === $this->getPluginBaseFile() ) {
+			$sAutoupdateSetting = $this->getPluginSpec_Property( 'autoupdate' );
+			if ( $sAutoupdateSetting == 'yes' ) {
+				return true;
+			}
+			else if ( $sAutoupdateSetting == 'block' ) {
+				return false;
+			}
+			// else == 'pass' - don't interfere
+		}
+		return $fDoUpdate;
 	}
 
 	/**
@@ -619,51 +655,100 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	/**
-	 * @param string $sCss
+	 * @param string $sAsset
+	 *
 	 * @return string
 	 */
-	public function getPluginUrl_Css( $sCss ) {
-		return $this->getPluginUrl( 'resources/css/'.$sCss );
+	public function getPluginUrl_Asset( $sAsset ) {
+		if ( $this->loadFileSystemProcessor()->exists( $this->getPath_Assets( $sAsset ) ) ) {
+			return $this->getPluginUrl( $this->getPluginSpec_Path( 'assets' ).'/'.$sAsset );
+		}
+		return '';
 	}
 
 	/**
-	 * @param string $sImage
+	 * @param string $sAsset
+	 *
 	 * @return string
 	 */
-	public function getPluginUrl_Image( $sImage ) {
-		return $this->getPluginUrl( 'resources/images/'.$sImage );
+	public function getPluginUrl_Css( $sAsset ) {
+		return $this->getPluginUrl_Asset( 'css/'.$sAsset );
 	}
 
 	/**
-	 * @param string $sJs
+	 * @param string $sAsset
+	 *
 	 * @return string
 	 */
-	public function getPluginUrl_Js( $sJs ) {
-		return $this->getPluginUrl( 'resources/js/'.$sJs );
+	public function getPluginUrl_Image( $sAsset ) {
+		return $this->getPluginUrl_Asset( 'images/'.$sAsset );
+	}
+
+	/**
+	 * @param string $sAsset
+	 *
+	 * @return string
+	 */
+	public function getPluginUrl_Js( $sAsset ) {
+		return $this->getPluginUrl_Asset( 'js/'.$sAsset );
 	}
 
 	/**
 	 * @param string $sFeature
 	 * @return string
 	 */
-	public function getPluginUrl_AdminPage( $sFeature = '' ) {
-		return network_admin_url( sprintf( 'admin.php?page=%s', $this->doPluginPrefix( $sFeature ) ) );
+	public function getPluginUrl_AdminPage( $sFeature = 'plugin' ) {
+		$sUrl = sprintf( 'admin.php?page=%s', $this->doPluginPrefix( $sFeature ) );
+		if ( $this->getIsWpmsNetworkAdminOnly() ) {
+			$sUrl = network_admin_url( $sUrl );
+		}
+		else {
+			$sUrl = admin_url( $sUrl );
+		}
+		return $sUrl;
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getPluginUrl_AdminMainPage() {
-		return $this->getPluginUrl_AdminPage( 'plugin' );
+		return $this->getPluginUrl_AdminPage();
 	}
 
 	/**
-	 * get the root directory for the plugin with the trailing slash
+	 * @param string $sAsset
 	 *
 	 * @return string
 	 */
-	public function getPath_Assets() {
-		return $this->getRootDir().$this->getPluginSpec_Path( 'assets' ).ICWP_DS;
+	public function getPath_Assets( $sAsset = '' ) {
+		return $this->getRootDir().$this->getPluginSpec_Path( 'assets' ).ICWP_DS.$sAsset;
+	}
+
+	/**
+	 * @param string $sAsset
+	 *
+	 * @return string
+	 */
+	public function getPath_AssetCss( $sAsset = '' ) {
+		return $this->getPath_Assets( 'css'.ICWP_DS.$sAsset );
+	}
+
+	/**
+	 * @param string $sAsset
+	 *
+	 * @return string
+	 */
+	public function getPath_AssetJs( $sAsset = '' ) {
+		return $this->getPath_Assets( 'js'.ICWP_DS.$sAsset );
+	}
+
+	/**
+	 * @param string $sAsset
+	 *
+	 * @return string
+	 */
+	public function getPath_AssetImage( $sAsset = '' ) {
+		return $this->getPath_Assets( 'images'.ICWP_DS.$sAsset );
 	}
 
 	/**

@@ -16,9 +16,9 @@
  *
  */
 
-if ( !class_exists('ICWP_BaseProcessor_V3') ):
+if ( !class_exists('ICWP_WPSF_BaseProcessor_V3') ):
 
-	abstract class ICWP_BaseProcessor_V3 extends ICWP_WPSF_Foundation {
+	abstract class ICWP_WPSF_BaseProcessor_V3 extends ICWP_WPSF_Foundation {
 
 		const PcreDelimiter = '/';
 
@@ -45,7 +45,10 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 */
 		protected $oFeatureOptions;
 
-		public function __construct( ICWP_WPSF_FeatureHandler_Base $oFeatureOptions ) {
+		/**
+		 * @param ICWP_WPSF_FeatureHandler_Base $oFeatureOptions
+		 */
+		public function __construct( $oFeatureOptions ) {
 			$this->oFeatureOptions = $oFeatureOptions;
 			add_action( $this->getFeatureOptions()->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureProcessorShutdown' ) );
 			add_filter( $this->getFeatureOptions()->doPluginPrefix( 'wpsf_audit_trail_gather' ), array( $this, 'getAuditEntry' ) );
@@ -306,13 +309,13 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 		 *
 		 * @param $sNotice - The message to be displayed.
 		 * @param $sMessageClass - either error or updated
-		 * @param $infPrint - if true, will echo. false will return the string
+		 * @param $fPrint - if true, will echo. false will return the string
 		 * @return boolean|string
 		 */
-		protected function getAdminNoticeHtml( $sNotice = '', $sMessageClass = 'updated', $infPrint = false ) {
+		protected function getAdminNoticeHtml( $sNotice = '', $sMessageClass = 'updated', $fPrint = false ) {
 			$sWrapper = '<div class="%s icwp-admin-notice">%s</div>';
 			$sFullNotice = sprintf( $sWrapper, $sMessageClass, $sNotice );
-			if ( $infPrint ) {
+			if ( $fPrint ) {
 				echo $sFullNotice;
 				return true;
 			} else {
@@ -344,5 +347,5 @@ if ( !class_exists('ICWP_BaseProcessor_V3') ):
 endif;
 
 if ( !class_exists('ICWP_WPSF_Processor_Base') ):
-	abstract class ICWP_WPSF_Processor_Base extends ICWP_BaseProcessor_V3 { }
+	abstract class ICWP_WPSF_Processor_Base extends ICWP_WPSF_BaseProcessor_V3 { }
 endif;

@@ -247,7 +247,6 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 * @return string
 		 */
 		public function getWordpressVersion() {
-			global $wp_version;
 
 			if ( empty( $this->sWpVersion ) ) {
 				$sVersionFile = ABSPATH.WPINC.'/version.php';
@@ -256,8 +255,12 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 				if ( preg_match( '/wp_version\s=\s\'([^(\'|")]+)\'/i', $sVersionContents, $aMatches ) ) {
 					$this->sWpVersion = $aMatches[1];
 				}
+				else {
+					global $wp_version;
+					$this->sWpVersion = $wp_version;
+				}
 			}
-			return empty( $this->sWpVersion )? $wp_version : $this->sWpVersion;
+			return $this->sWpVersion;
 		}
 
 		/**

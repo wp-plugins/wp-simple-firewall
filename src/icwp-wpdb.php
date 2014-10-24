@@ -111,15 +111,17 @@ if ( !class_exists('ICWP_WpDb_V1') ):
 		}
 
 		/**
-		 * @param string $sTable
+		 * @param string $sTableName
+		 * @param string $sArrayMapCallBack
 		 *
 		 * @return array
 		 */
-		public function getColumnsForTable( $sTable ) {
+		public function getColumnsForTable( $sTableName, $sArrayMapCallBack = '' ) {
 			$oDb = $this->loadWpdb();
-			$aColumns = array();
-			foreach( $oDb->get_col( "DESC " . $sTable, 0 ) as $sColumnName ) {
-				$aColumns[] = $sColumnName;
+			$aColumns = $oDb->get_col( "DESCRIBE " . $sTableName, 0 );
+
+			if ( !empty( $sArrayMapCallBack ) && function_exists( $sArrayMapCallBack ) ) {
+				return array_map( $sArrayMapCallBack, $aColumns );
 			}
 			return $aColumns;
 		}

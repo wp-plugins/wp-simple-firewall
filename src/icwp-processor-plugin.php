@@ -109,7 +109,7 @@ if ( !class_exists('ICWP_WPSF_Processor_Plugin') ):
 				return $aAdminNotices;
 			}
 
-			$sLink_HideNotice = $this->getUrl_PluginDashboard().'&'.$this->getFeatureOptions()->doPluginPrefix( 'hide_mailing_list_signup' ).'=1';
+			$sLink_HideNotice = $this->getController()->getPluginUrl_AdminMainPage().'&'.$this->getFeatureOptions()->doPluginPrefix( 'hide_mailing_list_signup' ).'=1';
 			ob_start();
 			include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_mailchimp' ) );
 			$sNoticeMessage = ob_get_contents();
@@ -202,7 +202,7 @@ if ( !class_exists('ICWP_WPSF_Processor_Plugin') ):
 
 			ob_start();
 			$sMetaFlag = $oController->doPluginPrefix( 'hide_translation_notice' );
-			$sAction = $oController->getPluginUrl_AdminPage().'&'.$sMetaFlag.'=1';
+			$sAction = $oController->getPluginUrl_AdminMainPage().'&'.$sMetaFlag.'=1';
 			$sRedirectPage = $oWp->getUrl_CurrentAdminPage();
 			include( $this->getFeatureOptions()->getViewSnippet( 'admin_notice_translate_plugin' ) );
 			$sNoticeMessage = ob_get_contents();
@@ -274,14 +274,6 @@ if ( !class_exists('ICWP_WPSF_Processor_Plugin') ):
 		 */
 		protected function getIfShowAdminNotices() {
 			return $this->getFeatureOptions()->getOptIs( 'enable_upgrade_admin_notice', 'Y' );
-		}
-
-		/**
-		 * @param string $sFeaturePage - leave empty to get the main dashboard
-		 * @return mixed
-		 */
-		protected function getUrl_PluginDashboard( $sFeaturePage = '' ) {
-			return network_admin_url( sprintf( 'admin.php?page=%s', $this->getFeatureOptions()->doPluginPrefix( $sFeaturePage ) ) );
 		}
 	}
 

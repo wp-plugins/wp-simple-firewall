@@ -9,6 +9,7 @@ properties:
   base_permissions: 'manage_options'
   wpms_network_admin_only: true
   logging_enabled: true
+  autoupdate: 'pass' #yes/block/pass
 paths:
   source: 'src'
   assets: 'resources'

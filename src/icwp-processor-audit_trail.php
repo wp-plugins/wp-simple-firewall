@@ -163,6 +163,13 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 
 			return sprintf( $sSqlTables, $this->getTableName() );
 		}
+
+		/**
+		 * @return array
+		 */
+		protected function getTableColumnsByDefinition() {
+			return $this->getOption( 'audit_trail_table_columns' );
+		}
 	}
 
 endif;

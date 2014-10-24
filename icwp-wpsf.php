@@ -107,7 +107,7 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		public function __construct( ICWP_WPSF_Plugin_Controller $oPluginController ) {
 
 			// All core values of the plugin are derived from the values stored in this value object.
-			$this->oPluginController				= $oPluginController;
+			$this->oPluginController = $oPluginController;
 			$this->oPluginController->loadAllFeatures();
 			add_filter( $this->oPluginController->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
 			add_filter( $this->oPluginController->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
@@ -117,24 +117,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			add_action( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 		}
 
-//		protected function onDisplayFirewallLog() {
-//
-//			$oFirewallHandler = $this->loadFeatureHandler( 'firewall' );
-//			if ( $oFirewallHandler instanceof ICWP_WPSF_FeatureHandler_Firewall ) {
-//				$aIpWhitelist = $oFirewallHandler->getOpt( 'ips_whitelist' );
-//				$aIpBlacklist = $oFirewallHandler->getOpt( 'ips_blacklist' );
-//			}
-//
-//			$aData = array(
-//				'sFeatureName'		=> _wpsf__('Firewall Log'),
-//				'firewall_log'		=> $aLogData,
-//				'ip_whitelist'		=> isset( $aIpWhitelist['ips'] )? $aIpWhitelist['ips'] : array(),
-//				'ip_blacklist'		=> isset( $aIpBlacklist['ips'] )? $aIpBlacklist['ips'] : array(),
-//			);
-//			$aData = array_merge( $this->getBaseDisplayData(), $aData );
-//			$this->display( $this->doPluginPrefix( 'firewall_log_index' ), $aData );
-//		}
-
 		public function onWpAdminInit() {
 			$oCon = $this->getController();
 			if ( $oCon->getIsValidAdminArea() ) {
@@ -142,7 +124,7 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 				$oWp = $oCon->loadWpFunctionsProcessor();
 
 				$sRedirect = $oDp->FetchPost( 'redirect_page' );
-				$sRedirect = empty( $sRedirect ) ? $this->getController()->getPluginUrl_AdminPage() : $sRedirect;
+				$sRedirect = empty( $sRedirect ) ? $this->getController()->getPluginUrl_AdminMainPage() : $sRedirect;
 				//Someone clicked the button to acknowledge the update
 				if ( $oDp->FetchRequest( $oCon->doPluginPrefix( 'hide_update_notice' ) ) == 1 ) {
 					$this->updateVersionUserMeta();

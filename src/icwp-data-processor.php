@@ -500,6 +500,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 			}
 			return self::ArrayFetch( $_ENV, $sKey, $mDefault );
 		}
+
 		/**
 		 * @param string $sKey
 		 * @param mixed $mDefault
@@ -514,6 +515,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 			}
 			return self::ArrayFetch( $_GET, $sKey, $mDefault );
 		}
+
 		/**
 		 * @param string $sKey		The $_POST key
 		 * @param mixed $mDefault
@@ -528,6 +530,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 			}
 			return self::ArrayFetch( $_POST, $sKey, $mDefault );
 		}
+
 		/**
 		 * @param string $sKey
 		 * @param boolean $infIncludeCookie
