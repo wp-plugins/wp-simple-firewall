@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, audit trail, ddos, brute force, protection, activity monitor, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack
 Requires at least: 3.2.0
 Tested up to: 4.0
-Stable tag: 4.1.1
+Stable tag: 4.1.2
 
 Complete and Simple WordPress Security. Unrestricted. No Premium Features.
 
@@ -233,6 +233,10 @@ You can either manually upgrade, or WordPress will handle it in due course.
 *   ADDED:      Self-correcting database table validation.
 *   ADDED:      Audit Trail Improvements for auto-cleaning and export
 *   ADDED:      Audit Trail for more WordPress Simple Firewall events such as User Sessions, Login Protections, Comments Filtering etc.
+
+= 4.1.2 =
+
+*   ADDED:      Self-correcting database table validation - if the structure of a database table isn't what is expected, it'll be re-created.
 
 = 4.1.1 =
 
