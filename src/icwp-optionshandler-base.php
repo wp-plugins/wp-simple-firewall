@@ -207,10 +207,12 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * @param $fEnable
+		 * @param bool $fEnable
+		 *
+		 * @return bool
 		 */
 		public function setIsMainFeatureEnabled( $fEnable ) {
-			$this->setOpt( 'enable_'.$this->getFeatureSlug(), $fEnable ? 'Y' : 'N' );
+			return $this->setOpt( 'enable_'.$this->getFeatureSlug(), $fEnable ? 'Y' : 'N' );
 		}
 
 		/**
@@ -220,6 +222,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			$fOverride = $this->getIfOverride();
 			if ( $fOverride ) {
 				return !$fOverride;
+			}
+			if ( $this->getOptionsVo()->getFeatureProperty( 'auto_enabled' ) === true ) {
+				return true;
 			}
 			return $this->getOptIs( 'enable_'.$this->getFeatureSlug(), 'Y' ) || $this->getOptIs( 'enable_'.$this->getFeatureSlug(), true, true ) ;
 		}
@@ -419,6 +424,15 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
+		 * @param array $aOptions
+		 */
+		public function setOptions( $aOptions ) {
+			foreach( $aOptions as $sKey => $mValue ) {
+				$this->setOpt( $sKey, $mValue );
+			}
+		}
+
+		/**
 		 * Saves the options to the WordPress Options store.
 		 *
 		 * It will also update the stored plugin options version.
@@ -588,7 +602,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		protected function collateAllFormInputsForAllOptions() {
 
-			$aOptions = $this->getOptions();
+			$aOptions = $this->buildOptions();
 
 			$aToJoin = array();
 			foreach ( $aOptions as $aOptionsSection ) {
@@ -637,7 +651,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			if ( empty( $sAllOptions ) ) {
 				return true;
 			}
-			$this->updatePluginOptionsFromSubmit( $sAllOptions ); //it also saves
+			return $this->updatePluginOptionsFromSubmit( $sAllOptions ); //it also saves
 		}
 
 		protected function doExtraSubmitProcessing() { }
@@ -648,7 +662,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function updatePluginOptionsFromSubmit( $sAllOptionsInput ) {
 			if ( empty( $sAllOptionsInput ) ) {
-				return;
+				return true;
 			}
 			$oDp = $this->loadDataProcessor();
 
@@ -791,16 +805,13 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			if ( $nNewAddedCount > 0 ) {
 				$this->setOpt( $sExistingListKey, $aNewList );
 			}
+			return true;
 		}
 
 		/**
 		 */
 		public function displayFeatureConfigPage() {
-//		$aPluginSummaryData = apply_filters( $this->doPluginPrefix( 'get_feature_summary_data' ), array() );
-			$aData = array(
-				'aSummaryData'		=> isset( $aPluginSummaryData ) ? $aPluginSummaryData : array()
-			);
-			$this->display( $aData );
+			$this->display();
 		}
 
 		/**
@@ -815,17 +826,20 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return array
 		 */
 		protected function getBaseDisplayData() {
+			$oCon = $this->getController();
 			return array(
-				'var_prefix'		=> $this->getController()->getOptionStoragePrefix(),
-				'sPluginName'		=> $this->getController()->getHumanName(),
+				'var_prefix'		=> $oCon->getOptionStoragePrefix(),
+				'sPluginName'		=> $oCon->getHumanName(),
 				'sFeatureName'		=> $this->getMainFeatureName(),
 				'fShowAds'			=> $this->getIsShowMarketing(),
-				'nonce_field'		=> $this->getController()->getPluginPrefix(),
+				'nonce_field'		=> $oCon->getPluginPrefix(),
 				'sFeatureSlug'		=> $this->doPluginPrefix( $this->getFeatureSlug() ),
 				'form_action'		=> 'admin.php?page='.$this->doPluginPrefix( $this->getFeatureSlug() ),
 				'nOptionsPerRow'	=> 1,
+				'aPluginLabels'		=> $oCon->getPluginLabels(),
 
-				'aAllOptions'		=> $this->getOptions(),
+				'aAllOptions'		=> $this->buildOptions(),
+				'aHiddenOptions'	=> $this->getOptionsVo()->getHiddenOptions(),
 				'all_options_input'	=> $this->collateAllFormInputsForAllOptions()
 			);
 		}
@@ -845,7 +859,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		protected function display( $aData = array(), $sView = '' ) {
 
 			// Get Base Data
-			$aData = array_merge( $this->getBaseDisplayData(), $aData );
+			$aData = apply_filters( $this->doPluginPrefix( $this->getFeatureSlug().'display_data' ), array_merge( $this->getBaseDisplayData(), $aData ) );
 			$fPermissionToView = apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true );
 
 			if ( !$fPermissionToView ) {

@@ -109,8 +109,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			// All core values of the plugin are derived from the values stored in this value object.
 			self::$oPluginController = $oPluginController;
 			$this->getController()->loadAllFeatures();
-			add_filter( $this->getController()->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
-			add_filter( $this->getController()->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
 			add_filter( $this->getController()->doPluginPrefix( 'plugin_update_message' ), array( $this, 'getPluginsListUpdateMessage' ) );
 
 			add_action( 'admin_init',				array( $this, 'onWpAdminInit' ) );
@@ -151,23 +149,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
 		public function getPluginsListUpdateMessage( $sMessage ) {
 			return _wpsf__( 'Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features.' );
-		}
-
-		/**
-		 * @param boolean $fHasPermission
-		 * @return boolean
-		 */
-		public function hasPermissionToView( $fHasPermission = true ) {
-			return $this->hasPermissionToSubmit( $fHasPermission );
-		}
-
-		/**
-		 * @param boolean $fHasPermission
-		 * @return boolean
-		 */
-		public function hasPermissionToSubmit( $fHasPermission = true ) {
-			// first a basic admin check
-			return $fHasPermission && is_super_admin() && current_user_can( $this->getController()->getBasePermissions() );
 		}
 
 		/**

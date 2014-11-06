@@ -23,6 +23,10 @@ if ( class_exists( 'ICWP_WPSF_Plugin_Controller' ) ) {
 	return;
 }
 
+if ( !defined( 'ICWP_DS' ) ) {
+	define( 'ICWP_DS', DIRECTORY_SEPARATOR );
+}
+
 require_once(dirname(__FILE__).ICWP_DS.'src'.ICWP_DS.'icwp-foundation.php');
 class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 
@@ -83,6 +87,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 			add_filter( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 			add_action( 'admin_menu',				array( $this, 'onWpAdminMenu' ) );
 			add_action(	'network_admin_menu',		array( $this, 'onWpAdminMenu' ) );
+			add_action( 'wp_loaded',			    array( $this, 'onWpLoaded' ) );
 			add_action( 'init',			        	array( $this, 'onWpInit' ) );
 			add_filter( 'auto_update_plugin',		array( $this, 'onWpAutoUpdate' ), 10000, 2 );
 			add_action( 'shutdown',					array( $this, 'onWpShutdown' ) );
@@ -116,14 +121,16 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * Hooked to 'plugins_loaded'
 	 */
 	public function onWpPluginsLoaded() {
+		add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'filter_hasPermissionToView' ) );
+		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'filter_hasPermissionToSubmit' ) );
 		if ( $this->getIsValidAdminArea() ) {
 			add_action( 'admin_notices',			array( $this, 'onWpAdminNotices' ) );
 			add_action( 'network_admin_notices',	array( $this, 'onWpAdminNotices' ) );
-			add_filter( 'all_plugins', array( $this, 'filter_hidePluginFromTableList' ) );
+			add_filter( 'all_plugins', 				array( $this, 'filter_hidePluginFromTableList' ) );
+			add_filter( 'all_plugins',				array( $this, 'doPluginLabels' ) );
 			add_filter( 'site_transient_update_plugins', array( $this, 'filter_hidePluginUpdatesFromUI' ) );
 			add_action( 'in_plugin_update_message-'.$this->getPluginBaseFile(), array( $this, 'onWpPluginUpdateMessage' ) );
 		}
-		$this->doPluginFormSubmit();
 		$this->doLoadTextDomain();
 	}
 
@@ -133,6 +140,12 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	public function onWpAdminInit() {
 		add_action( 'admin_enqueue_scripts', 	array( $this, 'onWpEnqueueAdminCss' ), 99 );
 		add_action( 'admin_enqueue_scripts', 	array( $this, 'onWpEnqueueAdminJs' ), 99 );
+	}
+
+	/**
+	 */
+	public function onWpLoaded() {
+		$this->doPluginFormSubmit();
 	}
 
 	/**
@@ -161,14 +174,26 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 
 		if ( $this->getPluginSpec_Menu( 'top_level' ) ) {
 
+			$aPluginLabels = $this->getPluginLabels();
+
+			$sMenuTitle = $this->getPluginSpec_Menu( 'title' );
+			if ( is_null( $sMenuTitle ) ) {
+				$sMenuTitle = $aPluginLabels['Name'];
+			}
+
+			$sIconUrl = $aPluginLabels['icon_url_16x16'];
+			if ( empty( $sIconUrl ) ) {
+				$sIconUrl = $this->getPluginUrl_Image( $this->getPluginSpec_Menu( 'icon_image' ) );
+			}
+
 			$sFullParentMenuId = $this->getPluginPrefix();
 			add_menu_page(
 				$this->getHumanName(),
-				$this->getAdminMenuTitle(),
+				$sMenuTitle,
 				$this->getBasePermissions(),
 				$sFullParentMenuId,
 				array( $this, $this->getPluginSpec_Menu( 'callback' ) ),
-				$this->getPluginUrl_Image( $this->getPluginSpec_Menu( 'icon_image' ) )
+				$sIconUrl
 			);
 
 			if ( $this->getPluginSpec_Menu( 'has_submenu' ) ) {
@@ -314,7 +339,8 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * Displays a message in the plugins listing when a plugin has an update available.
 	 */
 	public function onWpPluginUpdateMessage() {
-		$sMessage = apply_filters( $this->doPluginPrefix( 'plugin_update_message' ), '' );
+		$sDefault = sprintf( 'Upgrade Now To Get The Latest Available %s Features.', $this->getHumanName() );
+		$sMessage = apply_filters( $this->doPluginPrefix( 'plugin_update_message' ), $sDefault );
 		if ( empty( $sMessage ) ) {
 			$sMessage = '';
 		}
@@ -338,6 +364,10 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	public function onWpAutoUpdate( $fDoUpdate, $mItemToUpdate ) {
 
+		if ( $this->getPluginSpec_Property( 'autoupdate' ) == 'pass' ) {
+			return $fDoUpdate;
+		}
+
 		if ( is_object( $mItemToUpdate ) && !empty( $mItemToUpdate->plugin ) ) { // 3.8.2+
 			$sItemFile = $mItemToUpdate->plugin;
 		}
@@ -350,16 +380,38 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		}
 
 		if ( $sItemFile === $this->getPluginBaseFile() ) {
-			$sAutoupdateSetting = $this->getPluginSpec_Property( 'autoupdate' );
-			if ( $sAutoupdateSetting == 'yes' ) {
-				return true;
-			}
-			else if ( $sAutoupdateSetting == 'block' ) {
-				return false;
-			}
-			// else == 'pass' - don't interfere
+			return ( $this->getPluginSpec_Property( 'autoupdate' ) == 'yes' );
 		}
 		return $fDoUpdate;
+	}
+
+	/**
+	 * @param array $aPlugins
+	 *
+	 * @return array
+	 */
+	public function doPluginLabels( $aPlugins ) {
+		$aLabelData = $this->getPluginLabels();
+		if ( empty( $aLabelData ) ) {
+			return $aPlugins;
+		}
+
+		$sPluginFile = $this->getPluginBaseFile();
+		// For this plugin, overwrite any specified settings
+		if ( array_key_exists( $sPluginFile, $aPlugins ) ) {
+			foreach ( $aLabelData as $sLabelKey => $sLabel ) {
+				$aPlugins[$sPluginFile][$sLabelKey] = $sLabel;
+			}
+		}
+
+		return $aPlugins;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getPluginLabels() {
+		return apply_filters( $this->doPluginPrefix( 'plugin_labels' ), $this->getPluginSpec_Labels() );
 	}
 
 	/**
@@ -419,6 +471,23 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	/**
+	 * @param boolean $fHasPermission
+	 * @return boolean
+	 */
+	public function filter_hasPermissionToView( $fHasPermission = true ) {
+		return $this->filter_hasPermissionToSubmit( $fHasPermission );
+	}
+
+	/**
+	 * @param boolean $fHasPermission
+	 * @return boolean
+	 */
+	public function filter_hasPermissionToSubmit( $fHasPermission = true ) {
+		// first a basic admin check
+		return $fHasPermission && is_super_admin() && current_user_can( $this->getBasePermissions() );
+	}
+
+	/**
 	 */
 	protected function doLoadTextDomain() {
 		return load_plugin_textdomain(
@@ -442,8 +511,8 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		if ( $this->getIsPage_PluginAdmin() ) {
 			$oWp = $this->loadWpFunctionsProcessor();
 			$oWp->doRedirect( $oWp->getUrl_CurrentAdminPage() );
-			return true;
 		}
+		return true;
 	}
 
 	/**
@@ -487,6 +556,27 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 
 	/**
 	 * @param string $sKey
+	 * @return array|string
+	 */
+	protected function getPluginSpec_Labels( $sKey = '' ) {
+		$aLabels = isset( self::$aPluginSpec['labels'] ) ? self::$aPluginSpec[ 'labels' ] : array();
+		//Prep the icon urls
+		if ( !empty( $aLabels['icon_url_16x16'] ) ) {
+			$aLabels['icon_url_16x16'] = $this->getPluginUrl_Image( $aLabels['icon_url_16x16'] );
+		}
+		if ( !empty( $aLabels['icon_url_32x32'] ) ) {
+			$aLabels['icon_url_32x32'] = $this->getPluginUrl_Image( $aLabels['icon_url_32x32'] );
+		}
+
+		if ( empty( $sKey ) ) {
+			return $aLabels;
+		}
+
+		return isset( self::$aPluginSpec['labels'][$sKey] ) ? self::$aPluginSpec['labels'][$sKey] : null;
+	}
+
+	/**
+	 * @param string $sKey
 	 * @return mixed|null
 	 */
 	protected function getPluginSpec_Menu( $sKey ) {
@@ -507,13 +597,6 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	protected function getPluginSpec_Property( $sKey ) {
 		return isset( self::$aPluginSpec['properties'][$sKey] ) ? self::$aPluginSpec['properties'][$sKey] : null;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getAdminMenuTitle() {
-		return $this->getPluginSpec_Property( 'menu_title' );
 	}
 
 	/**
@@ -559,10 +642,13 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	/**
+	 * Default is to take the 'Name' from the labels section but can override with "human_name" from property section.
+	 *
 	 * @return string
 	 */
 	public function getHumanName() {
-		return $this->getPluginSpec_Property( 'human_name' );
+		$aLabels = $this->getPluginLabels();
+		return $aLabels['Name'];
 	}
 
 	/**
