@@ -49,9 +49,6 @@ options:
     key: 'feedback_admin_notice'
     section: 'section_non_ui'
   -
-    key: 'update_success_tracker'
-    section: 'section_non_ui'
-  -
     key: 'capability_can_disk_write'
     section: 'section_non_ui'
   -

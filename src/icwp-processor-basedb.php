@@ -35,7 +35,7 @@ if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 
 		/**
 		 * @param ICWP_WPSF_FeatureHandler_Base $oFeatureOptions
-		 * @param null $sTableName
+		 * @param string $sTableName
 		 *
 		 * @throws Exception
 		 */
@@ -133,10 +133,10 @@ if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 		 */
 		protected function deleteAllRowsOlderThan( $nTimeStamp ) {
 			$sQuery = "
-			DELETE from `%s`
-			WHERE
-				`created_at` < '%s'
-		";
+				DELETE from `%s`
+				WHERE
+					`created_at` < '%s'
+			";
 			$sQuery = sprintf(
 				$sQuery,
 				$this->getTableName(),
@@ -208,10 +208,7 @@ if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 		/**
 		 * @return string
 		 */
-		protected function getTableName() {
-			if ( empty( $this->sFullTableName ) ) {
-				return $this->setTableName();
-			}
+		public function getTableName() {
 			return $this->sFullTableName;
 		}
 

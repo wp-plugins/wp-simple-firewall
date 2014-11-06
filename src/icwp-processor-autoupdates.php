@@ -60,18 +60,7 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_WPSF_Processor_Base {
 
 		// When we force run we only want our filters.
 		if ( $this->getForceRunAutoupdates() ) {
-			$aFilters = array(
-				'allow_minor_auto_core_updates',
-				'allow_major_auto_core_updates',
-				'auto_update_translation',
-				'auto_update_plugin',
-				'auto_update_theme',
-				'automatic_updates_is_vcs_checkout',
-				'automatic_updater_disabled'
-			);
-			foreach( $aFilters as $sFilter ) {
-				remove_all_filters( $sFilter );
-			}
+			$this->removeAllAutoupdateFilters();
 		}
 		
 		add_filter( 'allow_minor_auto_core_updates',	array( $this, 'autoupdate_core_minor' ), self::FilterPriority );
@@ -291,6 +280,24 @@ class ICWP_AutoupdatesProcessor_V5 extends ICWP_WPSF_Processor_Base {
 			$aEmailParams['to'] = $sOverride;
 		}
 		return $aEmailParams;
+	}
+
+	/**
+	 * Removes all filters that have been added from auto-update related WordPress filters
+	 */
+	protected function removeAllAutoupdateFilters() {
+		$aFilters = array(
+			'allow_minor_auto_core_updates',
+			'allow_major_auto_core_updates',
+			'auto_update_translation',
+			'auto_update_plugin',
+			'auto_update_theme',
+			'automatic_updates_is_vcs_checkout',
+			'automatic_updater_disabled'
+		);
+		foreach( $aFilters as $sFilter ) {
+			remove_all_filters( $sFilter );
+		}
 	}
 }
 

@@ -99,7 +99,7 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		/**
 		 * @var ICWP_WPSF_Plugin_Controller
 		 */
-		protected $oPluginController;
+		protected static $oPluginController;
 
 		/**
 		 * @param ICWP_WPSF_Plugin_Controller $oPluginController
@@ -107,14 +107,21 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 		public function __construct( ICWP_WPSF_Plugin_Controller $oPluginController ) {
 
 			// All core values of the plugin are derived from the values stored in this value object.
-			$this->oPluginController = $oPluginController;
-			$this->oPluginController->loadAllFeatures();
-			add_filter( $this->oPluginController->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
-			add_filter( $this->oPluginController->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
-			add_filter( $this->oPluginController->doPluginPrefix( 'plugin_update_message' ), array( $this, 'getPluginsListUpdateMessage' ) );
+			self::$oPluginController = $oPluginController;
+			$this->getController()->loadAllFeatures();
+			add_filter( $this->getController()->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'hasPermissionToView' ) );
+			add_filter( $this->getController()->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'hasPermissionToSubmit' ) );
+			add_filter( $this->getController()->doPluginPrefix( 'plugin_update_message' ), array( $this, 'getPluginsListUpdateMessage' ) );
 
 			add_action( 'admin_init',				array( $this, 'onWpAdminInit' ) );
 			add_action( 'plugin_action_links',		array( $this, 'onWpPluginActionLinks' ), 10, 4 );
+		}
+
+		/**
+		 * @return ICWP_WPSF_Plugin_Controller
+		 */
+		public static function getController() {
+			return self::$oPluginController;
 		}
 
 		public function onWpAdminInit() {
@@ -144,13 +151,6 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
 		public function getPluginsListUpdateMessage( $sMessage ) {
 			return _wpsf__( 'Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features.' );
-		}
-
-		/**
-		 * @return ICWP_WPSF_Plugin_Controller
-		 */
-		public function getController() {
-			return $this->oPluginController;
 		}
 
 		/**

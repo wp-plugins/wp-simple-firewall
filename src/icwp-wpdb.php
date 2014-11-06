@@ -15,12 +15,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists('ICWP_WpDb_V1') ):
+if ( !class_exists('ICWP_WPSF_WpDb_V1') ):
 
-	class ICWP_WpDb_V1 {
+	class ICWP_WPSF_WpDb_V1 {
 
 		/**
-		 * @var ICWP_WpDb_V1
+		 * @var ICWP_WPSF_WpDb_V1
 		 */
 		protected static $oInstance = NULL;
 
@@ -163,12 +163,14 @@ if ( !class_exists('ICWP_WpDb_V1') ):
 		}
 
 		/**
-		 * @param $nFormat
-		 * @return array|boolean
+		 * @param string $sTable
+		 * @param string $nFormat
+		 *
+		 * @return mixed
 		 */
-		public function selectAll( $nFormat = ARRAY_A ) {
+		public function selectAllFromTable( $sTable, $nFormat = ARRAY_A ) {
 			$oDb = $this->loadWpdb();
-			$sQuery = sprintf( "SELECT * FROM `%s` WHERE `deleted_at` = '0'", $this->getTableName() );
+			$sQuery = sprintf( "SELECT * FROM `%s` WHERE `deleted_at` = '0'", $sTable );
 			return $oDb->get_results( $sQuery, $nFormat );
 		}
 
@@ -228,7 +230,7 @@ endif;
 
 if ( !class_exists('ICWP_WPSF_WpDb') ):
 
-	class ICWP_WPSF_WpDb extends ICWP_WpDb_V1 {
+	class ICWP_WPSF_WpDb extends ICWP_WPSF_WpDb_V1 {
 		/**
 		 * @return ICWP_WPSF_WpDb
 		 */
