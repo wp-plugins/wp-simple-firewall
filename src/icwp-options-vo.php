@@ -43,6 +43,7 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 	 */
 	public function doOptionsSave() {
 		$this->cleanOptions();
+		$this->verifyImmutableOptions();
 		if ( !$this->getNeedSave() ) {
 			return true;
 		}
@@ -91,6 +92,31 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 	 */
 	public function getIsValidOptionKey( $sOptionKey ) {
 		return in_array( $sOptionKey, $this->getOptionsKeys() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getHiddenOptions() {
+
+		$aRawData = $this->getRawData_FullFeatureConfig();
+		$aOptionsData = array();
+
+		foreach( $aRawData['sections'] as $nPosition => $aRawSection ) {
+
+			// if hidden isn't specified we skip
+			if ( !isset( $aRawSection['hidden'] ) || !$aRawSection['hidden'] ) {
+				continue;
+			}
+			foreach( $this->getRawData_AllOptions() as $aRawOption ) {
+
+				if ( $aRawOption['section'] != $aRawSection['slug'] ) {
+					continue;
+				}
+				$aOptionsData[ $aRawOption['key'] ] = $this->getOpt( $aRawOption['key'] );
+			}
+		}
+		return $aOptionsData;
 	}
 
 	/**
@@ -227,6 +253,18 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 	/**
 	 * @return array
 	 */
+	public function getStoredOptions() {
+		try {
+			return $this->loadOptionsValuesFromStorage();
+		}
+		catch ( Exception $oE ) {
+			return array();
+		}
+	}
+
+	/**
+	 * @return array
+	 */
 	public function getRawData_FullFeatureConfig() {
 		if ( empty( $this->aRawOptionsConfigData ) ) {
 			$this->aRawOptionsConfigData = $this->readYamlConfiguration( $this->sOptionsName );
@@ -311,7 +349,10 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 				}
 			}
 
-			$this->aOptionsValues[ $sOptionKey ] = $mValue;
+			// Prevent overwriting of immutable options
+			if ( !isset( $aOption['immutable'] ) || $aOption['immutable'] !== true ) {
+				$this->aOptionsValues[ $sOptionKey ] = $mValue;
+			}
 		}
 		return true;
 	}
@@ -339,6 +380,17 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 			if ( !$this->getIsValidOptionKey( $sKey ) ) {
 				$this->setNeedSave( true );
 				unset( $this->aOptionsValues[$sKey] );
+			}
+		}
+	}
+
+	private function verifyImmutableOptions() {
+		$aRawOptions = $this->getRawData_AllOptions();
+		foreach( $aRawOptions as $aRawOption ) {
+			if ( isset( $aRawOption['immutable'] ) && $aRawOption['immutable'] === true ) {
+				if ( ! $this->getOptIs( $aRawOption['key'], $aRawOption['value'] ) ) {
+					$this->setOpt( $aRawOption[ 'key' ], $aRawOption[ 'value' ] );
+				}
 			}
 		}
 	}
