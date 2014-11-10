@@ -225,9 +225,9 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 		 */
 		protected function doPassCheckBlockWordpressTerms() {
 			$aTerms = array(
-				'/wp_/i',
-				'/user_login/i',
-				'/user_pass/i',
+				'/^wp_/i',
+				'/^user_login/i',
+				'/^user_pass/i',
 				'/0x[0-9a-f][0-9a-f]/i',
 				'/\/\*\*\//'
 			);
