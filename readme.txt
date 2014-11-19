@@ -230,17 +230,23 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 = 4.2.0 (Coming Soon) =
 
-*   ADDED:      Self-correcting database table validation.
 *   ADDED:      Audit Trail Improvements for auto-cleaning and export
 *   ADDED:      Audit Trail for more WordPress Simple Firewall events such as User Sessions, Login Protections, Comments Filtering etc.
+
+= 4.1.3 =
+*Released: - 19th November, 2014*
+
+Note: This release comes before further Audit Trail improvements.
+
+*   IMPROVED:   User Sessions are simplified.
+
+Note: This release comes before further Audit Trail improvements due to necessity for IPv6, which is becoming increasingly more common.
 
 = 4.1.2 =
 
 *   ADDED:      Self-correcting database table validation - if the structure of a database table isn't what is expected, it'll be re-created.
 
 = 4.1.1 =
-
-Note: This release comes before further Audit Trail improvements due to necessity for IPv6, which is becoming increasingly more common.
 
 *   WARNING:    Due to new IPv6 support, all databases tables will be rebuilt - all active user sessions will be destroyed.
 *   ADDED:      Preliminary support for IPv6 addresses throughout. We don't support whitelist ranges but IPv6 addresses are handled much more reliably in general.

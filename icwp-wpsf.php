@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 4.1.2
+ * Version: 4.1.3
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -166,7 +166,8 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 			}
 
 			if ( $sPluginFile == $oCon->getPluginBaseFile() ) {
-				if ( !$this->hasPermissionToSubmit() ) {
+				if ( apply_filters( $oCon->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
+
 					if ( array_key_exists( 'edit', $aActionLinks ) ) {
 						unset( $aActionLinks['edit'] );
 					}

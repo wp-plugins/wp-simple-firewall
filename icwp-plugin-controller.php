@@ -178,13 +178,11 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 
 			$sMenuTitle = $this->getPluginSpec_Menu( 'title' );
 			if ( is_null( $sMenuTitle ) ) {
-				$sMenuTitle = $aPluginLabels['Name'];
+				$sMenuTitle = $this->getHumanName();
 			}
 
-			$sIconUrl = $aPluginLabels['icon_url_16x16'];
-			if ( empty( $sIconUrl ) ) {
-				$sIconUrl = $this->getPluginUrl_Image( $this->getPluginSpec_Menu( 'icon_image' ) );
-			}
+			$sMenuIcon = $this->getPluginSpec_Menu( 'icon_image' );
+			$sIconUrl = empty( $sMenuIcon ) ? $aPluginLabels['icon_url_16x16'] : $this->getPluginUrl_Image( $sMenuIcon );
 
 			$sFullParentMenuId = $this->getPluginPrefix();
 			add_menu_page(
@@ -648,7 +646,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	public function getHumanName() {
 		$aLabels = $this->getPluginLabels();
-		return $aLabels['Name'];
+		return empty( $aLabels['Name'] ) ? $this->getPluginSpec_Property( 'human_name' ) : $aLabels['Name'] ;
 	}
 
 	/**
