@@ -317,7 +317,7 @@ class ICWP_WPSF_Processor_CommentsFilter_HumanSpam extends ICWP_WPSF_Processor_B
 	protected function setCommentStatusExplanation( $sExplanation ) {
 		$this->sCommentStatusExplanation =
 			'[* '.sprintf( _wpsf__('WordPress Simple Firewall plugin marked this comment as "%s" because: %s.'),
-				$this->sCommentStatus,
+				( $this->sCommentStatus == 0 ) ? _wpsf__('pending') : $this->sCommentStatus,
 				$sExplanation
 			)." *]\n";
 	}

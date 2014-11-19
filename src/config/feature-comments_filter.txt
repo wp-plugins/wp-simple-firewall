@@ -71,7 +71,7 @@ options:
   -
     key: 'comments_default_action_human_spam'
     section: 'section_enable_human_comment_spam_protection_filter'
-    default: 'spam'
+    default: 0
     type: 'select'
     value_options:
       -
