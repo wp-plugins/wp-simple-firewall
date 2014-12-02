@@ -121,8 +121,8 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * Hooked to 'plugins_loaded'
 	 */
 	public function onWpPluginsLoaded() {
-		add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'filter_hasPermissionToView' ) );
-		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'filter_hasPermissionToSubmit' ) );
+//		add_filter( $this->doPluginPrefix( 'has_permission_to_view' ), array( $this, 'filter_hasPermissionToView' ) );
+//		add_filter( $this->doPluginPrefix( 'has_permission_to_submit' ), array( $this, 'filter_hasPermissionToSubmit' ) );
 		if ( $this->getIsValidAdminArea() ) {
 			add_action( 'admin_notices',			array( $this, 'onWpAdminNotices' ) );
 			add_action( 'network_admin_notices',	array( $this, 'onWpAdminNotices' ) );
@@ -470,14 +470,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 
 	/**
 	 * @param boolean $fHasPermission
-	 * @return boolean
-	 */
-	public function filter_hasPermissionToView( $fHasPermission = true ) {
-		return $this->filter_hasPermissionToSubmit( $fHasPermission );
-	}
-
-	/**
-	 * @param boolean $fHasPermission
+	 *
 	 * @return boolean
 	 */
 	public function filter_hasPermissionToSubmit( $fHasPermission = true ) {
