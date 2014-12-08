@@ -168,7 +168,8 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	protected function createPluginMenu() {
 
-		if ( !$this->getPluginSpec_Menu( 'show' ) ) {
+		$fHideMenu = apply_filters( $this->doPluginPrefix( 'filter_hidePluginMenu' ), !$this->getPluginSpec_Menu( 'show' ) );
+		if ( $fHideMenu ) {
 			return true;
 		}
 
@@ -356,15 +357,12 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * This is a filter method designed to say whether WordPress plugin upgrades should be permitted,
 	 * based on the plugin settings.
 	 *
-	 * @param boolean $fDoUpdate
+	 * @param boolean $fDoAutoUpdate
 	 * @param string|object $mItemToUpdate
+	 *
 	 * @return boolean
 	 */
-	public function onWpAutoUpdate( $fDoUpdate, $mItemToUpdate ) {
-
-		if ( $this->getPluginSpec_Property( 'autoupdate' ) == 'pass' ) {
-			return $fDoUpdate;
-		}
+	public function onWpAutoUpdate( $fDoAutoUpdate, $mItemToUpdate ) {
 
 		if ( is_object( $mItemToUpdate ) && !empty( $mItemToUpdate->plugin ) ) { // 3.8.2+
 			$sItemFile = $mItemToUpdate->plugin;
@@ -374,13 +372,19 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		}
 		else {
 			// at this point we don't have a slug/file to use so we just return the current update setting
-			return $fDoUpdate;
+			return $fDoAutoUpdate;
 		}
 
 		if ( $sItemFile === $this->getPluginBaseFile() ) {
-			return ( $this->getPluginSpec_Property( 'autoupdate' ) == 'yes' );
+			$fAutoupdateSpec = $this->getPluginSpec_Property( 'autoupdate' );
+			if ( $fAutoupdateSpec == 'yes' ) {
+				$fDoAutoUpdate = true;
+			}
+			else if ( $fAutoupdateSpec == 'block' ) {
+				$fDoAutoUpdate = false;
+			}
 		}
-		return $fDoUpdate;
+		return $fDoAutoUpdate;
 	}
 
 	/**
@@ -470,7 +474,14 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 
 	/**
 	 * @param boolean $fHasPermission
-	 *
+	 * @return boolean
+	 */
+	public function filter_hasPermissionToView( $fHasPermission = true ) {
+		return $this->filter_hasPermissionToSubmit( $fHasPermission );
+	}
+
+	/**
+	 * @param boolean $fHasPermission
 	 * @return boolean
 	 */
 	public function filter_hasPermissionToSubmit( $fHasPermission = true ) {
@@ -680,7 +691,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 
 		$oDp = $this->loadDataProcessor();
 		foreach( $aFormSubmitOptions as $sOption ) {
-			if ( !is_null( $oDp->FetchRequest( $sOption ) ) ) {
+			if ( !is_null( $oDp->FetchRequest( $sOption, false ) ) ) {
 				return true;
 			}
 		}
@@ -722,6 +733,7 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 
 	/**
 	 * @param string $sPath
+	 *
 	 * @return string
 	 */
 	public function getPluginUrl( $sPath = '' ) {
@@ -799,6 +811,20 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	public function getPath_Assets( $sAsset = '' ) {
 		return $this->getRootDir().$this->getPluginSpec_Path( 'assets' ).ICWP_DS.$sAsset;
+	}
+
+	/**
+	 * @param string $sTmpFile
+	 *
+	 * @return string
+	 */
+	public function getPath_Temp( $sTmpFile = '' ) {
+		$oFs = $this->loadFileSystemProcessor();
+		$sTempPath = $this->getRootDir() . $this->getPluginSpec_Path( 'temp' ) . ICWP_DS;
+		if ( $oFs->mkdir( $sTempPath ) ) {
+			return $this->getRootDir().$this->getPluginSpec_Path( 'temp' ).ICWP_DS.$sTmpFile;
+		}
+		return null;
 	}
 
 	/**

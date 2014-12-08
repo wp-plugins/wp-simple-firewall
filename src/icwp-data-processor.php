@@ -403,27 +403,47 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 		}
 
 		/**
+		 * Strength can be 1, 3, 7, 15
+		 *
 		 * @param integer $nLength
-		 * @param boolean $fBeginLetter
+		 * @param integer $nStrength
+		 * @param boolean $fIgnoreAmb
 		 * @return string
 		 */
-		static public function GenerateRandomString( $nLength = 10, $fBeginLetter = false ) {
+		static public function GenerateRandomString( $nLength = 10, $nStrength = 7, $fIgnoreAmb = true ) {
 			$aChars = array( 'abcdefghijkmnopqrstuvwxyz' );
-			$aChars[] = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
+			if ( $nStrength & 2 ) {
+				$aChars[] = '023456789';
+			}
+
+			if ( $nStrength & 4 ) {
+				$aChars[] = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+			}
+
+			if ( $nStrength & 8 ) {
+				$aChars[] = '$%^&*#';
+			}
+
+			if ( !$fIgnoreAmb ) {
+				$aChars[] = 'OOlI1';
+			}
+
+			$sPassword = '';
 			$sCharset = implode( '', $aChars );
-			if ( $fBeginLetter ) {
-				$sPassword = $sCharset[ ( rand() % strlen( $sCharset ) ) ];
-			}
-			else {
-				$sPassword = '';
-			}
-			$sCharset .= '023456789';
-
-			for ( $i = $fBeginLetter? 1 : 0; $i < $nLength; $i++ ) {
-				$sPassword .= $sCharset[ ( rand() % strlen( $sCharset ) ) ];
+			for ( $i = 0; $i < $nLength; $i++ ) {
+				$sPassword .= $sCharset[(rand() % strlen( $sCharset ))];
 			}
 			return $sPassword;
+		}
+
+		/**
+		 * @return string
+		 */
+		static public function GenerateRandomLetter() {
+			$sAtoZ = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			$nRandomInt = rand( 0, (strlen( $sAtoZ ) - 1) );
+			return $sAtoZ[ $nRandomInt ];
 		}
 
 		/**
@@ -515,7 +535,6 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 			}
 			return self::ArrayFetch( $_GET, $sKey, $mDefault );
 		}
-
 		/**
 		 * @param string $sKey		The $_POST key
 		 * @param mixed $mDefault
@@ -533,15 +552,16 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 
 		/**
 		 * @param string $sKey
-		 * @param boolean $infIncludeCookie
+		 * @param boolean $fIncludeCookie
 		 * @param mixed $mDefault
+		 *
 		 * @return mixed|null
 		 */
-		public static function FetchRequest( $sKey, $infIncludeCookie = true, $mDefault = null ) {
+		public static function FetchRequest( $sKey, $fIncludeCookie = false, $mDefault = null ) {
 			$mFetchVal = self::FetchPost( $sKey );
 			if ( is_null( $mFetchVal ) ) {
 				$mFetchVal = self::FetchGet( $sKey );
-				if ( is_null( $mFetchVal && $infIncludeCookie ) ) {
+				if ( is_null( $mFetchVal && $fIncludeCookie ) ) {
 					$mFetchVal = self::FetchCookie( $sKey );
 				}
 			}
@@ -561,6 +581,22 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 				}
 			}
 			return self::ArrayFetch( $_SERVER, $sKey, $mDefault );
+		}
+
+		/**
+		 * @param $sData
+		 *
+		 * @return array|mixed
+		 */
+		public function doJsonDecode( $sData ) {
+			if ( function_exists( 'json_decode' ) ) {
+				return json_decode( $sData );
+			}
+			if ( !class_exists( 'JSON' )  ) {
+				require_once( 'lib/json/JSON.php' );
+			}
+			$oJson = new JSON();
+			return @$oJson->unserialize( $sData );
 		}
 
 		/**
@@ -628,6 +664,23 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 			}
 
 			return false;
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function getCanOpensslSign() {
+			return function_exists( 'base64_decode' )
+				   && function_exists( 'openssl_sign' )
+				   && function_exists( 'openssl_verify' )
+				   && defined( 'OPENSSL_ALGO_SHA1' );
+		}
+
+		/**
+		 * @return int
+		 */
+		public function time() {
+			return self::GetRequestTime();
 		}
 	}
 endif;

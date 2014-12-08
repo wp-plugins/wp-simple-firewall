@@ -3,8 +3,6 @@
  * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
- * Version: 2013-08-14_A
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -19,17 +17,17 @@
 
 require_once( dirname(__FILE__).'/icwp-data-processor.php' );
 
-if ( !class_exists('ICWP_WpFunctions_V5') ):
+if ( !class_exists('ICWP_WpFunctions_V6') ):
 
-	class ICWP_WpFunctions_V5 {
+	class ICWP_WpFunctions_V6 {
 
 		/**
-		 * @var ICWP_WpFunctions_V5
+		 * @var ICWP_WpFunctions_V6
 		 */
 		protected static $oInstance = NULL;
 
 		/**
-		 * @return ICWP_WpFunctions_V5
+		 * @return ICWP_WpFunctions_V6
 		 */
 		public static function GetInstance() {
 			if ( is_null( self::$oInstance ) ) {
@@ -93,6 +91,51 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		}
 
 		/**
+		 * @return null|string
+		 */
+		public function findWpLoad() {
+			$sLoaderPath	= dirname( __FILE__ );
+			$sFilename		= 'wp-load.php';
+			$nLimiter		= 0;
+			$nMaxLimit		= count( explode( DIRECTORY_SEPARATOR, trim( $sLoaderPath, DIRECTORY_SEPARATOR ) ) );
+			$fFound			= false;
+
+			do {
+				if ( @is_file( $sLoaderPath.DIRECTORY_SEPARATOR.$sFilename ) ) {
+					$fFound = true;
+					break;
+				}
+				$sLoaderPath = realpath( $sLoaderPath.DIRECTORY_SEPARATOR.'..' );
+				$nLimiter++;
+			}
+			while ( $nLimiter < $nMaxLimit );
+
+			return $fFound ? $sLoaderPath.DIRECTORY_SEPARATOR.$sFilename : null;
+		}
+
+		/**
+		 * @param string $sRedirect
+		 *
+		 * @return bool
+		 */
+		public function doForceRunAutomaticUpdates( $sRedirect = '' ) {
+
+			$lock_name = 'auto_updater.lock'; //ref: /wp-admin/includes/class-wp-upgrader.php
+			delete_option( $lock_name );
+			if ( !defined('DOING_CRON') ) {
+				define( 'DOING_CRON', true ); // this prevents WP from disabling plugins pre-upgrade
+			}
+
+			// does the actual updating
+			wp_maybe_auto_update();
+
+			if ( !empty( $sRedirect ) ) {
+				$this->doRedirect( network_admin_url( $sRedirect ) );
+			}
+			return true;
+		}
+
+		/**
 		 * The full plugin file to be upgraded.
 		 *
 		 * @param string $sPluginFile
@@ -107,6 +150,17 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 			$sUrl = $this->getPluginUpgradeLink( $sPluginFile );
 			wp_redirect( $sUrl );
 			exit();
+		}
+
+		/**
+		 * Clears any WordPress caches
+		 */
+		public function doBustCache() {
+			global $_wp_using_ext_object_cache, $wp_object_cache;
+			$_wp_using_ext_object_cache = false;
+			if( !empty( $wp_object_cache ) ) {
+				@$wp_object_cache->flush();
+			}
 		}
 
 		/**
@@ -145,7 +199,6 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 */
 		public function getIsPluginInstalled( $sCompareString, $sKey = 'Name' ) {
 			$aPlugins = $this->getPlugins();
-
 			if ( empty( $aPlugins ) || !is_array( $aPlugins ) ) {
 				return false;
 			}
@@ -156,6 +209,19 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 				}
 			}
 			return false;
+		}
+
+		/**
+		 * @param string $sPluginFile
+		 *
+		 * @return bool
+		 */
+		public function getIsPluginInstalledByFile( $sPluginFile ) {
+			$aPlugins = $this->getPlugins();
+			if ( empty( $aPlugins ) || !is_array( $aPlugins ) ) {
+				return false;
+			}
+			return array_key_exists( $sPluginFile, $aPlugins );
 		}
 
 		/**
@@ -212,6 +278,9 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 * @return array
 		 */
 		public function getPlugins() {
+			if ( !function_exists( 'get_plugins' ) ) {
+				require_once ( ABSPATH . 'wp-admin/includes/plugin.php' );
+			}
 			return function_exists( 'get_plugins' ) ? get_plugins() : array();
 		}
 
@@ -219,7 +288,7 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		 * @param string $sKey
 		 * @return object
 		 */
-		protected function getTransient( $sKey ) {
+		public function getTransient( $sKey ) {
 
 			// TODO: Handle multisite
 
@@ -241,6 +310,28 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 			}
 
 			return apply_filters( 'site_transient_'.$sKey, get_option( '_site_transient_'.$sKey ) );
+		}
+
+		/**
+		 * @param $sKey
+		 *
+		 * @return bool
+		 */
+		public function deleteTransient( $sKey ) {
+
+			if ( version_compare( $this->getWordpressVersion(), '2.7.9', '<=' ) ) {
+				return delete_option( $sKey );
+			}
+
+			if ( function_exists( 'delete_site_transient' ) ) {
+				return delete_site_transient( $sKey );
+			}
+
+			if ( version_compare( $this->getWordpressVersion(), '2.9.9', '<=' ) ) {
+				return delete_option( '_transient_'.$sKey );
+			}
+
+			return delete_option( '_site_transient_'.$sKey );
 		}
 
 		/**
@@ -293,11 +384,11 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 
 			$oDp = $this->loadDataProcessor();
 			// we prevent any repetitive redirect loops
-			if ( $oDp->FetchCookie( 'wpsf-isredirect' ) == 'yes' ) {
+			if ( $oDp->FetchCookie( 'icwp-isredirect' ) == 'yes' ) {
 				return;
 			}
 			else {
-				$oDp->setCookie( 'wpsf-isredirect', 'yes', 7 );
+				$oDp->setCookie( 'icwp-isredirect', 'yes', 7 );
 			}
 
 			wp_safe_redirect( $sUrl );
@@ -310,6 +401,22 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		public function getCurrentPage() {
 			global $pagenow;
 			return $pagenow;
+		}
+
+		/**
+		 * @return WP_Post
+		 */
+		public function getCurrentPost() {
+			global $post;
+			return $post;
+		}
+
+		/**
+		 * @return int
+		 */
+		public function getCurrentPostId() {
+			$oPost = $this->getCurrentPost();
+			return empty( $oPost->ID ) ? -1 : $oPost->ID;
 		}
 
 		/**
@@ -422,6 +529,26 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		}
 
 		/**
+		 * @param $sUsername
+		 *
+		 * @return bool|WP_User
+		 */
+		public function getUserByUsername( $sUsername ) {
+			if ( empty( $sUsername ) ) {
+				return false;
+			}
+
+			if ( version_compare( $this->getWordpressVersion(), '2.8.0', '<' ) ) {
+				$oUser = get_userdatabylogin( $sUsername );
+			}
+			else {
+				$oUser = get_user_by( 'login', $sUsername );
+			}
+
+			return $oUser;
+		}
+
+		/**
 		 * @param array $aLoginUrlParams
 		 */
 		public function forceUserRelogin( $aLoginUrlParams = array() ) {
@@ -511,21 +638,31 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 		}
 
 		/**
-		 * @param $sUsername
+		 * @return integer
+		 */
+		public function getCurrentUserLevel() {
+			$oUser = $this->getCurrentWpUser();
+			return ( is_object($oUser) && ($oUser instanceof WP_User) )? $oUser->get( 'user_level' ) : -1;
+		}
+
+		/**
+		 * @param string $sUsername
+		 *
+		 * @return bool
 		 */
 		public function setUserLoggedIn( $sUsername ) {
 
-			if ( version_compare( $this->getWordpressVersion(), '2.8.0', '<' ) ) {
-				$oUser = get_userdatabylogin( $sUsername );
-			}
-			else {
-				$oUser = get_user_by( 'login', $sUsername );
+			$oUser = $this->getUserByUsername( $sUsername );
+			if ( !is_a( $oUser, 'WP_User' ) ) {
+				return false;
 			}
 
 			wp_clear_auth_cookie();
-			wp_set_current_user ( $oUser->ID, $oUser->get( 'user_login' ) );
-			wp_set_auth_cookie  ( $oUser->ID, true );
+			wp_set_current_user( $oUser->ID, $oUser->get( 'user_login' ) );
+			wp_set_auth_cookie( $oUser->ID, true );
 			do_action( 'wp_login', $oUser->get( 'user_login' ), $oUser );
+
+			return true;
 		}
 
 		/**
@@ -537,7 +674,7 @@ if ( !class_exists('ICWP_WpFunctions_V5') ):
 
 		/**
 		 * @param string $sKey should be already prefixed
-		 * @param string $nId
+		 * @param int|null $nId - if omitted get for current user
 		 * @return bool|string
 		 */
 		public function getUserMeta( $sKey, $nId = null ) {
@@ -602,7 +739,7 @@ endif;
 
 if ( !class_exists('ICWP_WPSF_WpFunctions') ):
 
-	class ICWP_WPSF_WpFunctions extends ICWP_WpFunctions_V5 {
+	class ICWP_WPSF_WpFunctions extends ICWP_WpFunctions_V6 {
 		/**
 		 * @return ICWP_WPSF_WpFunctions
 		 */

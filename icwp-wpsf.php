@@ -131,17 +131,17 @@ if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 				$sRedirect = $oDp->FetchPost( 'redirect_page' );
 				$sRedirect = empty( $sRedirect ) ? $this->getController()->getPluginUrl_AdminMainPage() : $sRedirect;
 				//Someone clicked the button to acknowledge the update
-				if ( $oDp->FetchRequest( $oCon->doPluginPrefix( 'hide_update_notice' ) ) == 1 ) {
+				if ( $oDp->FetchRequest( $oCon->doPluginPrefix( 'hide_update_notice' ), false ) == 1 ) {
 					$this->updateVersionUserMeta();
 					$oWp->doRedirect( $sRedirect );
 				}
 
-				if ( $oDp->FetchRequest( $oCon->doPluginPrefix( 'hide_translation_notice' ) ) == 1 ) {
+				if ( $oDp->FetchRequest( $oCon->doPluginPrefix( 'hide_translation_notice' ), false ) == 1 ) {
 					$this->updateTranslationNoticeShownUserMeta();
 					$oWp->doRedirect( $sRedirect );
 				}
 
-				if ( $oDp->FetchRequest( $oCon->doPluginPrefix( 'hide_mailing_list_signup' ) ) == 1 ) {
+				if ( $oDp->FetchRequest( $oCon->doPluginPrefix( 'hide_mailing_list_signup' ), false ) == 1 ) {
 					$this->updateMailingListSignupShownUserMeta();
 				}
 			}

@@ -350,7 +350,10 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 			}
 
 			// Prevent overwriting of immutable options
-			if ( !isset( $aOption['immutable'] ) || $aOption['immutable'] !== true ) {
+			if ( isset( $aOption['immutable'] ) && $aOption['immutable'] === true ) {
+				$this->aOptionsValues[ $sOptionKey ] = $this->getOptDefault( $sOptionKey );
+			}
+			else {
 				$this->aOptionsValues[ $sOptionKey ] = $mValue;
 			}
 		}
