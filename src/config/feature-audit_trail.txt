@@ -10,6 +10,8 @@ sections:
     slug: 'section_enable_plugin_feature_audit_trail'
     primary: true
   -
+    slug: 'section_audit_trail_options'
+  -
     slug: 'section_enable_audit_contexts'
   -
     slug: 'section_non_ui'
@@ -22,6 +24,13 @@ options:
     section: 'section_enable_plugin_feature_audit_trail'
     default: 'N'
     type: 'checkbox'
+    link_info: 'http://icwp.io/5p'
+    link_blog: ''
+  -
+    key: 'audit_trail_auto_clean'
+    section: 'section_audit_trail_options'
+    default: 30
+    type: 'integer'
     link_info: 'http://icwp.io/5p'
     link_blog: ''
   -

@@ -37,6 +37,16 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_AuditTrail_V1') ):
 			return $this->oFeatureProcessor;
 		}
 
+		/**
+		 */
+		public function doPrePluginOptionsSave() {
+
+			$nAutoClean = $this->getOpt( 'audit_trail_auto_clean' );
+			if ( $nAutoClean < 0 ) {
+				$this->getOptionsVo()->resetOptToDefault( 'audit_trail_auto_clean' );
+			}
+		}
+
 		public function displayAuditTrailViewer() {
 
 			$oAuditTrail = $this->loadFeatureProcessor();
@@ -74,6 +84,10 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_AuditTrail_V1') ):
 					$sTitle = sprintf( _wpsf__( 'Enable Plugin Feature: %s' ), $this->getMainFeatureName() );
 					break;
 
+				case 'section_audit_trail_options' :
+					$sTitle = _wpsf__( 'Audit Trail Options' );
+					break;
+
 				case 'section_enable_audit_contexts' :
 					$sTitle = _wpsf__( 'Enable Audit Contexts' );
 					break;
@@ -99,6 +113,12 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_AuditTrail_V1') ):
 					$sName = sprintf( _wpsf__( 'Enable %s' ), $this->getMainFeatureName() );
 					$sSummary = sprintf( _wpsf__( 'Enable (or Disable) The %s Feature' ), $this->getMainFeatureName() );
 					$sDescription = sprintf( _wpsf__( 'Checking/Un-Checking this option will completely turn on/off the whole %s feature.' ), $this->getMainFeatureName() );
+					break;
+
+				case 'audit_trail_auto_clean' :
+					$sName = _wpsf__( 'Auto Clean' );
+					$sSummary = _wpsf__( 'Enable Audit Auto Cleaning' );
+					$sDescription = _wpsf__( 'Events older than the number of days specified will be automatically cleaned from the database.' );
 					break;
 
 				case 'enable_audit_context_users' :

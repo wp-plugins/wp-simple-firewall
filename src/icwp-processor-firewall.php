@@ -99,8 +99,8 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 		 */
 		public function doFirewallCheck() {
 			if ( $this->getOption('whitelist_admins') == 'Y' && is_super_admin() ) {
-				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('Logged-in administrators by-pass firewall') );
-				$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
+//				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('Logged-in administrators by-pass firewall') );
+//				$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
 				return true;
 			}
 
@@ -108,7 +108,7 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 			if ( $this->isVisitorOnWhitelist() ) {
 				$sAuditMessage =  _wpsf__('Visitor is white-listed by IP Address.')
 					.' '.sprintf( _wpsf__('Label: %s.'), empty( $this->m_sListItemLabel )? _wpsf__('No label') : $this->m_sListItemLabel );
-				$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
+//				$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
 				$this->doStatIncrement( 'firewall.allowed.whitelist' );
 				return true;
 			}
@@ -118,7 +118,6 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 				$this->sFirewallDieMessage .= ' Your IP is Blacklisted.';
 				$sAuditMessage =  _wpsf__('Visitor was black-listed by IP Address.')
 					.' '.sprintf( _wpsf__('Label: %s.'), empty( $this->m_sListItemLabel )? _wpsf__('No label') : $this->m_sListItemLabel );
-				$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
 				$this->doStatIncrement( 'firewall.blocked.blacklist' );
 				return false;
 			}
@@ -141,16 +140,16 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 			// Set up the page parameters ($_GET and $_POST and optionally $_COOKIE). If there are none, quit since there's nothing for the firewall to check.
 			$this->getPageParams();
 			if ( empty( $this->m_aPageParams ) ) {
-				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('After whitelist options were applied, there were no page parameters to check') );
-//			$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
+//				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('After whitelist options were applied, there were no page parameters to check') );
+//				$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
 				return true;
 			}
 
 			$fIsPermittedVisitor = true;
 			// Check if the page and its parameters are whitelisted.
 			if ( $fIsPermittedVisitor && $this->isPageWhitelisted() ) {
-				$sAuditMessage = _wpsf__('All page request parameters were white-listed.');
-//			$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
+//				$sAuditMessage = _wpsf__('All page request parameters were white-listed.');
+//				$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
 				$this->doStatIncrement( 'firewall.allowed.pagewhitelist' );
 				return true;
 			}
@@ -462,9 +461,6 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 				return true;
 			}
 			$sRequestPage = $this->m_aRequestUriParts[0];
-
-			// Now we compare pages in the whitelist with the parts of the request uri. If we get a match, that page is whitelisted
-			$aWhitelistPages = array_keys( $inaWhitelistPagesParams );
 
 			// 1. Is the page in the list of white pages?
 			$fPageWhitelisted = false;

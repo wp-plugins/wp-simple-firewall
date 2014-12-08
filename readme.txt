@@ -228,25 +228,22 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 == Changelog ==
 
-= 4.2.0 (Coming Soon) =
+= 4.2.0 =
+*Released: 12th December, 2014*
 
-*   ADDED:      Audit Trail Improvements for auto-cleaning and export
-*   ADDED:      Audit Trail for more WordPress Simple Firewall events such as User Sessions, Login Protections, Comments Filtering etc.
+*   ADDED:      Audit Trail Auto Cleaning - default cleans out entries older than 30 days.
+*   FIXED:      Various small bug fixes and code cleaning.
 
 = 4.1.4 =
 *Released: 24th November, 2014*
 
 *   FIXED:      Fixed small logic bug which prevented deactivation of the plugin on the UI.
 
-Note: This release comes before further Audit Trail improvements.
-
 = 4.1.3 =
 *Released: 19th November, 2014*
 
 *   IMPROVED:   User Sessions are simplified.
 *   UPDATED:    a few translation files based on the latest available contributions.
-
-Note: This release comes before further Audit Trail improvements.
 
 = 4.1.2 =
 
