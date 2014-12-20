@@ -1,4 +1,5 @@
----
+<?php
+return "---
 slug: 'lockdown'
 properties:
   name: 'Lockdown'
@@ -64,3 +65,4 @@ options:
   -
     key: 'current_plugin_version'
     section: 'section_non_ui'
+";

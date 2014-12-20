@@ -1,4 +1,5 @@
----
+<?php
+return "---
 slug: 'comments_filter'
 properties:
   name: 'Comments Filter'
@@ -139,28 +140,28 @@ options:
   -
     key: 'custom_message_checkbox'
     section: 'section_customize_messages_shown_to_user'
-    default: "I'm not a spammer"
+    default: \"I'm not a spammer\"
     type: 'text'
     link_info: 'http://icwp.io/3p'
     link_blog: ''
   -
     key: 'custom_message_alert'
     section: 'section_customize_messages_shown_to_user'
-    default: "Please check the box to confirm you're not a spammer"
+    default: \"Please check the box to confirm you're not a spammer\"
     type: 'text'
     link_info: 'http://icwp.io/3p'
     link_blog: ''
   -
     key: 'custom_message_comment_wait'
     section: 'section_customize_messages_shown_to_user'
-    default: "Please wait %s seconds before posting your comment"
+    default: \"Please wait %s seconds before posting your comment\"
     type: 'text'
     link_info: 'http://icwp.io/3p'
     link_blog: ''
   -
     key: 'custom_message_comment_reload'
     section: 'section_customize_messages_shown_to_user'
-    default: "Please reload this page to post a comment"
+    default: \"Please reload this page to post a comment\"
     type: 'text'
     link_info: 'http://icwp.io/3p'
     link_blog: ''
@@ -185,3 +186,4 @@ options:
     key: 'recreate_database_table'
     section: 'section_non_ui'
     default: false
+";

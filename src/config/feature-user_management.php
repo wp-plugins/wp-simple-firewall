@@ -1,4 +1,5 @@
----
+<?php
+return "---
 slug: 'user_management'
 properties:
   name: 'User Management'
@@ -121,3 +122,4 @@ options:
     key: 'recreate_database_table'
     section: 'section_non_ui'
     default: false
+";

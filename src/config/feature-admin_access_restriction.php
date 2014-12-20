@@ -1,4 +1,5 @@
----
+<?php
+return "---
 slug: 'admin_access_restriction'
 properties:
   name: 'Admin Access Restriction'
@@ -47,3 +48,4 @@ options:
     key: 'admin_access_key_cookie_name'
     section: 'section_non_ui'
     value: 'icwp_wpsf_aakcook'
+";

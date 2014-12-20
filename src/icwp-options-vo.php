@@ -1,4 +1,9 @@
 <?php
+if ( class_exists( 'ICWP_WPSF_OptionsVO', false ) ) {
+	return;
+}
+require_once( 'icwp-foundation.php' );
+
 class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 
 	/**
@@ -47,17 +52,15 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 		if ( !$this->getNeedSave() ) {
 			return true;
 		}
-		$oWpFunc = $this->loadWpFunctionsProcessor();
 		$this->setNeedSave( false );
-		return $oWpFunc->updateOption( $this->getOptionsStorageKey(), $this->getAllOptionsValues() );
+		return $this->loadWpFunctionsProcessor()->updateOption( $this->getOptionsStorageKey(), $this->getAllOptionsValues() );
 	}
 
 	/**
 	 * @return bool
 	 */
 	public function doOptionsDelete() {
-		$oWpFunc = $this->loadWpFunctionsProcessor();
-		return $oWpFunc->deleteOption( $this->getOptionsStorageKey() );
+		return $this->loadWpFunctionsProcessor()->deleteOption( $this->getOptionsStorageKey() );
 	}
 
 	/**
@@ -399,8 +402,9 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 	}
 
 	/**
-	 * @param boolean $fReload
-	 * @return array
+	 * @param bool $fReload
+	 *
+	 * @return array|mixed
 	 * @throws Exception
 	 */
 	private function loadOptionsValuesFromStorage( $fReload = false ) {
@@ -412,8 +416,7 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 				throw new Exception( 'Options Storage Key Is Empty' );
 			}
 
-			$oWpFunc = $this->loadWpFunctionsProcessor();
-			$this->aOptionsValues = $oWpFunc->getOption( $sStorageKey, array() );
+			$this->aOptionsValues = $this->loadWpFunctionsProcessor()->getOption( $sStorageKey, array() );
 			if ( empty( $this->aOptionsValues ) ) {
 				$this->aOptionsValues = array();
 				$this->setNeedSave( true );
@@ -424,15 +427,14 @@ class ICWP_WPSF_OptionsVO extends ICWP_WPSF_Foundation {
 
 	/**
 	 * @param string $sName
+	 *
 	 * @return array
 	 * @throws Exception
 	 */
 	private function readYamlConfiguration( $sName ) {
-		$oFs = $this->loadFileSystemProcessor();
-
 		$aConfig = array();
-		$sConfigFile = dirname( __FILE__ ). sprintf( ICWP_DS.'config'.ICWP_DS.'feature-%s.txt', $sName );
-		$sContents = $oFs->getFileContent( $sConfigFile );
+		$sConfigFile = dirname( __FILE__ ).ICWP_DS.sprintf( 'config'.ICWP_DS.'feature-%s.php', $sName );
+		$sContents = include( $sConfigFile );
 		if ( !empty( $sContents ) ) {
 			$oYaml = $this->loadYamlProcessor();
 			$aConfig = $oYaml->parseYamlString( $sContents );

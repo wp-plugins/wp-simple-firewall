@@ -1,4 +1,5 @@
----
+<?php
+return "---
 properties:
   slug: 'plugin'
   name: 'Dashboard'
@@ -87,3 +88,4 @@ options:
       -
         slug: 'email'
         storage_key: 'email'
+";

@@ -1,4 +1,5 @@
----
+<?php
+return "---
 slug: 'firewall'
 properties:
   name: 'Firewall'
@@ -153,3 +154,4 @@ options:
   -
     key: 'current_plugin_version'
     section: 'section_non_ui'
+";

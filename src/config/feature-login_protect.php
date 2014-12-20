@@ -1,4 +1,5 @@
----
+<?php
+return "---
 slug: 'login_protect'
 properties:
   name: 'Login Protection'
@@ -196,3 +197,4 @@ options:
     key: 'recreate_database_table'
     section: 'section_non_ui'
     default: false
+";

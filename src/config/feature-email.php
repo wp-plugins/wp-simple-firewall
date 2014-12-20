@@ -1,4 +1,5 @@
----
+<?php
+return "---
 slug: 'email'
 properties:
   name: 'Email'
@@ -32,3 +33,4 @@ options:
   -
     key: 'current_plugin_version'
     section: 'section_non_ui'
+";

@@ -1,4 +1,5 @@
----
+<?php
+return "---
 slug: 'autoupdates'
 properties:
   name: 'Automatic Updates'
@@ -106,3 +107,4 @@ options:
   -
     key: 'current_plugin_version'
     section: 'section_non_ui'
+";

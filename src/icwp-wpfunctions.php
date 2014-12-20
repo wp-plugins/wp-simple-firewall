@@ -15,9 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-data-processor.php' );
-
-if ( !class_exists('ICWP_WpFunctions_V6') ):
+if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 
 	class ICWP_WpFunctions_V6 {
 

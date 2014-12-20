@@ -1,4 +1,5 @@
----
+<?php
+return "---
 slug: 'audit_trail'
 properties:
   name: 'Audit Trail'
@@ -112,3 +113,4 @@ menu_items:
     slug: 'audit_trail_viewer'
     title: 'Audit Trail Viewer'
     callback: 'displayAuditTrailViewer'
+";
