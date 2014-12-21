@@ -1,4 +1,5 @@
----
+<?php
+return "---
 properties:
   version: '4.2.0'
   slug_parent: 'icwp'
@@ -55,3 +56,4 @@ action_links:
     -
       name: 'Dashboard'
       url_method_name: 'getPluginUrl_AdminMainPage'
+";
