@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, audit trail, ddos, brute force, protection, activity monitor, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack
 Requires at least: 3.2.0
 Tested up to: 4.1
-Stable tag: 4.2.0
+Stable tag: 4.2.1
 
 Complete and Simple WordPress Security. Unrestricted. No Premium Features.
 
@@ -227,6 +227,11 @@ You can either manually upgrade, or WordPress will handle it in due course.
 == Screenshots ==
 
 == Changelog ==
+
+= 4.2.1 =
+*Released: 22th December, 2014*
+
+*   FIXED:      Changes to how feature specifications are read from disk to prevent .tmp file build up.
 
 = 4.2.0 =
 *Released: 12th December, 2014*
