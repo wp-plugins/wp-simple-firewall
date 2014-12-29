@@ -26,7 +26,7 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V5') ):
 		/**
 		 * @var boolean
 		 */
-		protected $fDoForceRunAutoupdates = false;
+		protected $bDoForceRunAutoupdates = false;
 
 		/**
 		 * @param ICWP_WPSF_FeatureHandler_Autoupdates $oFeatureOptions
@@ -36,17 +36,17 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V5') ):
 		}
 
 		/**
-		 * @param boolean $infDoForceRun
+		 * @param boolean $bDoForceRun
 		 */
-		public function setForceRunAutoupdates( $infDoForceRun ) {
-			$this->fDoForceRunAutoupdates = $infDoForceRun;
+		public function setForceRunAutoupdates( $bDoForceRun ) {
+			$this->bDoForceRunAutoupdates = $bDoForceRun;
 		}
 
 		/**
 		 * @return boolean
 		 */
 		public function getIfForceRunAutoupdates() {
-			return apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'force_autoupdate' ), $this->fDoForceRunAutoupdates );
+			return apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'force_autoupdate' ), $this->bDoForceRunAutoupdates );
 		}
 
 		/**
@@ -77,6 +77,7 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V5') ):
 			add_filter( 'auto_core_update_email', array( $this, 'autoupdate_email_override' ), self::FilterPriority, 1 ); //more parameter options here for later
 
 			add_action( 'wp_loaded', array( $this, 'force_run_autoupdates' ) );
+			add_filter( 'plugin_row_meta', array( $this, 'fDetectAutomaticUpdateSettings' ), self::FilterPriority, 2 );
 		}
 
 		/**
@@ -97,7 +98,7 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V5') ):
 		 * This is a filter method designed to say whether a major core WordPress upgrade should be permitted,
 		 * based on the plugin settings.
 		 *
-		 * @param boolean $infUpdate
+		 * @param boolean $bUpdate
 		 * @return boolean
 		 */
 		public function autoupdate_core_major( $infUpdate ) {
@@ -109,17 +110,17 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V5') ):
 				$this->doStatIncrement( 'autoupdates.core.major.allowed' );
 				return true;
 			}
-			return $infUpdate;
+			return $bUpdate;
 		}
 
 		/**
 		 * This is a filter method designed to say whether a minor core WordPress upgrade should be permitted,
 		 * based on the plugin settings.
 		 *
-		 * @param boolean $infUpdate
+		 * @param boolean $bUpdate
 		 * @return boolean
 		 */
-		public function autoupdate_core_minor( $infUpdate ) {
+		public function autoupdate_core_minor( $bUpdate ) {
 			if ( $this->getIsOption('autoupdate_core', 'core_never') ) {
 				$this->doStatIncrement( 'autoupdates.core.minor.blocked' );
 				return false;
@@ -128,35 +129,34 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V5') ):
 				$this->doStatIncrement( 'autoupdates.core.minor.allowed' );
 				return true;
 			}
-			return $infUpdate;
+			return $bUpdate;
 		}
 
 		/**
 		 * This is a filter method designed to say whether a WordPress translations upgrades should be permitted,
 		 * based on the plugin settings.
 		 *
-		 * @param boolean $fDoAutoUpdate
+		 * @param boolean $bUpdate
 		 * @param string $sSlug
-		 *
 		 * @return boolean
 		 */
-		public function autoupdate_translations( $fDoAutoUpdate, $sSlug ) {
-			if ( $this->getIsOption('enable_autoupdate_translations', 'Y') ) {
+		public function autoupdate_translations( $bUpdate, $sSlug ) {
+			if ( $this->getIsOption( 'enable_autoupdate_translations', 'Y' ) ) {
 				return true;
 			}
-			return $fDoAutoUpdate;
+			return $bUpdate;
 		}
 
 		/**
 		 * This is a filter method designed to say whether WordPress plugin upgrades should be permitted,
 		 * based on the plugin settings.
 		 *
-		 * @param boolean $fDoAutoUpdate
+		 * @param boolean $bDoAutoUpdate
 		 * @param StdClass|string $mItem
 		 *
 		 * @return boolean
 		 */
-		public function autoupdate_plugins( $fDoAutoUpdate, $mItem ) {
+		public function autoupdate_plugins( $bDoAutoUpdate, $mItem ) {
 
 			// first, is global auto updates for plugins set
 			if ( $this->getIsOption('enable_autoupdate_plugins', 'Y') ) {
@@ -172,36 +172,37 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V5') ):
 			}
 			// at this point we don't have a slug to use so we just return the current update setting
 			else {
-				return $fDoAutoUpdate;
+				return $bDoAutoUpdate;
 			}
 
+			// If it's this plugin and autoupdate this plugin is set...
 			if ( $sItemFile === $this->getFeatureOptions()->getPluginBaseFile() ) {
 				if ( $this->getIsOption('autoupdate_plugin_self', 'Y') ) {
 					$this->doStatIncrement( 'autoupdates.plugins.self' );
-					$fDoAutoUpdate = true;
+					$bDoAutoUpdate = true;
 				}
 				else {
-					$fDoAutoUpdate = false;
+					$bDoAutoUpdate = false;
 				}
 			}
 
-			$aAutoupdatePluginFiles = apply_filters( 'icwp_wpsf_autoupdate_plugins', array() );
-			if ( !empty( $aAutoupdatePluginFiles ) && is_array( $aAutoupdatePluginFiles ) && in_array( $sItemFile, $aAutoupdatePluginFiles ) ) {
-				$fDoAutoUpdate = true;
+			$aAutoupdateFiles = apply_filters( 'icwp_wpsf_autoupdate_plugins', array() );
+			if ( !empty( $aAutoupdateFiles ) && is_array( $aAutoupdateFiles ) && in_array( $sItemFile, $aAutoupdateFiles ) ) {
+				$bDoAutoUpdate = true;
 			}
-			return $fDoAutoUpdate;
+			return $bDoAutoUpdate;
 		}
 
 		/**
 		 * This is a filter method designed to say whether WordPress theme upgrades should be permitted,
 		 * based on the plugin settings.
 		 *
-		 * @param boolean $fDoAutoUpdate
+		 * @param boolean $bDoAutoUpdate
 		 * @param stdClass|string $mItem
 		 *
 		 * @return boolean
 		 */
-		public function autoupdate_themes( $fDoAutoUpdate, $mItem ) {
+		public function autoupdate_themes( $bDoAutoUpdate, $mItem ) {
 
 			// first, is global auto updates for themes set
 			if ( $this->getIsOption('enable_autoupdate_themes', 'Y') ) {
@@ -217,14 +218,14 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V5') ):
 			}
 			// at this point we don't have a slug to use so we just return the current update setting
 			else {
-				return $fDoAutoUpdate;
+				return $bDoAutoUpdate;
 			}
 
-			$aAutoupdateThemeFiles = apply_filters( 'icwp_wpsf_autoupdate_themes', array() );
-			if ( !empty( $aAutoupdateThemeFiles ) && is_array($aAutoupdateThemeFiles) && in_array( $sItemFile, $aAutoupdateThemeFiles ) ) {
-				$fDoAutoUpdate = true;
+			$aAutoupdateFiles = apply_filters( 'icwp_wpsf_autoupdate_themes', array() );
+			if ( !empty( $aAutoupdateFiles ) && is_array( $aAutoupdateFiles ) && in_array( $sItemFile, $aAutoupdateFiles ) ) {
+				$bDoAutoUpdate = true;
 			}
-			return $fDoAutoUpdate;
+			return $bDoAutoUpdate;
 		}
 
 		/**
@@ -242,10 +243,10 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V5') ):
 		/**
 		 * A filter on whether or not a notification email is send after core upgrades are attempted.
 		 *
-		 * @param boolean $fSendEmail
+		 * @param boolean $bSendEmail
 		 * @return boolean
 		 */
-		public function autoupdate_send_email( $fSendEmail ) {
+		public function autoupdate_send_email( $bSendEmail ) {
 			return $this->getIsOption( 'enable_upgrade_notification_email', 'Y' );
 		}
 
@@ -261,6 +262,31 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V5') ):
 				$aEmailParams['to'] = $sOverride;
 			}
 			return $aEmailParams;
+		}
+
+		/**
+		 * @filter
+		 * @param array $aPluginMeta
+		 * @param string $sPluginBaseFileName
+		 * @return array
+		 */
+		public function fDetectAutomaticUpdateSettings( $aPluginMeta, $sPluginBaseFileName ) {
+
+			// first we prevent collision between iControlWP <-> Simple Firewall by not duplicating icons
+			foreach( $aPluginMeta as $sMetaItem ) {
+				if ( strpos( $sMetaItem, 'icwp-pluginautoupdateicon' ) !== false ) {
+					return $aPluginMeta;
+				}
+			}
+
+			$bUpdate = $this->loadWpFunctionsProcessor()->getIsPluginAutomaticallyUpdated( $sPluginBaseFileName );
+			$sUpdateString = sprintf(
+				'<span title="%s" class="icwp-pluginautoupdateicon dashicons dashicons-%s"></span>',
+				$bUpdate ? 'WordPress will automatically update this plugin as updates become available' : 'Will need to be manually updated',
+				$bUpdate ? 'update' : 'hammer'
+			);
+			array_unshift( $aPluginMeta, sprintf( '%s', $sUpdateString ) );
+			return $aPluginMeta;
 		}
 
 		/**
