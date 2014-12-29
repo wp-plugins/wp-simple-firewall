@@ -42,7 +42,7 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 		/**
 		 * @var boolean
 		 */
-		protected $fIsMultisite;
+		protected $bIsMultisite;
 
 		public function __construct() {}
 
@@ -96,11 +96,11 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 			$sFilename		= 'wp-load.php';
 			$nLimiter		= 0;
 			$nMaxLimit		= count( explode( DIRECTORY_SEPARATOR, trim( $sLoaderPath, DIRECTORY_SEPARATOR ) ) );
-			$fFound			= false;
+			$bFound			= false;
 
 			do {
 				if ( @is_file( $sLoaderPath.DIRECTORY_SEPARATOR.$sFilename ) ) {
-					$fFound = true;
+					$bFound = true;
 					break;
 				}
 				$sLoaderPath = realpath( $sLoaderPath.DIRECTORY_SEPARATOR.'..' );
@@ -108,7 +108,7 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 			}
 			while ( $nLimiter < $nMaxLimit );
 
-			return $fFound ? $sLoaderPath.DIRECTORY_SEPARATOR.$sFilename : null;
+			return $bFound ? $sLoaderPath.DIRECTORY_SEPARATOR.$sFilename : null;
 		}
 
 		/**
@@ -333,6 +333,20 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 		}
 
 		/**
+		 * @param string $sPluginBaseFilename
+		 *
+		 * @return null|stdClass
+		 */
+		public function getPluginDataAsObject( $sPluginBaseFilename ){
+			$aPlugins = get_plugins();
+			if ( !isset( $aPlugins[$sPluginBaseFilename] ) || !is_array( $aPlugins[$sPluginBaseFilename] ) ) {
+				return null;
+			}
+
+			return $this->loadDataProcessor()->convertArrayToStdClass( $aPlugins[ $sPluginBaseFilename ] );
+		}
+
+		/**
 		 * @return string
 		 */
 		public function getWordpressVersion() {
@@ -350,6 +364,34 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 				}
 			}
 			return $this->sWpVersion;
+		}
+
+		/**
+		 * @param string $sVersionToMeet
+		 *
+		 * @return boolean
+		 */
+		public function getWordpressIsAtLeastVersion( $sVersionToMeet ) {
+			return version_compare( $this->getWordpressVersion(), $sVersionToMeet, '>=' );
+		}
+
+		/**
+		 * @param string $sPluginBaseFilename
+		 *
+		 * @return boolean
+		 */
+		public function getIsPluginAutomaticallyUpdated( $sPluginBaseFilename ) {
+			// This is due to a change in the filter introduced in version 3.8.2
+			if ( $this->getWordpressIsAtLeastVersion( '3.8.2' ) ) {
+				$mPluginItem = new stdClass();
+				$mPluginItem->plugin = $sPluginBaseFilename;
+			}
+			else {
+				$mPluginItem = $sPluginBaseFilename;
+			}
+
+			$bUpdate = apply_filters( 'auto_update_plugin', false, $mPluginItem );
+			return $bUpdate;
 		}
 
 		/**
@@ -565,10 +607,10 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 		 * @return bool
 		 */
 		public function isMultisite() {
-			if ( !isset( $this->fIsMultisite ) ) {
-				$this->fIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
+			if ( !isset( $this->bIsMultisite ) ) {
+				$this->bIsMultisite = function_exists( 'is_multisite' ) && is_multisite();
 			}
-			return $this->fIsMultisite;
+			return $this->bIsMultisite;
 		}
 
 		/**

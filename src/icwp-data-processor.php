@@ -29,7 +29,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 		/**
 		 * @var bool
 		 */
-		public static $fUseFilterInput = false;
+		public static $bUseFilterInput = false;
 
 		/**
 		 * @var string
@@ -58,16 +58,16 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 
 		/**
 		 *
-		 * @param boolean $fAsHuman
+		 * @param boolean $bAsHuman
 		 * @return bool|integer - visitor IP Address as IP2Long
 		 */
-		public function getVisitorIpAddress( $fAsHuman = true ) {
+		public function getVisitorIpAddress( $bAsHuman = true ) {
 
 			if ( empty( self::$sIpAddress ) ) {
 				self::$sIpAddress = $this->findViableVisitorIp();
 			}
 
-			if ( !self::$sIpAddress || $fAsHuman ) {
+			if ( !self::$sIpAddress || $bAsHuman ) {
 				return self::$sIpAddress;
 			}
 
@@ -181,7 +181,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 
 			$aRawList = array_map( 'trim', preg_split( '/\r\n|\r|\n/', $sRawList ) );
 			$aNewList = array();
-			$fHadStar = false;
+			$bHadStar = false;
 			foreach( $aRawList as $sKey => $sRawLine ) {
 
 				if ( empty( $sRawLine ) ) {
@@ -191,10 +191,10 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 				$aParts = explode( ',', $sRawLine, 2 );
 				// we only permit 1x line beginning with *
 				if ( $aParts[0] == '*' ) {
-					if ( $fHadStar ) {
+					if ( $bHadStar ) {
 						continue;
 					}
-					$fHadStar = true;
+					$bHadStar = true;
 				}
 				else {
 					//If there's only 1 item on the line, we assume it to be a global
@@ -407,10 +407,11 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 		 *
 		 * @param integer $nLength
 		 * @param integer $nStrength
-		 * @param boolean $fIgnoreAmb
+		 * @param boolean $bIgnoreAmb
+		 *
 		 * @return string
 		 */
-		static public function GenerateRandomString( $nLength = 10, $nStrength = 7, $fIgnoreAmb = true ) {
+		static public function GenerateRandomString( $nLength = 10, $nStrength = 7, $bIgnoreAmb = true ) {
 			$aChars = array( 'abcdefghijkmnopqrstuvwxyz' );
 
 			if ( $nStrength & 2 ) {
@@ -425,7 +426,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 				$aChars[] = '$%^&*#';
 			}
 
-			if ( !$fIgnoreAmb ) {
+			if ( !$bIgnoreAmb ) {
 				$aChars[] = 'OOlI1';
 			}
 
@@ -475,7 +476,7 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 		 * @return bool
 		 */
 		static public function GetUseFilterInput() {
-			return self::$fUseFilterInput && function_exists( 'filter_input' );
+			return self::$bUseFilterInput && function_exists( 'filter_input' );
 		}
 
 		/**
@@ -552,16 +553,16 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 
 		/**
 		 * @param string $sKey
-		 * @param boolean $fIncludeCookie
+		 * @param boolean $bIncludeCookie
 		 * @param mixed $mDefault
 		 *
 		 * @return mixed|null
 		 */
-		public static function FetchRequest( $sKey, $fIncludeCookie = false, $mDefault = null ) {
+		public static function FetchRequest( $sKey, $bIncludeCookie = false, $mDefault = null ) {
 			$mFetchVal = self::FetchPost( $sKey );
 			if ( is_null( $mFetchVal ) ) {
 				$mFetchVal = self::FetchGet( $sKey );
-				if ( is_null( $mFetchVal && $fIncludeCookie ) ) {
+				if ( is_null( $mFetchVal && $bIncludeCookie ) ) {
 					$mFetchVal = self::FetchCookie( $sKey );
 				}
 			}
@@ -605,18 +606,18 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 		 * @param int $nExpireLength
 		 * @param null $sPath
 		 * @param null $sDomain
-		 * @param bool $fSsl
+		 * @param bool $bSsl
 		 *
 		 * @return bool
 		 */
-		public function setCookie( $sKey, $mValue, $nExpireLength = 3600, $sPath = null, $sDomain = null, $fSsl = false ) {
+		public function setCookie( $sKey, $mValue, $nExpireLength = 3600, $sPath = null, $sDomain = null, $bSsl = false ) {
 			return setcookie(
 				$sKey,
 				$mValue,
 				$this->GetRequestTime() + $nExpireLength,
 				( is_null( $sPath ) && defined( 'COOKIEPATH' ) ) ? COOKIEPATH : $sPath,
 				( is_null( $sDomain ) && defined( 'COOKIE_DOMAIN' ) ) ? COOKIE_DOMAIN : $sDomain,
-				$fSsl
+				$bSsl
 			);
 		}
 
@@ -674,6 +675,21 @@ if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
 				   && function_exists( 'openssl_sign' )
 				   && function_exists( 'openssl_verify' )
 				   && defined( 'OPENSSL_ALGO_SHA1' );
+		}
+
+		/**
+		 * @param array $aArray
+		 *
+		 * @return stdClass
+		 */
+		public function convertArrayToStdClass( $aArray ) {
+			$oObject = new stdClass();
+			if ( !empty( $aArray ) && is_array( $aArray ) ) {
+				foreach( $aArray as $sKey => $mValue ) {
+					$oObject->{$sKey} = $mValue;
+				}
+			}
+			return $oObject;
 		}
 
 		/**
