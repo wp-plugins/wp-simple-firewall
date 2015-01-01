@@ -107,4 +107,8 @@ options:
   -
     key: 'current_plugin_version'
     section: 'section_non_ui'
+  -
+    key: 'action_hook_priority'
+    section: 'section_non_ui'
+    default: 1000
 ";

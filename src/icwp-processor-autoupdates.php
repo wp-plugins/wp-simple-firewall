@@ -21,8 +21,6 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V6') ):
 
 	class ICWP_WPSF_AutoupdatesProcessor_V6 extends ICWP_WPSF_Processor_Base {
 
-		const FilterPriority = 1001;
-
 		/**
 		 * @var boolean
 		 */
@@ -53,33 +51,35 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V6') ):
 		 */
 		public function run() {
 
+			$nFilterPriority = $this->getHookPriority();
+
 			$oDp = $this->loadDataProcessor();
 			if ( $oDp->FetchGet( 'forcerun' ) == 1 ) {
 				$this->setForceRunAutoupdates( true );
 			}
 
-			add_filter( 'allow_minor_auto_core_updates',	array( $this, 'autoupdate_core_minor' ), self::FilterPriority );
-			add_filter( 'allow_major_auto_core_updates',	array( $this, 'autoupdate_core_major' ), self::FilterPriority );
+			add_filter( 'allow_minor_auto_core_updates',	array( $this, 'autoupdate_core_minor' ), $nFilterPriority );
+			add_filter( 'allow_major_auto_core_updates',	array( $this, 'autoupdate_core_major' ), $nFilterPriority );
 
-			add_filter( 'auto_update_translation',	array( $this, 'autoupdate_translations' ), self::FilterPriority, 2 );
-			add_filter( 'auto_update_plugin',		array( $this, 'autoupdate_plugins' ), self::FilterPriority, 2 );
-			add_filter( 'auto_update_theme',		array( $this, 'autoupdate_themes' ), self::FilterPriority, 2 );
+			add_filter( 'auto_update_translation',	array( $this, 'autoupdate_translations' ), $nFilterPriority, 2 );
+			add_filter( 'auto_update_plugin',		array( $this, 'autoupdate_plugins' ), $nFilterPriority, 2 );
+			add_filter( 'auto_update_theme',		array( $this, 'autoupdate_themes' ), $nFilterPriority, 2 );
 
 			if ( $this->getIsOption('enable_autoupdate_ignore_vcs', 'Y') ) {
 				add_filter( 'automatic_updates_is_vcs_checkout', array( $this, 'disable_for_vcs' ), 10, 2 );
 			}
 
 			if ( $this->getIsOption('enable_autoupdate_disable_all', 'Y') ) {
-				add_filter( 'automatic_updater_disabled', '__return_true', self::FilterPriority );
+				add_filter( 'automatic_updater_disabled', '__return_true', $nFilterPriority );
 			}
 
-			add_filter( 'auto_core_update_send_email', array( $this, 'autoupdate_send_email' ), self::FilterPriority, 1 ); //more parameter options here for later
-			add_filter( 'auto_core_update_email', array( $this, 'autoupdate_email_override' ), self::FilterPriority, 1 ); //more parameter options here for later
+			add_filter( 'auto_core_update_send_email', array( $this, 'autoupdate_send_email' ), $nFilterPriority, 1 ); //more parameter options here for later
+			add_filter( 'auto_core_update_email', array( $this, 'autoupdate_email_override' ), $nFilterPriority, 1 ); //more parameter options here for later
 
 			add_action( 'wp_loaded', array( $this, 'force_run_autoupdates' ) );
 
 			// Adds automatic update indicator icon to all plugin meta in plugin listing.
-//			add_filter( 'plugin_row_meta', array( $this, 'fAddAutomaticUpdatePluginMeta' ), self::FilterPriority, 2 );
+//			add_filter( 'plugin_row_meta', array( $this, 'fAddAutomaticUpdatePluginMeta' ), $nFilterPriority, 2 );
 
 			// Adds automatic update indicator column to all plugins in plugin listing.
 			add_filter( 'manage_plugins_columns', array( $this, 'fAddPluginsListAutoUpdateColumn') );
@@ -299,7 +299,7 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V6') ):
 		public function fAddPluginsListAutoUpdateColumn( $aColumns ) {
 			if ( !isset( $aColumns['icwp_autoupdate'] ) ) {
 				$aColumns['icwp_autoupdate'] = 'Auto Update';
-				add_action( 'manage_plugins_custom_column', array( $this, 'aPrintPluginsListAutoUpdateColumnContent' ), self::FilterPriority, 2 );
+				add_action( 'manage_plugins_custom_column', array( $this, 'aPrintPluginsListAutoUpdateColumnContent' ), $this->getHookPriority(), 2 );
 			}
 			return $aColumns;
 		}
@@ -345,6 +345,13 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V6') ):
 			foreach( $aFilters as $sFilter ) {
 				remove_all_filters( $sFilter );
 			}
+		}
+
+		/**
+		 * @return int
+		 */
+		protected function getHookPriority() {
+			return $this->getOption( 'action_hook_priority', 1001 );
 		}
 	}
 
