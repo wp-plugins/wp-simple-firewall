@@ -27,6 +27,7 @@ class ICWP_WPSF_Processor_LoginProtect_Gasp extends ICWP_WPSF_Processor_Base {
 	protected $oFeatureOptions;
 
 	/**
+	 * @param ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions
 	 */
 	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
 		$this->oFeatureOptions = $oFeatureOptions;

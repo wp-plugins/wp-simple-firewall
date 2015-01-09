@@ -75,7 +75,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_LoginProtect') ):
 					break;
 
 				case 'section_bypass_login_protection' :
-					$sTitle = _wpsf__('By-Pass Login Protection');
+					$sTitle = _wpsf__( 'By-Pass Login Protection' );
+					break;
+
+				case 'section_rename_wplogin' :
+					$sTitle = _wpsf__( 'Rename WP Login Page' );
 					break;
 
 				case 'section_two_factor_authentication' :
@@ -131,6 +135,15 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_LoginProtect') ):
 						_wpsf__( 'Take a new line per address. Your IP address is: %s' ),
 						'<span class="code">'.( $oDp->getVisitorIpAddress( true ) ).'</span>'
 					);
+					break;
+
+				case 'rename_wplogin_path' :
+					$sName = _wpsf__( 'Rename WP Login' );
+					$sSummary = _wpsf__( 'Rename The WordPress Login Page' );
+					$sDescription = _wpsf__( 'Creating a path here will disable your wp-login.php' )
+					                .'<br />'
+					                .sprintf( _wpsf__( 'Your current login URL is: %s'), '<strong>'.wp_login_url().'</strong>' )
+					;
 					break;
 
 				case 'two_factor_auth_user_roles' :
@@ -272,6 +285,21 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_LoginProtect') ):
 		public function setKeys() {
 			$this->getTwoAuthSecretKey();
 			$this->getGaspKey();
+		}
+
+		/**
+		 * @return string
+		 */
+		public function getCustomLoginPath() {
+			return $this->getOpt( 'rename_wplogin_path', '' );
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function getIsCustomLoginPathEnabled() {
+			$sPath = $this->getOpt( 'rename_wplogin_path', '' );
+			return !empty( $sPath );
 		}
 
 		/**

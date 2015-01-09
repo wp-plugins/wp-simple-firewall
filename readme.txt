@@ -12,7 +12,7 @@ Complete and Simple WordPress Security. Unrestricted. No Premium Features.
 
 == Description ==
 
-The WordPress Simple Firewall is [all you need to secure your WordPress](http://icwp.io/wpsf09) sites in 6 Key Areas:
+The WordPress Simple Firewall is [all you need to secure your WordPress](http://icwp.io/wpsf09) sites in 7 Key Areas:
 
 = Plugin Admin Access Protection =
 The **only** WordPress security plugin with a WordPress-independent security key to protects itself. [more info](http://icwp.io/wpsf05)
@@ -227,6 +227,11 @@ You can either manually upgrade, or WordPress will handle it in due course.
 == Screenshots ==
 
 == Changelog ==
+
+= 4.3.0 =
+
+*   ADDED:      New Feature - Rename WP Login Page.
+*   ADDED:      UI indicators on whether plugins will be automatically updated in the plugins listing.
 
 = 4.2.1 =
 *Released: 22th December, 2014*

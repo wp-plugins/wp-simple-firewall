@@ -13,6 +13,8 @@ sections:
   -
     slug: 'section_bypass_login_protection'
   -
+    slug: 'section_rename_wplogin'
+  -
     slug: 'section_two_factor_authentication'
   -
     slug: 'section_brute_force_login_protection'
@@ -46,6 +48,13 @@ options:
     default: ''
     type: 'ip_addresses'
     link_info: 'http://icwp.io/52'
+    link_blog: ''
+  -
+    key: 'rename_wplogin_path'
+    section: 'section_rename_wplogin'
+    default: ''
+    type: 'text'
+    link_info: 'http://icwp.io/4g'
     link_blog: ''
   -
     key: 'two_factor_auth_user_roles'

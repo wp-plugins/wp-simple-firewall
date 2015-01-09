@@ -143,6 +143,14 @@ if ( !class_exists('ICWP_WPSF_WpDb_V1') ):
 		}
 
 		/**
+		 * @return string
+		 */
+		public function getTable_Posts() {
+			$oDb = $this->loadWpdb();
+			return $oDb->posts;
+		}
+
+		/**
 		 * @param $sSql
 		 *
 		 * @return null|mixed

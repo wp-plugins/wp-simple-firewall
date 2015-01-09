@@ -68,7 +68,7 @@ class ICWP_WPSF_Processor_UserManagement_V2 extends ICWP_WPSF_BaseDbProcessor {
 		}
 
 		// Check the current logged-in user every page load.
-		add_action( 'wp_loaded', array( $this, 'checkCurrentUser_Action' ) );
+		add_action( 'wp_loaded', array( $this, 'checkCurrentUser_Action' ), 1 );
 
 		// Check login attempts
 		// At this stage (30,3) WordPress has already (20) authenticated the user. So if the login
@@ -131,11 +131,9 @@ class ICWP_WPSF_Processor_UserManagement_V2 extends ICWP_WPSF_BaseDbProcessor {
 			}
 
 			// At this point session is validated
-			$sWpLogin = 'wp-login.php';
 			$oDp = $this->loadDataProcessor();
 			$oWp = $this->loadWpFunctionsProcessor();
-			if ( $oDp->FetchGet( 'action' ) != 'logout' && ( substr( $oWp->getCurrentPage(), -strlen( $sWpLogin ) ) === $sWpLogin ) ) {
-				// send query arg to prevent redirect loop here.
+			if ( $oDp->FetchGet( 'action' ) != 'logout' && $oWp->getIsLoginUrl() ) {
 				$oWp->redirectToAdmin();
 			}
 

@@ -32,6 +32,11 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 	protected $oProcessorGasp;
 
 	/**
+	 * @var ICWP_WPSF_Processor_LoginProtect_WpLogin
+	 */
+	protected $oProcessorWpLogin;
+
+	/**
 	 * @var ICWP_WPSF_Processor_LoginProtect_Cooldown
 	 */
 	protected $oProcessorCooldown;
@@ -52,6 +57,13 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
 		parent::__construct( $oFeatureOptions );
 		$this->reset();
+	}
+
+	/**
+	 * @return ICWP_WPSF_FeatureHandler_LoginProtect
+	 */
+	protected function getFeatureOptions() {
+		return $this->oFeatureOptions;
 	}
 
 	/**
@@ -86,6 +98,10 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 		// Add GASP checking to the login form.
 		if ( $this->getIsOption( 'enable_login_gasp_check', 'Y' ) ) {
 			$this->getProcessorGasp()->run();
+		}
+
+		if ( $this->getFeatureOptions()->getIsCustomLoginPathEnabled() ) {
+			$this->getProcessorWpLogin()->run();
 		}
 
 		if ( $fIsPost && $this->getOption( 'login_limit_interval' ) > 0 ) {
@@ -185,6 +201,17 @@ class ICWP_WPSF_Processor_LoginProtect_V4 extends ICWP_WPSF_Processor_Base {
 			$this->oProcessorGasp = new ICWP_WPSF_Processor_LoginProtect_Gasp( $this->oFeatureOptions );
 		}
 		return $this->oProcessorGasp;
+	}
+
+	/**
+	 * @return ICWP_WPSF_Processor_LoginProtect_WpLogin
+	 */
+	protected function getProcessorWpLogin() {
+		if ( !isset( $this->oProcessorWpLogin ) ) {
+			require_once( 'icwp-processor-loginprotect_wplogin.php' );
+			$this->oProcessorWpLogin = new ICWP_WPSF_Processor_LoginProtect_WpLogin( $this->oFeatureOptions );
+		}
+		return $this->oProcessorWpLogin;
 	}
 
 	/**

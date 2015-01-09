@@ -15,17 +15,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
+if ( !class_exists( 'ICWP_WPSF_WpFunctions_V6', false ) ):
 
-	class ICWP_WpFunctions_V6 {
+	class ICWP_WPSF_WpFunctions_V6 {
 
 		/**
-		 * @var ICWP_WpFunctions_V6
+		 * @var ICWP_WPSF_WpFunctions_V6
 		 */
 		protected static $oInstance = NULL;
 
 		/**
-		 * @return ICWP_WpFunctions_V6
+		 * @return ICWP_WPSF_WpFunctions_V6
 		 */
 		public static function GetInstance() {
 			if ( is_null( self::$oInstance ) ) {
@@ -92,8 +92,15 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 		 * @return null|string
 		 */
 		public function findWpLoad() {
+			return $this->findWpCoreFile( 'wp-load.php' );
+		}
+
+		/**
+		 * @param $sFilename
+		 * @return null|string
+		 */
+		public function findWpCoreFile( $sFilename ) {
 			$sLoaderPath	= dirname( __FILE__ );
-			$sFilename		= 'wp-load.php';
 			$nLimiter		= 0;
 			$nMaxLimit		= count( explode( DIRECTORY_SEPARATOR, trim( $sLoaderPath, DIRECTORY_SEPARATOR ) ) );
 			$bFound			= false;
@@ -398,8 +405,7 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 		 * @param array $aQueryParams
 		 */
 		public function redirectToLogin( $aQueryParams = array() ) {
-			$sLoginUrl = $this->getWpLoginUrl();
-			$this->doRedirect( $sLoginUrl, $aQueryParams );
+			$this->doRedirect( wp_login_url(), $aQueryParams );
 		}
 		/**
 		 * @param $aQueryParams
@@ -416,10 +422,10 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 
 		/**
 		 * @param $sUrl
-		 * @param $aQueryParams
-		 * @uses exit()
+		 * @param array $aQueryParams
+		 * @param bool $bSafe
 		 */
-		public function doRedirect( $sUrl, $aQueryParams = array() ) {
+		public function doRedirect( $sUrl, $aQueryParams = array(), $bSafe = true ) {
 			$sUrl = empty( $aQueryParams ) ? $sUrl : add_query_arg( $aQueryParams, $sUrl );
 
 			$oDp = $this->loadDataProcessor();
@@ -431,7 +437,7 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 				$oDp->setCookie( 'icwp-isredirect', 'yes', 7 );
 			}
 
-			wp_safe_redirect( $sUrl );
+			$bSafe ? wp_safe_redirect( $sUrl ) : wp_redirect( $sUrl );
 			exit();
 		}
 
@@ -503,9 +509,48 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 			$oDp = $this->loadDataProcessor();
 			return
 				$oDp->GetIsRequestPost()
-				&& $this->getIsCurrentPage( 'wp-login.php' )
 				&& !is_null( $oDp->FetchPost( 'log' ) )
-				&& !is_null( $oDp->FetchPost( 'pwd' ) );
+				&& !is_null( $oDp->FetchPost( 'pwd' ) )
+				&& $this->getIsLoginUrl();
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function getIsLoginUrl() {
+			$sLoginUrl = wp_login_url();
+			$aRequestPart = $this->loadDataProcessor()->getRequestUriParts();
+			return ( $aRequestPart['path'] == str_replace( home_url(), '', $sLoginUrl ) );
+		}
+
+		/**
+		 * @param $sTermSlug
+		 * @return bool
+		 */
+		public function getDoesWpSlugExist( $sTermSlug ) {
+			return ( $this->getDoesWpPostSlugExist( $sTermSlug ) || term_exists( $sTermSlug ) );
+		}
+
+		/**
+		 * @param $sTermSlug
+		 * @return bool
+		 */
+		public function getDoesWpPostSlugExist( $sTermSlug ) {
+			$oDb = $this->loadDbProcessor();
+			$sQuery = "
+				SELECT ID
+				FROM %s
+				WHERE
+					post_name = '%s'
+					LIMIT 1
+			";
+			$sQuery = sprintf(
+				$sQuery,
+				$oDb->getTable_Posts(),
+				$sTermSlug
+			);
+			$nResult = $oDb->getVar( $sQuery );
+			return !is_null( $nResult ) && $nResult > 0;
 		}
 
 		/**
@@ -706,13 +751,6 @@ if ( !class_exists( 'ICWP_WpFunctions_V6', false ) ):
 		}
 
 		/**
-		 * @return string
-		 */
-		protected function getWpLoginUrl() {
-			return site_url() . '/wp-login.php';
-		}
-
-		/**
 		 * @param string $sKey should be already prefixed
 		 * @param int|null $nId - if omitted get for current user
 		 * @return bool|string
@@ -779,7 +817,7 @@ endif;
 
 if ( !class_exists('ICWP_WPSF_WpFunctions') ):
 
-	class ICWP_WPSF_WpFunctions extends ICWP_WpFunctions_V6 {
+	class ICWP_WPSF_WpFunctions extends ICWP_WPSF_WpFunctions_V6 {
 		/**
 		 * @return ICWP_WPSF_WpFunctions
 		 */
