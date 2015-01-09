@@ -169,6 +169,13 @@ if ( !class_exists( 'ICWP_WPSF_WpFunctions_V6', false ) ):
 		}
 
 		/**
+		 * @return bool
+		 */
+		public function getIsPermalinksEnabled() {
+			return ( $this->getOption( 'permalink_structure' ) ? true : false );
+		}
+
+		/**
 		 * @param string $sPluginFile
 		 * @return boolean|stdClass
 		 */

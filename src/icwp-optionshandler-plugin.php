@@ -212,6 +212,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 				return;
 			}
 
+			$oDb = $this->loadDbProcessor();
+			$sPrefix = $oDb->getPrefix();
+
 			if ( version_compare( $this->getVersion(), '3.0.0', '<' ) ) {
 				$aAllOptions = apply_filters( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array() );
 				$this->setOpt( 'block_send_email_address', $aAllOptions['block_send_email_address'] );
@@ -225,10 +228,8 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 					'icwp_comments_filter',
 					'icwp_user_management'
 				);
-				global $wpdb;
 				foreach( $aOldTables as $sTable ) {
-					$sQuery = sprintf( 'DROP TABLE IF EXISTS `%s%s`', $wpdb->prefix, $sTable ) ;
-					$wpdb->query( $sQuery );
+					$oDb->doDropTable( $sPrefix.$sTable );
 				}
 			}
 
@@ -237,10 +238,8 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 				$aOldTables = array(
 					'icwp_wpsf_general_logging'
 				);
-				global $wpdb;
 				foreach( $aOldTables as $sTable ) {
-					$sQuery = sprintf( 'DROP TABLE IF EXISTS `%s%s`', $wpdb->prefix, $sTable ) ;
-					$wpdb->query( $sQuery );
+					$oDb->doDropTable( $sPrefix.$sTable );
 				}
 
 				// remove old database cleanup crons

@@ -68,11 +68,16 @@ class ICWP_WPSF_Processor_LoginProtect_WpLogin extends ICWP_WPSF_Processor_Base 
 	 * @return bool - true if conflict exists
 	 */
 	protected function doCheckForPluginConflict() {
+		$oWp = $this->loadWpFunctionsProcessor();
 		if ( class_exists( 'Rename_WP_Login', false ) ) {
 			add_filter( $this->getFeatureOptions()->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeRenameWpLoginInstalled' ) );
 			return true;
 		}
-		else if ( $this->loadWpFunctionsProcessor()->getDoesWpSlugExist( $this->getLoginPath() ) ) {
+		else if ( !$oWp->getIsPermalinksEnabled() ) {
+			add_filter( $this->getFeatureOptions()->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticePermalinksDisabled' ) );
+			return true;
+		}
+		else if ( $oWp->getIsPermalinksEnabled() && $oWp->getDoesWpSlugExist( $this->getLoginPath() ) ) {
 			add_filter( $this->getFeatureOptions()->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeWpTermAlreadyExists' ) );
 			return true;
 		}
@@ -137,6 +142,29 @@ class ICWP_WPSF_Processor_LoginProtect_WpLogin extends ICWP_WPSF_Processor_Base 
 	}
 
 	/**
+	 * @param array $aAdminNotices
+	 * @return array
+	 */
+	public function adminNoticePermalinksDisabled( $aAdminNotices ) {
+		$sPermalinksLink = sprintf(
+			'<a href="%s">%s</a>',
+			network_admin_url( 'options-permalink.php' ),
+			__('Permalinks')
+		);
+
+		$sNoticeMessage = sprintf(
+			'<strong>%s</strong>: %s',
+			_wpsf__( 'Warning' ),
+			sprintf(
+				_wpsf__( 'Can not use the Rename WP Login feature because you have not enabled %s.'),
+				$sPermalinksLink
+			)
+		);
+		$aAdminNotices[] = $this->getAdminNoticeHtml( $sNoticeMessage, 'error', false );
+		return $aAdminNotices;
+	}
+
+	/**
 	 * @return string
 	 */
 	protected function getLoginPath() {
@@ -154,7 +182,8 @@ class ICWP_WPSF_Processor_LoginProtect_WpLogin extends ICWP_WPSF_Processor_Base 
 			$sLoginUrl = home_url( $this->getLoginPath() );
 			$aQueryArgs = explode( '?', $sUrl );
 			if ( !empty( $aQueryArgs[1] ) ) {
-				$sLoginUrl .= '?'.$aQueryArgs[1];
+				parse_str( $aQueryArgs[1], $aNewQueryArgs );
+				$sLoginUrl = add_query_arg( $aNewQueryArgs, $sLoginUrl );
 			}
 			return $sLoginUrl;
 		}

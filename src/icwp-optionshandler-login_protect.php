@@ -237,20 +237,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_LoginProtect') ):
 		}
 
 		/**
-		 * @return bool|void
-		 */
-		public function doExtraSubmitProcessing() {
-			// When they've clicked to terminate all logged in authenticated users.
-			$oDp = $this->loadDataProcessor();
-			if ( $oDp->FetchPost( 'terminate-all-logins' ) ) {
-				$oProc = $this->getProcessor();
-				$oProc->doTerminateAllVerifiedLogins();
-				return;
-			}
-
-		}
-
-		/**
 		 * @param boolean $fAsDefaults
 		 * @return array
 		 */

@@ -44,6 +44,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Autoupdates_V3') ):
 			// Force run automatic updates
 			$oDp = $this->loadDataProcessor();
 			if ( $oDp->FetchGet( 'force_run_auto_updates' ) == 'now' ) {
+				/** @var ICWP_WPSF_Processor_Autoupdates $oProc */
 				$oProc = $this->getProcessor();
 				$oProc->setForceRunAutoupdates( true );
 				return;

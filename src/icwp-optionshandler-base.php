@@ -434,13 +434,14 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 		/**
 		 * Saves the options to the WordPress Options store.
-		 *
 		 * It will also update the stored plugin options version.
+		 *
+		 * @return bool
 		 */
 		public function savePluginOptions() {
 			$this->doPrePluginOptionsSave();
 			$this->updateOptionsVersion();
-			$this->getOptionsVo()->doOptionsSave();
+			return $this->getOptionsVo()->doOptionsSave();
 		}
 
 		/**

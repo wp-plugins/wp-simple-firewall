@@ -64,7 +64,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Firewall') ):
 			$sBlockResponse = $this->getOpt( 'block_response' );
 			if ( empty( $sBlockResponse ) ) {
 				$sBlockResponse = 'redirect_die_message';
-				$aIpWhitelist = $this->setOpt( 'block_response', $sBlockResponse );
+				$this->setOpt( 'block_response', $sBlockResponse );
 			}
 		}
 
