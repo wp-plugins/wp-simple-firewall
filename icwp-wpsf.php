@@ -10,7 +10,7 @@
  */
 
 /**
- * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
+ * Copyright (c) 2015 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
  * "WordPress Simple Firewall" is distributed under the GNU General Public License, Version 2,
