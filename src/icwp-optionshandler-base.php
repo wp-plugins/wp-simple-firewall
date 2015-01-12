@@ -116,10 +116,14 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		public function onWpPluginsLoaded() {
 
 			if ( $this->getIsMainFeatureEnabled() ) {
-				$oProcessor = $this->getProcessor();
-				if ( is_object( $oProcessor ) && $oProcessor instanceof ICWP_WPSF_Processor_Base ) {
-					$oProcessor->run();
-				}
+				$this->doExecuteProcessor();
+			}
+		}
+
+		protected function doExecuteProcessor() {
+			$oProcessor = $this->getProcessor();
+			if ( is_object( $oProcessor ) && $oProcessor instanceof ICWP_WPSF_Processor_Base ) {
+				$oProcessor->run();
 			}
 		}
 
@@ -483,6 +487,20 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 					if ( $sOptionType == 'password' && !empty( $mCurrentOptionVal ) ) {
 						$mCurrentOptionVal = '';
 					}
+					else if ( $sOptionType == 'array' ) {
+
+						if ( empty( $mCurrentOptionVal ) ) {
+							$mCurrentOptionVal = '';
+						}
+						else {
+							$mCurrentOptionVal = implode( "\n", $mCurrentOptionVal );
+							foreach( $mCurrentOptionVal as $nKey => $mValue ) {
+								if ( empty( $mValue ) ) {
+									unset( $mCurrentOptionVal[$nKey] );
+								}
+							}
+						}
+					}
 					else if ( $sOptionType == 'ip_addresses' ) {
 
 						if ( empty( $mCurrentOptionVal ) ) {
@@ -699,6 +717,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 							continue;
 						}
 						$sOptionValue = md5( $sTempValue );
+					}
+					else if ( $sOptionType == 'array' ) { //arrays are textareas, where each is separated by newline
+						$sOptionValue = array_filter( explode( "\n", $sOptionValue ), 'trim' );
 					}
 					else if ( $sOptionType == 'ip_addresses' ) { //ip addresses are textareas, where each is separated by newline
 						$sOptionValue = $oDp->extractIpAddresses( $sOptionValue );

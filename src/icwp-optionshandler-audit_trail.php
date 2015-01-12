@@ -37,6 +37,15 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_AuditTrail_V1') ):
 			return $this->oFeatureProcessor;
 		}
 
+		protected function doExecuteProcessor() {
+			$sIp = $this->loadDataProcessor()->getVisitorIpAddress();
+			$aIpWhitelist = apply_filters( $this->doPluginPrefix( 'ip_whitelist' ), array() );
+			if ( is_array( $aIpWhitelist ) && ( in_array( $sIp, $aIpWhitelist )  ) ) {
+				return;
+			}
+			parent::doExecuteProcessor();
+		}
+
 		/**
 		 */
 		public function doPrePluginOptionsSave() {

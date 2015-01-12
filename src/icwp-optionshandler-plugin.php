@@ -89,6 +89,25 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 			return true;
 		}
 
+		protected function doExecuteProcessor() {
+			add_filter( $this->doPluginPrefix( 'ip_whitelist' ), array( $this, 'getIpWhitelistOption' ) );
+			$oProcessor = $this->getProcessor();
+			if ( is_object( $oProcessor ) && $oProcessor instanceof ICWP_WPSF_Processor_Base ) {
+				$oProcessor->run();
+			}
+		}
+
+		/**
+		 * @return array
+		 */
+		public function getIpWhitelistOption() {
+			$aList = $this->getOpt( 'ip_whitelist', array() );
+			if ( empty( $aList ) || !is_array( $aList ) ){
+				$aList = array();
+			}
+			return $aList;
+		}
+
 		/**
 		 * @param array $aSummaryData
 		 * @return array
@@ -145,6 +164,10 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 			$sSectionSlug = $aOptionsParams['section_slug'];
 			switch( $aOptionsParams['section_slug'] ) {
 
+				case 'section_global_security_options' :
+					$sTitle = _wpsf__( 'Global Plugin Security Options' );
+					break;
+
 				case 'section_general_plugin_options' :
 					$sTitle = _wpsf__( 'General Plugin Options' );
 					break;
@@ -165,6 +188,12 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 
 			$sKey = $aOptionsParams['key'];
 			switch( $sKey ) {
+
+				case 'ip_whitelist' :
+					$sName = _wpsf__( 'IP Whitelist' );
+					$sSummary = _wpsf__( 'IP Address White List' );
+					$sDescription = sprintf( _wpsf__( 'Any IP addresses on this list will by-pass all Plugin features' ) );
+					break;
 
 				case 'block_send_email_address' :
 					$sName = _wpsf__( 'Report Email' );
@@ -203,6 +232,16 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 			if ( empty($nInstalledAt) || $nInstalledAt <= 0 ) {
 				$this->setOpt( 'installation_time', time() );
 			}
+			$this->processGlobalPluginWhitelist();
+		}
+
+		protected function processGlobalPluginWhitelist() {
+			$aIpWhitelist = apply_filters( $this->doPluginPrefix( 'ip_whitelist' ), $this->getOpt( 'ip_whitelist', array() ) );
+			if ( !is_array( $aIpWhitelist ) ) {
+				$aIpWhitelist = array();
+			}
+			$aUnique = array_unique( preg_replace( '#[^0-9a-zA-Z:.-]#', '', $aIpWhitelist ) );
+			$this->setOpt( 'ip_whitelist', $aUnique );
 		}
 
 		protected function updateHandler() {

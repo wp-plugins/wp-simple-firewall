@@ -15,7 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
+require_once( dirname(__FILE__).ICWP_DS.'icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_WPSF_FeatureHandler_UserManagement') ):
 
@@ -35,6 +35,15 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_UserManagement') ):
 				$this->oFeatureProcessor = new ICWP_WPSF_Processor_UserManagement( $this );
 			}
 			return $this->oFeatureProcessor;
+		}
+
+		protected function doExecuteProcessor() {
+			$sIp = $this->loadDataProcessor()->getVisitorIpAddress();
+			$aIpWhitelist = apply_filters( $this->doPluginPrefix( 'ip_whitelist' ), array() );
+			if ( is_array( $aIpWhitelist ) && ( in_array( $sIp, $aIpWhitelist )  ) ) {
+				return;
+			}
+			parent::doExecuteProcessor();
 		}
 
 		/**

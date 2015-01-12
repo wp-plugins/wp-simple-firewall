@@ -8,14 +8,23 @@ properties:
 # Options Sections
 sections:
   -
-    slug: 'section_general_plugin_options'
+    slug: 'section_global_security_options'
     primary: true
+  -
+    slug: 'section_general_plugin_options'
   -
     slug: 'section_non_ui'
     hidden: true
 
 # Define Options
 options:
+  -
+    key: 'ip_whitelist'
+    section: 'section_global_security_options'
+    default: ''
+    type: 'array'
+    link_info: ''
+    link_blog: ''
   -
     key: 'block_send_email_address'
     section: 'section_general_plugin_options'

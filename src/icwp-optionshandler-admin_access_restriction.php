@@ -50,6 +50,15 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 		return $this->oFeatureProcessor;
 	}
 
+	protected function doExecuteProcessor() {
+		$sIp = $this->loadDataProcessor()->getVisitorIpAddress();
+		$aIpWhitelist = apply_filters( $this->doPluginPrefix( 'ip_whitelist' ), array() );
+		if ( is_array( $aIpWhitelist ) && ( in_array( $sIp, $aIpWhitelist )  ) ) {
+			return;
+		}
+		parent::doExecuteProcessor();
+	}
+
 	/**
 	 * @param bool $fHasPermission
 	 * @return bool
