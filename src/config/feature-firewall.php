@@ -123,6 +123,7 @@ options:
     type: 'ip_addresses'
     link_info: ''
     link_blog: ''
+    hidden: true
   -
     key: 'page_params_whitelist'
     section: 'section_whitelist'

@@ -49,6 +49,7 @@ options:
     type: 'ip_addresses'
     link_info: 'http://icwp.io/52'
     link_blog: ''
+    hidden: true
   -
     key: 'rename_wplogin_path'
     section: 'section_rename_wplogin'
