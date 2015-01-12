@@ -23,7 +23,6 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 
 		protected $m_aWhitelistPages;
 		protected $m_aWhitelistPagesPatterns;
-		protected $m_aCustomWhitelistPageParams;
 
 		protected $m_aRequestUriParts;
 
@@ -43,22 +42,10 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 		protected $m_sListItemLabel;
 
 		/**
-		 * A combination of all current request $_GET and $_POST (and optionally $_COOKIE)
-		 * @var array
-		 */
-		protected $m_aOrigPageParams;
-
-		/**
 		 * This is $m_aOrigPageParams after any parameter whitelisting has taken place
 		 * @var array
 		 */
 		protected $m_aPageParams;
-
-		/**
-		 * All the remaining values of the page parameters after they've been filtered
-		 * @var array
-		 */
-		protected $m_aPageParamValues;
 
 		/**
 		 * @param ICWP_WPSF_FeatureHandler_Firewall $oFeatureOptions
@@ -122,15 +109,6 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 			if ( $this->getOption('whitelist_admins') == 'Y' && is_super_admin() ) {
 //				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('Logged-in administrators by-pass firewall') );
 //				$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
-				return true;
-			}
-
-			// Check if the visitor is excluded from the firewall from the outset.
-			if ( $this->isVisitorOnWhitelist() ) {
-				$sAuditMessage =  _wpsf__('Visitor is white-listed by IP Address.')
-					.' '.sprintf( _wpsf__('Label: %s.'), empty( $this->m_sListItemLabel )? _wpsf__('No label') : $this->m_sListItemLabel );
-//				$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
-				$this->doStatIncrement( 'firewall.allowed.whitelist' );
 				return true;
 			}
 
@@ -616,10 +594,6 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 					'_wp_http_referer'
 				),
 			);
-		}
-
-		public function isVisitorOnWhitelist() {
-			return $this->isIpOnlist( $this->getOption( 'ips_whitelist', array() ), $this->ip(), $this->m_sListItemLabel );
 		}
 
 		public function isVisitorOnBlacklist() {

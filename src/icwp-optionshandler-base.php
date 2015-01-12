@@ -108,7 +108,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 			add_action( $this->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureShutdown' ) );
 			add_action( $this->doPluginPrefix( 'delete_plugin' ), array( $this, 'deletePluginOptions' )  );
 			add_filter( $this->doPluginPrefix( 'aggregate_all_plugin_options' ), array( $this, 'aggregateOptionsValues' ) );
+
+			$this->doPostConstruction();
 		}
+
+		protected function doPostConstruction() {}
 
 		/**
 		 * A action added to WordPress 'plugins_loaded' hook

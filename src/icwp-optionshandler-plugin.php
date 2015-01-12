@@ -27,7 +27,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 		protected $oFeatureProcessor;
 
 		public function __construct( $oPluginController, $aFeatureProperties = array() ) {
-			$aFeatureProperties[ 'load_priority' ] = 5;
 			parent::__construct( $oPluginController, $aFeatureProperties );
 
 			add_action( 'deactivate_plugin', array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );

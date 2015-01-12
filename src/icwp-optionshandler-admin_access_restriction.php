@@ -29,16 +29,6 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 	protected $oFeatureProcessor;
 
 	/**
-	 * @param ICWP_WPSF_Plugin_Controller $oPluginVo
-	 * @param array $aFeatureProperties
-	 *
-	 * @throws Exception
-	 */
-	public function __construct( $oPluginVo, $aFeatureProperties = array() ) {
-		parent::__construct( $oPluginVo, $aFeatureProperties );
-	}
-
-	/**
 	 * @return ICWP_WPSF_Processor_AdminAccessRestriction|null
 	 */
 	protected function loadFeatureProcessor() {

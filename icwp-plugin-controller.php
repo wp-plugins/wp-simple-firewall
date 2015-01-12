@@ -952,7 +952,12 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	public function loadCorePluginFeatureHandler() {
 		if ( !isset( $this->oFeatureHandlerPlugin ) ) {
-			$this->loadFeatureHandler( array( 'slug' => 'plugin' ) );
+			$this->loadFeatureHandler(
+				array(
+					'slug' => 'plugin',
+					'load_priority' => 5
+				)
+			);
 		}
 		return $this->oFeatureHandlerPlugin;
 	}
