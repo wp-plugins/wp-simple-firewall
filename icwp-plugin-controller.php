@@ -174,8 +174,8 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	protected function createPluginMenu() {
 
-		$fHideMenu = apply_filters( $this->doPluginPrefix( 'filter_hidePluginMenu' ), !$this->getPluginSpec_Menu( 'show' ) );
-		if ( $fHideMenu ) {
+		$bHideMenu = apply_filters( $this->doPluginPrefix( 'filter_hidePluginMenu' ), !$this->getPluginSpec_Menu( 'show' ) );
+		if ( $bHideMenu ) {
 			return true;
 		}
 
@@ -363,12 +363,12 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 * This is a filter method designed to say whether WordPress plugin upgrades should be permitted,
 	 * based on the plugin settings.
 	 *
-	 * @param boolean $fDoAutoUpdate
+	 * @param boolean $bDoAutoUpdate
 	 * @param string|object $mItemToUpdate
 	 *
 	 * @return boolean
 	 */
-	public function onWpAutoUpdate( $fDoAutoUpdate, $mItemToUpdate ) {
+	public function onWpAutoUpdate( $bDoAutoUpdate, $mItemToUpdate ) {
 
 		if ( is_object( $mItemToUpdate ) && !empty( $mItemToUpdate->plugin ) ) { // 3.8.2+
 			$sItemFile = $mItemToUpdate->plugin;
@@ -378,19 +378,19 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		}
 		else {
 			// at this point we don't have a slug/file to use so we just return the current update setting
-			return $fDoAutoUpdate;
+			return $bDoAutoUpdate;
 		}
 
 		if ( $sItemFile === $this->getPluginBaseFile() ) {
 			$sAutoupdateSpec = $this->getPluginSpec_Property( 'autoupdate' );
 			if ( $sAutoupdateSpec == 'yes' ) {
-				$fDoAutoUpdate = true;
+				$bDoAutoUpdate = true;
 			}
 			else if ( $sAutoupdateSpec == 'block' ) {
-				$fDoAutoUpdate = false;
+				$bDoAutoUpdate = false;
 			}
 		}
-		return $fDoAutoUpdate;
+		return $bDoAutoUpdate;
 	}
 
 	/**
@@ -438,8 +438,8 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	 */
 	public function filter_hidePluginFromTableList( $aPlugins ) {
 
-		$fHide = apply_filters( $this->doPluginPrefix( 'hide_plugin' ), false );
-		if ( !$fHide ) {
+		$bHide = apply_filters( $this->doPluginPrefix( 'hide_plugin' ), false );
+		if ( !$bHide ) {
 			return $aPlugins;
 		}
 
@@ -478,20 +478,20 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	/**
-	 * @param boolean $fHasPermission
+	 * @param boolean $bHasPermission
 	 * @return boolean
 	 */
-	public function filter_hasPermissionToView( $fHasPermission = true ) {
-		return $this->filter_hasPermissionToSubmit( $fHasPermission );
+	public function filter_hasPermissionToView( $bHasPermission = true ) {
+		return $this->filter_hasPermissionToSubmit( $bHasPermission );
 	}
 
 	/**
-	 * @param boolean $fHasPermission
+	 * @param boolean $bHasPermission
 	 * @return boolean
 	 */
-	public function filter_hasPermissionToSubmit( $fHasPermission = true ) {
+	public function filter_hasPermissionToSubmit( $bHasPermission = true ) {
 		// first a basic admin check
-		return $fHasPermission && is_super_admin() && current_user_can( $this->getBasePermissions() );
+		return $bHasPermission && is_super_admin() && current_user_can( $this->getBasePermissions() );
 	}
 
 	/**
@@ -614,11 +614,11 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	/**
-	 * @param bool $fCheckUserPermissions
+	 * @param bool $bCheckUserPermissions
 	 * @return bool
 	 */
-	public function getIsValidAdminArea( $fCheckUserPermissions = true ) {
-		if ( $fCheckUserPermissions && !current_user_can( $this->getBasePermissions() ) ) {
+	public function getIsValidAdminArea( $bCheckUserPermissions = true ) {
+		if ( $bCheckUserPermissions && !current_user_can( $this->getBasePermissions() ) ) {
 			return false;
 		}
 
@@ -963,36 +963,36 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 	}
 
 	/**
-	 * @param bool $fRecreate
-	 * @param bool $fFullBuild
+	 * @param bool $bRecreate
+	 * @param bool $bFullBuild
 	 * @return bool
 	 */
-	public function loadAllFeatures( $fRecreate = false, $fFullBuild = false ) {
+	public function loadAllFeatures( $bRecreate = false, $bFullBuild = false ) {
 
 		$oMainPluginFeature = $this->loadCorePluginFeatureHandler();
 		$aPluginFeatures = $oMainPluginFeature->getActivePluginFeatures();
 
-		$fSuccess = true;
+		$bSuccess = true;
 		foreach( $aPluginFeatures as $sSlug => $aFeatureProperties ) {
 			try {
-				$this->loadFeatureHandler( $aFeatureProperties, $fRecreate, $fFullBuild );
-				$fSuccess = true;
+				$this->loadFeatureHandler( $aFeatureProperties, $bRecreate, $bFullBuild );
+				$bSuccess = true;
 			}
 			catch( Exception $oE ) {
 				wp_die( $oE->getMessage() );
 			}
 		}
-		return $fSuccess;
+		return $bSuccess;
 	}
 
 	/**
 	 * @param array $aFeatureProperties
-	 * @param bool $fRecreate
-	 * @param bool $fFullBuild
+	 * @param bool $bRecreate
+	 * @param bool $bFullBuild
 	 * @return mixed
 	 * @throws Exception
 	 */
-	public function loadFeatureHandler( $aFeatureProperties, $fRecreate = false, $fFullBuild = false ) {
+	public function loadFeatureHandler( $aFeatureProperties, $bRecreate = false, $bFullBuild = false ) {
 
 		$sFeatureSlug = $aFeatureProperties['slug'];
 
@@ -1018,10 +1018,10 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		); // e.g. ICWP_WPSF_FeatureHandler_Plugin
 
 		require_once( $sSourceFile );
-		if ( $fRecreate || !isset( $this->{$sOptionsVarName} ) ) {
+		if ( $bRecreate || !isset( $this->{$sOptionsVarName} ) ) {
 			$this->{$sOptionsVarName} = new $sClassName( $this, $aFeatureProperties );
 		}
-		if ( $fFullBuild ) {
+		if ( $bFullBuild ) {
 			$this->{$sOptionsVarName}->buildOptions();
 		}
 		return $this->{$sOptionsVarName};
