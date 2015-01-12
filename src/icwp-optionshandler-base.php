@@ -42,7 +42,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * @var boolean
 		 */
-		protected $fPluginDeleting = false;
+		protected $bPluginDeleting = false;
 
 		/**
 		 * @var string
@@ -77,7 +77,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * @var boolean
 		 */
-		protected $fOverrideState;
+		protected $bOverrideState;
 
 		/**
 		 * @param ICWP_WPSF_Plugin_Controller $oPluginController
@@ -118,7 +118,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * A action added to WordPress 'plugins_loaded' hook
 		 */
 		public function onWpPluginsLoaded() {
-
 			if ( $this->getIsMainFeatureEnabled() ) {
 				$this->doExecuteProcessor();
 			}
@@ -140,7 +139,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 		/**
 		 * Override this and adapt per feature
-		 * @return null
+		 * @return ICWP_WPSF_Processor_Base
 		 */
 		abstract protected function loadFeatureProcessor();
 
@@ -175,7 +174,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 * @return bool
 		 */
 		public function getIsPluginDeleting() {
-			return $this->fPluginDeleting;
+			return $this->bPluginDeleting;
 		}
 
 		/**
@@ -215,21 +214,21 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		}
 
 		/**
-		 * @param bool $fEnable
+		 * @param bool $bEnable
 		 *
 		 * @return bool
 		 */
-		public function setIsMainFeatureEnabled( $fEnable ) {
-			return $this->setOpt( 'enable_'.$this->getFeatureSlug(), $fEnable ? 'Y' : 'N' );
+		public function setIsMainFeatureEnabled( $bEnable ) {
+			return $this->setOpt( 'enable_'.$this->getFeatureSlug(), $bEnable ? 'Y' : 'N' );
 		}
 
 		/**
 		 * @return mixed
 		 */
 		public function getIsMainFeatureEnabled() {
-			$fOverride = $this->getIfOverride();
-			if ( $fOverride ) {
-				return !$fOverride;
+			$bOverride = $this->getIfOverride();
+			if ( $bOverride ) {
+				return !$bOverride;
 			}
 			if ( $this->getOptionsVo()->getFeatureProperty( 'auto_enabled' ) === true ) {
 				return true;
@@ -242,18 +241,18 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function getIfOverride() {
 
-			if ( !is_null( $this->fOverrideState ) ) {
-				return $this->fOverrideState;
+			if ( !is_null( $this->bOverrideState ) ) {
+				return $this->bOverrideState;
 			}
 
 			$oWpFs = $this->loadFileSystemProcessor();
 			if ( $oWpFs->fileExistsInDir( 'forceOff', $this->getController()->getRootDir(), false ) ) {
-				$this->fOverrideState = true;
+				$this->bOverrideState = true;
 			}
 			else {
-				$this->fOverrideState = false;
+				$this->bOverrideState = false;
 			}
-			return $this->fOverrideState;
+			return $this->bOverrideState;
 		}
 
 		/**
@@ -395,12 +394,13 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 * @param string $sOptionKey
 		 * @param mixed $mValueToTest
-		 * @param boolean $fStrict
+		 * @param boolean $bStrict
+		 *
 		 * @return bool
 		 */
-		public function getOptIs( $sOptionKey, $mValueToTest, $fStrict = false ) {
+		public function getOptIs( $sOptionKey, $mValueToTest, $bStrict = false ) {
 			$mOptionValue = $this->getOptionsVo()->getOpt( $sOptionKey );
-			return $fStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
+			return $bStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
 		}
 
 		/**
@@ -417,7 +417,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		public function getVersion() {
 			$sVersion = $this->getOpt( self::PluginVersionKey );
-			return empty( $sVersion )? '0.0' : $sVersion;
+			return empty( $sVersion )? $this->getController()->getVersion() : $sVersion;
 		}
 
 		/**
@@ -498,11 +498,6 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 						}
 						else {
 							$mCurrentOptionVal = implode( "\n", $mCurrentOptionVal );
-							foreach( $mCurrentOptionVal as $nKey => $mValue ) {
-								if ( empty( $mValue ) ) {
-									unset( $mCurrentOptionVal[$nKey] );
-								}
-							}
 						}
 					}
 					else if ( $sOptionType == 'ip_addresses' ) {
@@ -584,7 +579,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		public function deletePluginOptions() {
 			if ( apply_filters( $this->doPluginPrefix( 'has_permission_to_submit' ), true ) ) {
 				$this->getOptionsVo()->doOptionsDelete();
-				$this->fPluginDeleting = true;
+				$this->bPluginDeleting = true;
 			}
 		}
 
@@ -643,9 +638,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		/**
 		 */
 		public function handleFormSubmit() {
-			$fVerified = $this->verifyFormSubmit();
+			$bVerified = $this->verifyFormSubmit();
 
-			if ( !$fVerified ) {
+			if ( !$bVerified ) {
 				return false;
 			}
 
@@ -886,9 +881,9 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 
 			// Get Base Data
 			$aData = apply_filters( $this->doPluginPrefix( $this->getFeatureSlug().'display_data' ), array_merge( $this->getBaseDisplayData(), $aData ) );
-			$fPermissionToView = apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true );
+			$bPermissionToView = apply_filters( $this->doPluginPrefix( 'has_permission_to_view' ), true );
 
-			if ( !$fPermissionToView ) {
+			if ( !$bPermissionToView ) {
 				$sView = 'access_restricted_index';
 			}
 
