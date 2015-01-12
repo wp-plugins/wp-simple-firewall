@@ -15,7 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
+require_once( dirname(__FILE__).ICWP_DS.'icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 
@@ -27,6 +27,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 		protected $oFeatureProcessor;
 
 		public function __construct( $oPluginController, $aFeatureProperties = array() ) {
+			$aFeatureProperties[ 'load_priority' ] = 5;
 			parent::__construct( $oPluginController, $aFeatureProperties );
 
 			add_action( 'deactivate_plugin', array( $this, 'onWpHookDeactivatePlugin' ), 1, 1 );

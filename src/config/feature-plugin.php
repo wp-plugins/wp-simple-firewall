@@ -71,6 +71,7 @@ options:
       -
         slug: 'admin_access_restriction'
         storage_key: 'admin_access_restriction'
+        load_priority: 20
       -
         slug: 'firewall'
         storage_key: 'firewall'
@@ -92,7 +93,7 @@ options:
       -
         slug: 'audit_trail'
         storage_key: 'audit_trail'
-        load_priority: 0
+        load_priority: 10
         hidden: false
       -
         slug: 'email'

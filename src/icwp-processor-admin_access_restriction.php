@@ -38,6 +38,11 @@ if ( !class_exists('ICWP_WPSF_Processor_AdminAccessRestriction') ):
 		}
 
 		public function run() {
+			/** @var ICWP_WPSF_FeatureHandler_AdminAccessRestriction $oFO */
+			$oFO = $this->getFeatureOptions();
+			add_filter( $oFO->doPluginPrefix( 'has_permission_to_submit' ), array( $oFO, 'doCheckHasPermissionToSubmit' ) );
+			add_filter( $oFO->doPluginPrefix( 'has_permission_to_view' ), array( $oFO, 'doCheckHasPermissionToSubmit' ) );
+
 			$oWp = $this->loadWpFunctionsProcessor();
 			if ( ! $this->getFeatureOptions()->getIsUpgrading() && ! $oWp->getIsLoginRequest() ) {
 				add_filter( 'pre_update_option', array( $this, 'blockOptionsSaves' ), 1, 3 );
