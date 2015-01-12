@@ -16,7 +16,7 @@
  *
  */
 
-if ( !class_exists('ICWP_WPSF_DataProcessor_V4') ):
+if ( !class_exists( 'ICWP_WPSF_DataProcessor_V4', false ) ):
 
 	class ICWP_WPSF_DataProcessor_V4 {
 
