@@ -84,14 +84,15 @@ if ( !class_exists('ICWP_WPSF_BaseProcessor_V3') ):
 		}
 
 		/**
-		 * @param $sKey
+		 * @param string $sKey
 		 * @param mixed $mValueToTest
-		 * @param boolean $fStrict
+		 * @param boolean $bStrict
+		 *
 		 * @return bool
 		 */
-		public function getIsOption( $sKey, $mValueToTest, $fStrict = false ) {
+		public function getIsOption( $sKey, $mValueToTest, $bStrict = false ) {
 			$mOptionValue = $this->getOption( $sKey );
-			return $fStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
+			return $bStrict? $mOptionValue === $mValueToTest : $mOptionValue == $mValueToTest;
 		}
 
 		/**
@@ -309,13 +310,14 @@ if ( !class_exists('ICWP_WPSF_BaseProcessor_V3') ):
 		 *
 		 * @param $sNotice - The message to be displayed.
 		 * @param $sMessageClass - either error or updated
-		 * @param $fPrint - if true, will echo. false will return the string
+		 * @param $bPrint - if true, will echo. false will return the string
+		 *
 		 * @return boolean|string
 		 */
-		protected function getAdminNoticeHtml( $sNotice = '', $sMessageClass = 'updated', $fPrint = false ) {
+		protected function getAdminNoticeHtml( $sNotice = '', $sMessageClass = 'updated', $bPrint = false ) {
 			$sWrapper = '<div class="%s icwp-admin-notice">%s</div>';
 			$sFullNotice = sprintf( $sWrapper, $sMessageClass, $sNotice );
-			if ( $fPrint ) {
+			if ( $bPrint ) {
 				echo $sFullNotice;
 				return true;
 			} else {
