@@ -105,7 +105,7 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Plugin', false ) ):
 			}
 
 			$aWhitelistFromOptions = $this->getIpWhitelistOption();
-			$aDifference = array_diff( $aWhitelistFromOptions, $aIpWhitelist );
+			$aDifference = array_diff( $aIpWhitelist, $aWhitelistFromOptions );
 			if ( empty( $aDifference ) ) { // there's nothing new
 				return $aWhitelistFromOptions;
 			}
