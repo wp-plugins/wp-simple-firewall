@@ -40,19 +40,14 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_LoginProtect', false ) ):
 		public function doPrePluginOptionsSave() {
 
 			$sCustomLoginPath = $this->getOpt( 'rename_wplogin_path', '' );
-			$sCustomLoginPath = preg_replace( '#[^0-9a-zA-Z-]#', '', trim( $sCustomLoginPath, '/' ) );
-			$this->setOpt( 'rename_wplogin_path', $sCustomLoginPath );
+			if ( !empty( $sCustomLoginPath ) ) {
+				$sCustomLoginPath = preg_replace( '#[^0-9a-zA-Z-]#', '', trim( $sCustomLoginPath, '/' ) );
+				$this->setOpt( 'rename_wplogin_path', $sCustomLoginPath );
+			}
 
 			if ( $this->getOpt( 'login_limit_interval' ) < 0 ) {
 				$this->getOptionsVo()->resetOptToDefault( 'login_limit_interval' );
 			}
-
-			$aIpWhitelist = $this->getOpt( 'ips_whitelist' );
-			if ( $aIpWhitelist === false ) {
-				$aIpWhitelist = '';
-				$this->setOpt( 'ips_whitelist', $aIpWhitelist );
-			}
-			$this->processIpFilter( 'ips_whitelist', 'icwp_simple_firewall_whitelist_ips' );
 
 			$aTwoFactorAuthRoles = $this->getOpt( 'two_factor_auth_user_roles' );
 			if ( empty($aTwoFactorAuthRoles) || !is_array( $aTwoFactorAuthRoles ) ) {
@@ -62,6 +57,8 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_LoginProtect', false ) ):
 			// ensures they have values
 			$this->setKeys();
 			$this->getLastLoginTimeFilePath();
+
+			$this->setOpt( 'ips_whitelist', '' );
 		}
 
 		/**

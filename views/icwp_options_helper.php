@@ -131,7 +131,7 @@ function getPluginOptionSpan( $aOption, $nSpanSize, $insVarPrefix = '' ) {
 
 		}
 		else if ( $sOptionType === 'text' ) {
-			$sTextInput = esc_attr( $sOptionSaved );
+			$sTextInput = esc_attr( stripslashes( $sOptionSaved ) );
 			$sHtml .= '
 				<p>'.$sOptionTitle.'</p>
 				<input type="text"

@@ -17,7 +17,7 @@
 
 require_once( 'icwp-processor-base.php' );
 
-if ( !class_exists( 'ICWP_FirewallProcessor_V1', false ) ):
+if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 
 	class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 
@@ -72,27 +72,6 @@ if ( !class_exists( 'ICWP_FirewallProcessor_V1', false ) ):
 			$this->fDoFirewallBlock = !$this->doFirewallCheck();
 			$this->doPreFirewallBlock();
 			$this->doFirewallBlock();
-
-			add_filter( $this->getFeatureOptions()->doPluginPrefix( 'ip_whitelist' ), array( $this, 'fAddToGlobalWhitelist' ) );
-		}
-
-		/**
-		 * @param array $aWhitelist
-		 * @return array
-		 */
-		public function fAddToGlobalWhitelist( $aWhitelist ) {
-			$aCurrentIps = $this->getOption( 'ips_whitelist' );
-			if ( empty( $aCurrentIps ) || !is_array( $aCurrentIps ) || empty( $aCurrentIps['ips'] ) || !is_array( $aCurrentIps['ips'] ) ) {
-				return $aWhitelist;
-			}
-
-			$oDp = $this->loadDataProcessor();
-			foreach( $aCurrentIps['ips'] as $sIp ) {
-				if ( !in_array( $sIp, $aWhitelist ) && $oDp->verifyIp( $sIp ) ) {
-					$aWhitelist[] = $sIp;
-				}
-			}
-			return $aWhitelist;
 		}
 
 		/**
@@ -621,6 +600,7 @@ if ( !class_exists( 'ICWP_FirewallProcessor_V1', false ) ):
 			return $fSendSuccess;
 		}
 	}
+
 endif;
 
 if ( !class_exists('ICWP_WPSF_Processor_Firewall') ):

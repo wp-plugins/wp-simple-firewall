@@ -144,12 +144,10 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Base_V2') ):
 		 */
 		protected function loadFeatureProcessor() {
 			if ( !isset( $this->oFeatureProcessor ) ) {
-				$bResult = require_once( $this->getController()->getPath_SourceFile( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
+				require_once( $this->getController()->getPath_SourceFile( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
 				$sClassName = $this->getProcessorClassName();
 				if ( !class_exists( $sClassName, false ) ) {
-					var_dump( $this->getController()->getPath_SourceFile( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
-					var_dump( $bResult);
-					die( $sClassName );
+					return null;
 				}
 				$this->oFeatureProcessor = new $sClassName( $this );
 			}

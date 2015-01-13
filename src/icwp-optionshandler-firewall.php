@@ -41,13 +41,6 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Firewall', false ) ):
 		 */
 		public function doPrePluginOptionsSave() {
 
-			$aIpWhitelist = $this->getOpt( 'ips_whitelist' );
-			if ( $aIpWhitelist === false ) {
-				$aIpWhitelist = '';
-				$this->setOpt( 'ips_whitelist', $aIpWhitelist );
-			}
-			$this->processIpFilter( 'ips_whitelist', 'icwp_simple_firewall_whitelist_ips' );
-
 			$aIpBlacklist = $this->getOpt( 'ips_blacklist' );
 			if ( $aIpBlacklist === false ) {
 				$aIpBlacklist = '';
@@ -66,6 +59,8 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Firewall', false ) ):
 				$sBlockResponse = 'redirect_die_message';
 				$this->setOpt( 'block_response', $sBlockResponse );
 			}
+
+			$this->setOpt( 'ips_whitelist', '' );
 		}
 
 		/**

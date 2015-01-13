@@ -70,11 +70,6 @@ class ICWP_WPSF_Processor_LoginProtect_V5 extends ICWP_WPSF_Processor_Base {
 		$oDp = $this->loadDataProcessor();
 		$fIsPost = $oDp->GetIsRequestPost();
 
-		$aWhitelist = $this->getOption( 'ips_whitelist', array() );
-		if ( $this->isIpOnlist( $aWhitelist, $this->ip() ) ) {
-			return true;
-		}
-
 		$oWp = $this->loadWpFunctionsProcessor();
 		// XML-RPC Compatibility
 		if ( $oWp->getIsXmlrpc() && $this->getIsOption( 'enable_xmlrpc_compatibility', 'Y' ) ) {
@@ -109,31 +104,7 @@ class ICWP_WPSF_Processor_LoginProtect_V5 extends ICWP_WPSF_Processor_Base {
 		}
 
 		add_filter( 'wp_login_errors', array( $this, 'addLoginMessage' ) );
-
-		add_filter( $oFO->doPluginPrefix( 'ip_whitelist' ), array( $this, 'fAddToGlobalWhitelist' ) );
 		return true;
-	}
-
-	/**
-	 * @param array $aWhitelist
-	 * @return array
-	 */
-	public function fAddToGlobalWhitelist( $aWhitelist ) {
-		$aCurrentIps = $this->getOption( 'ips_whitelist' );
-		if ( empty( $aCurrentIps ) || !is_array( $aCurrentIps ) || empty( $aCurrentIps['ips'] ) || !is_array( $aCurrentIps['ips'] ) ) {
-			return $aWhitelist;
-		}
-
-		$oDp = $this->loadDataProcessor();
-		foreach( $aCurrentIps['ips'] as $sIp ) {
-			if ( is_numeric( $sIp ) ) {
-				$sIp = long2ip( $sIp );
-			}
-			if ( !in_array( $sIp, $aWhitelist ) && $oDp->verifyIp( $sIp ) ) {
-				$aWhitelist[] = $sIp;
-			}
-		}
-		return $aWhitelist;
 	}
 
 	/**
