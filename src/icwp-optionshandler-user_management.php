@@ -15,26 +15,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).ICWP_DS.'icwp-optionshandler-base.php' );
+require_once( 'icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_WPSF_FeatureHandler_UserManagement') ):
 
 	class ICWP_WPSF_FeatureHandler_UserManagement extends ICWP_WPSF_FeatureHandler_Base {
 
 		/**
-		 * @var ICWP_WPSF_Processor_UserManagement
+		 * @return string
 		 */
-		protected $oFeatureProcessor;
-
-		/**
-		 * @return ICWP_WPSF_FeatureHandler_UserManagement|null
-		 */
-		protected function loadFeatureProcessor() {
-			if ( !isset( $this->oFeatureProcessor ) ) {
-				require_once( $this->getController()->getPath_SourceFile( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
-				$this->oFeatureProcessor = new ICWP_WPSF_Processor_UserManagement( $this );
-			}
-			return $this->oFeatureProcessor;
+		protected function getProcessorClassName() {
+			return 'ICWP_WPSF_Processor_UserManagement';
 		}
 
 		protected function doExecuteProcessor() {

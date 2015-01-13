@@ -16,7 +16,7 @@
  *
  */
 
-require_once( dirname(__FILE__).'/icwp-processor-base.php' );
+require_once( 'icwp-processor-base.php' );
 
 if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 
@@ -52,7 +52,7 @@ if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 		public function deleteDatabase() {
 			if ( apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'has_permission_to_submit' ), true ) && $this->getTableExists() ) {
 				$this->deleteCleanupCron();
-				$this->dropTable();
+				$this->loadDbProcessor()->doDropTable( $this->getTableName() );
 			}
 		}
 
@@ -119,15 +119,6 @@ if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 		}
 
 		/**
-		 * @param array $aWhere - delete where (associative array)
-		 *
-		 * @return integer|boolean (number of rows affected)
-		 */
-		public function deleteRowsWhere( $aWhere ) {
-			return $this->loadDbProcessor()->deleteRowsFromTableWhere( $this->getTableName(), $aWhere );
-		}
-
-		/**
 		 * @param integer $nTimeStamp
 		 * @return bool|int
 		 */
@@ -151,20 +142,13 @@ if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 		abstract protected function getCreateTableSql();
 
 		/**
-		 * Will remove all data from this table (to delete the table see dropTable)
-		 */
-		public function emptyTable() {
-			return $this->loadDbProcessor()->doEmptyTable( $this->getTableName() );
-		}
-
-		/**
 		 * Will recreate the whole table
 		 */
 		public function recreateTable() {
 			if ( $this->getFeatureOptions()->getOpt( 'recreate_database_table', false ) || !$this->tableIsValid() ) {
 				$this->getFeatureOptions()->setOpt( 'recreate_database_table', false );
 				$this->getFeatureOptions()->savePluginOptions();
-				$this->dropTable();
+				$this->loadDbProcessor()->doDropTable( $this->getTableName() );
 				$this->createTable();
 			}
 		}
@@ -185,25 +169,6 @@ if ( !class_exists('ICWP_WPSF_BaseDbProcessor') ):
 		}
 
 		abstract protected function getTableColumnsByDefinition();
-
-		/**
-		 * Will completely remove this table from the database
-		 */
-		public function dropTable() {
-			return $this->loadDbProcessor()->doDropTable( $this->getTableName() );
-		}
-
-		/**
-		 * Given any SQL query, will perform it using the WordPress database object.
-		 *
-		 * @param string $sSqlQuery
-		 *
-		 * @return integer|boolean (number of rows affected or just true/false)
-		 */
-		public function doSql( $sSqlQuery ) {
-			$mResult = $this->loadDbProcessor()->doSql( $sSqlQuery );
-			return $mResult;
-		}
 
 		/**
 		 * @return string

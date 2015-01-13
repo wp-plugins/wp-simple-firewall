@@ -15,7 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-processor-basedb.php' );
+require_once( 'icwp-processor-basedb.php' );
 
 if ( !class_exists('ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam') ):
 
@@ -449,7 +449,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 			'unique_token'  => $sUniqueToken,
 			'post_id'       => $sPostId
 		);
-		return $this->deleteRowsWhere( $aWhere );
+		return $this->loadDbProcessor()->deleteRowsFromTableWhere( $this->getTableName(), $aWhere );
 	}
 
 	/**
@@ -462,7 +462,7 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 			'ip'        => $this->loadDataProcessor()->getVisitorIpAddress( true ),
 			'post_id'   => empty( $sPostId ) ? $this->getRequestPostId() : $sPostId
 		);
-		return $this->deleteRowsWhere( $aWhere );
+		return $this->loadDbProcessor()->deleteRowsFromTableWhere( $this->getTableName(), $aWhere );
 	}
 
 	/**
@@ -509,7 +509,6 @@ class ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam extends ICWP_WPSF_BaseDbPro
 	
 	/**
 	 * This is hooked into a cron in the base class and overrides the parent method.
-	 * 
 	 * It'll delete everything older than 24hrs.
 	 */
 	public function cleanupDatabase() {

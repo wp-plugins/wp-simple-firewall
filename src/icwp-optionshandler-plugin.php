@@ -15,16 +15,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).ICWP_DS.'icwp-optionshandler-base.php' );
+require_once( 'icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 
 	class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
-
-		/**
-		 * @var ICWP_WPSF_Processor_Plugin
-		 */
-		protected $oFeatureProcessor;
 
 		public function __construct( $oPluginController, $aFeatureProperties = array() ) {
 			parent::__construct( $oPluginController, $aFeatureProperties );
@@ -34,14 +29,10 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
 		}
 
 		/**
-		 * @return ICWP_WPSF_Processor_Plugin|null
+		 * @return string
 		 */
-		protected function loadFeatureProcessor() {
-			if ( !isset( $this->oFeatureProcessor ) ) {
-				require_once( $this->getController()->getPath_SourceFile( sprintf( 'icwp-processor-%s.php', 'plugin' ) ) );
-				$this->oFeatureProcessor = new ICWP_WPSF_Processor_Plugin( $this );
-			}
-			return $this->oFeatureProcessor;
+		protected function getProcessorClassName() {
+			return 'ICWP_WPSF_Processor_Plugin';
 		}
 
 		/**

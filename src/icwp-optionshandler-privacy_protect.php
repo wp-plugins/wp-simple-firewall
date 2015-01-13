@@ -15,26 +15,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-optionshandler-base.php' );
+require_once( 'icwp-optionshandler-base.php' );
 
 if ( !class_exists('ICWP_WPSF_FeatureHandler_PrivacyProtect') ):
 
 	class ICWP_WPSF_FeatureHandler_PrivacyProtect extends ICWP_WPSF_FeatureHandler_Base {
 
 		/**
-		 * @var ICWP_WPSF_Processor_PrivacyProtect
+		 * @return string
 		 */
-		protected $oFeatureProcessor;
-
-		/**
-		 * @return ICWP_WPSF_Processor_PrivacyProtect|null
-		 */
-		protected function loadFeatureProcessor() {
-			if ( !isset( $this->oFeatureProcessor ) ) {
-				require_once( $this->getController()->getPath_SourceFile( sprintf( 'icwp-processor-%s.php', $this->getFeatureSlug() ) ) );
-				$this->oFeatureProcessor = new ICWP_WPSF_Processor_PrivacyProtect( $this );
-			}
-			return $this->oFeatureProcessor;
+		protected function getProcessorClassName() {
+			return 'ICWP_WPSF_Processor_PrivacyProtect';
 		}
 
 		protected function doExecuteProcessor() {

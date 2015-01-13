@@ -15,7 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).ICWP_DS.'icwp-processor-base.php' );
+require_once( 'icwp-processor-base.php' );
 
 if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V6') ):
 

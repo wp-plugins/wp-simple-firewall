@@ -15,27 +15,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).ICWP_DS.'icwp-processor-base.php' );
+require_once( 'icwp-processor-base.php' );
+
 if ( !class_exists('ICWP_WPSF_Processor_AdminAccessRestriction') ):
 
 	class ICWP_WPSF_Processor_AdminAccessRestriction extends ICWP_WPSF_Processor_Base {
 
 		/**
-		 * @var ICWP_WPSF_FeatureHandler_AdminAccessRestriction
-		 */
-		protected $oFeatureOptions;
-
-		/**
 		 * @var string
 		 */
 		protected $sOptionRegexPattern;
-
-		/**
-		 * @param ICWP_WPSF_FeatureHandler_AdminAccessRestriction  $oFeatureOptions
-		 */
-		public function __construct( ICWP_WPSF_FeatureHandler_AdminAccessRestriction $oFeatureOptions ) {
-			parent::__construct( $oFeatureOptions );
-		}
 
 		public function run() {
 			/** @var ICWP_WPSF_FeatureHandler_AdminAccessRestriction $oFO */
@@ -44,7 +33,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AdminAccessRestriction') ):
 			add_filter( $oFO->doPluginPrefix( 'has_permission_to_view' ), array( $oFO, 'doCheckHasPermissionToSubmit' ) );
 
 			$oWp = $this->loadWpFunctionsProcessor();
-			if ( ! $this->getFeatureOptions()->getIsUpgrading() && ! $oWp->getIsLoginRequest() ) {
+			if ( ! $oFO->getIsUpgrading() && ! $oWp->getIsLoginRequest() ) {
 				add_filter( 'pre_update_option', array( $this, 'blockOptionsSaves' ), 1, 3 );
 			}
 		}

@@ -15,7 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).'/icwp-processor-basedb.php' );
+require_once( 'icwp-processor-basedb.php' );
 
 if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 
@@ -347,7 +347,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 				$this->time(),
 				empty( $sWpUsername ) ? '' : "AND `wp_username`		= '".esc_sql( $sWpUsername )."'"
 			);
-			return $this->doSql( $sQuery );
+			return $this->loadDbProcessor()->doSql( $sQuery );
 		}
 
 		/**
@@ -507,7 +507,7 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 				$this->getTableName(),
 				esc_sql( $nTimeStamp )
 			);
-			return $this->doSql( $sQuery );
+			return $this->loadDbProcessor()->doSql( $sQuery );
 		}
 
 	}

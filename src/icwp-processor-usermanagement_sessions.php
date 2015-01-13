@@ -15,7 +15,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( dirname(__FILE__).ICWP_DS.'icwp-processor-basedb.php' );
+require_once( 'icwp-processor-basedb.php' );
 
 if ( !class_exists('ICWP_WPSF_Processor_UserManagement_Sessions') ):
 
@@ -349,7 +349,7 @@ class ICWP_WPSF_Processor_UserManagement_Sessions extends ICWP_WPSF_BaseDbProces
 	 *
 	 * @return bool|int
 	 */
-	protected function doTerminateUserSession( $sUsername, $sSessionId, $fHardDelete = true ) {
+	protected function doTerminateUserSession( $sUsername, $sSessionId, $bHardDelete = true ) {
 
 		$aWhere = array(
 			'session_id'	=> $sSessionId,
@@ -357,8 +357,8 @@ class ICWP_WPSF_Processor_UserManagement_Sessions extends ICWP_WPSF_BaseDbProces
 			'deleted_at'	=> 0
 		);
 
-		if ( $fHardDelete ) {
-			return $this->deleteRowsWhere( $aWhere );
+		if ( $bHardDelete ) {
+			return $this->loadDbProcessor()->deleteRowsFromTableWhere( $this->getTableName(), $aWhere );
 		}
 
 		$aNewData = array( 'deleted_at'	=> $this->time() );
