@@ -232,7 +232,7 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Plugin', false ) ):
 				case 'ip_whitelist' :
 					$sName = _wpsf__( 'IP Whitelist' );
 					$sSummary = _wpsf__( 'IP Address White List' );
-					$sDescription = sprintf( _wpsf__( 'Any IP addresses on this list will by-pass all Plugin features' ) );
+					$sDescription = sprintf( _wpsf__( 'Any IP addresses on this list will by-pass all Plugin Security Checking.' ) );
 					break;
 
 				case 'block_send_email_address' :
