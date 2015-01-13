@@ -17,7 +17,7 @@
 
 require_once( 'icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_WPSF_FeatureHandler_CommentsFilter') ):
+if ( !class_exists( 'ICWP_WPSF_FeatureHandler_CommentsFilter', false ) ):
 
 	class ICWP_WPSF_FeatureHandler_CommentsFilter extends ICWP_WPSF_FeatureHandler_Base {
 

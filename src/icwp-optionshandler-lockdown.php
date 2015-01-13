@@ -17,7 +17,7 @@
 
 require_once( 'icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_WPSF_FeatureHandler_Lockdown') ):
+if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Lockdown', false ) ):
 
 	class ICWP_WPSF_FeatureHandler_Lockdown extends ICWP_WPSF_FeatureHandler_Base {
 

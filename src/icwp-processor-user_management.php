@@ -15,11 +15,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( class_exists( 'ICWP_WPSF_Processor_UserManagement_V4', false ) ) {
-	return;
-}
-
 require_once( 'icwp-processor-base.php' );
+
+if ( !class_exists( 'ICWP_WPSF_Processor_UserManagement_V4', false ) ):
 
 class ICWP_WPSF_Processor_UserManagement_V4 extends ICWP_WPSF_Processor_Base {
 
@@ -86,7 +84,8 @@ class ICWP_WPSF_Processor_UserManagement_V4 extends ICWP_WPSF_Processor_Base {
 		return $this->getProcessorSessions()->getPendingOrFailedUserSessionRecordsSince( $nTime );
 	}
 }
+endif;
 
-if ( !class_exists('ICWP_WPSF_Processor_UserManagement') ):
+if ( !class_exists( 'ICWP_WPSF_Processor_UserManagement', false ) ):
 	class ICWP_WPSF_Processor_UserManagement extends ICWP_WPSF_Processor_UserManagement_V4 { }
 endif;

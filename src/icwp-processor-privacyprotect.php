@@ -17,7 +17,7 @@
 
 require_once( 'icwp-processor-basedb.php' );
 
-if ( !class_exists('ICWP_PrivacyProtectProcessor_V1') ):
+if ( !class_exists( 'ICWP_PrivacyProtectProcessor_V1', false ) ):
 
 	class ICWP_PrivacyProtectProcessor_V1 extends ICWP_WPSF_BaseDbProcessor {
 

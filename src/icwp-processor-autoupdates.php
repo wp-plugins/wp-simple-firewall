@@ -27,13 +27,6 @@ if ( !class_exists('ICWP_WPSF_AutoupdatesProcessor_V6') ):
 		protected $bDoForceRunAutoupdates = false;
 
 		/**
-		 * @param ICWP_WPSF_FeatureHandler_Autoupdates $oFeatureOptions
-		 */
-		public function __construct( ICWP_WPSF_FeatureHandler_Autoupdates $oFeatureOptions ) {
-			parent::__construct( $oFeatureOptions );
-		}
-
-		/**
 		 * @param boolean $bDoForceRun
 		 */
 		public function setForceRunAutoupdates( $bDoForceRun ) {

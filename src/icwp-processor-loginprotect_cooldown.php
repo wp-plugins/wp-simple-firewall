@@ -15,11 +15,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( class_exists( 'ICWP_WPSF_Processor_LoginProtect_Cooldown', false ) ) {
-	return;
-}
-
 require_once( 'icwp-processor-base.php' );
+
+if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_Cooldown', false ) ):
 
 class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base {
 
@@ -104,3 +102,4 @@ class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base
 		return $oError;
 	}
 }
+endif;

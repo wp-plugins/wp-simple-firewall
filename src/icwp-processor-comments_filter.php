@@ -17,16 +17,9 @@
 
 require_once( 'icwp-processor-basedb.php' );
 
-if ( !class_exists('ICWP_WPSF_Processor_CommentsFilter_V2') ):
+if ( !class_exists( 'ICWP_WPSF_Processor_CommentsFilter', false ) ):
 
 class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
-
-	/**
-	 * @param ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions
-	 */
-	public function __construct( ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions );
-	}
 
 	/**
 	 */
@@ -119,6 +112,6 @@ class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 }
 endif;
 
-if ( !class_exists('ICWP_WPSF_Processor_CommentsFilter') ):
+if ( !class_exists( 'ICWP_WPSF_Processor_CommentsFilter', false ) ):
 	class ICWP_WPSF_Processor_CommentsFilter extends ICWP_WPSF_Processor_CommentsFilter_V2 { }
 endif;

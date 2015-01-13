@@ -17,7 +17,7 @@
 
 require_once( 'icwp-processor-basedb.php' );
 
-if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
+if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth', false ) ):
 
 	class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbProcessor {
 

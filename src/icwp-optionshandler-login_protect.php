@@ -17,7 +17,7 @@
 
 require_once( 'icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_WPSF_FeatureHandler_LoginProtect') ):
+if ( !class_exists( 'ICWP_WPSF_FeatureHandler_LoginProtect', false ) ):
 
 	class ICWP_WPSF_FeatureHandler_LoginProtect extends ICWP_WPSF_FeatureHandler_Base {
 

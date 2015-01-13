@@ -17,7 +17,7 @@
 
 require_once( 'icwp-processor-base.php' );
 
-if ( !class_exists('ICWP_FirewallProcessor_V1') ):
+if ( !class_exists( 'ICWP_FirewallProcessor_V1', false ) ):
 
 	class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 
@@ -621,7 +621,6 @@ if ( !class_exists('ICWP_FirewallProcessor_V1') ):
 			return $fSendSuccess;
 		}
 	}
-
 endif;
 
 if ( !class_exists('ICWP_WPSF_Processor_Firewall') ):

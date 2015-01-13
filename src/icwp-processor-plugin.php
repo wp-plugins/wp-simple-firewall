@@ -17,7 +17,7 @@
 
 require_once( 'icwp-processor-base.php' );
 
-if ( !class_exists('ICWP_WPSF_Processor_Plugin') ):
+if ( !class_exists( 'ICWP_WPSF_Processor_Plugin', false ) ):
 
 	class ICWP_WPSF_Processor_Plugin extends ICWP_WPSF_Processor_Base {
 

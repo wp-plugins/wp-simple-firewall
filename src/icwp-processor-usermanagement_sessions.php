@@ -15,11 +15,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( class_exists( 'ICWP_WPSF_Processor_UserManagement_Sessions', false ) ) {
-	return;
-}
-
 require_once( 'icwp-processor-basedb.php' );
+
+if ( !class_exists( 'ICWP_WPSF_Processor_UserManagement_Sessions', false ) ):
 
 class ICWP_WPSF_Processor_UserManagement_Sessions extends ICWP_WPSF_BaseDbProcessor {
 
@@ -509,3 +507,4 @@ class ICWP_WPSF_Processor_UserManagement_Sessions extends ICWP_WPSF_BaseDbProces
 		$this->deleteAllRowsOlderThan( $nTimeStamp );
 	}
 }
+endif;

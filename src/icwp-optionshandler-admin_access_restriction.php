@@ -15,11 +15,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( class_exists( 'ICWP_WPSF_FeatureHandler_AdminAccessRestriction', false ) ){
-	return;
-}
-
 require_once( 'icwp-optionshandler-base.php' );
+
+if ( !class_exists('ICWP_WPSF_FeatureHandler_AdminAccessRestriction') ):
 
 class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureHandler_Base {
 
@@ -227,3 +225,4 @@ class ICWP_WPSF_FeatureHandler_AdminAccessRestriction extends ICWP_WPSF_FeatureH
 		}
 	}
 }
+endif;

@@ -17,7 +17,7 @@
 
 require_once( 'icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_WPSF_FeatureHandler_Plugin') ):
+if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Plugin', false ) ):
 
 	class ICWP_WPSF_FeatureHandler_Plugin extends ICWP_WPSF_FeatureHandler_Base {
 

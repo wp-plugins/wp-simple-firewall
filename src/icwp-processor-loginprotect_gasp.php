@@ -15,11 +15,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( class_exists( 'ICWP_WPSF_Processor_LoginProtect_Gasp', false ) ) {
-	return;
-}
-
 require_once( 'icwp-processor-base.php' );
+
+if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_Gasp', false ) ):
 
 class ICWP_WPSF_Processor_LoginProtect_Gasp extends ICWP_WPSF_Processor_Base {
 
@@ -151,3 +149,4 @@ class ICWP_WPSF_Processor_LoginProtect_Gasp extends ICWP_WPSF_Processor_Base {
 		return true;
 	}
 }
+endif;

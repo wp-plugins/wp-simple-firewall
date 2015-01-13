@@ -20,6 +20,11 @@ if ( !class_exists( 'ICWP_WPSF_WpFunctions_V6', false ) ):
 	class ICWP_WPSF_WpFunctions_V6 {
 
 		/**
+		 * @var WP_Automatic_Updater
+		 */
+		protected $oWpAutomaticUpdater;
+
+		/**
 		 * @var ICWP_WPSF_WpFunctions_V6
 		 */
 		protected static $oInstance = NULL;
@@ -395,6 +400,11 @@ if ( !class_exists( 'ICWP_WPSF_WpFunctions_V6', false ) ):
 		 * @return boolean
 		 */
 		public function getIsPluginAutomaticallyUpdated( $sPluginBaseFilename ) {
+			$oUpdater = $this->getWpAutomaticUpdater();
+			if ( is_null( $oUpdater ) ) {
+				return false;
+			}
+
 			// This is due to a change in the filter introduced in version 3.8.2
 			if ( $this->getWordpressIsAtLeastVersion( '3.8.2' ) ) {
 				$mPluginItem = new stdClass();
@@ -404,8 +414,7 @@ if ( !class_exists( 'ICWP_WPSF_WpFunctions_V6', false ) ):
 				$mPluginItem = $sPluginBaseFilename;
 			}
 
-			$bUpdate = apply_filters( 'auto_update_plugin', false, $mPluginItem );
-			return $bUpdate;
+			return $oUpdater->should_update( 'plugin', $mPluginItem, WP_PLUGIN_DIR );
 		}
 
 		/**
@@ -780,6 +789,21 @@ if ( !class_exists( 'ICWP_WPSF_WpFunctions_V6', false ) ):
 				return '';
 			}
 			return $sCurrentMetaValue;
+		}
+
+		/**
+		 * @return null|WP_Automatic_Updater
+		 */
+		public function getWpAutomaticUpdater() {
+			if ( !isset( $this->oWpAutomaticUpdater ) ) {
+				if ( !class_exists( 'WP_Automatic_Updater', false ) ) {
+					if ( !include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
+						return null;
+					}
+				}
+				$this->oWpAutomaticUpdater = new WP_Automatic_Updater();
+			}
+			return $this->oWpAutomaticUpdater;
 		}
 
 		/**

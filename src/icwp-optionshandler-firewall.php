@@ -17,7 +17,7 @@
 
 require_once( 'icwp-optionshandler-base.php' );
 
-if ( !class_exists('ICWP_WPSF_FeatureHandler_Firewall') ):
+if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Firewall', false ) ):
 
 	class ICWP_WPSF_FeatureHandler_Firewall extends ICWP_WPSF_FeatureHandler_Base {
 
