@@ -15,23 +15,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+if ( class_exists( 'ICWP_WPSF_Processor_LoginProtect_Cooldown', false ) ) {
+	return;
+}
+
 require_once( 'icwp-processor-base.php' );
 
-if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_Cooldown') ):
-
 class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base {
-
-	/**
-	 * @var ICWP_WPSF_FeatureHandler_LoginProtect
-	 */
-	protected $oFeatureOptions;
-
-	/**
-	 * @param ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions
-	 */
-	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions );
-	}
 
 	/**
 	 * @return int
@@ -44,7 +34,10 @@ class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base
 	 * @return int
 	 */
 	public function getLastLoginTime() {
-		$sFilePath = $this->oFeatureOptions->getLastLoginTimeFilePath();
+		/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+		$oFO = $this->getFeatureOptions();
+
+		$sFilePath = $oFO->getLastLoginTimeFilePath();
 		$oWpFs = $this->loadFileSystemProcessor();
 		$nModifiedFileTime = ( $oWpFs->exists( $sFilePath ) ) ? filemtime( $sFilePath ) : 0;
 		return max( $nModifiedFileTime, $this->getOption( 'last_login_time' ) );
@@ -54,10 +47,12 @@ class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base
 	 *
 	 */
 	protected function updateLastLoginTime() {
+		/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+		$oFO = $this->getFeatureOptions();
 		$oDp = $this->loadDataProcessor();
-		$this->oFeatureOptions->setOpt( 'last_login_time', $oDp->GetRequestTime() );
-		$oWpFs = $this->loadFileSystemProcessor();
-		$oWpFs->touch( $this->oFeatureOptions->getLastLoginTimeFilePath(), $oDp->GetRequestTime() );
+
+		$oFO->setOpt( 'last_login_time', $oDp->GetRequestTime() );
+		$this->loadFileSystemProcessor()->touch( $oFO->getLastLoginTimeFilePath(), $oDp->GetRequestTime() );
 	}
 
 	/**
@@ -109,4 +104,3 @@ class ICWP_WPSF_Processor_LoginProtect_Cooldown extends ICWP_WPSF_Processor_Base
 		return $oError;
 	}
 }
-endif;

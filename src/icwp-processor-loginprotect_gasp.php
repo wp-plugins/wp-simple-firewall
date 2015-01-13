@@ -15,23 +15,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+if ( class_exists( 'ICWP_WPSF_Processor_LoginProtect_Gasp', false ) ) {
+	return;
+}
+
 require_once( 'icwp-processor-base.php' );
 
-if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_Gasp') ):
-
 class ICWP_WPSF_Processor_LoginProtect_Gasp extends ICWP_WPSF_Processor_Base {
-
-	/**
-	 * @var ICWP_WPSF_FeatureHandler_LoginProtect
-	 */
-	protected $oFeatureOptions;
-
-	/**
-	 * @param ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions
-	 */
-	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
-		$this->oFeatureOptions = $oFeatureOptions;
-	}
 
 	/**
 	 */
@@ -130,7 +120,9 @@ class ICWP_WPSF_Processor_LoginProtect_Gasp extends ICWP_WPSF_Processor_Base {
 	 * @return string
 	 */
 	public function getGaspCheckboxName() {
-		return $this->oFeatureOptions->doPluginPrefix( $this->oFeatureOptions->getGaspKey() );
+		/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+		$oFO = $this->getFeatureOptions();
+		return $oFO->doPluginPrefix( $oFO->getGaspKey() );
 	}
 
 	/**
@@ -159,4 +151,3 @@ class ICWP_WPSF_Processor_LoginProtect_Gasp extends ICWP_WPSF_Processor_Base {
 		return true;
 	}
 }
-endif;

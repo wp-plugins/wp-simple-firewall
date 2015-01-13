@@ -15,35 +15,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( 'icwp-processor-base.php' );
+if ( class_exists( 'ICWP_WPSF_Processor_LoginProtect_WpLogin', false ) ) {
+	return;
+}
 
-if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_WpLogin') ):
+require_once( 'icwp-processor-base.php' );
 
 class ICWP_WPSF_Processor_LoginProtect_WpLogin extends ICWP_WPSF_Processor_Base {
 
 	/**
-	 * @var ICWP_WPSF_FeatureHandler_LoginProtect
-	 */
-	protected $oFeatureOptions;
-
-	/**
-	 * @param ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions
-	 */
-	public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
-		$this->oFeatureOptions = $oFeatureOptions;
-	}
-
-	/**
-	 * @return ICWP_WPSF_FeatureHandler_LoginProtect
-	 */
-	protected function getFeatureOptions() {
-		return $this->oFeatureOptions;
-	}
-
-	/**
 	 */
 	public function run() {
-		if ( !$this->getFeatureOptions()->getIsCustomLoginPathEnabled() || $this->doCheckForPluginConflict() ) {
+		/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+		$oFO = $this->getFeatureOptions();
+
+		if ( !$oFO->getIsCustomLoginPathEnabled() || $this->doCheckForPluginConflict() ) {
 			return false;
 		}
 
@@ -68,17 +54,20 @@ class ICWP_WPSF_Processor_LoginProtect_WpLogin extends ICWP_WPSF_Processor_Base 
 	 * @return bool - true if conflict exists
 	 */
 	protected function doCheckForPluginConflict() {
+		/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+		$oFO = $this->getFeatureOptions();
+
 		$oWp = $this->loadWpFunctionsProcessor();
 		if ( class_exists( 'Rename_WP_Login', false ) ) {
-			add_filter( $this->getFeatureOptions()->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeRenameWpLoginInstalled' ) );
+			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeRenameWpLoginInstalled' ) );
 			return true;
 		}
 		else if ( !$oWp->getIsPermalinksEnabled() ) {
-			add_filter( $this->getFeatureOptions()->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticePermalinksDisabled' ) );
+			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticePermalinksDisabled' ) );
 			return true;
 		}
 		else if ( $oWp->getIsPermalinksEnabled() && $oWp->getDoesWpSlugExist( $this->getLoginPath() ) ) {
-			add_filter( $this->getFeatureOptions()->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeWpTermAlreadyExists' ) );
+			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeWpTermAlreadyExists' ) );
 			return true;
 		}
 		return false;
@@ -168,7 +157,9 @@ class ICWP_WPSF_Processor_LoginProtect_WpLogin extends ICWP_WPSF_Processor_Base 
 	 * @return string
 	 */
 	protected function getLoginPath() {
-		return $this->getFeatureOptions()->getCustomLoginPath();
+		/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+		$oFO = $this->getFeatureOptions();
+		return $oFO->getCustomLoginPath();
 	}
 
 	/**
@@ -224,4 +215,3 @@ class ICWP_WPSF_Processor_LoginProtect_WpLogin extends ICWP_WPSF_Processor_Base 
 		);
 	}
 }
-endif;

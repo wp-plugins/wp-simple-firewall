@@ -17,7 +17,7 @@
 
 require_once( 'icwp-processor-base.php' );
 
-if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_Yubikey') ):
+if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_Yubikey', false ) ):
 
 	class ICWP_WPSF_Processor_LoginProtect_Yubikey extends ICWP_WPSF_Processor_Base {
 
@@ -25,17 +25,6 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_Yubikey') ):
 		 * @const string
 		 */
 		const YubikeyVerifyApiUrl = 'https://api.yubico.com/wsapi/2.0/verify?id=%s&otp=%s&nonce=%s';
-
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_LoginProtect
-		 */
-		protected $oFeatureOptions;
-
-		/**
-		 */
-		public function __construct( ICWP_WPSF_FeatureHandler_LoginProtect $oFeatureOptions ) {
-			parent::__construct( $oFeatureOptions );
-		}
 
 		/**
 		 */

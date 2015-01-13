@@ -22,10 +22,6 @@ if ( !class_exists('ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth') ):
 	class ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth extends ICWP_WPSF_BaseDbProcessor {
 
 		/**
-		 * @var ICWP_WPSF_FeatureHandler_LoginProtect
-		 */
-		protected $oFeatureOptions;
-		/**
 		 * @var string
 		 */
 		protected $nDaysToKeepLog = 1;

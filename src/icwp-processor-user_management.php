@@ -15,16 +15,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+if ( class_exists( 'ICWP_WPSF_Processor_UserManagement_V4', false ) ) {
+	return;
+}
+
 require_once( 'icwp-processor-base.php' );
 
-if ( !class_exists( 'ICWP_WPSF_Processor_UserManagement_V3', false ) ):
-
-class ICWP_WPSF_Processor_UserManagement_V3 extends ICWP_WPSF_Processor_Base {
-
-	/**
-	 * @var ICWP_WPSF_FeatureHandler_UserManagement
-	 */
-	protected $oFeatureOptions;
+class ICWP_WPSF_Processor_UserManagement_V4 extends ICWP_WPSF_Processor_Base {
 
 	/**
 	 * @var ICWP_WPSF_Processor_UserManagement_Sessions
@@ -39,17 +36,9 @@ class ICWP_WPSF_Processor_UserManagement_V3 extends ICWP_WPSF_Processor_Base {
 	}
 
 	/**
-	 * @return ICWP_WPSF_FeatureHandler_UserManagement
-	 */
-	public function getFeatureOptions() {
-		return parent::getFeatureOptions();
-	}
-
-	/**
 	 * @return bool
 	 */
 	public function run() {
-
 		$oWp = $this->loadWpFunctionsProcessor();
 
 		// XML-RPC Compatibility
@@ -97,8 +86,7 @@ class ICWP_WPSF_Processor_UserManagement_V3 extends ICWP_WPSF_Processor_Base {
 		return $this->getProcessorSessions()->getPendingOrFailedUserSessionRecordsSince( $nTime );
 	}
 }
-endif;
 
 if ( !class_exists('ICWP_WPSF_Processor_UserManagement') ):
-	class ICWP_WPSF_Processor_UserManagement extends ICWP_WPSF_Processor_UserManagement_V3 { }
+	class ICWP_WPSF_Processor_UserManagement extends ICWP_WPSF_Processor_UserManagement_V4 { }
 endif;

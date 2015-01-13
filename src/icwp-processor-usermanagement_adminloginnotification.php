@@ -15,9 +15,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once( 'icwp-processor-base.php' );
+if ( class_exists( 'ICWP_WPSF_Processor_UserManagement_AdminLoginNotification', false ) ) {
+	return;
+}
 
-if ( !class_exists('ICWP_WPSF_Processor_UserManagement_AdminLoginNotification') ):
+require_once( 'icwp-processor-base.php' );
 
 class ICWP_WPSF_Processor_UserManagement_AdminLoginNotification extends ICWP_WPSF_Processor_Base {
 
@@ -75,5 +77,3 @@ class ICWP_WPSF_Processor_UserManagement_AdminLoginNotification extends ICWP_WPS
 		return $fResult;
 	}
 }
-
-endif;
