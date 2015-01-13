@@ -227,12 +227,28 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Plugin', false ) ):
 		}
 
 		protected function processGlobalPluginWhitelist() {
-			$aIpWhitelist = apply_filters( $this->doPluginPrefix( 'ip_whitelist' ), $this->getOpt( 'ip_whitelist', array() ) );
+			$aIpWhitelist = apply_filters( $this->doPluginPrefix( 'ip_whitelist' ), array() );
 			if ( !is_array( $aIpWhitelist ) ) {
 				$aIpWhitelist = array();
 			}
-			$aUnique = array_unique( preg_replace( '#[^0-9a-zA-Z:.-]#', '', $aIpWhitelist ) );
-			$this->setOpt( 'ip_whitelist', $aUnique );
+
+			$aOldWhitelists = apply_filters( 'icwp_simple_firewall_whitelist_ips', array() );
+			if ( is_array( $aOldWhitelists ) ) {
+				foreach( $aOldWhitelists as $mKey => $sValue ) {
+					$aIpWhitelist[] = is_string( $mKey ) ? $mKey : $sValue;
+				}
+			}
+
+			$aIpWhitelist = array_merge( $this->getOpt( 'ip_whitelist', array() ), $aIpWhitelist );
+			$aUniques = array_unique( preg_replace( '#[^0-9a-zA-Z:.-]#', '', $aIpWhitelist ) );
+
+			$oDp = $this->loadDataProcessor();
+			foreach( $aUniques as $nPos => $sIp ) {
+				if ( !$oDp->verifyIp( $sIp ) ) {
+					unset( $aUniques[$nPos] );
+				}
+			}
+			$this->setOpt( 'ip_whitelist', $aUniques );
 		}
 
 		protected function updateHandler() {
