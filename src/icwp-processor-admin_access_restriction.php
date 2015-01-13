@@ -54,8 +54,8 @@ if ( !class_exists('ICWP_WPSF_Processor_AdminAccessRestriction') ):
 
 			$fHasPermissionToChangeOptions = apply_filters( $this->getFeatureOptions()->doPluginPrefix( 'has_permission_to_submit' ), true );
 			if ( !$fHasPermissionToChangeOptions ) {
-				$sAuditMessage = sprintf( _wpsf__('Attempt to save/update option "%s" was blocked.'), $sOption );
-//			$this->addToAuditEntry( $sAuditMessage, 3, 'admin_access_option_block' );
+//				$sAuditMessage = sprintf( _wpsf__('Attempt to save/update option "%s" was blocked.'), $sOption );
+//			    $this->addToAuditEntry( $sAuditMessage, 3, 'admin_access_option_block' );
 				return $mOldValue;
 			}
 

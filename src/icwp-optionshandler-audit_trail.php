@@ -49,6 +49,7 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_AuditTrail_V1') ):
 
 		public function displayAuditTrailViewer() {
 
+			/** @var ICWP_WPSF_Processor_AuditTrail $oAuditTrail */
 			$oAuditTrail = $this->loadFeatureProcessor();
 			$aData = array(
 				'nYourIp'			=> $this->loadDataProcessor()->getVisitorIpAddress( true ),

@@ -43,6 +43,7 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_V1') ):
 		 */
 		public function run() {
 
+			/** @var ICWP_WPSF_FeatureHandler_AuditTrail $oFo */
 			$oFo = $this->getFeatureOptions();
 
 			if ( $this->getIsOption( 'enable_audit_context_users', 'Y' ) ) {

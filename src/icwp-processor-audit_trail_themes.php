@@ -22,13 +22,6 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Themes') ):
 	class ICWP_WPSF_Processor_AuditTrail_Themes extends ICWP_WPSF_Processor_Base {
 
 		/**
-		 * @param ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions
-		 */
-		public function __construct( ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions ) {
-			parent::__construct( $oFeatureOptions );
-		}
-
-		/**
 		 */
 		public function run() {
 			if ( $this->getIsOption( 'enable_audit_context_themes', 'Y' ) ) {
@@ -40,12 +33,10 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Themes') ):
 
 		/**
 		 * @param string $sThemeName
-		 * @return bool
 		 */
 		public function auditSwitchTheme( $sThemeName ) {
-
 			if ( empty( $sThemeName ) ) {
-				return false;
+				return;
 			}
 
 			$oAuditTrail = $this->getAuditTrailEntries();
@@ -59,9 +50,9 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Themes') ):
 
 		/**
 		 * @param string $sAction
-		 * @param boolean $fResult
+		 * @param boolean $bResult
 		 */
-		public function auditEditedThemeFile( $sAction, $fResult ) {
+		public function auditEditedThemeFile( $sAction, $bResult ) {
 
 			$sStub = 'edit-theme_';
 			if ( strpos( $sAction, $sStub ) !== 0 ) {

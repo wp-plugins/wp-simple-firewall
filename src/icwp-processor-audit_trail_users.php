@@ -22,13 +22,6 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Users') ):
 	class ICWP_WPSF_Processor_AuditTrail_Users extends ICWP_WPSF_Processor_Base {
 
 		/**
-		 * @param ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions
-		 */
-		public function __construct( ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions ) {
-			parent::__construct( $oFeatureOptions );
-		}
-
-		/**
 		 */
 		public function run() {
 			if ( $this->getIsOption( 'enable_audit_context_users', 'Y' ) ) {
@@ -41,12 +34,11 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Users') ):
 
 		/**
 		 * @param string $sUsername
-		 * @return bool
 		 */
 		public function auditUserLoginSuccess( $sUsername ) {
 
 			if ( empty( $sUsername ) ) {
-				return false;
+				return;
 			}
 
 			$oAuditTrail = $this->getAuditTrailEntries();
@@ -61,12 +53,11 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Users') ):
 
 		/**
 		 * @param string $sUsername
-		 * @return bool
 		 */
 		public function auditUserLoginFail( $sUsername ) {
 
 			if ( empty( $sUsername ) ) {
-				return false;
+				return;
 			}
 
 			$oAuditTrail = $this->getAuditTrailEntries();
@@ -80,12 +71,12 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Users') ):
 
 		/**
 		 * @param int $nUserId
-		 * @return bool
 		 */
 		public function auditNewUserRegistered( $nUserId ) {
 			if ( empty( $nUserId ) ) {
-				return false;
+				return;
 			}
+
 			$oWp = $this->loadWpFunctionsProcessor();
 			$oNewUser = $oWp->getUserById( $nUserId );
 
@@ -106,12 +97,12 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Users') ):
 		/**
 		 * @param int $nUserId
 		 * @param int $nReassigned
-		 * @return bool
 		 */
 		public function auditDeleteUser( $nUserId, $nReassigned ) {
 			if ( empty( $nUserId ) ) {
-				return false;
+				return;
 			}
+
 			$oWp = $this->loadWpFunctionsProcessor();
 			$oDeletedUser = $oWp->getUserById( $nUserId );
 			$oReassignedUser = empty( $nReassigned ) ? null : $oWp->getUserById( $nReassigned );

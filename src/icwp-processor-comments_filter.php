@@ -24,17 +24,19 @@ class ICWP_WPSF_Processor_CommentsFilter_V2 extends ICWP_WPSF_Processor_Base {
 	/**
 	 */
 	public function run() {
-		add_filter( $this->getFeatureOptions()->doPluginPrefix( 'if-do-comments-check' ), array( $this, 'getIfDoCommentsCheck' ) );
+		/** @var ICWP_WPSF_FeatureHandler_CommentsFilter $oFO */
+		$oFO = $this->getFeatureOptions();
+		add_filter( $oFO->doPluginPrefix( 'if-do-comments-check' ), array( $this, 'getIfDoCommentsCheck' ) );
 
 		if ( $this->getIsOption( 'enable_comments_gasp_protection', 'Y' ) ) {
 			require_once('icwp-processor-commentsfilter_antibotspam.php');
-			$oBotSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam( $this->getFeatureOptions() );
+			$oBotSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_AntiBotSpam( $oFO );
 			$oBotSpamProcessor->run();
 		}
 
 		if ( $this->getIsOption( 'enable_comments_human_spam_filter', 'Y' ) ) {
 			require_once( 'icwp-processor-commentsfilter_humanspam.php' );
-			$oHumanSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_HumanSpam( $this->getFeatureOptions() );
+			$oHumanSpamProcessor = new ICWP_WPSF_Processor_CommentsFilter_HumanSpam( $oFO );
 			$oHumanSpamProcessor->run();
 		}
 

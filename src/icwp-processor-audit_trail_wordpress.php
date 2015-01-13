@@ -22,13 +22,6 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Wordpress') ):
 	class ICWP_WPSF_Processor_AuditTrail_Wordpress extends ICWP_WPSF_Processor_Base {
 
 		/**
-		 * @param ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions
-		 */
-		public function __construct( ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions ) {
-			parent::__construct( $oFeatureOptions );
-		}
-
-		/**
 		 */
 		public function run() {
 			if ( $this->getIsOption( 'enable_audit_context_wordpress', 'Y' ) ) {

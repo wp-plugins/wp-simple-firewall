@@ -22,13 +22,6 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
 	class ICWP_WPSF_Processor_AuditTrail_Plugins extends ICWP_WPSF_Processor_Base {
 
 		/**
-		 * @param ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions
-		 */
-		public function __construct( ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions ) {
-			parent::__construct( $oFeatureOptions );
-		}
-
-		/**
 		 */
 		public function run() {
 			if ( $this->getIsOption( 'enable_audit_context_plugins', 'Y' ) ) {
@@ -40,12 +33,10 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
 
 		/**
 		 * @param string $sPlugin
-		 * @return bool
 		 */
 		public function auditActivatedPlugin( $sPlugin ) {
-
 			if ( empty( $sPlugin ) ) {
-				return false;
+				return;
 			}
 
 			$oAuditTrail = $this->getAuditTrailEntries();
@@ -59,12 +50,10 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
 
 		/**
 		 * @param string $sPlugin
-		 * @return bool
 		 */
 		public function auditDeactivatedPlugin( $sPlugin ) {
-
 			if ( empty( $sPlugin ) ) {
-				return false;
+				return;
 			}
 
 			$oAuditTrail = $this->getAuditTrailEntries();
@@ -78,9 +67,9 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Plugins') ):
 
 		/**
 		 * @param string $sAction
-		 * @param boolean $fResult
+		 * @param boolean $bResult
 		 */
-		public function auditEditedPluginFile( $sAction, $fResult ) {
+		public function auditEditedPluginFile( $sAction, $bResult ) {
 
 			$sStub = 'edit-plugin_';
 			if ( strpos( $sAction, $sStub ) !== 0 ) {

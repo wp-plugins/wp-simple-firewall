@@ -22,13 +22,6 @@ if ( !class_exists('ICWP_WPSF_Processor_AuditTrail_Wpsf') ):
 	class ICWP_WPSF_Processor_AuditTrail_Wpsf extends ICWP_WPSF_Processor_Base {
 
 		/**
-		 * @param ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions
-		 */
-		public function __construct( ICWP_WPSF_FeatureHandler_AuditTrail $oFeatureOptions ) {
-			parent::__construct( $oFeatureOptions );
-		}
-
-		/**
 		 */
 		public function run() { }
 

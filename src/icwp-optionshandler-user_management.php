@@ -58,9 +58,11 @@ if ( !class_exists('ICWP_WPSF_FeatureHandler_UserManagement') ):
 		/**
 		 */
 		public function displayFeatureConfigPage( ) {
+			/** @var ICWP_WPSF_Processor_UserManagement $oProcessor */
+			$oProcessor = $this->getProcessor();
 			$aData = array(
-				'aActiveSessions'		=> $this->getIsMainFeatureEnabled()? $this->oFeatureProcessor->getActiveUserSessionRecords() : array(),
-				'aFailedSessions'		=> $this->getIsMainFeatureEnabled()? $this->oFeatureProcessor->getPendingOrFailedUserSessionRecordsSince() : array()
+				'aActiveSessions'		=> $this->getIsMainFeatureEnabled()? $oProcessor->getActiveUserSessionRecords() : array(),
+				'aFailedSessions'		=> $this->getIsMainFeatureEnabled()? $oProcessor->getPendingOrFailedUserSessionRecordsSince() : array()
 			);
 			$this->display( $aData );
 		}

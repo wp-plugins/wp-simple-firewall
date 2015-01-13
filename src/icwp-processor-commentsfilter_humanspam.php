@@ -39,18 +39,11 @@ class ICWP_WPSF_Processor_CommentsFilter_HumanSpam extends ICWP_WPSF_Processor_B
 	 * @var string
 	 */
 	protected $sCommentStatus = '';
+
 	/**
 	 * @var string
 	 */
 	protected $sCommentStatusExplanation = '';
-
-	/**
-	 * @param ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions
-	 */
-	public function __construct( ICWP_WPSF_FeatureHandler_CommentsFilter $oFeatureOptions ) {
-		parent::__construct( $oFeatureOptions );
-		$this->reset();
-	}
 
 	/**
 	 * @param bool $fIfDoCheck

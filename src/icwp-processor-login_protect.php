@@ -172,7 +172,7 @@ class ICWP_WPSF_Processor_LoginProtect_V5 extends ICWP_WPSF_Processor_Base {
 	 */
 	protected function getProcessorTwoFactor() {
 		if ( !isset( $this->oProcessorTwoFactor ) ) {
-			require_once('icwp-processor-loginprotect_twofactorauth.php');
+			require_once( 'icwp-processor-loginprotect_twofactorauth.php' );
 			$this->oProcessorTwoFactor = new ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth( $this->getFeatureOptions() );
 		}
 		return $this->oProcessorTwoFactor;
