@@ -12,7 +12,22 @@ Complete and Simple WordPress Security. Unrestricted. No Premium Features.
 
 == Description ==
 
-The WordPress Simple Firewall is [all you need to secure your WordPress](http://icwp.io/wpsf09) sites in 7 Key Areas:
+The WordPress Simple Firewall is the ultimate **professional** [ WordPress Security System](http://icwp.io/wpsf09).
+
+What makes the Simple Firewall different?
+
+* All Features available to everyone - no premium version.
+* It's for everyone - beginners and professionals alike.
+* It protects itself - no-one can deactivate it, uninstall it, or change settings unless you allow it.
+* It blocks malicious URLs and requests to your site.
+* It blocks **ALL** automated spambot comments.
+* It hides your login pages.
+* It prevents brute force attacks on your login and also any attempted automatic bot logins.
+* It forces users to truly identify themselves using 2-Factor Authentication.
+* It creates true WordPress User Sessions so you can monitor user activity and restrict username sharing.
+* It displays an audit trail so you can see exactly what's going on with your site.
+* It lets you properly manage WordPress Automatic Updates.
+* Easy to use kill switch to temporarily turn off all Firewall Features without disabling the plugin or even logging into WordPress.
 
 = Plugin Admin Access Protection =
 The **only** WordPress security plugin with a WordPress-independent security key to protects itself. [more info](http://icwp.io/wpsf05)

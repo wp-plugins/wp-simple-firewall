@@ -39,6 +39,10 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_LoginProtect', false ) ):
 
 		public function doPrePluginOptionsSave() {
 
+			$sCustomLoginPath = $this->getOpt( 'rename_wplogin_path', '' );
+			$sCustomLoginPath = preg_replace( '#[^0-9a-zA-Z-]#', '', trim( $sCustomLoginPath, '/' ) );
+			$this->setOpt( 'rename_wplogin_path', $sCustomLoginPath );
+
 			if ( $this->getOpt( 'login_limit_interval' ) < 0 ) {
 				$this->getOptionsVo()->resetOptToDefault( 'login_limit_interval' );
 			}
@@ -142,7 +146,9 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_LoginProtect', false ) ):
 					$sSummary = _wpsf__( 'Rename The WordPress Login Page' );
 					$sDescription = _wpsf__( 'Creating a path here will disable your wp-login.php' )
 					                .'<br />'
-					                .sprintf( _wpsf__( 'Your current login URL is: %s'), '<strong>'.wp_login_url().'</strong>' )
+					                .sprintf( _wpsf__( 'Only letters and numbers are permitted: %s'), '<strong>abc123</strong>' )
+					                .'<br />'
+					                .sprintf( _wpsf__( 'Your current login URL is: %s'), '<br /><strong>&nbsp;&nbsp;'.wp_login_url().'</strong>' )
 					;
 					break;
 
