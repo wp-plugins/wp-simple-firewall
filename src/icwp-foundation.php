@@ -1,8 +1,6 @@
 <?php
 
-if ( class_exists( 'ICWP_WPSF_Foundation', false ) ) {
-	return;
-}
+if ( !class_exists( 'ICWP_WPSF_Foundation', false ) ) :
 
 class ICWP_WPSF_Foundation {
 
@@ -52,5 +50,6 @@ class ICWP_WPSF_Foundation {
 	public function loadStatsProcessor() {
 		require_once( 'icwp-wpsf-stats.php' );
 	}
-
 }
+
+endif;

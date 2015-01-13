@@ -19,15 +19,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if ( class_exists( 'ICWP_WPSF_Plugin_Controller' ) ) {
-	return;
-}
-
 if ( !defined( 'ICWP_DS' ) ) {
 	define( 'ICWP_DS', DIRECTORY_SEPARATOR );
 }
 
-require_once(dirname(__FILE__).ICWP_DS.'src'.ICWP_DS.'icwp-foundation.php');
+require_once( dirname(__FILE__).ICWP_DS.'src'.ICWP_DS.'icwp-foundation.php' );
+
+if ( !class_exists( 'ICWP_WPSF_Plugin_Controller', false ) ) :
+
 class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 
 	/**
@@ -1044,3 +1043,4 @@ class ICWP_WPSF_Plugin_Controller extends ICWP_WPSF_Foundation {
 		return $aConfig;
 	}
 }
+endif;
