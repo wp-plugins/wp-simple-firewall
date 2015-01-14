@@ -92,7 +92,7 @@ class ICWP_WPSF_Processor_UserManagement_Sessions extends ICWP_WPSF_BaseDbProces
 			$oWp = $this->loadWpFunctionsProcessor();
 			if ( $oWp->getIsLoginUrl() ) {
 				$sLoginAction = $oDp->FetchGet( 'action' );
-				if ( in_array( $sLoginAction, array( 'logout', 'postpass' ) ) ) {
+				if ( !in_array( $sLoginAction, array( 'logout', 'postpass' ) ) ) {
 					$oWp->redirectToAdmin();
 				}
 			}

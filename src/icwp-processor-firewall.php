@@ -432,7 +432,7 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 			foreach ( $aWhitelistPages as $sWhitelistPageName => $aWhitelistPageParams ) {
 
 				// if the page is white listed
-				if ( strpos( $sRequestPage, $sWhitelistPageName ) ) {
+				if ( strpos( $sRequestPage, $sWhitelistPageName ) !== false ) {
 
 					// if the page has no particular parameters specified there is nothing to check since the whole page is white listed.
 					if ( empty( $aWhitelistPageParams ) ) {
