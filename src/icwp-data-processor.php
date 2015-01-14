@@ -139,6 +139,15 @@ if ( !class_exists( 'ICWP_WPSF_DataProcessor_V4', false ) ):
 		}
 
 		/**
+		 * @param bool $bIncludeCookie
+		 * @return array
+		 */
+		public function getRawRequestParams( $bIncludeCookie = true ) {
+			$aParams = array_merge( $_GET, $_POST );
+			return $bIncludeCookie ? array_merge( $aParams, $_COOKIE ) : $aParams;
+		}
+
+		/**
 		 * @return bool|int|string
 		 */
 		public function getVisitorIpVersion() {

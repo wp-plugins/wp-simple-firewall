@@ -21,31 +21,38 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 
 	class ICWP_FirewallProcessor_V1 extends ICWP_WPSF_Processor_Base {
 
-		protected $m_aWhitelistPages;
-		protected $m_aWhitelistPagesPatterns;
-
-		protected $m_aRequestUriParts;
-
-		private $m_nLoopProtect;
-		private $sFirewallDieMessage;
-
-		private $fDoFirewallBlock;
+		protected $aWhitelistPages;
 
 		/**
-		 * @var boolean
+		 * @var int
 		 */
-		protected $fRequestIsWhitelisted;
+		private $nLoopProtect;
 
 		/**
 		 * @var string
 		 */
-		protected $m_sListItemLabel;
+		private $sFirewallDieMessage;
+
+		/**
+		 * @var bool
+		 */
+		private $bDoFirewallBlock;
+
+		/**
+		 * @var string
+		 */
+		protected $sListItemLabel;
 
 		/**
 		 * This is $m_aOrigPageParams after any parameter whitelisting has taken place
 		 * @var array
 		 */
-		protected $m_aPageParams;
+		protected $aPageParams;
+
+		/**
+		 * @var array
+		 */
+		protected $aRawRequestParams;
 
 		/**
 		 * @param ICWP_WPSF_FeatureHandler_Firewall $oFeatureOptions
@@ -64,12 +71,11 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 
 		public function reset() {
 			parent::reset();
-			$this->m_nLoopProtect = 0;
-			$this->setRequestIsWhiteListed( false );
+			$this->nLoopProtect = 0;
 		}
 
 		public function run() {
-			$this->fDoFirewallBlock = !$this->doFirewallCheck();
+			$this->bDoFirewallBlock = !$this->doFirewallCheck();
 			$this->doPreFirewallBlock();
 			$this->doFirewallBlock();
 		}
@@ -78,14 +84,29 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 		 * @return bool
 		 */
 		public function getIfDoFirewallBlock() {
-			return isset( $this->fDoFirewallBlock ) ? $this->fDoFirewallBlock : false;
+			return isset( $this->bDoFirewallBlock ) ? $this->bDoFirewallBlock : false;
 		}
 
 		/**
 		 * @return boolean - true if visitor is permitted, false if it should be blocked.
 		 */
 		public function doFirewallCheck() {
-			if ( $this->getOption('whitelist_admins') == 'Y' && is_super_admin() ) {
+			// Nothing to check in the first place
+			if ( count( $this->getRawRequestParams() ) < 1 ) {
+				return true;
+			}
+
+			$oDp = $this->loadDataProcessor();
+
+			// if we couldn't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
+			$aRequestParts = $oDp->getRequestUriParts();
+			if ( empty( $aRequestParts ) ) {
+				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('Parsing the URI failed') );
+				$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
+				return true;
+			}
+
+			if ( $this->getIsOption( 'whitelist_admins', 'Y' ) && is_super_admin() ) {
 //				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('Logged-in administrators by-pass firewall') );
 //				$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
 				return true;
@@ -95,43 +116,25 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 			if ( $this->isVisitorOnBlacklist() ) {
 				$this->sFirewallDieMessage .= ' Your IP is Blacklisted.';
 				$sAuditMessage =  _wpsf__('Visitor was black-listed by IP Address.')
-					.' '.sprintf( _wpsf__('Label: %s.'), empty( $this->m_sListItemLabel )? _wpsf__('No label') : $this->m_sListItemLabel );
+					.' '.sprintf( _wpsf__('Label: %s.'), empty( $this->sListItemLabel )? _wpsf__('No label') : $this->sListItemLabel );
 				$this->doStatIncrement( 'firewall.blocked.blacklist' );
 				return false;
 			}
 
-			// if we couldn't process the REQUEST_URI parts, we can't firewall so we effectively whitelist without erroring.
-			$this->setRequestUriPageParts();
-			if ( empty( $this->m_aRequestUriParts ) ) {
-				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('Parsing the URI failed') );
-				$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
-				return true;
-			}
-
-			$oDp = $this->loadDataProcessor();
 			if ( $this->getOption('ignore_search_engines') == 'Y' && $oDp->IsSearchEngineBot() ) {
 				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('Visitor detected as Search Engine Bot') );
 				$this->addToAuditEntry( $sAuditMessage, 2, 'firewall_skip' );
 				return true;
 			}
 
-			// Set up the page parameters ($_GET and $_POST and optionally $_COOKIE). If there are none, quit since there's nothing for the firewall to check.
-			$this->getPageParams();
-			if ( empty( $this->m_aPageParams ) ) {
+			$aPageParamsToCheck = $this->getParamsToCheck();
+			if ( empty( $aPageParamsToCheck ) ) {
 //				$sAuditMessage = sprintf( _wpsf__('Skipping firewall checking for this visit: %s.'), _wpsf__('After whitelist options were applied, there were no page parameters to check') );
 //				$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
 				return true;
 			}
 
 			$fIsPermittedVisitor = true;
-			// Check if the page and its parameters are whitelisted.
-			if ( $fIsPermittedVisitor && $this->isPageWhitelisted() ) {
-//				$sAuditMessage = _wpsf__('All page request parameters were white-listed.');
-//				$this->addToAuditEntry( $sAuditMessage, 1, 'firewall_skip' );
-				$this->doStatIncrement( 'firewall.allowed.pagewhitelist' );
-				return true;
-			}
-
 			if ( $fIsPermittedVisitor && $this->getIsOption( 'block_dir_traversal', 'Y' ) ) {
 				$fIsPermittedVisitor = $this->doPassCheckBlockDirTraversal();
 			}
@@ -155,13 +158,6 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 			}
 
 			return $fIsPermittedVisitor;
-		}
-
-		/**
-		 * @return array
-		 */
-		protected function getParamsToCheck() {
-			return $this->m_aPageParams;
 		}
 
 		/**
@@ -300,18 +296,18 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 				if ( is_array( $mValue ) ) {
 
 					// Protection against an infinite loop and we limit depth to 3.
-					if ( $this->m_nLoopProtect > 2 ) {
+					if ( $this->nLoopProtect > 2 ) {
 						return true;
 					}
 					else {
-						$this->m_nLoopProtect++;
+						$this->nLoopProtect++;
 					}
 
 					if ( !$this->doPassCheck( $mValue, $aMatchTerms, $fRegex ) ) {
 						return false;
 					}
 
-					$this->m_nLoopProtect--;
+					$this->nLoopProtect--;
 				}
 				else {
 					$mValue = (string) $mValue;
@@ -340,9 +336,8 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 		}
 
 		protected function doPreFirewallBlock() {
-
 			if ( !$this->getIfDoFirewallBlock() ) {
-				return true;
+				return;
 			}
 
 			switch( $this->getOption( 'block_response' ) ) {
@@ -358,6 +353,9 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 				case 'redirect_404':
 					$sEntry = sprintf( _wpsf__('Firewall Block Response: %s.'), _wpsf__('Visitor was sent 404') );
 					break;
+				default:
+					$sEntry = sprintf( _wpsf__('Firewall Block Response: %s.'), _wpsf__('Visitor connection was killed with wp_die() and a message') );
+					break;
 			}
 
 			$this->addToAuditEntry( $sEntry );
@@ -367,10 +365,10 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 				$sRecipient = $this->getPluginDefaultRecipientAddress();
 				$fSendSuccess = $this->sendBlockEmail( $sRecipient );
 				if ( $fSendSuccess ) {
-					$this->addToAuditEntry( sprintf( _wpsf__('Successfully sent Firewall Block email alert to: %s'), $sRecipient ) );
+					$this->addToAuditEntry( sprintf( _wpsf__( 'Successfully sent Firewall Block email alert to: %s' ), $sRecipient ) );
 				}
 				else {
-					$this->addToAuditEntry( sprintf( _wpsf__('Failed to send Firewall Block email alert to: %s'), $sRecipient ) );
+					$this->addToAuditEntry( sprintf( _wpsf__( 'Failed to send Firewall Block email alert to: %s' ), $sRecipient ) );
 				}
 			}
 		}
@@ -403,180 +401,103 @@ if ( !class_exists('ICWP_FirewallProcessor_V1', false ) ):
 		}
 
 		/**
-		 * @return boolean
+		 * @return array
 		 */
-		public function isPageWhitelisted() {
-			$aPageParams = $this->getPageParams();
-			return empty( $aPageParams ) || $this->getRequestIsWhiteListed();
-		}
-
-		public function filterWhitelistedPagesAndParams() {
-
-			if ( empty( $this->m_aWhitelistPages ) ) {
-				$this->setWhitelistPages();
-				if ( empty( $this->m_aWhitelistPages ) ) {
-					return false;
-				}
+		protected function getParamsToCheck() {
+			if ( isset( $this->aPageParams ) ) {
+				return $this->aPageParams;
 			}
-			// Check normal whitelisting pages without patterns.
-			if ( $this->checkPagesForWhiteListing( $this->m_aWhitelistPages ) ) {
-				return true;
-			}
-			// Check pattern-based whitelisting pages.
-			if ( $this->checkPagesForWhiteListing( $this->m_aWhitelistPagesPatterns, true ) ) {
-				return true;
-			}
-		}
 
-		/**
-		 * @param array $inaWhitelistPagesParams
-		 * @param boolean $infUseRegex
-		 * @return boolean
-		 */
-		protected function checkPagesForWhiteListing( $inaWhitelistPagesParams = array(), $infUseRegex = false ) {
+			$oDp = $this->loadDataProcessor();
+			$this->aPageParams = $this->getRawRequestParams();
+			$aWhitelistPages = $this->getWhitelistPages();
+			$aRequestUriParts = $oDp->getRequestUriParts();
+			$sRequestPage = $aRequestUriParts[ 'path' ];
 
-			if ( !is_array( $this->m_aRequestUriParts ) || count( $this->m_aRequestUriParts ) < 1 ) {
-				return true;
-			}
-			$sRequestPage = $this->m_aRequestUriParts[0];
-
-			// 1. Is the page in the list of white pages?
-			$fPageWhitelisted = false;
-			foreach ( $inaWhitelistPagesParams as $sPageName => $aWhitlistedParams ) {
-
-				if ( $infUseRegex ) {
-					if ( preg_match( $sPageName, $sRequestPage ) ) {
-						$fPageWhitelisted = true;
-						break;
-					}
-				}
-				else {
-					$sWhitelistedPageAsPreg = preg_quote( $sPageName, self::PcreDelimiter );
-					$sWhitelistedPageAsPreg = sprintf( '%s%s$%s', self::PcreDelimiter, $sWhitelistedPageAsPreg, self::PcreDelimiter );
-					if ( preg_match( $sWhitelistedPageAsPreg, $sRequestPage ) ) {
-						$fPageWhitelisted = true;
-						break;
+			// first we remove globally whitelist request parameters
+			if ( array_key_exists( '*', $aWhitelistPages ) ) {
+				foreach ( $aWhitelistPages['*'] as $sWhitelistParam ) {
+					if ( array_key_exists( $sWhitelistParam, $this->aPageParams ) ) {
+						unset( $this->aPageParams[ $sWhitelistParam ] );
 					}
 				}
 			}
 
-			// There's a list of globally whitelisted parameters (i.e. parameter ignored for all pages)
-			if ( array_key_exists( '*', $inaWhitelistPagesParams ) ) {
-				foreach ( $inaWhitelistPagesParams['*'] as $sWhitelistParam ) {
-					if ( array_key_exists( $sWhitelistParam, $this->m_aPageParams ) ) {
-						unset( $this->m_aPageParams[ $sWhitelistParam ] );
+			// If the parameters to check is already empty, we return it to save any further processing.
+			if ( empty( $this->aPageParams ) ) {
+				return $this->aPageParams;
+			}
+
+			// Now we run through the list of whitelist pages
+			foreach ( $aWhitelistPages as $sWhitelistPageName => $aWhitelistPageParams ) {
+
+				// if the page is white listed
+				if ( strpos( $sRequestPage, $sWhitelistPageName ) ) {
+
+					// if the page has no particular parameters specified there is nothing to check since the whole page is white listed.
+					if ( empty( $aWhitelistPageParams ) ) {
+						$this->aPageParams = array();
 					}
-				}
-			}
-
-			// Given the page is found to be on the whitelist, we want to check if it's the whole page, or certain parameters only
-			if ( $fPageWhitelisted ) {
-				// the current page is whitelisted - now check if it has request parameters.
-				if ( empty( $aWhitlistedParams ) ) {
-					$this->setRequestIsWhiteListed( true );
-					return true; //because it's just plain whitelisted as represented by an empty or unset array
-				}
-				foreach ( $aWhitlistedParams as $sWhitelistParam ) {
-					if ( array_key_exists( $sWhitelistParam, $this->m_aPageParams ) ) {
-						unset( $this->m_aPageParams[ $sWhitelistParam ] );
+					else {
+						// Otherwise we run through any whitelisted parameters and remove them.
+						foreach( $aWhitelistPageParams as $sWhitelistParam ) {
+							if ( array_key_exists( $sWhitelistParam, $this->aPageParams ) ) {
+								unset( $this->aPageParams[ $sWhitelistParam ] );
+							}
+						}
 					}
-				}
-
-				// After removing all the whitelisted params, we now check if there are any params left that'll
-				// need matched later in the firewall checking. If there are no parameters left, we return true.
-				if ( empty( $this->m_aPageParams ) ) {
-					$this->setRequestIsWhiteListed( true );
-					return true;
+					break;
 				}
 			}
-			return false;
-		}
 
-		/**
-		 * @return bool
-		 */
-		protected function getRequestIsWhiteListed() {
-			return $this->fRequestIsWhitelisted;
-		}
-
-		/**
-		 * @param bool $fWhitelisted
-		 */
-		protected function setRequestIsWhiteListed( $fWhitelisted = true ) {
-			$this->fRequestIsWhitelisted = $fWhitelisted;
-		}
-
-		protected function setRequestUriPageParts() {
-
-			if ( !isset( $_SERVER['REQUEST_URI'] ) || empty( $_SERVER['REQUEST_URI'] ) ) {
-				$this->m_aRequestUriParts = false;
-				return false;
-			}
-			$this->m_aRequestUriParts = explode( '?', $_SERVER['REQUEST_URI'] );
-			return true;
-		}
-
-		protected function getPageParams() {
-
-			if ( isset( $this->m_aPageParams ) ) {
-				return $this->m_aPageParams;
-			}
-
-			$this->m_aPageParams = $this->getRequestParams();
-			if ( empty( $this->m_aPageParams ) ) {
-				$this->setRequestIsWhiteListed( true );
-			}
-			else {
-				$this->filterWhitelistedPagesAndParams();
-			}
-			return true;
+			return $this->aPageParams;
 		}
 
 		/**
 		 * @return array
 		 */
-		protected function getRequestParams() {
-			$aParams = array_merge( $_GET, $_POST );
-			if ( $this->getIsOption( 'include_cookie_checks', 'Y' ) ) {
-				$aParams = array_merge( $aParams, $_COOKIE );
+		protected function getRawRequestParams() {
+			if ( !isset( $this->aRawRequestParams ) ) {
+				$this->aRawRequestParams = $this->loadDataProcessor()->getRawRequestParams( $this->getIsOption( 'include_cookie_checks', 'Y' ) );
 			}
-			return $aParams;
+			return $this->aRawRequestParams;
 		}
 
-		private function setWhitelistPages() {
+		protected function getWhitelistPages() {
+			if ( !isset( $this->aWhitelistPages ) ) {
 
-			$aDefaultWlPages = array(
-				'/wp-admin/options-general.php' => array(),
-				'/wp-admin/post-new.php'		=> array(),
-				'/wp-admin/page-new.php'		=> array(),
-				'/wp-admin/link-add.php'		=> array(),
-				'/wp-admin/media-upload.php'	=> array(),
-				'/wp-admin/post.php'			=> array( 'content' ),
-				'/wp-admin/plugin-editor.php'	=> array( 'newcontent' ),
-				'/wp-admin/page.php'			=> array(),
-				'/wp-admin/admin-ajax.php'		=> array(),
-				'/wp-comments-post.php'			=> array(
-					'url',
-					'comment'
-				),
-				'/wp-login.php'					=> array(
-					'redirect_to'
-				)
-			);
+				$aDefaultWlPages = array(
+					'/wp-admin/options-general.php' => array(),
+					'/wp-admin/post-new.php'		=> array(),
+					'/wp-admin/page-new.php'		=> array(),
+					'/wp-admin/link-add.php'		=> array(),
+					'/wp-admin/media-upload.php'	=> array(),
+					'/wp-admin/post.php'			=> array( 'content' ),
+					'/wp-admin/plugin-editor.php'	=> array( 'newcontent' ),
+					'/wp-admin/page.php'			=> array(),
+					'/wp-admin/admin-ajax.php'		=> array(),
+					'/wp-comments-post.php'			=> array(
+						'url',
+						'comment'
+					),
+					'/wp-login.php'					=> array(
+						'redirect_to'
+					),
+					'/wp-admin/'					=> array(
+						'_wp_original_http_referer',
+						'_wp_http_referer'
+					)
+				);
 
-			$aCustomWhitelistPageParams = is_array( $this->getOption( 'page_params_whitelist' ) )? $this->getOption( 'page_params_whitelist' ) : array();
-			$this->m_aWhitelistPages = array_merge( $aDefaultWlPages, $aCustomWhitelistPageParams );
+				$aCustomWhitelistPageParams = is_array( $this->getOption( 'page_params_whitelist' ) )? $this->getOption( 'page_params_whitelist' ) : array();
+				$this->aWhitelistPages = array_merge( $aDefaultWlPages, $aCustomWhitelistPageParams );
+			}
 
-			$this->m_aWhitelistPagesPatterns = array(
-				self::PcreDelimiter.'\/wp-admin\/\*'.self::PcreDelimiter => array(
-					'_wp_original_http_referer',
-					'_wp_http_referer'
-				),
-			);
+			return $this->aWhitelistPages;
 		}
 
 		public function isVisitorOnBlacklist() {
-			return $this->isIpOnlist( $this->getOption( 'ips_blacklist', array() ), $this->ip(), $this->m_sListItemLabel );
+			return $this->isIpOnlist( $this->getOption( 'ips_blacklist', array() ), $this->ip(), $this->sListItemLabel );
 		}
 
 		/**
