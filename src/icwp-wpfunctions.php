@@ -401,7 +401,7 @@ if ( !class_exists( 'ICWP_WPSF_WpFunctions_V6', false ) ):
 		 */
 		public function getIsPluginAutomaticallyUpdated( $sPluginBaseFilename ) {
 			$oUpdater = $this->getWpAutomaticUpdater();
-			if ( is_null( $oUpdater ) ) {
+			if ( !$oUpdater ) {
 				return false;
 			}
 
@@ -792,16 +792,19 @@ if ( !class_exists( 'ICWP_WPSF_WpFunctions_V6', false ) ):
 		}
 
 		/**
-		 * @return null|WP_Automatic_Updater
+		 * @return false|WP_Automatic_Updater
 		 */
 		public function getWpAutomaticUpdater() {
 			if ( !isset( $this->oWpAutomaticUpdater ) ) {
 				if ( !class_exists( 'WP_Automatic_Updater', false ) ) {
-					if ( !include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ) ) {
-						return null;
-					}
+					include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
 				}
-				$this->oWpAutomaticUpdater = new WP_Automatic_Updater();
+				if ( class_exists( 'WP_Automatic_Updater', false ) ) {
+					$this->oWpAutomaticUpdater = new WP_Automatic_Updater();
+				}
+				else {
+					$this->oWpAutomaticUpdater = false;
+				}
 			}
 			return $this->oWpAutomaticUpdater;
 		}
