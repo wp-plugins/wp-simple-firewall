@@ -56,16 +56,47 @@ class ICWP_WPSF_Processor_LoginProtect_WpLogin extends ICWP_WPSF_Processor_Base 
 		$oFO = $this->getFeatureOptions();
 
 		$oWp = $this->loadWpFunctionsProcessor();
-		if ( class_exists( 'Rename_WP_Login', false ) ) {
-			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeRenameWpLoginInstalled' ) );
+		if ( $oWp->isMultisite() ) {
+
+			$sNoticeMessage = sprintf(
+				'<strong>%s</strong>: %s',
+				_wpsf__( 'Warning' ),
+				_wpsf__( 'Your login URL is unchanged because rename WP Login feature is not currently supported on WPMS.')
+			);
+			$this->doAddAdminNotice( $this->getAdminNoticeHtml( $sNoticeMessage, 'error', false ) );
+			return true;
+		}
+		else if ( class_exists( 'Rename_WP_Login', false ) ) {
+
+			$sNoticeMessage = sprintf(
+				'<strong>%s</strong>: %s',
+				_wpsf__( 'Warning' ),
+				_wpsf__( 'Can not use the Rename WP Login feature because you have the "Rename WP Login" plugin installed and active.' )
+			);
+			$this->doAddAdminNotice( $this->getAdminNoticeHtml( $sNoticeMessage, 'error', false ) );
 			return true;
 		}
 		else if ( !$oWp->getIsPermalinksEnabled() ) {
-			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticePermalinksDisabled' ) );
+
+			$sNoticeMessage = sprintf(
+				'<strong>%s</strong>: %s',
+				_wpsf__( 'Warning' ),
+				sprintf(
+					_wpsf__( 'Can not use the Rename WP Login feature because you have not enabled %s.'),
+					__('Permalinks')
+				)
+			);
+			$this->doAddAdminNotice( $this->getAdminNoticeHtml( $sNoticeMessage, 'error', false ) );
 			return true;
 		}
 		else if ( $oWp->getIsPermalinksEnabled() && $oWp->getDoesWpSlugExist( $this->getLoginPath() ) ) {
-			add_filter( $oFO->doPluginPrefix( 'admin_notices' ), array( $this, 'adminNoticeWpTermAlreadyExists' ) );
+
+			$sNoticeMessage = sprintf(
+				'<strong>%s</strong>: %s',
+				_wpsf__( 'Warning' ),
+				_wpsf__( 'Can not use the Rename WP Login feature because you have chosen a path that is already reserved on your WordPress site.' )
+			);
+			$this->doAddAdminNotice( $this->getAdminNoticeHtml( $sNoticeMessage, 'error', false ) );
 			return true;
 		}
 		return false;
@@ -96,59 +127,6 @@ class ICWP_WPSF_Processor_LoginProtect_WpLogin extends ICWP_WPSF_Processor_Base 
 		if ( $fDoBlock ) {
 			$this->do404();
 		}
-	}
-
-	/**
-	 * @param array $aAdminNotices
-	 * @return array
-	 */
-	public function adminNoticeRenameWpLoginInstalled( $aAdminNotices ) {
-
-		$sNoticeMessage = sprintf(
-			'<strong>%s</strong>: %s',
-			_wpsf__( 'Warning' ),
-			_wpsf__( 'Can not use the Rename WP Login feature because you have the "Rename WP Login" plugin installed and active.' )
-		);
-		$aAdminNotices[] = $this->getAdminNoticeHtml( $sNoticeMessage, 'error', false );
-		return $aAdminNotices;
-	}
-
-	/**
-	 * @param array $aAdminNotices
-	 * @return array
-	 */
-	public function adminNoticeWpTermAlreadyExists( $aAdminNotices ) {
-
-		$sNoticeMessage = sprintf(
-			'<strong>%s</strong>: %s',
-			_wpsf__( 'Warning' ),
-			_wpsf__( 'Can not use the Rename WP Login feature because you have chosen a path that is already reserved on your WordPress site.' )
-		);
-		$aAdminNotices[] = $this->getAdminNoticeHtml( $sNoticeMessage, 'error', false );
-		return $aAdminNotices;
-	}
-
-	/**
-	 * @param array $aAdminNotices
-	 * @return array
-	 */
-	public function adminNoticePermalinksDisabled( $aAdminNotices ) {
-		$sPermalinksLink = sprintf(
-			'<a href="%s">%s</a>',
-			network_admin_url( 'options-permalink.php' ),
-			__('Permalinks')
-		);
-
-		$sNoticeMessage = sprintf(
-			'<strong>%s</strong>: %s',
-			_wpsf__( 'Warning' ),
-			sprintf(
-				_wpsf__( 'Can not use the Rename WP Login feature because you have not enabled %s.'),
-				$sPermalinksLink
-			)
-		);
-		$aAdminNotices[] = $this->getAdminNoticeHtml( $sNoticeMessage, 'error', false );
-		return $aAdminNotices;
 	}
 
 	/**

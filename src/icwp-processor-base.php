@@ -41,6 +41,11 @@ if ( !class_exists('ICWP_WPSF_BaseProcessor_V3') ):
 		private $aAuditEntry;
 
 		/**
+		 * @var array
+		 */
+		protected $aAdminNotices;
+
+		/**
 		 * @var ICWP_WPSF_FeatureHandler_Base
 		 */
 		protected $oFeatureOptions;
@@ -50,8 +55,9 @@ if ( !class_exists('ICWP_WPSF_BaseProcessor_V3') ):
 		 */
 		public function __construct( $oFeatureOptions ) {
 			$this->oFeatureOptions = $oFeatureOptions;
-			add_action( $this->getFeatureOptions()->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureProcessorShutdown' ) );
-			add_filter( $this->getFeatureOptions()->doPluginPrefix( 'wpsf_audit_trail_gather' ), array( $this, 'getAuditEntry' ) );
+			add_action( $oFeatureOptions->doPluginPrefix( 'plugin_shutdown' ), array( $this, 'action_doFeatureProcessorShutdown' ) );
+			add_filter( $oFeatureOptions->doPluginPrefix( 'wpsf_audit_trail_gather' ), array( $this, 'getAuditEntry' ) );
+			add_filter( $oFeatureOptions->doPluginPrefix( 'admin_notices' ), array( $this, 'fGetAdminNotices' ) );
 			$this->reset();
 		}
 
@@ -73,6 +79,40 @@ if ( !class_exists('ICWP_WPSF_BaseProcessor_V3') ):
 		 * Override to set what this processor does when it's "run"
 		 */
 		abstract public function run();
+
+		/**
+		 * @param array $sNotice
+		 */
+		public function doAddAdminNotice( $sNotice ) {
+			if ( empty( $sNotice ) ) {
+				return;
+			}
+			$aCurrentNotices = $this->getAdminNotices();
+			$aCurrentNotices[] = $sNotice;
+			$this->aAdminNotices = $aCurrentNotices;
+		}
+
+		/**
+		 * @param array $aNotices
+		 *
+		 * @return array
+		 */
+		public function fGetAdminNotices( $aNotices ) {
+			if ( is_array( $aNotices ) ) {
+				$aNotices = array_merge( $aNotices, $this->getAdminNotices() );
+			}
+			return $aNotices;
+		}
+
+		/**
+		 * @return array
+		 */
+		public function getAdminNotices() {
+			if ( !isset( $this->aAdminNotices ) || !is_array( $this->aAdminNotices ) ) {
+				$this->aAdminNotices = array();
+			}
+			return $this->aAdminNotices;
+		}
 
 		/**
 		 * @param $sOptionKey
