@@ -6,7 +6,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Tags: WordPress Firewall, audit trail, ddos, brute force, protection, activity monitor, whitelist, blacklist, two-factor authentication, GASP, comment spam, automatic updates, lockdown, login, hack
 Requires at least: 3.2.0
 Tested up to: 4.1
-Stable tag: 4.3.0
+Stable tag: 4.3.1
 
 Complete and Simple WordPress Security. Unrestricted. No Premium Features.
 
@@ -243,10 +243,12 @@ You can either manually upgrade, or WordPress will handle it in due course.
 
 == Changelog ==
 
-= 4.3.0 =
+= 4.3 Series =
+*Released: 15h January, 2015*
 
 *   ADDED:      New Feature - [Rename WP Login Page](http://icwp.io/5s).
 *   ADDED:      UI indicators on whether plugins will be automatically updated in the plugins listing.
+*   CHANGED:    IP Address WhiteList is now global for the whole plugin, and can be accessed under the "Dashboard" area
 *   IMPROVED:   Firewall processing code is simplified and more efficient.
 
 = 4.2.1 =

@@ -61,7 +61,7 @@ class ICWP_WPSF_Processor_LoginProtect_WpLogin extends ICWP_WPSF_Processor_Base 
 			$sNoticeMessage = sprintf(
 				'<strong>%s</strong>: %s',
 				_wpsf__( 'Warning' ),
-				_wpsf__( 'Your login URL is unchanged because rename WP Login feature is not currently supported on WPMS.')
+				_wpsf__( 'Your login URL is unchanged because the Rename WP Login feature is not currently supported on WPMS.')
 			);
 			$this->doAddAdminNotice( $this->getAdminNoticeHtml( $sNoticeMessage, 'error', false ) );
 			return true;
