@@ -91,14 +91,16 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth', false ) ):
 			$oDp = $this->loadDataProcessor();
 			$sVisitorIp = $oDp->getVisitorIpAddress( true );
 			if ( !is_null( $aUserAuthData ) ) {
+				/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+				$oFO = $this->getFeatureOptions();
 
 				// Now we test based on which types of 2-factor auth is enabled
 				$fVerified = true;
-				if ( $this->getFeatureOptions()->getIsTwoFactorAuthOn('ip') && ( $sVisitorIp != $aUserAuthData['ip'] ) ) {
+				if ( $oFO->getIsTwoFactorAuthOn('ip') && ( $sVisitorIp != $aUserAuthData['ip'] ) ) {
 					$fVerified = false;
 				}
 
-				if ( $fVerified && $this->getFeatureOptions()->getIsTwoFactorAuthOn('cookie') && !$this->getIsAuthCookieValid( $aUserAuthData['unique_id'] ) ) {
+				if ( $fVerified && $oFO->getIsTwoFactorAuthOn('cookie') && !$this->getIsAuthCookieValid( $aUserAuthData['unique_id'] ) ) {
 					$fVerified = false;
 				}
 			}
@@ -115,10 +117,12 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth', false ) ):
 		 * Checks the link details to ensure all is valid before authorizing the user.
 		 */
 		public function validateUserAuthLink() {
+			/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+			$oFO = $this->getFeatureOptions();
 			$oDp = $this->loadDataProcessor();
 			// wpsfkey=%s&wpsf-action=%s&username=%s&uniqueid
 
-			if ( $oDp->FetchGet( 'wpsfkey' ) !== $this->getFeatureOptions()->getTwoAuthSecretKey() ) {
+			if ( $oDp->FetchGet( 'wpsfkey' ) !== $oFO->getTwoAuthSecretKey() ) {
 				return false;
 			}
 
@@ -350,8 +354,10 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth', false ) ):
 		 * @param $sUniqueId
 		 */
 		public function setAuthActiveCookie( $sUniqueId ) {
+			/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+			$oFO = $this->getFeatureOptions();
 			$nWeek = defined( 'WEEK_IN_SECONDS' )? WEEK_IN_SECONDS : 24*60*60;
-			setcookie( $this->getFeatureOptions()->getTwoFactorAuthCookieName(), $sUniqueId, $this->time()+$nWeek, COOKIEPATH, COOKIE_DOMAIN, false );
+			setcookie( $oFO->getTwoFactorAuthCookieName(), $sUniqueId, $this->time()+$nWeek, COOKIEPATH, COOKIE_DOMAIN, false );
 		}
 
 		/**
@@ -382,8 +388,9 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth', false ) ):
 		 * @return bool
 		 */
 		protected function getIsAuthCookieValid( $sUniqueId ) {
-			$oDp = $this->loadDataProcessor();
-			return $oDp->FetchCookie( $this->getFeatureOptions()->getTwoFactorAuthCookieName() ) == $sUniqueId;
+			/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+			$oFO = $this->getFeatureOptions();
+			return $this->loadDataProcessor()->FetchCookie( $oFO->getTwoFactorAuthCookieName() ) == $sUniqueId;
 		}
 
 		/**
@@ -394,8 +401,10 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_TwoFactorAuth', false ) ):
 		 * @return string
 		 */
 		protected function generateTwoFactorVerifyLink( $sUser, $sUniqueId ) {
+			/** @var ICWP_WPSF_FeatureHandler_LoginProtect $oFO */
+			$oFO = $this->getFeatureOptions();
 			$aQueryArgs = array(
-				'wpsfkey' 		=> $this->getFeatureOptions()->getTwoAuthSecretKey(),
+				'wpsfkey' 		=> $oFO->getTwoAuthSecretKey(),
 				'wpsf-action'	=> 'linkauth',
 				'username'		=> $sUser,
 				'uniqueid'		=> $sUniqueId

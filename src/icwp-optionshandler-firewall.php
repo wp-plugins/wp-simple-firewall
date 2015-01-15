@@ -125,7 +125,7 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Firewall', false ) ):
 				case 'include_cookie_checks' :
 					$sName = _wpsf__( 'Include Cookies' );
 					$sSummary = _wpsf__( 'Also Test Cookie Values In Firewall Tests' );
-					$sDescription = _wpsf__( 'The firewall tests GET and POST, but with this option checked it will also COOKIE values.' );
+					$sDescription = _wpsf__( 'The firewall tests GET and POST, but with this option checked it will also check COOKIE values.' );
 					break;
 
 				case 'block_dir_traversal' :

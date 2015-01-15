@@ -55,8 +55,8 @@ options:
     section: 'section_rename_wplogin'
     default: ''
     type: 'text'
-    link_info: 'http://icwp.io/4g'
-    link_blog: ''
+    link_info: 'http://icwp.io/5q'
+    link_blog: 'http://icwp.io/5r'
   -
     key: 'two_factor_auth_user_roles'
     section: 'section_two_factor_authentication'

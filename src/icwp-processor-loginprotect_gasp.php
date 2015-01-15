@@ -47,10 +47,10 @@ class ICWP_WPSF_Processor_LoginProtect_Gasp extends ICWP_WPSF_Processor_Base {
 	/**
 	 * @param $oUser
 	 * @param $sUsername
-	 * @param $insPassword
+	 * @param $sPassword
 	 * @return WP_Error
 	 */
-	public function checkLoginForGasp_Filter( $oUser, $sUsername, $insPassword ) {
+	public function checkLoginForGasp_Filter( $oUser, $sUsername, $sPassword ) {
 
 		if ( empty( $sUsername ) || is_wp_error( $oUser ) ) {
 			return $oUser;

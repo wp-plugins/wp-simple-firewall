@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Simple Firewall
  * Plugin URI: http://icwp.io/2f
  * Description: A Simple WordPress Firewall
- * Version: 4.2.2-beta04
+ * Version: 4.3.0
  * Text Domain: wp-simple-firewall
  * Author: iControlWP
  * Author URI: http://icwp.io/2e
@@ -48,53 +48,6 @@ require_once( dirname(__FILE__).ICWP_DS.'src'.ICWP_DS.'icwp-foundation.php' );
 if ( !class_exists('ICWP_Wordpress_Simple_Firewall') ):
 
 	class ICWP_Wordpress_Simple_Firewall extends ICWP_WPSF_Foundation {
-
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_Plugin
-		 */
-		protected $oFeatureHandlerPlugin;
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_AdminAccessRestriction
-		 */
-		protected $oFeatureHandlerAdminAccessRestriction;
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_Firewall
-		 */
-		protected $oFeatureHandlerFirewall;
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_LoginProtect
-		 */
-		protected $oFeatureHandlerLoginProtect;
-
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_PrivacyProtect
-		 */
-		protected $oFeatureHandlerPrivacyProtect;
-
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_AuditTrail
-		 */
-		protected $oFeatureHandlerAuditTrail;
-
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_CommentsFilter
-		 */
-		protected $oFeatureHandlerCommentsFilter;
-
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_Lockdown
-		 */
-		protected $oFeatureHandlerLockdown;
-
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_Autoupdates
-		 */
-		protected $oFeatureHandlerAutoupdates;
-
-		/**
-		 * @var ICWP_WPSF_FeatureHandler_Email
-		 */
-		protected $oFeatureHandlerEmail;
 
 		/**
 		 * @var ICWP_WPSF_Plugin_Controller

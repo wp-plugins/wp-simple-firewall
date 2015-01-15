@@ -182,8 +182,10 @@ class ICWP_WPSF_Processor_UserManagement_Sessions extends ICWP_WPSF_BaseDbProces
 	 */
 	public function getSessionId() {
 		if ( empty( $this->sSessionId ) ) {
+			/** @var ICWP_WPSF_FeatureHandler_UserManagement $oFO */
+			$oFO = $this->getFeatureOptions();
 			$oDp = $this->loadDataProcessor();
-			$this->sSessionId = $oDp->FetchCookie( $this->getFeatureOptions()->getUserSessionCookieName() );
+			$this->sSessionId = $oDp->FetchCookie( $oFO->getUserSessionCookieName() );
 			if ( empty( $this->sSessionId ) ) {
 				$this->sSessionId = md5( uniqid() );
 				$this->setSessionCookie();
@@ -213,8 +215,10 @@ class ICWP_WPSF_Processor_UserManagement_Sessions extends ICWP_WPSF_BaseDbProces
 	protected function setSessionCookie() {
 		if ( $this->getSessionTimeoutInterval() > 0 ) {
 			$oWp = $this->loadWpFunctionsProcessor();
+			/** @var ICWP_WPSF_FeatureHandler_UserManagement $oFO */
+			$oFO = $this->getFeatureOptions();
 			setcookie(
-				$this->getFeatureOptions()->getUserSessionCookieName(),
+				$oFO->getUserSessionCookieName(),
 				$this->getSessionId(),
 				$this->time() + $this->getSessionTimeoutInterval(),
 				$oWp->getCookiePath(),
@@ -336,17 +340,19 @@ class ICWP_WPSF_Processor_UserManagement_Sessions extends ICWP_WPSF_BaseDbProces
 		if ( empty( $oUser ) || !is_a( $oUser, 'WP_User' ) ) {
 			return false;
 		}
+		/** @var ICWP_WPSF_FeatureHandler_UserManagement $oFO */
+		$oFO = $this->getFeatureOptions();
 
 		$mResult = $this->doTerminateUserSession( $oUser->get( 'user_login' ), $this->getSessionId() );
-		unset( $_COOKIE[ $this->getFeatureOptions()->getUserSessionCookieName() ] );
-		setcookie( $this->getFeatureOptions()->getUserSessionCookieName(), "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
+		unset( $_COOKIE[ $oFO->getUserSessionCookieName() ] );
+		setcookie( $oFO->getUserSessionCookieName(), "", time()-3600, COOKIEPATH, COOKIE_DOMAIN, false );
 		return $mResult;
 	}
 
 	/**
 	 * @param string $sUsername
 	 * @param string $sSessionId
-	 * @param bool $fHardDelete
+	 * @param bool $bHardDelete
 	 *
 	 * @return bool|int
 	 */

@@ -41,6 +41,7 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_Yubikey', false ) ):
 		 */
 		public function checkYubikeyOtpAuth_Filter( $oUser ) {
 			$oError = new WP_Error();
+			$sUsername = $oUser->get( 'user_login' );
 
 			// Before anything else we check that a Yubikey pair has been provided for this username (and that there are pairs in the first place!)
 			$aYubikeyUsernamePairs = $this->getOption('yubikey_unique_keys');
@@ -57,9 +58,9 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_Yubikey', false ) ):
 			$fUsernameFound = false; // if username is never found, it means there's no yubikey specified which means we can bypass this authentication method.
 			$fFoundMatch = false;
 			foreach( $aYubikeyUsernamePairs as $aUsernameYubikeyPair ) {
-				if ( isset( $aUsernameYubikeyPair[$oUser->user_login] ) ) {
+				if ( isset( $aUsernameYubikeyPair[ $sUsername ] ) ) {
 					$fUsernameFound = true;
-					if ( $aUsernameYubikeyPair[$oUser->user_login] == $sYubikey12 ) {
+					if ( $aUsernameYubikeyPair[ $sUsername ] == $sYubikey12 ) {
 						$fFoundMatch = true;
 						break;
 					}
@@ -68,7 +69,7 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_Yubikey', false ) ):
 
 			// If no yubikey-username pair found for given username, we by-pass Yubikey auth.
 			if ( !$fUsernameFound ) {
-				$sAuditMessage = sprintf( _wpsf__('User "%s" logged in without a Yubikey One Time Password because no username-yubikey pair was found for this user.'), $oUser->user_login );
+				$sAuditMessage = sprintf( _wpsf__('User "%s" logged in without a Yubikey One Time Password because no username-yubikey pair was found for this user.'), $sUsername );
 				$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_yubikey_bypass' );
 				return $oUser;
 			}
@@ -79,7 +80,7 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_Yubikey', false ) ):
 					'yubikey_not_allowed',
 					sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey provided is not on the list of permitted keys for this user.') )
 				);
-				$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but Yubikey ID "%s" used was not in list of authorised keys.'), $oUser->user_login, $sYubikey12 );
+				$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but Yubikey ID "%s" used was not in list of authorised keys.'), $sUsername, $sYubikey12 );
 				$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_yubikey_fail_permitted_id' );
 				return $oError;
 			}
@@ -99,7 +100,7 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_Yubikey', false ) ):
 					'yubikey_validate_fail',
 					sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
 				);
-				$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API.'), $oUser->user_login );
+				$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API.'), $sUsername );
 				$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_yubikey_fail_invalid_api' );
 				return $oError;
 			}
@@ -115,12 +116,12 @@ if ( !class_exists( 'ICWP_WPSF_Processor_LoginProtect_Yubikey', false ) ):
 					'yubikey_validate_fail',
 					sprintf( _wpsf__( 'ERROR: %s' ), _wpsf__('The Yubikey authentication was not validated successfully.') )
 				);
-				$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API response status: "%s".'), $oUser->user_login, $sStatus );
+				$sAuditMessage = sprintf( _wpsf__('User "%s" attempted to login but Yubikey One Time Password failed to validate due to invalid Yubi API response status: "%s".'), $sUsername, $sStatus );
 				$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_yubikey_fail_invalid_api_response' );
 				return $oError;
 			}
 
-			$sAuditMessage = sprintf( _wpsf__('User "%s" successfully logged in using a validated Yubikey One Time Password.'), $oUser->user_login );
+			$sAuditMessage = sprintf( _wpsf__('User "%s" successfully logged in using a validated Yubikey One Time Password.'), $sUsername );
 			$this->addToAuditEntry( $sAuditMessage, 2, 'login_protect_yubikey_login_success' );
 			return $oUser;
 		}
