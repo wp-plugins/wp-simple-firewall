@@ -50,6 +50,9 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Plugin', false ) ):
 		 */
 		public function doAddAdminFeedback( $sMessage ) {
 			$aFeedback = $this->getOpt( 'feedback_admin_notice', array() );
+			if ( !is_array( $aFeedback ) ) {
+				$aFeedback = array();
+			}
 			$aFeedback[] = $sMessage;
 			$this->setOpt( 'feedback_admin_notice', $aFeedback );
 		}
