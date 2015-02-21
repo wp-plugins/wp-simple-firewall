@@ -291,6 +291,7 @@ if ( !class_exists( 'ICWP_WPSF_FeatureHandler_Plugin', false ) ):
 				$this->setOpt( 'installation_time', time() );
 			}
 
+			// we only rebuild and verify the white list IP address in the admin area
 			$this->buildFullIpWhitelist();
 		}
 
