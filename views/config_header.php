@@ -1,6 +1,7 @@
 <?php
-include_once( dirname(__FILE__).ICWP_DS.'icwp_options_helper.php' );
-include_once( dirname(__FILE__).ICWP_DS.'widgets'.ICWP_DS.'icwp_widgets.php' );
+$sBaseDirName = dirname(__FILE__).ICWP_DS;
+include_once( $sBaseDirName.'icwp_options_helper.php' );
+include_once( $sBaseDirName.'widgets'.ICWP_DS.'icwp_widgets.php' );
 
 $sPluginName = _wpsf__( 'WordPress Simple Firewall' );
 //$fAdminAccessOn = $icwp_aMainOptions['enable_admin_access_restriction'] == 'Y';
@@ -19,7 +20,8 @@ $sOff = _wpsf__( 'Off' );
 	<div class="bootstrap-wpadmin <?php echo isset($icwp_sFeatureSlug) ? $icwp_sFeatureSlug : ''; ?>">
 		<div class="row">
 			<div class="span12">
-				<?php include_once( 'icwp-wpsf-state_summary.php' ); ?>
+				<?php include_once( $sBaseDirName.'snippets'.ICWP_DS.'state_summary.php' ); ?>
 			</div>
 		</div>
-<?php echo printOptionsPageHeader( $icwp_sFeatureName );
+<?php
+printOptionsPageHeader( $icwp_sFeatureName );
