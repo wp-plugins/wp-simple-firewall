@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPSF v2.0\n"
-"POT-Creation-Date: 2015-02-27 10:19-0000\n"
-"PO-Revision-Date: 2015-02-27 10:19-0000\n"
+"POT-Creation-Date: 2015-03-06 15:43-0000\n"
+"PO-Revision-Date: 2015-03-06 15:52-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_GB\n"
@@ -40,7 +40,7 @@ msgstr ""
 #: src/features/admin_access_restriction.php:167
 #: src/features/audit_trail.php:111 src/features/autoupdates.php:100
 #: src/features/comments_filter.php:81 src/features/firewall.php:115
-#: src/features/lockdown.php:92 src/features/login_protect.php:120
+#: src/features/lockdown.php:92 src/features/login_protect.php:118
 #: src/features/user_management.php:115
 #, php-format
 msgid "Enable %s"
@@ -113,14 +113,14 @@ msgstr ""
 
 #: src/features/audit_trail.php:112 src/features/autoupdates.php:101
 #: src/features/firewall.php:116 src/features/lockdown.php:93
-#: src/features/login_protect.php:121 src/features/user_management.php:116
+#: src/features/login_protect.php:119 src/features/user_management.php:116
 #, php-format
 msgid "Enable (or Disable) The %s Feature"
 msgstr ""
 
 #: src/features/audit_trail.php:113 src/features/autoupdates.php:102
 #: src/features/comments_filter.php:83 src/features/firewall.php:117
-#: src/features/lockdown.php:94 src/features/login_protect.php:122
+#: src/features/lockdown.php:94 src/features/login_protect.php:120
 #: src/features/user_management.php:117
 #, php-format
 msgid ""
@@ -161,8 +161,7 @@ msgid ""
 msgstr ""
 
 #: src/features/audit_trail.php:129 src/features/audit_trail.php:130
-#: src/features/autoupdates.php:130
-#: views/icwp-wpsf-audit_trail_viewer_index.php:45
+#: src/features/autoupdates.php:130 views/subfeature-audit_trail_viewer.php:42
 msgid "Plugins"
 msgstr ""
 
@@ -173,8 +172,7 @@ msgid ""
 msgstr ""
 
 #: src/features/audit_trail.php:135 src/features/audit_trail.php:136
-#: src/features/autoupdates.php:136
-#: views/icwp-wpsf-audit_trail_viewer_index.php:46
+#: src/features/autoupdates.php:136 views/subfeature-audit_trail_viewer.php:43
 msgid "Themes"
 msgstr ""
 
@@ -205,7 +203,7 @@ msgid ""
 msgstr ""
 
 #: src/features/audit_trail.php:153 src/features/audit_trail.php:154
-#: views/icwp-wpsf-audit_trail_viewer_index.php:49
+#: views/subfeature-audit_trail_viewer.php:46
 msgid "Emails"
 msgstr ""
 
@@ -412,8 +410,8 @@ msgid ""
 "will be scanned for SPAM content."
 msgstr ""
 
-#: src/features/comments_filter.php:95 src/features/login_protect.php:178
-#: src/features/login_protect.php:186
+#: src/features/comments_filter.php:95 src/features/login_protect.php:182
+#: src/features/login_protect.php:190
 #, php-format
 msgid "Recommended: %s"
 msgstr ""
@@ -798,7 +796,7 @@ msgid "Ignore %s"
 msgstr ""
 
 #: src/features/firewall.php:188 src/features/firewall.php:189
-#: src/features/login_protect.php:245
+#: src/features/login_protect.php:256
 msgid "Administrators"
 msgstr ""
 
@@ -964,282 +962,296 @@ msgstr ""
 msgid "Logging"
 msgstr ""
 
-#: src/features/login_protect.php:126 src/features/user_management.php:121
+#: src/features/login_protect.php:124 src/features/user_management.php:121
 msgid "XML-RPC Compatibility"
 msgstr ""
 
-#: src/features/login_protect.php:127
+#: src/features/login_protect.php:125
 msgid "Allow Login Through XML-RPC To By-Pass Login Protection Rules"
 msgstr ""
 
-#: src/features/login_protect.php:128 src/features/user_management.php:123
+#: src/features/login_protect.php:126 src/features/user_management.php:123
 msgid ""
 "Enable this if you need XML-RPC functionality e.g. if you use the WordPress "
 "iPhone/Android App."
 msgstr ""
 
-#: src/features/login_protect.php:132
+#: src/features/login_protect.php:130
 msgid "Rename WP Login"
 msgstr ""
 
-#: src/features/login_protect.php:133
+#: src/features/login_protect.php:131
 msgid "Rename The WordPress Login Page"
 msgstr ""
 
-#: src/features/login_protect.php:134
+#: src/features/login_protect.php:132
 msgid "Creating a path here will disable your wp-login.php"
 msgstr ""
 
-#: src/features/login_protect.php:136
+#: src/features/login_protect.php:134
 #, php-format
 msgid "Only letters and numbers are permitted: %s"
 msgstr ""
 
-#: src/features/login_protect.php:138
+#: src/features/login_protect.php:136
 #, php-format
 msgid "Your current login URL is: %s"
 msgstr ""
 
-#: src/features/login_protect.php:143
+#: src/features/login_protect.php:141
 msgid "Two-Factor Auth User Roles"
 msgstr ""
 
-#: src/features/login_protect.php:144
+#: src/features/login_protect.php:142
 msgid "All User Roles Subject To Two-Factor Authentication"
 msgstr ""
 
-#: src/features/login_protect.php:145
+#: src/features/login_protect.php:143
 msgid ""
 "Select which types of users/roles will be subject to two-factor login "
 "authentication."
 msgstr ""
 
-#: src/features/login_protect.php:149 src/features/login_protect.php:155
+#: src/features/login_protect.php:147 src/features/login_protect.php:153
 #, php-format
 msgid "Two-Factor Authentication (%s)"
 msgstr ""
 
-#: src/features/login_protect.php:149
+#: src/features/login_protect.php:147
 msgid "IP"
 msgstr ""
 
-#: src/features/login_protect.php:150 src/features/login_protect.php:156
+#: src/features/login_protect.php:148 src/features/login_protect.php:154
 #, php-format
 msgid "Two-Factor Login Authentication By %s"
 msgstr ""
 
-#: src/features/login_protect.php:150
-#: views/icwp-wpsf-audit_trail_viewer_index.php:21
+#: src/features/login_protect.php:148
+#: views/subfeature-audit_trail_viewer.php:18
 msgid "IP Address"
 msgstr ""
 
-#: src/features/login_protect.php:151
+#: src/features/login_protect.php:149
 msgid ""
 "All users will be required to authenticate their login by email-based two-"
 "factor authentication, when logging in from a new IP address"
 msgstr ""
 
-#: src/features/login_protect.php:155 src/features/login_protect.php:156
+#: src/features/login_protect.php:153 src/features/login_protect.php:154
 msgid "Cookie"
 msgstr ""
 
-#: src/features/login_protect.php:157
+#: src/features/login_protect.php:155
 msgid ""
 "This will restrict all user login sessions to a single browser. Use this if "
 "your users have dynamic IP addresses."
 msgstr ""
 
-#: src/features/login_protect.php:161
+#: src/features/login_protect.php:159
 msgid "By-Pass On Failure"
 msgstr ""
 
-#: src/features/login_protect.php:162
+#: src/features/login_protect.php:160
 msgid ""
 "If Sending Verification Email Sending Fails, Two-Factor Login Authentication "
 "Is Ignored"
 msgstr ""
 
-#: src/features/login_protect.php:163
+#: src/features/login_protect.php:161
 msgid ""
 "If you enable two-factor authentication and sending the email with the "
 "verification link fails, turning this setting on will by-pass the "
 "verification step. Use with caution."
 msgstr ""
 
+#: src/features/login_protect.php:165
+msgid "User Registration"
+msgstr ""
+
+#: src/features/login_protect.php:166
+msgid "Apply Brute Force Protection To User Registration"
+msgstr ""
+
 #: src/features/login_protect.php:167
+msgid ""
+"When enabled, settings in this section will also apply to registrations for "
+"new users."
+msgstr ""
+
+#: src/features/login_protect.php:171
 msgid "Login Cooldown Interval"
 msgstr ""
 
-#: src/features/login_protect.php:168
+#: src/features/login_protect.php:172
 msgid "Limit login attempts to every X seconds"
 msgstr ""
 
-#: src/features/login_protect.php:169
+#: src/features/login_protect.php:173
 msgid ""
 "WordPress will process only ONE login attempt for every number of seconds "
 "specified."
 msgstr ""
 
-#: src/features/login_protect.php:170
+#: src/features/login_protect.php:174
 msgid "Zero (0) turns this off."
 msgstr ""
 
-#: src/features/login_protect.php:171
+#: src/features/login_protect.php:175
 #, php-format
 msgid "Default: \"%s\"."
 msgstr ""
 
-#: src/features/login_protect.php:175
+#: src/features/login_protect.php:179
 msgid "G.A.S.P Protection"
 msgstr ""
 
-#: src/features/login_protect.php:176
+#: src/features/login_protect.php:180
 msgid "Use G.A.S.P. Protection To Prevent Login Attempts By Bots"
 msgstr ""
 
-#: src/features/login_protect.php:177
+#: src/features/login_protect.php:181
 msgid ""
 "Adds a dynamically (Javascript) generated checkbox to the login form that "
 "prevents bots using automated login techniques."
 msgstr ""
 
-#: src/features/login_protect.php:178 src/features/login_protect.php:186
+#: src/features/login_protect.php:182 src/features/login_protect.php:190
 msgid "ON"
 msgstr ""
 
-#: src/features/login_protect.php:182
+#: src/features/login_protect.php:186
 msgid "Prevent Remote Login"
 msgstr ""
 
-#: src/features/login_protect.php:183
+#: src/features/login_protect.php:187
 msgid "Prevents Remote Login Attempts From Anywhere Except Your Site"
 msgstr ""
 
-#: src/features/login_protect.php:184
+#: src/features/login_protect.php:188
 msgid "Prevents login by bots attempting to login remotely to your site."
 msgstr ""
 
-#: src/features/login_protect.php:185
+#: src/features/login_protect.php:189
 msgid ""
 "You will not be able to enable this option if your web server does not "
 "support it."
 msgstr ""
 
-#: src/features/login_protect.php:190
+#: src/features/login_protect.php:194
 msgid "Enable Yubikey Authentication"
 msgstr ""
 
-#: src/features/login_protect.php:191
+#: src/features/login_protect.php:195
 msgid "Turn On / Off Yubikey Authentication On This Site"
 msgstr ""
 
-#: src/features/login_protect.php:192
+#: src/features/login_protect.php:196
 msgid ""
 "Combined with your Yubikey API Key (below) this will form the basis of your "
 "Yubikey Authentication"
 msgstr ""
 
-#: src/features/login_protect.php:196
+#: src/features/login_protect.php:200
 msgid "Yubikey App ID"
 msgstr ""
 
-#: src/features/login_protect.php:197
+#: src/features/login_protect.php:201
 msgid "Your Unique Yubikey App ID"
 msgstr ""
 
-#: src/features/login_protect.php:198
+#: src/features/login_protect.php:202
 msgid ""
 "Combined with your Yubikey API Key this will form the basis of your Yubikey "
 "Authentication"
 msgstr ""
 
-#: src/features/login_protect.php:199
+#: src/features/login_protect.php:203
 msgid ""
 "Please review the info link on how to obtain your own Yubikey App ID and API "
 "Key."
 msgstr ""
 
-#: src/features/login_protect.php:203
+#: src/features/login_protect.php:207
 msgid "Yubikey API Key"
 msgstr ""
 
-#: src/features/login_protect.php:204
+#: src/features/login_protect.php:208
 msgid "Your Unique Yubikey App API Key"
 msgstr ""
 
-#: src/features/login_protect.php:205
+#: src/features/login_protect.php:209
 msgid ""
 "Combined with your Yubikey App ID this will form the basis of your Yubikey "
 "Authentication."
 msgstr ""
 
-#: src/features/login_protect.php:206
+#: src/features/login_protect.php:210
 msgid ""
 "Please review the info link on how to get your own Yubikey App ID and API "
 "Key."
 msgstr ""
 
-#: src/features/login_protect.php:210
+#: src/features/login_protect.php:214
 msgid "Yubikey Unique Keys"
 msgstr ""
 
-#: src/features/login_protect.php:211
+#: src/features/login_protect.php:215
 msgid "Permitted \"Username - Yubikey\" Pairs For This Site"
 msgstr ""
 
-#: src/features/login_protect.php:212
+#: src/features/login_protect.php:216
 #, php-format
 msgid "Format: %s"
 msgstr ""
 
-#: src/features/login_protect.php:213
+#: src/features/login_protect.php:217
 msgid "Provide Username<->Yubikey Pairs that are usable for this site."
 msgstr ""
 
-#: src/features/login_protect.php:214
+#: src/features/login_protect.php:218
 msgid ""
 "If a Username if not assigned a Yubikey, Yubikey Authentication is OFF for "
 "that user."
 msgstr ""
 
-#: src/features/login_protect.php:215
+#: src/features/login_protect.php:219
 msgid ""
 "Each [Username,Key] pair should be separated by a new line: you only need to "
 "provide the first 12 characters of the yubikey."
 msgstr ""
 
-#: src/features/login_protect.php:219
+#: src/features/login_protect.php:223
 msgid "Login Protect Logging"
 msgstr ""
 
-#: src/features/login_protect.php:220
+#: src/features/login_protect.php:224
 msgid "Turn on a detailed Login Protect Log"
 msgstr ""
 
-#: src/features/login_protect.php:221
+#: src/features/login_protect.php:225
 msgid ""
 "Will log every event related to login protection and how it is processed. "
 msgstr ""
 
-#: src/features/login_protect.php:222
+#: src/features/login_protect.php:226
 msgid ""
 "Not recommended to leave on unless you want to debug something and check the "
 "login protection is working as you expect."
 msgstr ""
 
-#: src/features/login_protect.php:241
+#: src/features/login_protect.php:252
 msgid "Subscribers"
 msgstr ""
 
-#: src/features/login_protect.php:242
+#: src/features/login_protect.php:253
 msgid "Contributors"
 msgstr ""
 
-#: src/features/login_protect.php:243
+#: src/features/login_protect.php:254
 msgid "Authors"
 msgstr ""
 
-#: src/features/login_protect.php:244
+#: src/features/login_protect.php:255
 msgid "Editors"
 msgstr ""
 
@@ -1747,7 +1759,6 @@ msgstr ""
 #: src/processors/firewall.php:513
 #: src/processors/loginprotect_twofactorauth.php:432
 #: src/processors/user_management.php:79
-#: src/processors/usermanagement_adminloginnotification.php:66
 #, php-format
 msgid "IP Address: %s"
 msgstr ""
@@ -1762,80 +1773,95 @@ msgstr ""
 msgid "Firewall Block Email Alert: %s"
 msgstr ""
 
-#: src/processors/login_protect.php:120
+#: src/processors/login_protect.php:112
 msgid ""
 "Your Two-Factor Authentication was un-verified or invalidated by a login "
 "from another location or browser."
 msgstr ""
 
-#: src/processors/login_protect.php:120
+#: src/processors/login_protect.php:112
 #: src/processors/usermanagement_sessions.php:443
 msgid "Please login again."
 msgstr ""
 
-#: src/processors/login_protect.php:146
+#: src/processors/login_protect.php:137
 #, php-format
 msgid ""
-"Blocked Remote Login Attempt by user \"%s\", where HTTP_REFERER was \"%s\"."
+"Blocked remote %s attempt by user \"%s\", where HTTP_REFERER was \"%s\"."
 msgstr ""
 
-#: src/processors/login_protect.php:150
+#: src/processors/login_protect.php:138
+#: src/processors/loginprotect_cooldown.php:71
+#: src/processors/loginprotect_gasp.php:67
+msgid "login"
+msgstr ""
+
+#: src/processors/login_protect.php:138
+#: src/processors/loginprotect_cooldown.php:71
+#: src/processors/loginprotect_gasp.php:79
+msgid "register"
+msgstr ""
+
+#: src/processors/login_protect.php:145
 msgid "Sorry, you must login directly from within the site."
 msgstr ""
 
-#: src/processors/login_protect.php:151
+#: src/processors/login_protect.php:146
 msgid "Remote login is not supported."
 msgstr ""
 
-#: src/processors/login_protect.php:152 views/icwp_options_helper.php:98
+#: src/processors/login_protect.php:147 views/icwp_options_helper.php:98
 msgid "More Info"
 msgstr ""
 
-#: src/processors/loginprotect_cooldown.php:100
-#, php-format
-msgid ""
-"Login Cooldown in effect. You must wait %s seconds before attempting to "
-"login again."
+#: src/processors/loginprotect_cooldown.php:69
+msgid "Login Cooldown in effect."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:62
+#: src/processors/loginprotect_cooldown.php:69
+#, php-format
+msgid "You must wait %s seconds before attempting to %s again."
+msgstr ""
+
+#: src/processors/loginprotect_gasp.php:71
+#: src/processors/loginprotect_gasp.php:83
 msgid "G.A.S.P. Checking Failed."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:67
+#: src/processors/loginprotect_gasp.php:91
 msgid "I'm a human."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:68
+#: src/processors/loginprotect_gasp.php:92
 msgid "Please check the box to show us you're a human."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:110
+#: src/processors/loginprotect_gasp.php:134
 msgid "You MUST enable Javascript to be able to login"
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:136
+#: src/processors/loginprotect_gasp.php:161
 #, php-format
-msgid "User \"%s\" attempted to login but GASP checkbox was not present."
+msgid "User \"%s\" attempted to %s but GASP checkbox was not present."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:136
-#: src/processors/loginprotect_gasp.php:143
+#: src/processors/loginprotect_gasp.php:161
+#: src/processors/loginprotect_gasp.php:168
 msgid "Probably a BOT."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:139
+#: src/processors/loginprotect_gasp.php:164
 msgid "You must check that box to say you're not a bot."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:143
+#: src/processors/loginprotect_gasp.php:168
 #, php-format
-msgid ""
-"User \"%s\" attempted to login but they were caught by the GASP honeypot."
+msgid "User \"%s\" attempted to %s but they were caught by the GASP honeypot."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:146
-msgid "You appear to be a bot - terminating login attempt."
+#: src/processors/loginprotect_gasp.php:171
+#, php-format
+msgid "You appear to be a bot - terminating %s attempt."
 msgstr ""
 
 #: src/processors/loginprotect_twofactorauth.php:71
@@ -1888,7 +1914,6 @@ msgstr ""
 
 #: src/processors/loginprotect_twofactorauth.php:431
 #: src/processors/user_management.php:78
-#: src/processors/usermanagement_adminloginnotification.php:65
 #, php-format
 msgid "Username: %s"
 msgstr ""
@@ -1921,7 +1946,6 @@ msgstr ""
 #: src/processors/loginprotect_wplogin.php:73
 #: src/processors/loginprotect_wplogin.php:83
 #: src/processors/loginprotect_wplogin.php:96
-#: views/icwp-wpsf-firewall_log_index.php:6
 msgid "Warning"
 msgstr ""
 
@@ -2036,25 +2060,21 @@ msgid "Okay, hide this notice and go to the plugin dashboard."
 msgstr ""
 
 #: src/processors/user_management.php:75
-#: src/processors/usermanagement_adminloginnotification.php:62
 msgid ""
 "As requested, the WordPress Simple Firewall is notifying you of an "
 "administrator login to a WordPress site that you manage."
 msgstr ""
 
 #: src/processors/user_management.php:76
-#: src/processors/usermanagement_adminloginnotification.php:63
 msgid "Details for this user are below:"
 msgstr ""
 
 #: src/processors/user_management.php:77
-#: src/processors/usermanagement_adminloginnotification.php:64
 #, php-format
 msgid "Site URL: %s"
 msgstr ""
 
 #: src/processors/user_management.php:80
-#: src/processors/usermanagement_adminloginnotification.php:67
 msgid "Thanks."
 msgstr ""
 
@@ -2086,447 +2106,277 @@ msgstr ""
 msgid "Your session was terminated."
 msgstr ""
 
-#: views/icwp-wpsf-access_restricted_index.php:23
-msgid "What should you enter here?"
-msgstr ""
-
-#: views/icwp-wpsf-access_restricted_index.php:24
-msgid ""
-"At some point you supplied an Admin Access Key - to manage this plugin, you "
-"must supply it here first."
-msgstr ""
-
-#: views/icwp-wpsf-access_restricted_index.php:27
-msgid "Enter Access Key"
-msgstr ""
-
-#: views/icwp-wpsf-access_restricted_index.php:33
-msgid "To manage this plugin you must enter the access key."
-msgstr ""
-
-#: views/icwp-wpsf-access_restricted_index.php:40
-msgid "Submit Access Key"
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:9
-msgid "There are currently no audit entries this is section."
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:16
-msgid "Time"
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:17
-msgid "Event"
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:18
-#: views/icwp-wpsf-firewall_log_index.php:29
-msgid "Message"
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:19
-#: views/icwp-wpsf-config_user_management_index.php:9
-msgid "Username"
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:20
-msgid "Category"
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:32
-msgid "You"
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:43
-#: views/icwp-wpsf-config_header.php:5
-msgid "WordPress Simple Firewall"
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:44
-msgid "Users"
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:47
-msgid "WordPress"
-msgstr ""
-
-#: views/icwp-wpsf-audit_trail_viewer_index.php:48
-msgid "Posts"
-msgstr ""
-
-#: views/icwp-wpsf-changlog_summary.php:1
-msgid "Plugin Change Log Summary"
-msgstr ""
-
-#: views/icwp-wpsf-changlog_summary.php:4 views/icwp_wpsf_index.php:181
-#, php-format
-msgid "Release v%s"
-msgstr ""
-
-#: views/icwp-wpsf-changlog_summary.php:5 views/icwp_wpsf_index.php:182
-#, php-format
-msgid ""
-"The following summarises the main changes to the plugin in the v%s release"
-msgstr ""
-
-#: views/icwp-wpsf-changlog_summary.php:6 views/icwp_wpsf_index.php:183
-#, php-format
-msgid "%snew%s refers to the absolute latest release."
-msgstr ""
-
-#: views/icwp-wpsf-changlog_summary.php:22 views/icwp_wpsf_index.php:199
-msgid "new"
-msgstr ""
-
-#: views/icwp-wpsf-changlog_summary.php:110 views/icwp_wpsf_index.php:287
-#, php-format
-msgid "Change log for the v%s release"
-msgstr ""
-
-#: views/icwp-wpsf-config-options-table.php:12
-#: views/icwp-wpsf-config_autoupdates_index.php:32
-#: views/icwp-wpsf-config_plugin_index.php:23 views/icwp_wpsf_index.php:27
+#: views/config-options-table.php:12 views/feature-plugin.php:20
 msgid "Save All Settings"
 msgstr ""
 
-#: views/icwp-wpsf-config_autoupdates_index.php:18
-msgid "Force Run Automatic Updates Now"
+#: views/config_header.php:6 views/subfeature-audit_trail_viewer.php:40
+msgid "WordPress Simple Firewall"
 msgstr ""
 
-#: views/icwp-wpsf-config_header.php:14 views/icwp-wpsf-state_summary.php:9
+#: views/config_header.php:15 views/snippets/state_summary.php:9
 msgid "On"
 msgstr ""
 
-#: views/icwp-wpsf-config_header.php:15 views/icwp-wpsf-state_summary.php:10
+#: views/config_header.php:16 views/snippets/state_summary.php:10
 msgid "Off"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:1 views/icwp_wpsf_index.php:51
+#: views/config_summary.php:1
 msgid "Plugin Configuration Summary"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:5 views/icwp_wpsf_index.php:55
+#: views/config_summary.php:5
 #, php-format
 msgid "Firewall is %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:6 views/icwp-wpsf-config_summary.php:62
-#: views/icwp-wpsf-config_summary.php:84 views/icwp-wpsf-config_summary.php:95
-#: views/icwp-wpsf-config_summary.php:105 views/icwp_wpsf_index.php:56
-#: views/icwp_wpsf_index.php:112 views/icwp_wpsf_index.php:134
-#: views/icwp_wpsf_index.php:145 views/icwp_wpsf_index.php:155
+#: views/config_summary.php:6 views/config_summary.php:62
+#: views/config_summary.php:84 views/config_summary.php:95
+#: views/config_summary.php:105
 msgid "Configure Now"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:9 views/icwp_wpsf_index.php:59
+#: views/config_summary.php:9
 #, php-format
 msgid "Firewall logging is %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:10 views/icwp_wpsf_index.php:60
+#: views/config_summary.php:10
 msgid "When the firewall blocks a visit, it will:"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:13 views/icwp_wpsf_index.php:63
+#: views/config_summary.php:13
 msgid "Die"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:16 views/icwp_wpsf_index.php:66
+#: views/config_summary.php:16
 msgid "Die with a message"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:19 views/icwp_wpsf_index.php:69
+#: views/config_summary.php:19
 msgid "Redirect to home page"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:22 views/icwp_wpsf_index.php:72
+#: views/config_summary.php:22
 msgid "Redirect to 404 page"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:25 views/icwp_wpsf_index.php:75
+#: views/config_summary.php:25
 msgid "Unknown"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:31 views/icwp-wpsf-config_summary.php:67
-#: views/icwp_wpsf_index.php:81 views/icwp_wpsf_index.php:117
+#: views/config_summary.php:31 views/config_summary.php:67
 #, php-format
 msgid "You have %s whitelisted IP addresses"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:34 views/icwp-wpsf-config_summary.php:44
-#: views/icwp-wpsf-config_summary.php:70 views/icwp_wpsf_index.php:84
-#: views/icwp_wpsf_index.php:94 views/icwp_wpsf_index.php:120
+#: views/config_summary.php:34 views/config_summary.php:44
+#: views/config_summary.php:70
 #, php-format
 msgid "%s labelled as %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:41 views/icwp_wpsf_index.php:91
+#: views/config_summary.php:41
 #, php-format
 msgid "You have %s blacklisted IP addresses"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:49 views/icwp-wpsf-config_summary.php:53
-#: views/icwp_wpsf_index.php:99 views/icwp_wpsf_index.php:103
+#: views/config_summary.php:49 views/config_summary.php:53
 #, php-format
 msgid "Firewall blocks Directory Traversals: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:50 views/icwp_wpsf_index.php:100
+#: views/config_summary.php:50
 #, php-format
 msgid "Firewall blocks SQL Queries: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:51 views/icwp_wpsf_index.php:101
+#: views/config_summary.php:51
 #, php-format
 msgid "Firewall blocks WordPress Specific Terms: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:52 views/icwp_wpsf_index.php:102
+#: views/config_summary.php:52
 #, php-format
 msgid "Firewall blocks Field Truncation Attacks: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:54 views/icwp_wpsf_index.php:104
+#: views/config_summary.php:54
 #, php-format
 msgid "Firewall blocks Executable File Uploads: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:55 views/icwp_wpsf_index.php:105
+#: views/config_summary.php:55
 #, php-format
 msgid "Firewall blocks Leading Schemas (HTTPS / HTTP): %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:56 views/icwp_wpsf_index.php:106
+#: views/config_summary.php:56
 #, php-format
 msgid "Firewall Logging is %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:61 views/icwp_wpsf_index.php:111
+#: views/config_summary.php:61
 #, php-format
 msgid "Login Protection is %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:74 views/icwp_wpsf_index.php:124
+#: views/config_summary.php:74
 #, php-format
 msgid "Two Factor Login Authentication: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:75 views/icwp_wpsf_index.php:125
+#: views/config_summary.php:75
 #, php-format
 msgid "Two Factor Login By Pass: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:76 views/icwp_wpsf_index.php:126
+#: views/config_summary.php:76
 #, php-format
 msgid "Login Cooldown Interval: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:76 views/icwp-wpsf-config_summary.php:88
-#: views/icwp-wpsf-config_summary.php:89 views/icwp_wpsf_index.php:126
-#: views/icwp_wpsf_index.php:138 views/icwp_wpsf_index.php:139
+#: views/config_summary.php:76 views/config_summary.php:88
+#: views/config_summary.php:89
 #, php-format
 msgid "%s seconds"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:77 views/icwp_wpsf_index.php:127
+#: views/config_summary.php:77
 #, php-format
 msgid "Login Form GASP Protection: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:78 views/icwp_wpsf_index.php:128
+#: views/config_summary.php:78
 #, php-format
 msgid "Login Protect Logging: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:83 views/icwp_wpsf_index.php:133
+#: views/config_summary.php:83
 #, php-format
 msgid "Comments Filtering is %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:87 views/icwp_wpsf_index.php:137
+#: views/config_summary.php:87
 #, php-format
 msgid "Enchanced GASP Protection: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:88 views/icwp_wpsf_index.php:138
+#: views/config_summary.php:88
 #, php-format
 msgid "Comments Cooldown Interval: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:89 views/icwp_wpsf_index.php:139
+#: views/config_summary.php:89
 #, php-format
 msgid "Comments Token Expire: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:94 views/icwp_wpsf_index.php:144
+#: views/config_summary.php:94
 #, php-format
 msgid "WordPress Lockdown is %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:98 views/icwp_wpsf_index.php:148
+#: views/config_summary.php:98
 #, php-format
 msgid "Disable File Editing: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:99 views/icwp_wpsf_index.php:149
+#: views/config_summary.php:99
 #, php-format
 msgid "Mask WordPress Version: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:104 views/icwp_wpsf_index.php:154
+#: views/config_summary.php:104
 #, php-format
 msgid "Auto Updates is %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:112 views/icwp_wpsf_index.php:162
+#: views/config_summary.php:112
 msgid "Minor Versions Only"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:115 views/icwp_wpsf_index.php:165
+#: views/config_summary.php:115
 msgid "Major and Minor Versions"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:119 views/icwp_wpsf_index.php:169
+#: views/config_summary.php:119
 #, php-format
 msgid "Automatically Update WordPress Simple Firewall Plugin: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:120 views/icwp_wpsf_index.php:170
+#: views/config_summary.php:120
 #, php-format
 msgid "Automatically Update WordPress Core: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:121 views/icwp_wpsf_index.php:171
+#: views/config_summary.php:121
 #, php-format
 msgid "Automatically Update Plugins: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:122 views/icwp_wpsf_index.php:172
+#: views/config_summary.php:122
 #, php-format
 msgid "Automatically Update Themes: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:123 views/icwp_wpsf_index.php:173
+#: views/config_summary.php:123
 #, php-format
 msgid "Automatically Update Translations: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_summary.php:124 views/icwp_wpsf_index.php:174
+#: views/config_summary.php:124
 #, php-format
 msgid "Ignore Version Control Systems: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_user_management_index.php:10
+#: views/feature-user_management.php:8
+#: views/subfeature-audit_trail_viewer.php:16
+msgid "Username"
+msgstr ""
+
+#: views/feature-user_management.php:9
 msgid "Logged In At"
 msgstr ""
 
-#: views/icwp-wpsf-config_user_management_index.php:11
+#: views/feature-user_management.php:10
 msgid "Last Activity At"
 msgstr ""
 
-#: views/icwp-wpsf-config_user_management_index.php:12
+#: views/feature-user_management.php:11
 msgid "Last Activity URI"
 msgstr ""
 
-#: views/icwp-wpsf-config_user_management_index.php:13
+#: views/feature-user_management.php:12
 msgid "Login IP"
 msgstr ""
 
-#: views/icwp-wpsf-config_user_management_index.php:14
+#: views/feature-user_management.php:13
 msgid "Login Attempts"
 msgstr ""
 
-#: views/icwp-wpsf-config_user_management_index.php:37
+#: views/feature-user_management.php:36
 msgid "Current User Sessions"
 msgstr ""
 
-#: views/icwp-wpsf-config_user_management_index.php:38
+#: views/feature-user_management.php:37
 #, php-format
 msgid "now: %s"
 msgstr ""
 
-#: views/icwp-wpsf-config_user_management_index.php:43
+#: views/feature-user_management.php:42
 msgid ""
 "You need to enable the User Management feature to view and manage user "
 "sessions."
 msgstr ""
 
-#: views/icwp-wpsf-config_user_management_index.php:49
+#: views/feature-user_management.php:48
 msgid "Failed or Pending User Sessions"
 msgstr ""
 
-#: views/icwp-wpsf-config_user_management_index.php:53
+#: views/feature-user_management.php:52
 msgid "There are currently no failed or pending sessions to review."
-msgstr ""
-
-#: views/icwp-wpsf-firewall_log_index.php:5
-msgid "Info"
-msgstr ""
-
-#: views/icwp-wpsf-firewall_log_index.php:7
-msgid "Critical"
-msgstr ""
-
-#: views/icwp-wpsf-firewall_log_index.php:18
-#: views/icwp-wpsf-privacy_protect_log_index.php:13
-msgid "Clear/Fix Log"
-msgstr ""
-
-#: views/icwp-wpsf-firewall_log_index.php:28
-msgid "Message Type"
-msgstr ""
-
-#: views/icwp-wpsf-firewall_log_index.php:36
-msgid "IPWHOIS Lookup"
-msgstr ""
-
-#: views/icwp-wpsf-firewall_log_index.php:39
-msgid "Remove From Firewall Blacklist"
-msgstr ""
-
-#: views/icwp-wpsf-firewall_log_index.php:41
-msgid "Add To Firewall Blacklist"
-msgstr ""
-
-#: views/icwp-wpsf-firewall_log_index.php:46
-msgid "Remove From Firewall Whitelist"
-msgstr ""
-
-#: views/icwp-wpsf-firewall_log_index.php:48
-msgid "Add To Firewall Whitelist"
-msgstr ""
-
-#: views/icwp-wpsf-privacy_protect_log_index.php:23
-msgid "Date"
-msgstr ""
-
-#: views/icwp-wpsf-privacy_protect_log_index.php:24
-msgid "URL"
-msgstr ""
-
-#: views/icwp-wpsf-privacy_protect_log_index.php:25
-msgid "Method"
-msgstr ""
-
-#: views/icwp-wpsf-privacy_protect_log_index.php:26
-msgid "Data"
-msgstr ""
-
-#: views/icwp-wpsf-privacy_protect_log_index.php:27
-msgid "Error?"
-msgstr ""
-
-#: views/icwp-wpsf-state_summary.php:21
-msgid "See Below"
-msgstr ""
-
-#: views/icwp-wpsf-state_summary.php:21
-msgid "Go To Settings"
-msgstr ""
-
-#: views/icwp-wpsf-state_summary.php:104
-msgid "Plugin Activated Features Summary:"
 msgstr ""
 
 #: views/icwp_options_helper.php:7
@@ -2571,4 +2421,74 @@ msgstr ""
 msgid ""
 "You should know that your IP address is whitelisted and features you "
 "activate do not apply to you."
+msgstr ""
+
+#: views/snippets/state_summary.php:21
+msgid "See Below"
+msgstr ""
+
+#: views/snippets/state_summary.php:21
+msgid "Go To Settings"
+msgstr ""
+
+#: views/snippets/state_summary.php:104
+msgid "Plugin Activated Features Summary:"
+msgstr ""
+
+#: views/subfeature-access_restricted.php:20
+msgid "What should you enter here?"
+msgstr ""
+
+#: views/subfeature-access_restricted.php:21
+msgid ""
+"At some point you supplied an Admin Access Key - to manage this plugin, you "
+"must supply it here first."
+msgstr ""
+
+#: views/subfeature-access_restricted.php:24
+msgid "Enter Access Key"
+msgstr ""
+
+#: views/subfeature-access_restricted.php:30
+msgid "To manage this plugin you must enter the access key."
+msgstr ""
+
+#: views/subfeature-access_restricted.php:37
+msgid "Submit Access Key"
+msgstr ""
+
+#: views/subfeature-audit_trail_viewer.php:7
+msgid "There are currently no audit entries this is section."
+msgstr ""
+
+#: views/subfeature-audit_trail_viewer.php:13
+msgid "Time"
+msgstr ""
+
+#: views/subfeature-audit_trail_viewer.php:14
+msgid "Event"
+msgstr ""
+
+#: views/subfeature-audit_trail_viewer.php:15
+msgid "Message"
+msgstr ""
+
+#: views/subfeature-audit_trail_viewer.php:17
+msgid "Category"
+msgstr ""
+
+#: views/subfeature-audit_trail_viewer.php:29
+msgid "You"
+msgstr ""
+
+#: views/subfeature-audit_trail_viewer.php:41
+msgid "Users"
+msgstr ""
+
+#: views/subfeature-audit_trail_viewer.php:44
+msgid "WordPress"
+msgstr ""
+
+#: views/subfeature-audit_trail_viewer.php:45
+msgid "Posts"
 msgstr ""
