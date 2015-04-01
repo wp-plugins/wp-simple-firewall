@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPSF v2.0\n"
-"POT-Creation-Date: 2015-03-06 15:43-0000\n"
-"PO-Revision-Date: 2015-03-06 15:52-0000\n"
+"POT-Creation-Date: 2015-04-01 13:59-0000\n"
+"PO-Revision-Date: 2015-04-01 13:59-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.4\n"
+"X-Generator: Poedit 1.7.5\n"
 "X-Poedit-KeywordsList: _wpsf__;gettext;gettext_noop;_wpsf_e\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SourceCharset: UTF-8\n"
@@ -20,6 +20,55 @@ msgstr ""
 msgid "Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features."
 msgstr ""
 
+#: src/config/feature-admin_access_restriction.php:54
+msgid "Admin Access Restriction"
+msgstr ""
+
+#: src/config/feature-admin_access_restriction.php:55
+#: src/features/admin_access_restriction.php:167
+msgid "Admin Access"
+msgstr ""
+
+#: src/config/feature-audit_trail.php:119
+msgid "Audit Trail"
+msgstr ""
+
+#: src/config/feature-audit_trail.php:120 src/features/audit_trail.php:53
+msgid "Audit Trail Viewer"
+msgstr ""
+
+#: src/config/feature-autoupdates.php:117
+msgid "Automatic Updates"
+msgstr ""
+
+#: src/config/feature-comments_filter.php:193
+msgid "Comments Filter"
+msgstr ""
+
+#: src/config/feature-email.php:39
+msgid "Email"
+msgstr ""
+
+#: src/config/feature-firewall.php:153
+msgid "Firewall"
+msgstr ""
+
+#: src/config/feature-lockdown.php:71
+msgid "Lockdown"
+msgstr ""
+
+#: src/config/feature-login_protect.php:212
+msgid "Login Protection"
+msgstr ""
+
+#: src/config/feature-plugin.php:111
+msgid "Dashboard"
+msgstr ""
+
+#: src/config/feature-user_management.php:125
+msgid "User Management"
+msgstr ""
+
 #: src/features/admin_access_restriction.php:142
 #: src/features/audit_trail.php:82 src/features/autoupdates.php:63
 #: src/features/comments_filter.php:48 src/features/firewall.php:72
@@ -27,10 +76,6 @@ msgstr ""
 #: src/features/user_management.php:78
 #, php-format
 msgid "Enable Plugin Feature: %s"
-msgstr ""
-
-#: src/features/admin_access_restriction.php:142
-msgid "Admin Access Restriction"
 msgstr ""
 
 #: src/features/admin_access_restriction.php:146
@@ -44,10 +89,6 @@ msgstr ""
 #: src/features/user_management.php:115
 #, php-format
 msgid "Enable %s"
-msgstr ""
-
-#: src/features/admin_access_restriction.php:167
-msgid "Admin Access"
 msgstr ""
 
 #: src/features/admin_access_restriction.php:168
@@ -97,10 +138,6 @@ msgstr ""
 #: src/features/admin_access_restriction.php:182
 #, php-format
 msgid "Default: %s minutes."
-msgstr ""
-
-#: src/features/audit_trail.php:53
-msgid "Audit Trail Viewer"
 msgstr ""
 
 #: src/features/audit_trail.php:86
@@ -372,10 +409,6 @@ msgstr ""
 
 #: src/features/comments_filter.php:60
 msgid "Customize Messages Shown To User"
-msgstr ""
-
-#: src/features/comments_filter.php:81
-msgid "Comments Filter"
 msgstr ""
 
 #: src/features/comments_filter.php:82
@@ -1069,13 +1102,13 @@ msgid "User Registration"
 msgstr ""
 
 #: src/features/login_protect.php:166
-msgid "Apply Brute Force Protection To User Registration"
+msgid "Apply Brute Force Protection To User Registration And Lost Passwords"
 msgstr ""
 
 #: src/features/login_protect.php:167
 msgid ""
-"When enabled, settings in this section will also apply to registrations for "
-"new users."
+"When enabled, settings in this section will also apply to new user "
+"registration and users trying to reset passwords."
 msgstr ""
 
 #: src/features/login_protect.php:171
@@ -1616,26 +1649,26 @@ msgstr ""
 msgid "Click to deactivate Akismet now"
 msgstr ""
 
-#: src/processors/commentsfilter_antibotspam.php:180
-#: src/processors/commentsfilter_antibotspam.php:185
-#: src/processors/commentsfilter_antibotspam.php:190
+#: src/processors/commentsfilter_antibotspam.php:181
+#: src/processors/commentsfilter_antibotspam.php:186
+#: src/processors/commentsfilter_antibotspam.php:191
 #, php-format
 msgid "Failed GASP Bot Filter Test (%s)"
 msgstr ""
 
-#: src/processors/commentsfilter_antibotspam.php:180
+#: src/processors/commentsfilter_antibotspam.php:181
 msgid "checkbox"
 msgstr ""
 
-#: src/processors/commentsfilter_antibotspam.php:185
+#: src/processors/commentsfilter_antibotspam.php:186
 msgid "honeypot"
 msgstr ""
 
-#: src/processors/commentsfilter_antibotspam.php:190
+#: src/processors/commentsfilter_antibotspam.php:191
 msgid "comment token failure"
 msgstr ""
 
-#: src/processors/commentsfilter_antibotspam.php:504
+#: src/processors/commentsfilter_antibotspam.php:495
 #: src/processors/commentsfilter_humanspam.php:290
 #, php-format
 msgid ""
@@ -1792,13 +1825,13 @@ msgstr ""
 
 #: src/processors/login_protect.php:138
 #: src/processors/loginprotect_cooldown.php:71
-#: src/processors/loginprotect_gasp.php:67
+#: src/processors/loginprotect_gasp.php:72
 msgid "login"
 msgstr ""
 
 #: src/processors/login_protect.php:138
 #: src/processors/loginprotect_cooldown.php:71
-#: src/processors/loginprotect_gasp.php:79
+#: src/processors/loginprotect_gasp.php:84
 msgid "register"
 msgstr ""
 
@@ -1823,43 +1856,48 @@ msgstr ""
 msgid "You must wait %s seconds before attempting to %s again."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:71
-#: src/processors/loginprotect_gasp.php:83
+#: src/processors/loginprotect_gasp.php:76
+#: src/processors/loginprotect_gasp.php:88
+#: src/processors/loginprotect_gasp.php:100
 msgid "G.A.S.P. Checking Failed."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:91
+#: src/processors/loginprotect_gasp.php:96
+msgid "reset-password"
+msgstr ""
+
+#: src/processors/loginprotect_gasp.php:108
 msgid "I'm a human."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:92
+#: src/processors/loginprotect_gasp.php:109
 msgid "Please check the box to show us you're a human."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:134
+#: src/processors/loginprotect_gasp.php:151
 msgid "You MUST enable Javascript to be able to login"
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:161
+#: src/processors/loginprotect_gasp.php:178
 #, php-format
 msgid "User \"%s\" attempted to %s but GASP checkbox was not present."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:161
-#: src/processors/loginprotect_gasp.php:168
+#: src/processors/loginprotect_gasp.php:178
+#: src/processors/loginprotect_gasp.php:185
 msgid "Probably a BOT."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:164
+#: src/processors/loginprotect_gasp.php:181
 msgid "You must check that box to say you're not a bot."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:168
+#: src/processors/loginprotect_gasp.php:185
 #, php-format
 msgid "User \"%s\" attempted to %s but they were caught by the GASP honeypot."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:171
+#: src/processors/loginprotect_gasp.php:188
 #, php-format
 msgid "You appear to be a bot - terminating %s attempt."
 msgstr ""
