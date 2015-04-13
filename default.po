@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPSF v2.0\n"
-"POT-Creation-Date: 2015-04-01 13:59-0000\n"
-"PO-Revision-Date: 2015-04-01 13:59-0000\n"
+"POT-Creation-Date: 2015-04-10 21:58-0000\n"
+"PO-Revision-Date: 2015-04-10 21:58-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_GB\n"
@@ -61,7 +61,7 @@ msgstr ""
 msgid "Login Protection"
 msgstr ""
 
-#: src/config/feature-plugin.php:111
+#: src/config/feature-plugin.php:118
 msgid "Dashboard"
 msgstr ""
 
@@ -1149,6 +1149,7 @@ msgid ""
 msgstr ""
 
 #: src/features/login_protect.php:182 src/features/login_protect.php:190
+#: views/snippets/state_summary.php:26
 msgid "ON"
 msgstr ""
 
@@ -1360,14 +1361,38 @@ msgid ""
 msgstr ""
 
 #: src/features/plugin.php:269
-msgid "Delete Plugin Settings"
+msgid "Show Plugin Badge"
 msgstr ""
 
 #: src/features/plugin.php:270
-msgid "Delete All Plugin Settings Upon Plugin Deactivation"
+msgid "Display Plugin Badge On Your Site"
 msgstr ""
 
 #: src/features/plugin.php:271
+msgid ""
+"Enabling this option helps support the plugin by spreading the word about it "
+"on your website."
+msgstr ""
+
+#: src/features/plugin.php:272
+msgid ""
+"The plugin badge also lets visitors know your are taking your website "
+"security seriously."
+msgstr ""
+
+#: src/features/plugin.php:273
+msgid "Read this carefully before enabling this option."
+msgstr ""
+
+#: src/features/plugin.php:277
+msgid "Delete Plugin Settings"
+msgstr ""
+
+#: src/features/plugin.php:278
+msgid "Delete All Plugin Settings Upon Plugin Deactivation"
+msgstr ""
+
+#: src/features/plugin.php:279
 msgid "Careful: Removes all plugin options when you deactivate the plugin"
 msgstr ""
 
@@ -1791,7 +1816,7 @@ msgstr ""
 
 #: src/processors/firewall.php:513
 #: src/processors/loginprotect_twofactorauth.php:432
-#: src/processors/user_management.php:79
+#: src/processors/user_management.php:136
 #, php-format
 msgid "IP Address: %s"
 msgstr ""
@@ -1951,7 +1976,7 @@ msgid "You will be logged in automatically upon successful authentication."
 msgstr ""
 
 #: src/processors/loginprotect_twofactorauth.php:431
-#: src/processors/user_management.php:78
+#: src/processors/user_management.php:135
 #, php-format
 msgid "Username: %s"
 msgstr ""
@@ -2067,52 +2092,60 @@ msgstr ""
 msgid "Yubikey OTP"
 msgstr ""
 
-#: src/processors/plugin.php:174
+#: src/processors/plugin.php:187
 #, php-format
 msgid "There is an update available for your WordPress Security plugin: %s."
 msgstr ""
 
-#: src/processors/plugin.php:175
+#: src/processors/plugin.php:188
 msgid "Please click to update immediately"
 msgstr ""
 
-#: src/processors/plugin.php:198
+#: src/processors/plugin.php:211
 #, php-format
 msgid ""
 "Note: The %s plugin does not automatically turn on features when you install."
 msgstr ""
 
-#: src/processors/plugin.php:204
+#: src/processors/plugin.php:217
 #, php-format
 msgid ""
 "Note: The %s plugin has been recently upgraded, but please remember that any "
 "new features are not automatically enabled."
 msgstr ""
 
-#: src/processors/plugin.php:212
+#: src/processors/plugin.php:225
 msgid "Click to read about any important updates from the plugin home page."
 msgstr ""
 
-#: src/processors/plugin.php:214
+#: src/processors/plugin.php:227
 msgid "Okay, hide this notice and go to the plugin dashboard."
 msgstr ""
 
-#: src/processors/user_management.php:75
+#: src/processors/user_management.php:84
+msgid "Last Login"
+msgstr ""
+
+#: src/processors/user_management.php:106
+msgid "Not Recorded"
+msgstr ""
+
+#: src/processors/user_management.php:132
 msgid ""
 "As requested, the WordPress Simple Firewall is notifying you of an "
 "administrator login to a WordPress site that you manage."
 msgstr ""
 
-#: src/processors/user_management.php:76
+#: src/processors/user_management.php:133
 msgid "Details for this user are below:"
 msgstr ""
 
-#: src/processors/user_management.php:77
+#: src/processors/user_management.php:134
 #, php-format
 msgid "Site URL: %s"
 msgstr ""
 
-#: src/processors/user_management.php:80
+#: src/processors/user_management.php:137
 msgid "Thanks."
 msgstr ""
 
@@ -2467,6 +2500,10 @@ msgstr ""
 
 #: views/snippets/state_summary.php:21
 msgid "Go To Settings"
+msgstr ""
+
+#: views/snippets/state_summary.php:26
+msgid "OFF"
 msgstr ""
 
 #: views/snippets/state_summary.php:104
