@@ -1,2687 +1,2845 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPSF v2.0\n"
-"POT-Creation-Date: 2015-04-29 12:27-0000\n"
-"PO-Revision-Date: 2015-04-29 12:27-0000\n"
+"POT-Creation-Date: 2015-05-20 18:20-0000\n"
+"PO-Revision-Date: 2015-05-20 18:24-0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.7.6\n"
+"X-Generator: Poedit 1.8\n"
 "X-Poedit-KeywordsList: _wpsf__;gettext;gettext_noop;_wpsf_e\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: icwp-wpsf.php:106
+#: icwp-wpsf.php:101
 msgid "Upgrade Now To Keep Your Firewall Up-To-Date With The Latest Features."
 msgstr ""
 
-#: src/config/feature-admin_access_restriction.php:54
+#: src/config/feature-admin_access_restriction.php:55
 msgid "Admin Access Restriction"
 msgstr ""
 
-#: src/config/feature-admin_access_restriction.php:55
-#: src/features/admin_access_restriction.php:163
+#: src/config/feature-admin_access_restriction.php:56
+msgid "Protect your security plugin not just your WordPress site"
+msgstr ""
+
+#: src/config/feature-admin_access_restriction.php:57
+#: src/features/admin_access_restriction.php:123
+#: src/features/admin_access_restriction.php:158
 msgid "Admin Access"
 msgstr ""
 
-#: src/config/feature-audit_trail.php:119
+#: src/config/feature-audit_trail.php:120 src/features/audit_trail.php:112
 msgid "Audit Trail"
 msgstr ""
 
-#: src/config/feature-audit_trail.php:120 src/features/audit_trail.php:57
+#: src/config/feature-audit_trail.php:121
+msgid "Get a view on what happens on your site, when it happens"
+msgstr ""
+
+#: src/config/feature-audit_trail.php:122 src/features/audit_trail.php:42
 msgid "Audit Trail Viewer"
 msgstr ""
 
-#: src/config/feature-autoupdates.php:117
+#: src/config/feature-autoupdates.php:118 src/features/autoupdates.php:44
 msgid "Automatic Updates"
 msgstr ""
 
-#: src/config/feature-comments_filter.php:193
+#: src/config/feature-autoupdates.php:119
+msgid "Take back full control of WordPress automatic updates"
+msgstr ""
+
+#: src/config/feature-comments_filter.php:194
+#: src/features/comments_filter.php:29
 msgid "Comments Filter"
+msgstr ""
+
+#: src/config/feature-comments_filter.php:195
+msgid "Block comment SPAM and retain your privacy"
 msgstr ""
 
 #: src/config/feature-email.php:39
 msgid "Email"
 msgstr ""
 
-#: src/config/feature-firewall.php:153
+#: src/config/feature-firewall.php:154 src/features/firewall.php:52
 msgid "Firewall"
+msgstr ""
+
+#: src/config/feature-firewall.php:155
+msgid "Automatically block malicious URLs and data sent to your site"
 msgstr ""
 
 #: src/config/feature-hack_protect.php:23
 msgid "Hack Protection"
 msgstr ""
 
-#: src/config/feature-lockdown.php:71
+#: src/config/feature-lockdown.php:72 src/features/lockdown.php:44
 msgid "Lockdown"
 msgstr ""
 
-#: src/config/feature-login_protect.php:212
+#: src/config/feature-lockdown.php:73
+msgid "Harden the more loosely controlled settings of your site"
+msgstr ""
+
+#: src/config/feature-login_protect.php:217 src/features/login_protect.php:107
 msgid "Login Protection"
 msgstr ""
 
-#: src/config/feature-plugin.php:118
+#: src/config/feature-login_protect.php:218
+msgid ""
+"Block brute force attacks and secure user identities with Two-Factor "
+"Authentication"
+msgstr ""
+
+#: src/config/feature-plugin.php:119
 msgid "Dashboard"
 msgstr ""
 
-#: src/config/feature-user_management.php:125
+#: src/config/feature-plugin.php:120
+msgid "Overview of the plugin settings"
+msgstr ""
+
+#: src/config/feature-user_management.php:126
+#: src/features/user_management.php:85
 msgid "User Management"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:135
-#: src/features/audit_trail.php:96 src/features/autoupdates.php:56
-#: src/features/comments_filter.php:41 src/features/firewall.php:65
-#: src/features/lockdown.php:41 src/features/login_protect.php:67
-#: src/features/user_management.php:71
+#: src/config/feature-user_management.php:127
+msgid ""
+"Get true user sessions and control account sharing, session duration and "
+"timeouts"
+msgstr ""
+
+#: src/features/admin_access_restriction.php:120
+#: src/features/audit_trail.php:109 src/features/autoupdates.php:41
+#: src/features/comments_filter.php:26 src/features/firewall.php:49
+#: src/features/firewall.php:101 src/features/lockdown.php:41
+#: src/features/login_protect.php:104 src/features/user_management.php:82
 #, php-format
 msgid "Enable Plugin Feature: %s"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:136
-#: src/features/audit_trail.php:97 src/features/autoupdates.php:57
-#: src/features/comments_filter.php:42 src/features/firewall.php:66
-#: src/features/lockdown.php:42 src/features/login_protect.php:68
-#: src/features/user_management.php:72
+#: src/features/admin_access_restriction.php:122
+#: src/features/admin_access_restriction.php:132
+#: src/features/audit_trail.php:111 src/features/audit_trail.php:120
+#: src/features/audit_trail.php:129 src/features/autoupdates.php:43
+#: src/features/autoupdates.php:52 src/features/autoupdates.php:61
+#: src/features/autoupdates.php:70 src/features/autoupdates.php:79
+#: src/features/comments_filter.php:28 src/features/comments_filter.php:37
+#: src/features/comments_filter.php:46 src/features/comments_filter.php:56
+#: src/features/firewall.php:51 src/features/lockdown.php:43
+#: src/features/lockdown.php:52 src/features/lockdown.php:61
+#: src/features/login_protect.php:106 src/features/login_protect.php:115
+#: src/features/login_protect.php:124 src/features/login_protect.php:133
+#: src/features/login_protect.php:142 src/features/login_protect.php:151
+#: src/features/user_management.php:84 src/features/user_management.php:93
+#: src/features/user_management.php:102 src/features/user_management.php:111
+#, php-format
+msgid "Purpose - %s"
+msgstr ""
+
+#: src/features/admin_access_restriction.php:122
+msgid ""
+"Restricts access to this plugin preventing unauthorized changes to your "
+"security settings."
+msgstr ""
+
+#: src/features/admin_access_restriction.php:123
+#: src/features/admin_access_restriction.php:133
+#: src/features/audit_trail.php:112 src/features/audit_trail.php:121
+#: src/features/audit_trail.php:130 src/features/autoupdates.php:44
+#: src/features/autoupdates.php:53 src/features/autoupdates.php:62
+#: src/features/autoupdates.php:71 src/features/comments_filter.php:29
+#: src/features/comments_filter.php:38 src/features/comments_filter.php:47
+#: src/features/comments_filter.php:57 src/features/firewall.php:52
+#: src/features/firewall.php:61 src/features/firewall.php:72
+#: src/features/firewall.php:81 src/features/firewall.php:90
+#: src/features/lockdown.php:44 src/features/lockdown.php:53
+#: src/features/lockdown.php:62 src/features/login_protect.php:107
+#: src/features/login_protect.php:116 src/features/login_protect.php:125
+#: src/features/login_protect.php:134 src/features/login_protect.php:143
+#: src/features/login_protect.php:152 src/features/user_management.php:85
+#: src/features/user_management.php:94 src/features/user_management.php:103
+#: src/features/user_management.php:112
+#, php-format
+msgid "Recommendation - %s"
+msgstr ""
+
+#: src/features/admin_access_restriction.php:123
+#: src/features/audit_trail.php:112 src/features/autoupdates.php:44
+#: src/features/comments_filter.php:29 src/features/firewall.php:52
+#: src/features/lockdown.php:44 src/features/login_protect.php:107
+#: src/features/user_management.php:85
+#, php-format
+msgid "Keep the %s feature turned on."
+msgstr ""
+
+#: src/features/admin_access_restriction.php:124
+msgid "You need to also enter a new Access Key to enable this feature."
+msgstr ""
+
+#: src/features/admin_access_restriction.php:126
+#: src/features/audit_trail.php:114 src/features/autoupdates.php:46
+#: src/features/comments_filter.php:31 src/features/firewall.php:54
+#: src/features/firewall.php:102 src/features/lockdown.php:46
+#: src/features/login_protect.php:109 src/features/user_management.php:87
 msgid "Enable"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:136
-#: src/features/audit_trail.php:97 src/features/autoupdates.php:57
-#: src/features/comments_filter.php:42 src/features/firewall.php:66
-#: src/features/lockdown.php:42 src/features/login_protect.php:68
-#: src/features/user_management.php:72
+#: src/features/admin_access_restriction.php:126
+#: src/features/audit_trail.php:114 src/features/autoupdates.php:46
+#: src/features/comments_filter.php:31 src/features/firewall.php:54
+#: src/features/firewall.php:102 src/features/lockdown.php:46
+#: src/features/login_protect.php:109 src/features/user_management.php:87
 msgid "Disable"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:140
+#: src/features/admin_access_restriction.php:130
 msgid "Admin Access Restriction Settings"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:141
+#: src/features/admin_access_restriction.php:132
+msgid "Restrict access using a simple Access Key."
+msgstr ""
+
+#: src/features/admin_access_restriction.php:133
+#: src/features/comments_filter.php:38 src/features/comments_filter.php:47
+#: src/features/login_protect.php:134 src/features/login_protect.php:143
+#: src/features/login_protect.php:152 src/features/user_management.php:103
+#: src/features/user_management.php:112
+msgid "Use of this feature is highly recommend."
+msgstr ""
+
+#: src/features/admin_access_restriction.php:135
 msgid "Access Restriction Settings"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:163
-#: src/features/audit_trail.php:129 src/features/autoupdates.php:99
-#: src/features/comments_filter.php:79 src/features/firewall.php:115
-#: src/features/lockdown.php:74 src/features/login_protect.php:119
-#: src/features/user_management.php:109
+#: src/features/admin_access_restriction.php:158
+#: src/features/audit_trail.php:157 src/features/autoupdates.php:104
+#: src/features/comments_filter.php:82 src/features/firewall.php:124
+#: src/features/lockdown.php:87 src/features/login_protect.php:181
+#: src/features/user_management.php:137
 #, php-format
 msgid "Enable %s"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:164
+#: src/features/admin_access_restriction.php:159
 msgid "Enforce Admin Access Restriction"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:165
+#: src/features/admin_access_restriction.php:160
 msgid ""
 "Enable this with great care and consideration. When this Access Key option "
 "is enabled, you must specify a key below and use it to gain access to this "
 "plugin."
 msgstr ""
 
-#: src/features/admin_access_restriction.php:169
+#: src/features/admin_access_restriction.php:164
 msgid "Admin Access Key"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:170
+#: src/features/admin_access_restriction.php:165
 msgid "Provide/Update Admin Access Key"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:171
+#: src/features/admin_access_restriction.php:166
 #, php-format
 msgid "Careful: %s"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:171
+#: src/features/admin_access_restriction.php:166
 msgid ""
 "If you forget this, you could potentially lock yourself out from using this "
 "plugin."
 msgstr ""
 
-#: src/features/admin_access_restriction.php:175
+#: src/features/admin_access_restriction.php:170
 msgid "Admin Access Timeout"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:176
+#: src/features/admin_access_restriction.php:171
 msgid "Specify An Automatic Timeout Interval For Admin Access"
 msgstr ""
 
-#: src/features/admin_access_restriction.php:177
-msgid ""
-"This will automatically expire your WordPress Simple Firewall session. Does "
-"not apply until you enter the access key again."
+#: src/features/admin_access_restriction.php:172
+#, php-format
+msgid "This will automatically expire your %s Admin Access Session."
 msgstr ""
 
-#: src/features/admin_access_restriction.php:178
+#: src/features/admin_access_restriction.php:173
+msgid "Does not apply until you enter the access key again."
+msgstr ""
+
+#: src/features/admin_access_restriction.php:174
 #, php-format
 msgid "Default: %s minutes."
 msgstr ""
 
-#: src/features/audit_trail.php:101
+#: src/features/audit_trail.php:74
+msgid "Users"
+msgstr ""
+
+#: src/features/audit_trail.php:75 src/features/audit_trail.php:175
+#: src/features/audit_trail.php:176 src/features/autoupdates.php:134
+msgid "Plugins"
+msgstr ""
+
+#: src/features/audit_trail.php:76 src/features/audit_trail.php:181
+#: src/features/audit_trail.php:182 src/features/autoupdates.php:140
+msgid "Themes"
+msgstr ""
+
+#: src/features/audit_trail.php:77
+msgid "WordPress"
+msgstr ""
+
+#: src/features/audit_trail.php:78
+msgid "Posts"
+msgstr ""
+
+#: src/features/audit_trail.php:79 src/features/audit_trail.php:199
+#: src/features/audit_trail.php:200
+msgid "Emails"
+msgstr ""
+
+#: src/features/audit_trail.php:80
+msgid "Time"
+msgstr ""
+
+#: src/features/audit_trail.php:81
+msgid "Event"
+msgstr ""
+
+#: src/features/audit_trail.php:82
+msgid "Message"
+msgstr ""
+
+#: src/features/audit_trail.php:83 src/features/user_management.php:61
+msgid "Username"
+msgstr ""
+
+#: src/features/audit_trail.php:84
+msgid "Category"
+msgstr ""
+
+#: src/features/audit_trail.php:85 src/features/login_protect.php:211
+msgid "IP Address"
+msgstr ""
+
+#: src/features/audit_trail.php:86
+msgid "You"
+msgstr ""
+
+#: src/features/audit_trail.php:87
+msgid "There are currently no audit entries this is section."
+msgstr ""
+
+#: src/features/audit_trail.php:111
+msgid ""
+"The Audit Trail is designed so you can look back on events and analyse what "
+"happened and what may have gone wrong."
+msgstr ""
+
+#: src/features/audit_trail.php:118
 msgid "Audit Trail Options"
 msgstr ""
 
-#: src/features/audit_trail.php:102
+#: src/features/audit_trail.php:120
+msgid "Provides finer control over the audit trail itself."
+msgstr ""
+
+#: src/features/audit_trail.php:121 src/features/audit_trail.php:130
+msgid "These settings are dependent on your requirements."
+msgstr ""
+
+#: src/features/audit_trail.php:123
 msgid "Options"
 msgstr ""
 
-#: src/features/audit_trail.php:106
+#: src/features/audit_trail.php:127
 msgid "Enable Audit Contexts"
 msgstr ""
 
-#: src/features/audit_trail.php:107
+#: src/features/audit_trail.php:129
+msgid "Specify which types of actions on your site are logged."
+msgstr ""
+
+#: src/features/audit_trail.php:132
 msgid "Audit Contexts"
 msgstr ""
 
-#: src/features/audit_trail.php:130 src/features/autoupdates.php:100
-#: src/features/firewall.php:116 src/features/lockdown.php:75
-#: src/features/login_protect.php:120 src/features/user_management.php:110
+#: src/features/audit_trail.php:158 src/features/autoupdates.php:105
+#: src/features/firewall.php:125 src/features/lockdown.php:88
+#: src/features/login_protect.php:182 src/features/user_management.php:138
 #, php-format
 msgid "Enable (or Disable) The %s Feature"
 msgstr ""
 
-#: src/features/audit_trail.php:131 src/features/autoupdates.php:101
-#: src/features/comments_filter.php:81 src/features/firewall.php:117
-#: src/features/lockdown.php:76 src/features/login_protect.php:121
-#: src/features/user_management.php:111
+#: src/features/audit_trail.php:159 src/features/autoupdates.php:106
+#: src/features/comments_filter.php:84 src/features/firewall.php:126
+#: src/features/lockdown.php:89 src/features/login_protect.php:183
+#: src/features/user_management.php:139
 #, php-format
 msgid ""
 "Checking/Un-Checking this option will completely turn on/off the whole %s "
 "feature."
 msgstr ""
 
-#: src/features/audit_trail.php:135
+#: src/features/audit_trail.php:163
 msgid "Auto Clean"
 msgstr ""
 
-#: src/features/audit_trail.php:136
+#: src/features/audit_trail.php:164
 msgid "Enable Audit Auto Cleaning"
 msgstr ""
 
-#: src/features/audit_trail.php:137
+#: src/features/audit_trail.php:165
 msgid ""
 "Events older than the number of days specified will be automatically cleaned "
 "from the database."
 msgstr ""
 
-#: src/features/audit_trail.php:141 src/features/audit_trail.php:142
+#: src/features/audit_trail.php:169 src/features/audit_trail.php:170
+#: src/features/audit_trail.php:171
 msgid "Users And Logins"
 msgstr ""
 
-#: src/features/audit_trail.php:142 src/features/audit_trail.php:148
-#: src/features/audit_trail.php:154 src/features/audit_trail.php:160
-#: src/features/audit_trail.php:166 src/features/audit_trail.php:172
-#: src/features/audit_trail.php:178
+#: src/features/audit_trail.php:170 src/features/audit_trail.php:176
+#: src/features/audit_trail.php:182 src/features/audit_trail.php:188
+#: src/features/audit_trail.php:194 src/features/audit_trail.php:200
+#: src/features/audit_trail.php:206
 #, php-format
 msgid "Enable Audit Context - %s"
 msgstr ""
 
-#: src/features/audit_trail.php:143
-msgid ""
-"When this context is enabled, the audit trail will track user activity and "
-"significant events such as user login etc."
-msgstr ""
-
-#: src/features/audit_trail.php:147 src/features/audit_trail.php:148
-#: src/features/autoupdates.php:129 views/subfeature-audit_trail_viewer.php:42
-msgid "Plugins"
-msgstr ""
-
-#: src/features/audit_trail.php:149
+#: src/features/audit_trail.php:171 src/features/audit_trail.php:177
+#: src/features/audit_trail.php:183 src/features/audit_trail.php:189
+#: src/features/audit_trail.php:195 src/features/audit_trail.php:201
+#: src/features/audit_trail.php:207
+#, php-format
 msgid ""
 "When this context is enabled, the audit trail will track activity relating "
-"to WordPress plugins."
+"to: %s"
 msgstr ""
 
-#: src/features/audit_trail.php:153 src/features/audit_trail.php:154
-#: src/features/autoupdates.php:135 views/subfeature-audit_trail_viewer.php:43
-msgid "Themes"
+#: src/features/audit_trail.php:177
+msgid "WordPress Plugins"
 msgstr ""
 
-#: src/features/audit_trail.php:155
-msgid ""
-"When this context is enabled, the audit trail will track activity relating "
-"to WordPress themes."
+#: src/features/audit_trail.php:183
+msgid "WordPress Themes"
 msgstr ""
 
-#: src/features/audit_trail.php:159 src/features/audit_trail.php:160
+#: src/features/audit_trail.php:187 src/features/audit_trail.php:188
 msgid "Posts And Pages"
 msgstr ""
 
-#: src/features/audit_trail.php:161
-msgid ""
-"When this context is enabled, the audit trail will track activity relating "
-"to the editing and publishing of posts and pages."
+#: src/features/audit_trail.php:189
+msgid "Editing and publishing of posts and pages"
 msgstr ""
 
-#: src/features/audit_trail.php:165 src/features/audit_trail.php:166
+#: src/features/audit_trail.php:193 src/features/audit_trail.php:194
 msgid "WordPress And Settings"
 msgstr ""
 
-#: src/features/audit_trail.php:167
+#: src/features/audit_trail.php:195
+msgid "WordPress upgrades and changes to particular WordPress settings"
+msgstr ""
+
+#: src/features/audit_trail.php:201
+msgid "Email Sending"
+msgstr ""
+
+#: src/features/autoupdates.php:43
 msgid ""
-"When this context is enabled, the audit trail will track WordPress upgrades "
-"and changes to particular WordPress settings."
+"Automatic Updates lets you manage the WordPress automatic updates engine so "
+"you choose what exactly gets updated automatically."
 msgstr ""
 
-#: src/features/audit_trail.php:171 src/features/audit_trail.php:172
-#: views/subfeature-audit_trail_viewer.php:46
-msgid "Emails"
-msgstr ""
-
-#: src/features/audit_trail.php:173
-msgid ""
-"When this context is enabled, the audit trail will attempt to track attempts "
-"at sending email."
-msgstr ""
-
-#: src/features/audit_trail.php:177 src/features/audit_trail.php:178
-msgid "Simple Firewall"
-msgstr ""
-
-#: src/features/audit_trail.php:179
-msgid ""
-"When this context is enabled, the audit trail will track activity directly "
-"related to the WordPress Simple Firewall plugin."
-msgstr ""
-
-#: src/features/autoupdates.php:61
+#: src/features/autoupdates.php:50
 msgid "Disable ALL WordPress Automatic Updates"
 msgstr ""
 
-#: src/features/autoupdates.php:62
+#: src/features/autoupdates.php:52
+msgid ""
+"If you never want WordPress to automatically update anything on your site, "
+"turn on this option."
+msgstr ""
+
+#: src/features/autoupdates.php:53
+msgid "Do not turn on this option unless you really need to block updates."
+msgstr ""
+
+#: src/features/autoupdates.php:55
 msgid "Turn Off"
 msgstr ""
 
-#: src/features/autoupdates.php:66
+#: src/features/autoupdates.php:59
 msgid "Automatic Plugin Self-Update"
 msgstr ""
 
-#: src/features/autoupdates.php:67
+#: src/features/autoupdates.php:61
+#, php-format
+msgid ""
+"Allows the %s plugin to automatically update itself when an update is "
+"available."
+msgstr ""
+
+#: src/features/autoupdates.php:62
+msgid "Keep this option turned on."
+msgstr ""
+
+#: src/features/autoupdates.php:64
 msgid "Self-Update"
 msgstr ""
 
-#: src/features/autoupdates.php:71
+#: src/features/autoupdates.php:68
 msgid "Automatic Updates For WordPress Components"
 msgstr ""
 
-#: src/features/autoupdates.php:72
+#: src/features/autoupdates.php:70
+msgid "Control how automatic updates for each WordPress component is handled."
+msgstr ""
+
+#: src/features/autoupdates.php:71
+msgid "You should at least allow minor updates for the WordPress core."
+msgstr ""
+
+#: src/features/autoupdates.php:73
 msgid "WordPress Components"
 msgstr ""
 
-#: src/features/autoupdates.php:76
+#: src/features/autoupdates.php:77
 msgid "Automatic Update Email Notifications"
 msgstr ""
 
-#: src/features/autoupdates.php:77 src/features/user_management.php:82
+#: src/features/autoupdates.php:79
+msgid "Control how you are notified of automatic updates that have occurred."
+msgstr ""
+
+#: src/features/autoupdates.php:81 src/features/user_management.php:105
 msgid "Notifications"
 msgstr ""
 
-#: src/features/autoupdates.php:105
+#: src/features/autoupdates.php:110
 msgid "Disable All"
 msgstr ""
 
-#: src/features/autoupdates.php:106
+#: src/features/autoupdates.php:111
 msgid "Completely Disable WordPress Automatic Updates"
 msgstr ""
 
-#: src/features/autoupdates.php:107
+#: src/features/autoupdates.php:112
 msgid ""
 "When selected, regardless of any other settings, all WordPress automatic "
 "updates on this site will be completely disabled!"
 msgstr ""
 
-#: src/features/autoupdates.php:111
+#: src/features/autoupdates.php:116
 msgid "Auto Update Plugin"
 msgstr ""
 
-#: src/features/autoupdates.php:112
+#: src/features/autoupdates.php:117
 msgid "Always Automatically Update This Plugin"
 msgstr ""
 
-#: src/features/autoupdates.php:113
+#: src/features/autoupdates.php:118
+#, php-format
 msgid ""
-"Regardless of any component settings below, automatically update the "
-"WordPress Simple Firewall plugin."
+"Regardless of any component settings below, automatically update the \"%s\" "
+"plugin."
 msgstr ""
 
-#: src/features/autoupdates.php:117
+#: src/features/autoupdates.php:122
 msgid "WordPress Core Updates"
 msgstr ""
 
-#: src/features/autoupdates.php:118
+#: src/features/autoupdates.php:123
 msgid "Decide how the WordPress Core will automatically update, if at all"
 msgstr ""
 
-#: src/features/autoupdates.php:119
+#: src/features/autoupdates.php:124
 msgid ""
 "At least automatically upgrading minor versions is recommended (and is the "
 "WordPress default)."
 msgstr ""
 
-#: src/features/autoupdates.php:123
+#: src/features/autoupdates.php:128
 msgid "Translations"
 msgstr ""
 
-#: src/features/autoupdates.php:124
+#: src/features/autoupdates.php:129
 msgid "Automatically Update Translations"
 msgstr ""
 
-#: src/features/autoupdates.php:125
+#: src/features/autoupdates.php:130
 msgid ""
 "Note: Automatic updates for translations are enabled on WordPress by default."
 msgstr ""
 
-#: src/features/autoupdates.php:130
+#: src/features/autoupdates.php:135
 msgid "Automatically Update Plugins"
 msgstr ""
 
-#: src/features/autoupdates.php:131
+#: src/features/autoupdates.php:136
 msgid ""
 "Note: Automatic updates for plugins are disabled on WordPress by default."
 msgstr ""
 
-#: src/features/autoupdates.php:136
+#: src/features/autoupdates.php:141
 msgid "Automatically Update Themes"
 msgstr ""
 
-#: src/features/autoupdates.php:137
+#: src/features/autoupdates.php:142
 msgid ""
 "Note: Automatic updates for themes are disabled on WordPress by default."
 msgstr ""
 
-#: src/features/autoupdates.php:141
+#: src/features/autoupdates.php:146
 msgid "Ignore Version Control"
 msgstr ""
 
-#: src/features/autoupdates.php:142
+#: src/features/autoupdates.php:147
 msgid "Ignore Version Control Systems Such As GIT and SVN"
 msgstr ""
 
-#: src/features/autoupdates.php:143
+#: src/features/autoupdates.php:148
 msgid ""
 "If you use SVN or GIT and WordPress detects it, automatic updates are "
 "disabled by default. Check this box to ignore version control systems and "
 "allow automatic updates."
 msgstr ""
 
-#: src/features/autoupdates.php:147
+#: src/features/autoupdates.php:152
 msgid "Send Report Email"
 msgstr ""
 
-#: src/features/autoupdates.php:148
+#: src/features/autoupdates.php:153
 msgid "Send email notices after automatic updates"
 msgstr ""
 
-#: src/features/autoupdates.php:149
+#: src/features/autoupdates.php:154
 msgid ""
 "You can turn on/off email notices from automatic updates by un/checking this "
 "box."
 msgstr ""
 
-#: src/features/autoupdates.php:153
+#: src/features/autoupdates.php:158
 msgid "Report Email Address"
 msgstr ""
 
-#: src/features/autoupdates.php:154
+#: src/features/autoupdates.php:159
 msgid "Where to send upgrade notification reports"
 msgstr ""
 
-#: src/features/autoupdates.php:155
+#: src/features/autoupdates.php:160
 msgid "If this is empty, it will default to the Site Admin email address"
 msgstr ""
 
-#: src/features/comments_filter.php:41 src/features/comments_filter.php:81
+#: src/features/base.php:907
+msgid "Settings"
+msgstr ""
+
+#: src/features/base.php:909
+msgid "On"
+msgstr ""
+
+#: src/features/base.php:910
+msgid "Off"
+msgstr ""
+
+#: src/features/base.php:911 src/processors/login_protect.php:170
+msgid "More Info"
+msgstr ""
+
+#: src/features/base.php:912
+msgid "Blog"
+msgstr ""
+
+#: src/features/base.php:913 templates/php/snippets/state_summary.php:8
+msgid "Plugin Activated Features Summary:"
+msgstr ""
+
+#: src/features/base.php:914 templates/php/snippets/options_form.php:160
+msgid "Save All Settings"
+msgstr ""
+
+#: src/features/base.php:916
+msgid "What should you enter here?"
+msgstr ""
+
+#: src/features/base.php:917
+msgid ""
+"At some point you supplied an Admin Access Key - to manage this plugin, you "
+"must supply it here first."
+msgstr ""
+
+#: src/features/base.php:918
+msgid "To manage this plugin you must enter the access key."
+msgstr ""
+
+#: src/features/base.php:919
+msgid "Enter Access Key"
+msgstr ""
+
+#: src/features/base.php:920
+msgid "Submit Access Key"
+msgstr ""
+
+#: src/features/comments_filter.php:26 src/features/comments_filter.php:84
 msgid "SPAM Comments Protection Filter"
 msgstr ""
 
-#: src/features/comments_filter.php:46 src/features/comments_filter.php:51
+#: src/features/comments_filter.php:28
+#, php-format
+msgid ""
+"The Comments Filter can block 100% of automated spam bots and also offer the "
+"option to analyse human-generated spam."
+msgstr ""
+
+#: src/features/comments_filter.php:35 src/features/comments_filter.php:44
 #, php-format
 msgid "%s Comment SPAM Protection Filter"
 msgstr ""
 
-#: src/features/comments_filter.php:46
-msgid "Human"
-msgstr ""
-
-#: src/features/comments_filter.php:47
-msgid "Human SPAM"
-msgstr ""
-
-#: src/features/comments_filter.php:51
+#: src/features/comments_filter.php:35
 msgid "Automatic Bot"
 msgstr ""
 
-#: src/features/comments_filter.php:52
+#: src/features/comments_filter.php:37
+#, php-format
+msgid "Blocks 100% of all automated bot-generated comment SPAM."
+msgstr ""
+
+#: src/features/comments_filter.php:40
 msgid "Bot SPAM"
 msgstr ""
 
-#: src/features/comments_filter.php:56
+#: src/features/comments_filter.php:44
+msgid "Human"
+msgstr ""
+
+#: src/features/comments_filter.php:46
+msgid "Uses a 3rd party SPAM dictionary to detect human-based comment SPAM."
+msgstr ""
+
+#: src/features/comments_filter.php:48
+msgid ""
+"This tool, unlike other SPAM tools such as Akismet, will not send your "
+"comment data to 3rd party services for analysis."
+msgstr ""
+
+#: src/features/comments_filter.php:50
+msgid "Human SPAM"
+msgstr ""
+
+#: src/features/comments_filter.php:54
 msgid "Customize Messages Shown To User"
 msgstr ""
 
-#: src/features/comments_filter.php:57
-msgid "User Messages"
+#: src/features/comments_filter.php:56
+msgid ""
+"Customize the messages shown to visitors when they view and use comment "
+"forms."
 msgstr ""
 
-#: src/features/comments_filter.php:80
+#: src/features/comments_filter.php:57
+msgid "Be sure to change the messages to suit your audience."
+msgstr ""
+
+#: src/features/comments_filter.php:59
+msgid "Visitor Messages"
+msgstr ""
+
+#: src/features/comments_filter.php:83
 msgid "Enable (or Disable) The SPAM Comments Protection Filter Feature"
 msgstr ""
 
-#: src/features/comments_filter.php:85
+#: src/features/comments_filter.php:88
 msgid "Human SPAM Filter"
 msgstr ""
 
-#: src/features/comments_filter.php:86
+#: src/features/comments_filter.php:89
 msgid "Enable (or Disable) The Human SPAM Filter Feature."
 msgstr ""
 
-#: src/features/comments_filter.php:87
+#: src/features/comments_filter.php:90
 msgid ""
 "Scans the content of WordPress comments for keywords that are indicative of "
 "SPAM and marks the comment according to your preferred setting below."
 msgstr ""
 
-#: src/features/comments_filter.php:91
+#: src/features/comments_filter.php:94
 msgid "Comment Filter Items"
 msgstr ""
 
-#: src/features/comments_filter.php:92
+#: src/features/comments_filter.php:95
 msgid "Select The Items To Scan For SPAM"
 msgstr ""
 
-#: src/features/comments_filter.php:93
+#: src/features/comments_filter.php:96
 msgid ""
 "When a user submits a comment, only the selected parts of the comment data "
 "will be scanned for SPAM content."
 msgstr ""
 
-#: src/features/comments_filter.php:93 src/features/login_protect.php:183
-#: src/features/login_protect.php:191
+#: src/features/comments_filter.php:96 src/features/login_protect.php:245
+#: src/features/login_protect.php:253
 #, php-format
 msgid "Recommended: %s"
 msgstr ""
 
-#: src/features/comments_filter.php:93
+#: src/features/comments_filter.php:96
 msgid "All"
 msgstr ""
 
-#: src/features/comments_filter.php:97 src/features/comments_filter.php:109
+#: src/features/comments_filter.php:100 src/features/comments_filter.php:112
 msgid "Default SPAM Action"
 msgstr ""
 
-#: src/features/comments_filter.php:98 src/features/comments_filter.php:110
+#: src/features/comments_filter.php:101 src/features/comments_filter.php:113
 msgid "How To Categorise Comments When Identified To Be SPAM"
 msgstr ""
 
-#: src/features/comments_filter.php:99 src/features/comments_filter.php:111
+#: src/features/comments_filter.php:102 src/features/comments_filter.php:114
 #, php-format
 msgid ""
 "When a comment is detected as being SPAM from %s, the comment will be "
 "categorised based on this setting."
 msgstr ""
 
-#: src/features/comments_filter.php:99
+#: src/features/comments_filter.php:102
 msgid "a human commenter"
 msgstr ""
 
-#: src/features/comments_filter.php:103
+#: src/features/comments_filter.php:106
 msgid "GASP Protection"
 msgstr ""
 
-#: src/features/comments_filter.php:104
+#: src/features/comments_filter.php:107
 msgid "Add Growmap Anti Spambot Protection to your comments"
 msgstr ""
 
-#: src/features/comments_filter.php:105
+#: src/features/comments_filter.php:108
 msgid ""
 "Taking the lead from the original GASP plugin for WordPress, we have "
 "extended it to include advanced spam-bot protection."
 msgstr ""
 
-#: src/features/comments_filter.php:111
+#: src/features/comments_filter.php:114
 msgid "an automatic bot"
 msgstr ""
 
-#: src/features/comments_filter.php:115
+#: src/features/comments_filter.php:118
 msgid "Include Logged-In Users"
 msgstr ""
 
-#: src/features/comments_filter.php:116
+#: src/features/comments_filter.php:119
 msgid "You may also enable GASP for logged in users"
 msgstr ""
 
-#: src/features/comments_filter.php:117
+#: src/features/comments_filter.php:120
 msgid ""
 "Since logged-in users would be expected to be vetted already, this is off by "
 "default."
 msgstr ""
 
-#: src/features/comments_filter.php:121
+#: src/features/comments_filter.php:124
 msgid "Comments Cooldown"
 msgstr ""
 
-#: src/features/comments_filter.php:122
+#: src/features/comments_filter.php:125
 msgid "Limit posting comments to X seconds after the page has loaded"
 msgstr ""
 
-#: src/features/comments_filter.php:123
+#: src/features/comments_filter.php:126
 msgid ""
 "By forcing a comments cooldown period, you restrict a Spambot's ability to "
 "post multiple times to your posts."
 msgstr ""
 
-#: src/features/comments_filter.php:127
+#: src/features/comments_filter.php:130
 msgid "Comment Token Expire"
 msgstr ""
 
-#: src/features/comments_filter.php:128
+#: src/features/comments_filter.php:131
 msgid "A visitor has X seconds within which to post a comment"
 msgstr ""
 
-#: src/features/comments_filter.php:129
+#: src/features/comments_filter.php:132
 msgid ""
 "Default: 600 seconds (10 minutes). Each visitor is given a unique 'Token' so "
 "they can comment. This restricts spambots, but we need to force these tokens "
 "to expire and at the same time not bother the visitors."
 msgstr ""
 
-#: src/features/comments_filter.php:133
+#: src/features/comments_filter.php:136
 msgid "Custom Checkbox Message"
 msgstr ""
 
-#: src/features/comments_filter.php:134
+#: src/features/comments_filter.php:137
 msgid "If you want a custom checkbox message, please provide this here"
 msgstr ""
 
-#: src/features/comments_filter.php:135
+#: src/features/comments_filter.php:138
 msgid "You can customise the message beside the checkbox."
 msgstr ""
 
-#: src/features/comments_filter.php:136 src/features/comments_filter.php:143
-#: src/features/comments_filter.php:150 src/features/comments_filter.php:157
+#: src/features/comments_filter.php:139 src/features/comments_filter.php:146
+#: src/features/comments_filter.php:153 src/features/comments_filter.php:160
 #, php-format
 msgid "Default Message: %s"
 msgstr ""
 
-#: src/features/comments_filter.php:136 src/features/comments_filter.php:143
+#: src/features/comments_filter.php:139 src/features/comments_filter.php:146
 msgid "Please check the box to confirm you're not a spammer"
 msgstr ""
 
-#: src/features/comments_filter.php:140
+#: src/features/comments_filter.php:143
 msgid "Custom Alert Message"
 msgstr ""
 
-#: src/features/comments_filter.php:141
+#: src/features/comments_filter.php:144
 msgid "If you want a custom alert message, please provide this here"
 msgstr ""
 
-#: src/features/comments_filter.php:142
+#: src/features/comments_filter.php:145
 msgid ""
 "This alert message is displayed when a visitor attempts to submit a comment "
 "without checking the box."
 msgstr ""
 
-#: src/features/comments_filter.php:147
+#: src/features/comments_filter.php:150
 msgid "Custom Wait Message"
 msgstr ""
 
-#: src/features/comments_filter.php:148
+#: src/features/comments_filter.php:151
 msgid ""
 "If you want a custom submit-button wait message, please provide this here."
 msgstr ""
 
-#: src/features/comments_filter.php:149
+#: src/features/comments_filter.php:152
 #, php-format
 msgid ""
 "Where you see the '%s' this will be the number of seconds. You must ensure "
 "you include 1, and only 1, of these."
 msgstr ""
 
-#: src/features/comments_filter.php:150
+#: src/features/comments_filter.php:153
 #, php-format
 msgid "Please wait %s seconds before posting your comment"
 msgstr ""
 
-#: src/features/comments_filter.php:154
+#: src/features/comments_filter.php:157
 msgid "Custom Reload Message"
 msgstr ""
 
-#: src/features/comments_filter.php:155
+#: src/features/comments_filter.php:158
 msgid ""
 "If you want a custom message when the comment token has expired, please "
 "provide this here."
 msgstr ""
 
-#: src/features/comments_filter.php:156
+#: src/features/comments_filter.php:159
 msgid ""
 "This message is displayed on the submit-button when the comment token is "
 "expired"
 msgstr ""
 
-#: src/features/comments_filter.php:157
+#: src/features/comments_filter.php:160
 msgid "Please reload this page to post a comment"
 msgstr ""
 
-#: src/features/email.php:42
+#: src/features/email.php:27
 msgid "Email Options"
 msgstr ""
 
-#: src/features/email.php:63 src/features/plugin.php:253
+#: src/features/email.php:48 src/features/plugin.php:221
 msgid "Report Email"
 msgstr ""
 
-#: src/features/email.php:64 src/features/plugin.php:254
+#: src/features/email.php:49 src/features/plugin.php:222
 msgid "Where to send email reports"
 msgstr ""
 
-#: src/features/email.php:65
+#: src/features/email.php:50
 msgid "If this is empty, it will default to the blog admin email address."
 msgstr ""
 
-#: src/features/email.php:69
+#: src/features/email.php:54
 msgid "Email Throttle Limit"
 msgstr ""
 
-#: src/features/email.php:70
+#: src/features/email.php:55
 msgid "Limit Emails Per Second"
 msgstr ""
 
-#: src/features/email.php:71
+#: src/features/email.php:56
 msgid ""
 "You throttle emails sent by this plugin by limiting the number of emails "
 "sent every second. This is useful in case you get hit by a bot attack. Zero "
 "(0) turns this off. Suggested: 10"
 msgstr ""
 
-#: src/features/firewall.php:70
+#: src/features/firewall.php:51
+msgid ""
+"The Firewall is designed to analyse data sent to your website and block any "
+"requests that appear to be malicious."
+msgstr ""
+
+#: src/features/firewall.php:58
 msgid "Firewall Blocking Options"
 msgstr ""
 
-#: src/features/firewall.php:71
+#: src/features/firewall.php:60
+msgid "Here you choose what kind of malicious data to scan for."
+msgstr ""
+
+#: src/features/firewall.php:62
+msgid "Turn on as many options here as you can."
+msgstr ""
+
+#: src/features/firewall.php:63
+msgid ""
+"If you find an incompatibility or something stops working, un-check 1 option "
+"at a time until you find the problem or review the Audit Trail."
+msgstr ""
+
+#: src/features/firewall.php:65
 msgid "Firewall Blocking"
 msgstr ""
 
-#: src/features/firewall.php:75
+#: src/features/firewall.php:69
 msgid "Choose Firewall Block Response"
 msgstr ""
 
-#: src/features/firewall.php:76
+#: src/features/firewall.php:71
+msgid ""
+"Here you choose how the plugin will respond when it detects malicious data."
+msgstr ""
+
+#: src/features/firewall.php:72
+#, php-format
+msgid "Choose the option \"%s\"."
+msgstr ""
+
+#: src/features/firewall.php:72
+msgid "Die With Message"
+msgstr ""
+
+#: src/features/firewall.php:74
 msgid "Firewall Response"
 msgstr ""
 
-#: src/features/firewall.php:80
+#: src/features/firewall.php:78
 msgid ""
 "Whitelists - IPs, Pages, Parameters, and Users that by-pass the Firewall"
 msgstr ""
 
+#: src/features/firewall.php:80
+msgid ""
+"In principle you should not need to whitelist anything or anyone unless you "
+"have discovered a collision with another plugin."
+msgstr ""
+
 #: src/features/firewall.php:81
+msgid ""
+"Do not whitelist anything unless you are confident in what you are doing."
+msgstr ""
+
+#: src/features/firewall.php:83
 msgid "Whitelist"
 msgstr ""
 
-#: src/features/firewall.php:85
+#: src/features/firewall.php:87
 msgid "Choose IP Addresses To Blacklist"
 msgstr ""
 
-#: src/features/firewall.php:86
-msgid "Blacklist"
+#: src/features/firewall.php:89
+msgid ""
+"IP Address blacklists are nearly completely useless but is provided here in "
+"case absolutely required."
 msgstr ""
 
 #: src/features/firewall.php:90
+msgid ""
+"Do not blacklist anything unless you are confident in what you are doing."
+msgstr ""
+
+#: src/features/firewall.php:92
+msgid "Blacklist"
+msgstr ""
+
+#: src/features/firewall.php:96
 msgid "Firewall Logging Options"
 msgstr ""
 
-#: src/features/firewall.php:91 src/features/login_protect.php:97
-#: src/features/login_protect.php:98
+#: src/features/firewall.php:97 src/features/login_protect.php:158
+#: src/features/login_protect.php:159
 msgid "Logging"
 msgstr ""
 
-#: src/features/firewall.php:121
+#: src/features/firewall.php:130
 msgid "Include Cookies"
 msgstr ""
 
-#: src/features/firewall.php:122
+#: src/features/firewall.php:131
 msgid "Also Test Cookie Values In Firewall Tests"
 msgstr ""
 
-#: src/features/firewall.php:123
+#: src/features/firewall.php:132
 msgid ""
 "The firewall tests GET and POST, but with this option checked it will also "
 "check COOKIE values."
 msgstr ""
 
-#: src/features/firewall.php:127
+#: src/features/firewall.php:136
 msgid "Directory Traversals"
 msgstr ""
 
-#: src/features/firewall.php:128
+#: src/features/firewall.php:137
 msgid "Block Directory Traversals"
 msgstr ""
 
-#: src/features/firewall.php:129
+#: src/features/firewall.php:138
 msgid ""
 "This will block directory traversal paths in in application parameters (e."
 "g. ../, ../../etc/passwd, etc.)."
 msgstr ""
 
-#: src/features/firewall.php:133 src/processors/firewall.php:189
+#: src/features/firewall.php:142 src/processors/firewall.php:174
 msgid "SQL Queries"
 msgstr ""
 
-#: src/features/firewall.php:134
+#: src/features/firewall.php:143
 msgid "Block SQL Queries"
 msgstr ""
 
-#: src/features/firewall.php:135
+#: src/features/firewall.php:144
 msgid ""
 "This will block sql in application parameters (e.g. union select, concat(, /"
 "**/, etc.)."
 msgstr ""
 
-#: src/features/firewall.php:139 src/processors/firewall.php:210
+#: src/features/firewall.php:148 src/processors/firewall.php:195
 msgid "WordPress Terms"
 msgstr ""
 
-#: src/features/firewall.php:140
+#: src/features/firewall.php:149
 msgid "Block WordPress Specific Terms"
 msgstr ""
 
-#: src/features/firewall.php:141
+#: src/features/firewall.php:150
 msgid ""
 "This will block WordPress specific terms in application parameters (wp_, "
 "user_login, etc.)."
 msgstr ""
 
-#: src/features/firewall.php:145 src/processors/firewall.php:227
+#: src/features/firewall.php:154 src/processors/firewall.php:212
 msgid "Field Truncation"
 msgstr ""
 
-#: src/features/firewall.php:146
+#: src/features/firewall.php:155
 msgid "Block Field Truncation Attacks"
 msgstr ""
 
-#: src/features/firewall.php:147
+#: src/features/firewall.php:156
 msgid "This will block field truncation attacks in application parameters."
 msgstr ""
 
-#: src/features/firewall.php:151 src/processors/firewall.php:240
+#: src/features/firewall.php:160 src/processors/firewall.php:225
 msgid "PHP Code"
 msgstr ""
 
-#: src/features/firewall.php:152
+#: src/features/firewall.php:161
 #, php-format
 msgid "Block %s"
 msgstr ""
 
-#: src/features/firewall.php:152
+#: src/features/firewall.php:161
 msgid "PHP Code Includes"
 msgstr ""
 
-#: src/features/firewall.php:153
+#: src/features/firewall.php:162
 msgid "This will block any data that appears to try and include PHP files."
 msgstr ""
 
-#: src/features/firewall.php:154
+#: src/features/firewall.php:163
 msgid "Will probably block saving within the Plugin/Theme file editors."
 msgstr ""
 
-#: src/features/firewall.php:158
+#: src/features/firewall.php:167
 msgid "Exe File Uploads"
 msgstr ""
 
-#: src/features/firewall.php:159
+#: src/features/firewall.php:168
 msgid "Block Executable File Uploads"
 msgstr ""
 
-#: src/features/firewall.php:160
+#: src/features/firewall.php:169
 msgid "This will block executable file uploads (.php, .exe, etc.)."
 msgstr ""
 
-#: src/features/firewall.php:164
+#: src/features/firewall.php:173
 msgid "Leading Schemas"
 msgstr ""
 
-#: src/features/firewall.php:165
+#: src/features/firewall.php:174
 msgid "Block Leading Schemas (HTTPS / HTTP)"
 msgstr ""
 
-#: src/features/firewall.php:166
+#: src/features/firewall.php:175
 msgid ""
 "This will block leading schemas http:// and https:// in application "
 "parameters (off by default; may cause problems with other plugins)."
 msgstr ""
 
-#: src/features/firewall.php:170
+#: src/features/firewall.php:179
 msgid "Block Response"
 msgstr ""
 
-#: src/features/firewall.php:171
+#: src/features/firewall.php:180
 msgid "Choose how the firewall responds when it blocks a request"
 msgstr ""
 
-#: src/features/firewall.php:172
+#: src/features/firewall.php:181
 msgid ""
 "We recommend dying with a message so you know what might have occurred when "
 "the firewall blocks you"
 msgstr ""
 
-#: src/features/firewall.php:176
+#: src/features/firewall.php:185
 msgid "Send Email Report"
 msgstr ""
 
-#: src/features/firewall.php:177
+#: src/features/firewall.php:186
 msgid ""
 "When a visitor is blocked the firewall will send an email to the configured "
 "email address"
 msgstr ""
 
-#: src/features/firewall.php:178
+#: src/features/firewall.php:187
 msgid ""
 "Use with caution - if you get hit by automated bots you may send out too "
 "many emails and you could get blocked by your host"
 msgstr ""
 
-#: src/features/firewall.php:182
+#: src/features/firewall.php:191
 msgid "Whitelist Parameters"
 msgstr ""
 
-#: src/features/firewall.php:183
+#: src/features/firewall.php:192
 msgid ""
 "Detail pages and parameters that are whitelisted (ignored by the firewall)"
 msgstr ""
 
-#: src/features/firewall.php:184
+#: src/features/firewall.php:193
 msgid ""
 "This should be used with caution and you should only provide parameter names "
 "that you must have excluded"
 msgstr ""
 
-#: src/features/firewall.php:188 src/features/firewall.php:189
-#: src/features/firewall.php:194
+#: src/features/firewall.php:197 src/features/firewall.php:198
+#: src/features/firewall.php:203
 #, php-format
 msgid "Ignore %s"
 msgstr ""
 
-#: src/features/firewall.php:188 src/features/firewall.php:189
-#: src/features/login_protect.php:257
+#: src/features/firewall.php:197 src/features/firewall.php:198
+#: src/features/login_protect.php:319
 msgid "Administrators"
 msgstr ""
 
-#: src/features/firewall.php:190
+#: src/features/firewall.php:199
 msgid ""
 "Authenticated administrator users will not be processed by the firewall "
 "rules."
 msgstr ""
 
-#: src/features/firewall.php:194
+#: src/features/firewall.php:203
 msgid "Search Engines"
 msgstr ""
 
-#: src/features/firewall.php:195
+#: src/features/firewall.php:204
 msgid "Ignore Search Engine Bot Traffic"
 msgstr ""
 
-#: src/features/firewall.php:196
+#: src/features/firewall.php:205
 msgid ""
 "The firewall will try to recognise search engine spiders/bots and not apply "
 "firewall rules to them."
 msgstr ""
 
-#: src/features/firewall.php:200
+#: src/features/firewall.php:209
 msgid "Blacklist IP Addresses"
 msgstr ""
 
-#: src/features/firewall.php:201
+#: src/features/firewall.php:210
 msgid "Choose IP Addresses that are always blocked from accessing the site"
 msgstr ""
 
-#: src/features/firewall.php:202
+#: src/features/firewall.php:211
 msgid ""
 "Take a new line per address. Each IP Address must be valid and will be "
 "checked."
 msgstr ""
 
-#: src/features/firewall.php:206
+#: src/features/firewall.php:215
 msgid "Firewall Logging"
 msgstr ""
 
-#: src/features/firewall.php:207
+#: src/features/firewall.php:216
 msgid "Turn on Firewall Log"
 msgstr ""
 
-#: src/features/firewall.php:208
+#: src/features/firewall.php:217
 msgid ""
 "Will log every visit to the site and how the firewall processes it. Not "
 "recommended to leave on unless you want to debug something and check the "
 "firewall is working as you expect"
 msgstr ""
 
-#: src/features/lockdown.php:46
+#: src/features/lockdown.php:43
+msgid ""
+"Lockdown helps secure-up certain loosely-controlled WordPress settings on "
+"your site."
+msgstr ""
+
+#: src/features/lockdown.php:50
 msgid "Permissions and Access Options"
 msgstr ""
 
-#: src/features/lockdown.php:47
+#: src/features/lockdown.php:52
+msgid "Provides finer control of certain WordPress permissions."
+msgstr ""
+
+#: src/features/lockdown.php:53
+msgid "Only enable SSL if you have a valid certificate installed."
+msgstr ""
+
+#: src/features/lockdown.php:55
 msgid "Permissions"
 msgstr ""
 
-#: src/features/lockdown.php:51
+#: src/features/lockdown.php:59
 msgid "WordPress Obscurity Options"
 msgstr ""
 
-#: src/features/lockdown.php:52
+#: src/features/lockdown.php:61
+msgid "Obscures certain WordPress settings from public view."
+msgstr ""
+
+#: src/features/lockdown.php:62
+msgid ""
+"Obscurity is not true security and so these settings are down to your "
+"personal tastes."
+msgstr ""
+
+#: src/features/lockdown.php:64
 msgid "Obscurity"
 msgstr ""
 
-#: src/features/lockdown.php:80
+#: src/features/lockdown.php:93
 msgid "Disable File Editing"
 msgstr ""
 
-#: src/features/lockdown.php:81
+#: src/features/lockdown.php:94
 msgid "Disable Ability To Edit Files From Within WordPress"
 msgstr ""
 
-#: src/features/lockdown.php:82
+#: src/features/lockdown.php:95
 msgid ""
 "Removes the option to directly edit any files from within the WordPress "
 "admin area."
 msgstr ""
 
-#: src/features/lockdown.php:83
+#: src/features/lockdown.php:96
 msgid "Equivalent to setting \"DISALLOW_FILE_EDIT\" to TRUE."
 msgstr ""
 
-#: src/features/lockdown.php:87
+#: src/features/lockdown.php:100
 msgid "Force SSL Login"
 msgstr ""
 
-#: src/features/lockdown.php:88
+#: src/features/lockdown.php:101
 msgid "Forces Login Form To Be Submitted Over SSL"
 msgstr ""
 
-#: src/features/lockdown.php:89 src/features/lockdown.php:96
+#: src/features/lockdown.php:102 src/features/lockdown.php:109
 msgid ""
 "Please only enable this option if you have a valid SSL certificate installed."
 msgstr ""
 
-#: src/features/lockdown.php:90
+#: src/features/lockdown.php:103
 msgid "Equivalent to setting FORCE_SSL_LOGIN to TRUE."
 msgstr ""
 
-#: src/features/lockdown.php:94
+#: src/features/lockdown.php:107
 msgid "Force SSL Admin"
 msgstr ""
 
-#: src/features/lockdown.php:95
+#: src/features/lockdown.php:108
 msgid "Forces WordPress Admin Dashboard To Be Delivered Over SSL"
 msgstr ""
 
-#: src/features/lockdown.php:97
+#: src/features/lockdown.php:110
 msgid "Equivalent to setting \"FORCE_SSL_ADMIN\" to TRUE."
 msgstr ""
 
-#: src/features/lockdown.php:101
+#: src/features/lockdown.php:114
 msgid "Mask WordPress Version"
 msgstr ""
 
-#: src/features/lockdown.php:102
+#: src/features/lockdown.php:115
 msgid "Prevents Public Display Of Your WordPress Version"
 msgstr ""
 
-#: src/features/lockdown.php:103
+#: src/features/lockdown.php:116
 msgid ""
 "Enter how you would like your WordPress version displayed publicly. Leave "
 "blank to disable this feature."
 msgstr ""
 
-#: src/features/lockdown.php:104
+#: src/features/lockdown.php:117
 msgid ""
 "Warning: This may interfere with WordPress plugins that rely on the "
 "$wp_version variable."
 msgstr ""
 
-#: src/features/lockdown.php:108
+#: src/features/lockdown.php:121
 msgid "WP Generator Tag"
 msgstr ""
 
-#: src/features/lockdown.php:109
+#: src/features/lockdown.php:122
 msgid "Remove WP Generator Meta Tag"
 msgstr ""
 
-#: src/features/lockdown.php:110
+#: src/features/lockdown.php:123
 msgid ""
 "Remove a meta tag from your WordPress pages that publicly displays that your "
 "site is WordPress and its current version."
 msgstr ""
 
+#: src/features/login_protect.php:68
+msgid ""
+"Before enabling 2-factor email authentication for your WordPress site, you "
+"must verify you can receive this email."
+msgstr ""
+
+#: src/features/login_protect.php:69
+msgid ""
+"This verifies your website can send email and that your account can receive "
+"emails sent from your site."
+msgstr ""
+
+#: src/features/login_protect.php:70
+#, php-format
+msgid "Verify Link: %s"
+msgstr ""
+
 #: src/features/login_protect.php:72
+#, php-format
+msgid "Email Sending Verification For: %s"
+msgstr ""
+
+#: src/features/login_protect.php:106
+msgid ""
+"Login Protection blocks all automated and brute force attempts to log in to "
+"your site."
+msgstr ""
+
+#: src/features/login_protect.php:113
 msgid "By-Pass Login Protection"
 msgstr ""
 
-#: src/features/login_protect.php:73 src/features/user_management.php:77
+#: src/features/login_protect.php:115 src/features/user_management.php:93
+msgid ""
+"Compatibility with XML-RPC services such as the WordPress iPhone and Android "
+"Apps."
+msgstr ""
+
+#: src/features/login_protect.php:116 src/features/user_management.php:94
+msgid "Keep this turned off unless you know you need it."
+msgstr ""
+
+#: src/features/login_protect.php:118 src/features/user_management.php:96
 msgid "By-Pass"
 msgstr ""
 
-#: src/features/login_protect.php:77
+#: src/features/login_protect.php:122
 msgid "Rename WP Login Page"
 msgstr ""
 
-#: src/features/login_protect.php:78
+#: src/features/login_protect.php:124
+msgid ""
+"To hide your wp-login.php page from brute force attacks and hacking attempts "
+"- if your login page cannot be found, no-one can login."
+msgstr ""
+
+#: src/features/login_protect.php:125
+msgid ""
+"This is not required for complete security and if your site has irregular or "
+"inconsistent configuration it may not work for you."
+msgstr ""
+
+#: src/features/login_protect.php:127
 #, php-format
 msgid "Rename \"%s\""
 msgstr ""
 
-#: src/features/login_protect.php:82
+#: src/features/login_protect.php:131
 msgid "Two-Factor Authentication"
 msgstr ""
 
-#: src/features/login_protect.php:83
+#: src/features/login_protect.php:133 src/features/login_protect.php:151
+msgid ""
+"Verifies the identity of users who log in to your site - i.e. they are who "
+"they say they are."
+msgstr ""
+
+#: src/features/login_protect.php:134
+msgid "However, if your host blocks email sending you may lock yourself out."
+msgstr ""
+
+#: src/features/login_protect.php:136
 msgid "2-Factor Auth"
 msgstr ""
 
-#: src/features/login_protect.php:87
+#: src/features/login_protect.php:140
 msgid "Brute Force Login Protection"
 msgstr ""
 
-#: src/features/login_protect.php:88
+#: src/features/login_protect.php:142
+msgid ""
+"Blocks brute force hacking attacks against your login and registration pages."
+msgstr ""
+
+#: src/features/login_protect.php:145
 msgid "Brute Force"
 msgstr ""
 
-#: src/features/login_protect.php:92
+#: src/features/login_protect.php:149
 msgid "Yubikey Authentication"
 msgstr ""
 
-#: src/features/login_protect.php:93
+#: src/features/login_protect.php:152
+msgid "Note: you must own the appropriate Yubikey hardware device."
+msgstr ""
+
+#: src/features/login_protect.php:154
 msgid "Yubikey"
 msgstr ""
 
-#: src/features/login_protect.php:125 src/features/user_management.php:115
+#: src/features/login_protect.php:187 src/features/user_management.php:143
 msgid "XML-RPC Compatibility"
 msgstr ""
 
-#: src/features/login_protect.php:126
+#: src/features/login_protect.php:188
 msgid "Allow Login Through XML-RPC To By-Pass Login Protection Rules"
 msgstr ""
 
-#: src/features/login_protect.php:127 src/features/user_management.php:117
+#: src/features/login_protect.php:189 src/features/user_management.php:145
 msgid ""
 "Enable this if you need XML-RPC functionality e.g. if you use the WordPress "
 "iPhone/Android App."
 msgstr ""
 
-#: src/features/login_protect.php:131
+#: src/features/login_protect.php:193
 msgid "Rename WP Login"
 msgstr ""
 
-#: src/features/login_protect.php:132
+#: src/features/login_protect.php:194
 msgid "Rename The WordPress Login Page"
 msgstr ""
 
-#: src/features/login_protect.php:133
+#: src/features/login_protect.php:195
 msgid "Creating a path here will disable your wp-login.php"
 msgstr ""
 
-#: src/features/login_protect.php:135
+#: src/features/login_protect.php:197
 #, php-format
 msgid "Only letters and numbers are permitted: %s"
 msgstr ""
 
-#: src/features/login_protect.php:137
+#: src/features/login_protect.php:199
 #, php-format
 msgid "Your current login URL is: %s"
 msgstr ""
 
-#: src/features/login_protect.php:142
+#: src/features/login_protect.php:204
 msgid "Two-Factor Auth User Roles"
 msgstr ""
 
-#: src/features/login_protect.php:143
+#: src/features/login_protect.php:205
 msgid "All User Roles Subject To Two-Factor Authentication"
 msgstr ""
 
-#: src/features/login_protect.php:144
+#: src/features/login_protect.php:206
 msgid ""
 "Select which types of users/roles will be subject to two-factor login "
 "authentication."
 msgstr ""
 
-#: src/features/login_protect.php:148 src/features/login_protect.php:154
+#: src/features/login_protect.php:210 src/features/login_protect.php:216
 #, php-format
 msgid "Two-Factor Authentication (%s)"
 msgstr ""
 
-#: src/features/login_protect.php:148
+#: src/features/login_protect.php:210
 msgid "IP"
 msgstr ""
 
-#: src/features/login_protect.php:149 src/features/login_protect.php:155
+#: src/features/login_protect.php:211 src/features/login_protect.php:217
 #, php-format
 msgid "Two-Factor Login Authentication By %s"
 msgstr ""
 
-#: src/features/login_protect.php:149
-#: views/subfeature-audit_trail_viewer.php:18
-msgid "IP Address"
-msgstr ""
-
-#: src/features/login_protect.php:150
+#: src/features/login_protect.php:212
 msgid ""
 "All users will be required to authenticate their login by email-based two-"
 "factor authentication, when logging in from a new IP address"
 msgstr ""
 
-#: src/features/login_protect.php:154 src/features/login_protect.php:155
+#: src/features/login_protect.php:216 src/features/login_protect.php:217
 msgid "Cookie"
 msgstr ""
 
-#: src/features/login_protect.php:156
+#: src/features/login_protect.php:218
 msgid ""
 "This will restrict all user login sessions to a single browser. Use this if "
 "your users have dynamic IP addresses."
 msgstr ""
 
-#: src/features/login_protect.php:160
+#: src/features/login_protect.php:222
 msgid "By-Pass On Failure"
 msgstr ""
 
-#: src/features/login_protect.php:161
+#: src/features/login_protect.php:223
 msgid ""
 "If Sending Verification Email Sending Fails, Two-Factor Login Authentication "
 "Is Ignored"
 msgstr ""
 
-#: src/features/login_protect.php:162
+#: src/features/login_protect.php:224
 msgid ""
 "If you enable two-factor authentication and sending the email with the "
 "verification link fails, turning this setting on will by-pass the "
 "verification step. Use with caution."
 msgstr ""
 
-#: src/features/login_protect.php:166
+#: src/features/login_protect.php:228
 msgid "User Registration"
 msgstr ""
 
-#: src/features/login_protect.php:167
+#: src/features/login_protect.php:229
 msgid "Apply Brute Force Protection To User Registration And Lost Passwords"
 msgstr ""
 
-#: src/features/login_protect.php:168
+#: src/features/login_protect.php:230
 msgid ""
 "When enabled, settings in this section will also apply to new user "
 "registration and users trying to reset passwords."
 msgstr ""
 
-#: src/features/login_protect.php:172
+#: src/features/login_protect.php:234
 msgid "Login Cooldown Interval"
 msgstr ""
 
-#: src/features/login_protect.php:173
+#: src/features/login_protect.php:235
 msgid "Limit login attempts to every X seconds"
 msgstr ""
 
-#: src/features/login_protect.php:174
+#: src/features/login_protect.php:236
 msgid ""
 "WordPress will process only ONE login attempt for every number of seconds "
 "specified."
 msgstr ""
 
-#: src/features/login_protect.php:175
+#: src/features/login_protect.php:237
 msgid "Zero (0) turns this off."
 msgstr ""
 
-#: src/features/login_protect.php:176
+#: src/features/login_protect.php:238
 #, php-format
 msgid "Default: \"%s\"."
 msgstr ""
 
-#: src/features/login_protect.php:180
+#: src/features/login_protect.php:242
 msgid "G.A.S.P Protection"
 msgstr ""
 
-#: src/features/login_protect.php:181
+#: src/features/login_protect.php:243
 msgid "Use G.A.S.P. Protection To Prevent Login Attempts By Bots"
 msgstr ""
 
-#: src/features/login_protect.php:182
+#: src/features/login_protect.php:244
 msgid ""
 "Adds a dynamically (Javascript) generated checkbox to the login form that "
 "prevents bots using automated login techniques."
 msgstr ""
 
-#: src/features/login_protect.php:183 src/features/login_protect.php:191
-#: views/snippets/state_summary.php:26
+#: src/features/login_protect.php:245 src/features/login_protect.php:253
 msgid "ON"
 msgstr ""
 
-#: src/features/login_protect.php:187
+#: src/features/login_protect.php:249
 msgid "Prevent Remote Login"
 msgstr ""
 
-#: src/features/login_protect.php:188
+#: src/features/login_protect.php:250
 msgid "Prevents Remote Login Attempts From Anywhere Except Your Site"
 msgstr ""
 
-#: src/features/login_protect.php:189
+#: src/features/login_protect.php:251
 msgid "Prevents login by bots attempting to login remotely to your site."
 msgstr ""
 
-#: src/features/login_protect.php:190
+#: src/features/login_protect.php:252
 msgid ""
 "You will not be able to enable this option if your web server does not "
 "support it."
 msgstr ""
 
-#: src/features/login_protect.php:195
+#: src/features/login_protect.php:257
 msgid "Enable Yubikey Authentication"
 msgstr ""
 
-#: src/features/login_protect.php:196
+#: src/features/login_protect.php:258
 msgid "Turn On / Off Yubikey Authentication On This Site"
 msgstr ""
 
-#: src/features/login_protect.php:197
+#: src/features/login_protect.php:259
 msgid ""
 "Combined with your Yubikey API Key (below) this will form the basis of your "
 "Yubikey Authentication"
 msgstr ""
 
-#: src/features/login_protect.php:201
+#: src/features/login_protect.php:263
 msgid "Yubikey App ID"
 msgstr ""
 
-#: src/features/login_protect.php:202
+#: src/features/login_protect.php:264
 msgid "Your Unique Yubikey App ID"
 msgstr ""
 
-#: src/features/login_protect.php:203
+#: src/features/login_protect.php:265
 msgid ""
 "Combined with your Yubikey API Key this will form the basis of your Yubikey "
 "Authentication"
 msgstr ""
 
-#: src/features/login_protect.php:204
+#: src/features/login_protect.php:266
 msgid ""
 "Please review the info link on how to obtain your own Yubikey App ID and API "
 "Key."
 msgstr ""
 
-#: src/features/login_protect.php:208
+#: src/features/login_protect.php:270
 msgid "Yubikey API Key"
 msgstr ""
 
-#: src/features/login_protect.php:209
+#: src/features/login_protect.php:271
 msgid "Your Unique Yubikey App API Key"
 msgstr ""
 
-#: src/features/login_protect.php:210
+#: src/features/login_protect.php:272
 msgid ""
 "Combined with your Yubikey App ID this will form the basis of your Yubikey "
 "Authentication."
 msgstr ""
 
-#: src/features/login_protect.php:211
+#: src/features/login_protect.php:273
 msgid ""
 "Please review the info link on how to get your own Yubikey App ID and API "
 "Key."
 msgstr ""
 
-#: src/features/login_protect.php:215
+#: src/features/login_protect.php:277
 msgid "Yubikey Unique Keys"
 msgstr ""
 
-#: src/features/login_protect.php:216
+#: src/features/login_protect.php:278
 msgid "Permitted \"Username - Yubikey\" Pairs For This Site"
 msgstr ""
 
-#: src/features/login_protect.php:217
+#: src/features/login_protect.php:279
 #, php-format
 msgid "Format: %s"
 msgstr ""
 
-#: src/features/login_protect.php:218
+#: src/features/login_protect.php:280
 msgid "Provide Username<->Yubikey Pairs that are usable for this site."
 msgstr ""
 
-#: src/features/login_protect.php:219
+#: src/features/login_protect.php:281
 msgid ""
 "If a Username if not assigned a Yubikey, Yubikey Authentication is OFF for "
 "that user."
 msgstr ""
 
-#: src/features/login_protect.php:220
+#: src/features/login_protect.php:282
 msgid ""
 "Each [Username,Key] pair should be separated by a new line: you only need to "
 "provide the first 12 characters of the yubikey."
 msgstr ""
 
-#: src/features/login_protect.php:224
+#: src/features/login_protect.php:286
 msgid "Login Protect Logging"
 msgstr ""
 
-#: src/features/login_protect.php:225
+#: src/features/login_protect.php:287
 msgid "Turn on a detailed Login Protect Log"
 msgstr ""
 
-#: src/features/login_protect.php:226
+#: src/features/login_protect.php:288
 msgid ""
 "Will log every event related to login protection and how it is processed. "
 msgstr ""
 
-#: src/features/login_protect.php:227
+#: src/features/login_protect.php:289
 msgid ""
 "Not recommended to leave on unless you want to debug something and check the "
 "login protection is working as you expect."
 msgstr ""
 
-#: src/features/login_protect.php:253
+#: src/features/login_protect.php:315
 msgid "Subscribers"
 msgstr ""
 
-#: src/features/login_protect.php:254
+#: src/features/login_protect.php:316
 msgid "Contributors"
 msgstr ""
 
-#: src/features/login_protect.php:255
+#: src/features/login_protect.php:317
 msgid "Authors"
 msgstr ""
 
-#: src/features/login_protect.php:256
+#: src/features/login_protect.php:318
 msgid "Editors"
 msgstr ""
 
-#: src/features/plugin.php:58
+#: src/features/plugin.php:25
 #, php-format
 msgid "%s Plugin options updated successfully."
 msgstr ""
 
-#: src/features/plugin.php:182
+#: src/features/plugin.php:149
 msgid "Sorry, you do not have permission to disable this plugin."
 msgstr ""
 
-#: src/features/plugin.php:183
+#: src/features/plugin.php:150
 msgid "You need to authenticate first."
 msgstr ""
 
-#: src/features/plugin.php:212
+#: src/features/plugin.php:179
 msgid "Global Plugin Security Options"
 msgstr ""
 
-#: src/features/plugin.php:213
+#: src/features/plugin.php:180
 msgid "Global Options"
 msgstr ""
 
-#: src/features/plugin.php:217
+#: src/features/plugin.php:184
 msgid "General Plugin Options"
 msgstr ""
 
-#: src/features/plugin.php:218
+#: src/features/plugin.php:185
 msgid "General Options"
 msgstr ""
 
-#: src/features/plugin.php:240
+#: src/features/plugin.php:208
 msgid "Enable Features"
 msgstr ""
 
-#: src/features/plugin.php:241
+#: src/features/plugin.php:209
 msgid "Global Plugin On/Off Switch"
 msgstr ""
 
-#: src/features/plugin.php:242
-msgid "Uncheck this option to disable all WordPress Simple Firewall features."
+#: src/features/plugin.php:210
+#, php-format
+msgid "Uncheck this option to disable all %s features."
 msgstr ""
 
-#: src/features/plugin.php:246
+#: src/features/plugin.php:214
 msgid "IP Whitelist"
 msgstr ""
 
-#: src/features/plugin.php:247
+#: src/features/plugin.php:215
 msgid "IP Address White List"
 msgstr ""
 
-#: src/features/plugin.php:248
+#: src/features/plugin.php:216
 msgid ""
 "Any IP addresses on this list will by-pass all Plugin Security Checking."
 msgstr ""
 
-#: src/features/plugin.php:249
-#: views/snippets/admin_notice_vistor_whitelisted.php:6
+#: src/features/plugin.php:217 src/processors/plugin.php:88
 #, php-format
 msgid "Your IP address is: %s"
 msgstr ""
 
-#: src/features/plugin.php:255
+#: src/features/plugin.php:223
 #, php-format
 msgid "If this is empty, it will default to the blog admin email address: %s"
 msgstr ""
 
-#: src/features/plugin.php:259
+#: src/features/plugin.php:227
 msgid "In-Plugin Notices"
 msgstr ""
 
-#: src/features/plugin.php:260
+#: src/features/plugin.php:228
 msgid "Display Plugin Specific Notices"
 msgstr ""
 
-#: src/features/plugin.php:261
+#: src/features/plugin.php:229
 msgid ""
 "Disable this option to hide certain plugin admin notices about available "
 "updates and post-update notices."
 msgstr ""
 
-#: src/features/plugin.php:265
+#: src/features/plugin.php:233
 msgid "Show Plugin Badge"
 msgstr ""
 
-#: src/features/plugin.php:266
+#: src/features/plugin.php:234
 msgid "Display Plugin Badge On Your Site"
 msgstr ""
 
-#: src/features/plugin.php:267
+#: src/features/plugin.php:235
 msgid ""
 "Enabling this option helps support the plugin by spreading the word about it "
 "on your website."
 msgstr ""
 
-#: src/features/plugin.php:268
+#: src/features/plugin.php:236
 msgid ""
 "The plugin badge also lets visitors know your are taking your website "
 "security seriously."
 msgstr ""
 
-#: src/features/plugin.php:269
+#: src/features/plugin.php:237
 msgid "Read this carefully before enabling this option."
 msgstr ""
 
-#: src/features/plugin.php:273
+#: src/features/plugin.php:241
 msgid "Delete Plugin Settings"
 msgstr ""
 
-#: src/features/plugin.php:274
+#: src/features/plugin.php:242
 msgid "Delete All Plugin Settings Upon Plugin Deactivation"
 msgstr ""
 
-#: src/features/plugin.php:275
+#: src/features/plugin.php:243
 msgid "Careful: Removes all plugin options when you deactivate the plugin"
 msgstr ""
 
-#: src/features/user_management.php:76
+#: src/features/user_management.php:49
+#, php-format
+msgid "now: %s"
+msgstr ""
+
+#: src/features/user_management.php:60
+msgid "Current User Sessions"
+msgstr ""
+
+#: src/features/user_management.php:62
+msgid "Logged In At"
+msgstr ""
+
+#: src/features/user_management.php:63
+msgid "Last Activity At"
+msgstr ""
+
+#: src/features/user_management.php:64
+msgid "Last Activity URI"
+msgstr ""
+
+#: src/features/user_management.php:65
+msgid "Login IP"
+msgstr ""
+
+#: src/features/user_management.php:66
+msgid "Login Attempts"
+msgstr ""
+
+#: src/features/user_management.php:67
+msgid ""
+"You need to enable the User Management feature to view and manage user "
+"sessions."
+msgstr ""
+
+#: src/features/user_management.php:84
+msgid ""
+"User Management offers real user sessions, finer control over user session "
+"time-out, and ensures users have logged-in in a correct manner."
+msgstr ""
+
+#: src/features/user_management.php:91
 msgid "By-Pass User Accounts Management"
 msgstr ""
 
-#: src/features/user_management.php:81
+#: src/features/user_management.php:100
 msgid "Admin Login Notification"
 msgstr ""
 
-#: src/features/user_management.php:86
+#: src/features/user_management.php:102
+msgid ""
+"So you can be made aware of when a WordPress administrator has logged into "
+"your site when you are not expecting it."
+msgstr ""
+
+#: src/features/user_management.php:109
 msgid "User Session Management"
 msgstr ""
 
-#: src/features/user_management.php:87
+#: src/features/user_management.php:111
+msgid ""
+"Allows you to better control user sessions on your site and expire idle "
+"sessions and prevent account sharing."
+msgstr ""
+
+#: src/features/user_management.php:114
 msgid "Session Options"
 msgstr ""
 
-#: src/features/user_management.php:116
+#: src/features/user_management.php:144
 msgid "Allow Login Through XML-RPC To By-Pass Accounts Management Rules"
 msgstr ""
 
-#: src/features/user_management.php:121
+#: src/features/user_management.php:149
 msgid "Admin Login Notification Email"
 msgstr ""
 
-#: src/features/user_management.php:122
+#: src/features/user_management.php:150
 msgid "Send An Notification Email When Administrator Logs In"
 msgstr ""
 
-#: src/features/user_management.php:123
+#: src/features/user_management.php:151
 msgid ""
 "If you would like to be notified every time an administrator user logs into "
 "this WordPress site, enter a notification email address."
 msgstr ""
 
-#: src/features/user_management.php:124
+#: src/features/user_management.php:152
 msgid "No email address - No Notification."
 msgstr ""
 
-#: src/features/user_management.php:128
+#: src/features/user_management.php:156
 msgid "Session Timeout"
 msgstr ""
 
-#: src/features/user_management.php:129
+#: src/features/user_management.php:157
 msgid "Specify How Many Days After Login To Automatically Force Re-Login"
 msgstr ""
 
-#: src/features/user_management.php:130
+#: src/features/user_management.php:158
 msgid ""
 "WordPress default is 2 days, or 14 days if you check the \"Remember Me\" box."
 msgstr ""
 
-#: src/features/user_management.php:131
+#: src/features/user_management.php:159
 #, php-format
 msgid "This cannot be less than %s."
 msgstr ""
 
-#: src/features/user_management.php:132
+#: src/features/user_management.php:160
 #, php-format
 msgid "Default: %s."
 msgstr ""
 
-#: src/features/user_management.php:136
+#: src/features/user_management.php:164
 msgid "Idle Timeout"
 msgstr ""
 
-#: src/features/user_management.php:137
+#: src/features/user_management.php:165
 msgid "Specify How Many Hours After Inactivity To Automatically Logout User"
 msgstr ""
 
-#: src/features/user_management.php:138
+#: src/features/user_management.php:166
 msgid ""
 "If the user is inactive for the number of hours specified, they will be "
 "forcefully logged out next time they return."
 msgstr ""
 
-#: src/features/user_management.php:139
+#: src/features/user_management.php:167
 #, php-format
 msgid "Set to %s to turn off this option."
 msgstr ""
 
-#: src/features/user_management.php:143
+#: src/features/user_management.php:171
 msgid "Lock To Location"
 msgstr ""
 
-#: src/features/user_management.php:144
+#: src/features/user_management.php:172
 msgid "Locks A User Session To IP address"
 msgstr ""
 
-#: src/features/user_management.php:145
+#: src/features/user_management.php:173
 msgid ""
 "When selected, a session is restricted to the same IP address as when the "
 "user logged in."
 msgstr ""
 
-#: src/features/user_management.php:146
+#: src/features/user_management.php:174
 msgid ""
 "If a logged-in user's IP address changes, the session will be invalidated "
 "and they'll be forced to re-login to WordPress."
 msgstr ""
 
-#: src/features/user_management.php:150
+#: src/features/user_management.php:178
 msgid "Max Simultaneous Sessions"
 msgstr ""
 
-#: src/features/user_management.php:151
+#: src/features/user_management.php:179
 msgid "Limit Simultaneous Sessions For The Same Username"
 msgstr ""
 
-#: src/features/user_management.php:152
+#: src/features/user_management.php:180
 msgid ""
 "The number provided here is the maximum number of simultaneous, distinct, "
 "sessions allowed for any given username."
 msgstr ""
 
-#: src/features/user_management.php:153
+#: src/features/user_management.php:181
 msgid "Zero (0) will allow unlimited simultaneous sessions."
 msgstr ""
 
-#: src/features/user_management.php:157
+#: src/features/user_management.php:185
 msgid "Check Admin Area Only"
 msgstr ""
 
-#: src/features/user_management.php:158
+#: src/features/user_management.php:186
 msgid "Perform Session Checking For Logged In Users Only In Admin Area"
 msgstr ""
 
-#: src/features/user_management.php:159
+#: src/features/user_management.php:187
 msgid ""
 "When selected, session timeouts will only be checked on visits to the "
 "WordPress admin area."
 msgstr ""
 
-#: src/features/user_management.php:163
+#: src/features/user_management.php:191
 msgid "Auto Redirect To Admin"
 msgstr ""
 
-#: src/features/user_management.php:164
+#: src/features/user_management.php:192
 msgid "Automatically Redirect To WP Admin When Valid Session Detected"
 msgstr ""
 
-#: src/features/user_management.php:165
+#: src/features/user_management.php:193
 msgid ""
 "When selected, users will be automatically forwarded to the WordPress admin "
 "screen when they visit wp-login.php."
 msgstr ""
 
-#: src/features/user_management.php:166
+#: src/features/user_management.php:194
 msgid ""
 "It removes the extra step to get to the admin screen for already-"
 "authenticated users."
 msgstr ""
 
-#: src/processors/audit_trail_emails.php:44
+#: src/processors/audit_trail_emails.php:29
 #, php-format
 msgid "There was an attempt to send an email using the \"%s\" function."
 msgstr ""
 
-#: src/processors/audit_trail_emails.php:45
+#: src/processors/audit_trail_emails.php:30
 #, php-format
 msgid "It was sent to \"%s\" with the subject \"%s\"."
 msgstr ""
 
-#: src/processors/audit_trail_plugins.php:47
+#: src/processors/audit_trail_plugins.php:32
 #, php-format
 msgid "Plugin \"%s\" was activated."
 msgstr ""
 
-#: src/processors/audit_trail_plugins.php:64
+#: src/processors/audit_trail_plugins.php:49
 #, php-format
 msgid "Plugin \"%s\" was deactivated."
 msgstr ""
 
-#: src/processors/audit_trail_plugins.php:86
+#: src/processors/audit_trail_plugins.php:71
 #, php-format
 msgid ""
 "An attempt was made to edit the plugin file \"%s\" directly through the "
 "WordPress editor."
 msgstr ""
 
-#: src/processors/audit_trail_posts.php:49
+#: src/processors/audit_trail_posts.php:34
 #, php-format
 msgid "WordPress Post entitled \"%s\" was permanently deleted from trash."
 msgstr ""
 
-#: src/processors/audit_trail_posts.php:69
+#: src/processors/audit_trail_posts.php:54
 msgid "moved to trash"
 msgstr ""
 
-#: src/processors/audit_trail_posts.php:73
+#: src/processors/audit_trail_posts.php:58
 msgid "recovered from trash"
 msgstr ""
 
-#: src/processors/audit_trail_posts.php:77
+#: src/processors/audit_trail_posts.php:62
 msgid "published"
 msgstr ""
 
-#: src/processors/audit_trail_posts.php:81
+#: src/processors/audit_trail_posts.php:66
 msgid "unpublished"
 msgstr ""
 
-#: src/processors/audit_trail_posts.php:85
+#: src/processors/audit_trail_posts.php:70
 msgid "updated"
 msgstr ""
 
-#: src/processors/audit_trail_posts.php:93
+#: src/processors/audit_trail_posts.php:78
 #, php-format
 msgid "Post entitled \"%s\" was %s."
 msgstr ""
 
-#: src/processors/audit_trail_themes.php:47
+#: src/processors/audit_trail_themes.php:32
 #, php-format
 msgid "Theme \"%s\" was activated."
 msgstr ""
 
-#: src/processors/audit_trail_themes.php:69
+#: src/processors/audit_trail_themes.php:54
 #, php-format
 msgid ""
 "An attempt was made to edit the theme file \"%s\" directly through the "
 "WordPress editor."
 msgstr ""
 
-#: src/processors/audit_trail_users.php:49
+#: src/processors/audit_trail_users.php:34
 #, php-format
 msgid "Attempted user login by \"%s\" was successful."
 msgstr ""
 
-#: src/processors/audit_trail_users.php:68
+#: src/processors/audit_trail_users.php:53
 #, php-format
 msgid "Attempted user login by \"%s\" failed."
 msgstr ""
 
-#: src/processors/audit_trail_users.php:88
+#: src/processors/audit_trail_users.php:73
 msgid "New WordPress user registered."
 msgstr ""
 
-#: src/processors/audit_trail_users.php:90
+#: src/processors/audit_trail_users.php:75
 #, php-format
 msgid "New username is \"%s\" with email address \"%s\"."
 msgstr ""
 
-#: src/processors/audit_trail_users.php:112
+#: src/processors/audit_trail_users.php:97
 msgid "WordPress user deleted."
 msgstr ""
 
-#: src/processors/audit_trail_users.php:114
+#: src/processors/audit_trail_users.php:99
 #, php-format
 msgid "Username was \"%s\" with email address \"%s\"."
 msgstr ""
 
-#: src/processors/audit_trail_users.php:119
+#: src/processors/audit_trail_users.php:104
 msgid "Their posts were not reassigned to another user."
 msgstr ""
 
-#: src/processors/audit_trail_users.php:123
+#: src/processors/audit_trail_users.php:108
 #, php-format
 msgid "Their posts were reassigned to user \"%s\"."
 msgstr ""
 
-#: src/processors/audit_trail_wordpress.php:45
+#: src/processors/audit_trail_wordpress.php:30
 #, php-format
 msgid "WordPress Core was updated from \"v%s\" to \"v%s\"."
 msgstr ""
 
-#: src/processors/audit_trail_wordpress.php:60
+#: src/processors/audit_trail_wordpress.php:45
 #, php-format
 msgid "WordPress Permalinks Structure was updated from \"%s\" to \"%s\"."
 msgstr ""
 
-#: src/processors/comments_filter.php:70
+#: src/processors/comments_filter.php:61
 msgid ""
-"It appears you have Akismet Anti-SPAM running alongside the Simple Firewall "
-"Anti-SPAM."
+"It appears you have Akismet Anti-SPAM running alongside the our human Anti-"
+"SPAM filter."
 msgstr ""
 
-#: src/processors/comments_filter.php:71
+#: src/processors/comments_filter.php:62
 msgid "This is not recommended and you should disable Akismet."
 msgstr ""
 
-#: src/processors/comments_filter.php:75
-msgid "Click to deactivate Akismet now"
+#: src/processors/comments_filter.php:63
+msgid "Click to deactivate Akismet now."
 msgstr ""
 
-#: src/processors/commentsfilter_antibotspam.php:181
-#: src/processors/commentsfilter_antibotspam.php:186
-#: src/processors/commentsfilter_antibotspam.php:191
+#: src/processors/commentsfilter_antibotspam.php:166
+#: src/processors/commentsfilter_antibotspam.php:171
+#: src/processors/commentsfilter_antibotspam.php:176
 #, php-format
 msgid "Failed GASP Bot Filter Test (%s)"
 msgstr ""
 
-#: src/processors/commentsfilter_antibotspam.php:181
+#: src/processors/commentsfilter_antibotspam.php:166
 msgid "checkbox"
 msgstr ""
 
-#: src/processors/commentsfilter_antibotspam.php:186
+#: src/processors/commentsfilter_antibotspam.php:171
 msgid "honeypot"
 msgstr ""
 
-#: src/processors/commentsfilter_antibotspam.php:191
+#: src/processors/commentsfilter_antibotspam.php:176
 msgid "comment token failure"
 msgstr ""
 
-#: src/processors/commentsfilter_antibotspam.php:495
-#: src/processors/commentsfilter_humanspam.php:290
+#: src/processors/commentsfilter_antibotspam.php:480
 #, php-format
-msgid ""
-"WordPress Simple Firewall plugin marked this comment as \"%s\" because: %s."
+msgid "%s plugin marked this comment as \"%s\"."
 msgstr ""
 
-#: src/processors/commentsfilter_humanspam.php:205
+#: src/processors/commentsfilter_antibotspam.php:480
+#, php-format
+msgid "Reason: %s"
+msgstr ""
+
+#: src/processors/commentsfilter_humanspam.php:190
 #, php-format
 msgid "Human SPAM filter found \"%s\" in \"%s\""
 msgstr ""
 
-#: src/processors/commentsfilter_humanspam.php:291
+#: src/processors/commentsfilter_humanspam.php:275
+#, php-format
+msgid "%s plugin marked this comment as \"%s\" because: %s."
+msgstr ""
+
+#: src/processors/commentsfilter_humanspam.php:276
 msgid "pending"
 msgstr ""
 
-#: src/processors/firewall.php:63
+#: src/processors/firewall.php:48
 #, php-format
 msgid "You were blocked by the %s."
 msgstr ""
 
-#: src/processors/firewall.php:104 src/processors/firewall.php:125
+#: src/processors/firewall.php:89 src/processors/firewall.php:110
 #, php-format
 msgid "Skipping firewall checking for this visit: %s."
 msgstr ""
 
-#: src/processors/firewall.php:104
+#: src/processors/firewall.php:89
 msgid "Parsing the URI failed"
 msgstr ""
 
-#: src/processors/firewall.php:118
+#: src/processors/firewall.php:103
 msgid "Visitor was black-listed by IP Address."
 msgstr ""
 
-#: src/processors/firewall.php:119
+#: src/processors/firewall.php:104
 #, php-format
 msgid "Label: %s."
 msgstr ""
 
-#: src/processors/firewall.php:119
+#: src/processors/firewall.php:104
 msgid "No label"
 msgstr ""
 
-#: src/processors/firewall.php:125
+#: src/processors/firewall.php:110
 msgid "Visitor detected as Search Engine Bot"
 msgstr ""
 
-#: src/processors/firewall.php:174 src/processors/firewall.php:189
-#: src/processors/firewall.php:210 src/processors/firewall.php:227
-#: src/processors/firewall.php:240 src/processors/firewall.php:262
-#: src/processors/firewall.php:277
+#: src/processors/firewall.php:159 src/processors/firewall.php:174
+#: src/processors/firewall.php:195 src/processors/firewall.php:212
+#: src/processors/firewall.php:225 src/processors/firewall.php:247
+#: src/processors/firewall.php:262
 #, php-format
 msgid "Firewall Trigger: %s."
 msgstr ""
 
-#: src/processors/firewall.php:174
+#: src/processors/firewall.php:159
 msgid "Directory Traversal"
 msgstr ""
 
-#: src/processors/firewall.php:262
+#: src/processors/firewall.php:247
 msgid "EXE File Uploads"
 msgstr ""
 
-#: src/processors/firewall.php:277
+#: src/processors/firewall.php:262
 msgid "Leading Schema"
 msgstr ""
 
-#: src/processors/firewall.php:324
+#: src/processors/firewall.php:309
 msgid "Something in the URL, Form or Cookie data wasn't appropriate."
 msgstr ""
 
-#: src/processors/firewall.php:325
+#: src/processors/firewall.php:310
 msgid "Page parameter failed firewall check."
 msgstr ""
 
-#: src/processors/firewall.php:326
+#: src/processors/firewall.php:311
 #, php-format
 msgid "The offending parameter was \"%s\" with a value of \"%s\"."
 msgstr ""
 
-#: src/processors/firewall.php:345 src/processors/firewall.php:348
-#: src/processors/firewall.php:351 src/processors/firewall.php:354
-#: src/processors/firewall.php:357
+#: src/processors/firewall.php:330 src/processors/firewall.php:333
+#: src/processors/firewall.php:336 src/processors/firewall.php:339
+#: src/processors/firewall.php:342
 #, php-format
 msgid "Firewall Block Response: %s."
 msgstr ""
 
-#: src/processors/firewall.php:345
+#: src/processors/firewall.php:330
 msgid "Visitor connection was killed with wp_die()"
 msgstr ""
 
-#: src/processors/firewall.php:348 src/processors/firewall.php:357
+#: src/processors/firewall.php:333 src/processors/firewall.php:342
 msgid "Visitor connection was killed with wp_die() and a message"
 msgstr ""
 
-#: src/processors/firewall.php:351
+#: src/processors/firewall.php:336
 msgid "Visitor was sent HOME"
 msgstr ""
 
-#: src/processors/firewall.php:354
+#: src/processors/firewall.php:339
 msgid "Visitor was sent 404"
 msgstr ""
 
-#: src/processors/firewall.php:368
+#: src/processors/firewall.php:353
 #, php-format
 msgid "Successfully sent Firewall Block email alert to: %s"
 msgstr ""
 
-#: src/processors/firewall.php:371
+#: src/processors/firewall.php:356
 #, php-format
 msgid "Failed to send Firewall Block email alert to: %s"
 msgstr ""
 
-#: src/processors/firewall.php:511
-msgid "WordPress Simple Firewall has blocked a page visit to your site."
+#: src/processors/firewall.php:496
+#, php-format
+msgid "%s has blocked a page visit to your site."
 msgstr ""
 
-#: src/processors/firewall.php:512
+#: src/processors/firewall.php:497
 msgid "Log details for this visitor are below:"
 msgstr ""
 
-#: src/processors/firewall.php:513
-#: src/processors/loginprotect_twofactorauth.php:431
-#: src/processors/user_management.php:144
+#: src/processors/firewall.php:498
+#: src/processors/loginprotect_twofactorauth.php:423
+#: src/processors/user_management.php:129
 #, php-format
 msgid "IP Address: %s"
 msgstr ""
 
-#: src/processors/firewall.php:517
+#: src/processors/firewall.php:502
 #, php-format
 msgid "You can look up the offending IP Address here: %s"
 msgstr ""
 
-#: src/processors/firewall.php:518
+#: src/processors/firewall.php:503
 #, php-format
 msgid "Firewall Block Email Alert: %s"
 msgstr ""
 
+#: src/processors/hack_protect.php:33
+#, php-format
+msgid "%s escaped HTML the following comment due to its size: %s"
+msgstr ""
+
+#: src/processors/login_protect.php:110
+msgid ""
+"Before completing activation of email-based two-factor authentication we "
+"need you to confirm your site can send emails."
+msgstr ""
+
+#: src/processors/login_protect.php:111
+msgid "Please click the link in the email you received."
+msgstr ""
+
 #: src/processors/login_protect.php:112
+#, php-format
+msgid "The email has been sent to you at blog admin address: %s"
+msgstr ""
+
+#: src/processors/login_protect.php:113
+msgid "To have this email resent, re-save your Login Protection settings."
+msgstr ""
+
+#: src/processors/login_protect.php:114
+msgid "To turn this notice off, disable Two Factor authentication."
+msgstr ""
+
+#: src/processors/login_protect.php:135
 msgid ""
 "Your Two-Factor Authentication was un-verified or invalidated by a login "
 "from another location or browser."
 msgstr ""
 
-#: src/processors/login_protect.php:112
-#: src/processors/usermanagement_sessions.php:442
+#: src/processors/login_protect.php:135
+#: src/processors/usermanagement_sessions.php:427
 msgid "Please login again."
 msgstr ""
 
-#: src/processors/login_protect.php:137
+#: src/processors/login_protect.php:160
 #, php-format
 msgid ""
 "Blocked remote %s attempt by user \"%s\", where HTTP_REFERER was \"%s\"."
 msgstr ""
 
-#: src/processors/login_protect.php:138
-#: src/processors/loginprotect_cooldown.php:71
-#: src/processors/loginprotect_gasp.php:72
+#: src/processors/login_protect.php:161
+#: src/processors/loginprotect_cooldown.php:56
+#: src/processors/loginprotect_gasp.php:57
 msgid "login"
 msgstr ""
 
-#: src/processors/login_protect.php:138
-#: src/processors/loginprotect_cooldown.php:71
-#: src/processors/loginprotect_gasp.php:84
+#: src/processors/login_protect.php:161
+#: src/processors/loginprotect_cooldown.php:56
+#: src/processors/loginprotect_gasp.php:69
 msgid "register"
 msgstr ""
 
-#: src/processors/login_protect.php:145
+#: src/processors/login_protect.php:168
 msgid "Sorry, you must login directly from within the site."
 msgstr ""
 
-#: src/processors/login_protect.php:146
+#: src/processors/login_protect.php:169
 msgid "Remote login is not supported."
 msgstr ""
 
-#: src/processors/login_protect.php:147 views/icwp_options_helper.php:186
-msgid "More Info"
-msgstr ""
-
-#: src/processors/loginprotect_cooldown.php:69
+#: src/processors/loginprotect_cooldown.php:54
 msgid "Login Cooldown in effect."
 msgstr ""
 
-#: src/processors/loginprotect_cooldown.php:69
+#: src/processors/loginprotect_cooldown.php:54
 #, php-format
 msgid "You must wait %s seconds before attempting to %s again."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:76
-#: src/processors/loginprotect_gasp.php:88
-#: src/processors/loginprotect_gasp.php:100
+#: src/processors/loginprotect_gasp.php:61
+#: src/processors/loginprotect_gasp.php:73
+#: src/processors/loginprotect_gasp.php:85
 msgid "G.A.S.P. Checking Failed."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:96
+#: src/processors/loginprotect_gasp.php:81
 msgid "reset-password"
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:108
+#: src/processors/loginprotect_gasp.php:93
 msgid "I'm a human."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:109
+#: src/processors/loginprotect_gasp.php:94
 msgid "Please check the box to show us you're a human."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:151
+#: src/processors/loginprotect_gasp.php:136
 msgid "You MUST enable Javascript to be able to login"
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:178
+#: src/processors/loginprotect_gasp.php:163
 #, php-format
 msgid "User \"%s\" attempted to %s but GASP checkbox was not present."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:178
-#: src/processors/loginprotect_gasp.php:185
+#: src/processors/loginprotect_gasp.php:163
+#: src/processors/loginprotect_gasp.php:170
 msgid "Probably a BOT."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:181
+#: src/processors/loginprotect_gasp.php:166
 msgid "You must check that box to say you're not a bot."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:185
+#: src/processors/loginprotect_gasp.php:170
 #, php-format
 msgid "User \"%s\" attempted to %s but they were caught by the GASP honeypot."
 msgstr ""
 
-#: src/processors/loginprotect_gasp.php:188
+#: src/processors/loginprotect_gasp.php:173
 #, php-format
 msgid "You appear to be a bot - terminating %s attempt."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:71
+#: src/processors/loginprotect_twofactorauth.php:63
 #, php-format
 msgid ""
 "User \"%s\" was forcefully logged out as they were not verified by either "
 "cookie or IP address (or both)."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:109
+#: src/processors/loginprotect_twofactorauth.php:101
 #, php-format
 msgid ""
 "User \"%s\" was found to be un-verified at the given IP Address: \"%s\"."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:138
+#: src/processors/loginprotect_twofactorauth.php:130
 #, php-format
 msgid "User \"%s\" verified their identity using Two-Factor Authentication."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:211
+#: src/processors/loginprotect_twofactorauth.php:203
 msgid "Login is protected by 2-factor authentication."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:212
+#: src/processors/loginprotect_twofactorauth.php:204
 msgid ""
 "If your login details were correct, you will have received an email to "
 "complete the login process."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:427
+#: src/processors/loginprotect_twofactorauth.php:419
 msgid ""
 "You, or someone pretending to be you, just attempted to login into your "
 "WordPress site."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:428
+#: src/processors/loginprotect_twofactorauth.php:420
 msgid ""
 "The IP Address / Cookie from which they tried to login is not currently "
 "verified."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:429
+#: src/processors/loginprotect_twofactorauth.php:421
 msgid "Click the following link to validate and complete the login process."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:429
+#: src/processors/loginprotect_twofactorauth.php:421
 msgid "You will be logged in automatically upon successful authentication."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:430
-#: src/processors/user_management.php:143
+#: src/processors/loginprotect_twofactorauth.php:422
+#: src/processors/user_management.php:128
 #, php-format
 msgid "Username: %s"
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:432
+#: src/processors/loginprotect_twofactorauth.php:424
 #, php-format
 msgid "Authentication Link: %s"
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:434
+#: src/processors/loginprotect_twofactorauth.php:426
 #, php-format
 msgid "Two-Factor Login Verification for: %s"
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:441
+#: src/processors/loginprotect_twofactorauth.php:433
 #, php-format
 msgid ""
 "User \"%s\" was sent an email to verify their Identity using Two-Factor "
 "Login Auth for IP address \"%s\"."
 msgstr ""
 
-#: src/processors/loginprotect_twofactorauth.php:445
+#: src/processors/loginprotect_twofactorauth.php:437
 #, php-format
 msgid ""
 "Tried to send email to User \"%s\" to verify their identity using Two-Factor "
 "Login Auth for IP address \"%s\", but email sending failed."
 msgstr ""
 
-#: src/processors/loginprotect_wplogin.php:63
-#: src/processors/loginprotect_wplogin.php:73
-#: src/processors/loginprotect_wplogin.php:83
-#: src/processors/loginprotect_wplogin.php:96
+#: src/processors/loginprotect_wplogin.php:48
+#: src/processors/loginprotect_wplogin.php:58
+#: src/processors/loginprotect_wplogin.php:68
+#: src/processors/loginprotect_wplogin.php:81
 msgid "Warning"
 msgstr ""
 
-#: src/processors/loginprotect_wplogin.php:64
+#: src/processors/loginprotect_wplogin.php:49
 msgid ""
 "Your login URL is unchanged because the Rename WP Login feature is not "
 "currently supported on WPMS."
 msgstr ""
 
-#: src/processors/loginprotect_wplogin.php:74
+#: src/processors/loginprotect_wplogin.php:59
 msgid ""
 "Can not use the Rename WP Login feature because you have the \"Rename WP "
 "Login\" plugin installed and active."
 msgstr ""
 
-#: src/processors/loginprotect_wplogin.php:85
+#: src/processors/loginprotect_wplogin.php:70
 #, php-format
 msgid ""
 "Can not use the Rename WP Login feature because you have not enabled %s."
 msgstr ""
 
-#: src/processors/loginprotect_wplogin.php:97
+#: src/processors/loginprotect_wplogin.php:82
 msgid ""
 "Can not use the Rename WP Login feature because you have chosen a path that "
 "is already reserved on your WordPress site."
 msgstr ""
 
-#: src/processors/loginprotect_yubikey.php:72
+#: src/processors/loginprotect_yubikey.php:57
 #, php-format
 msgid ""
 "User \"%s\" logged in without a Yubikey One Time Password because no "
 "username-yubikey pair was found for this user."
 msgstr ""
 
-#: src/processors/loginprotect_yubikey.php:81
-#: src/processors/loginprotect_yubikey.php:101
-#: src/processors/loginprotect_yubikey.php:117
+#: src/processors/loginprotect_yubikey.php:66
+#: src/processors/loginprotect_yubikey.php:86
+#: src/processors/loginprotect_yubikey.php:102
 #, php-format
 msgid "ERROR: %s"
 msgstr ""
 
-#: src/processors/loginprotect_yubikey.php:81
+#: src/processors/loginprotect_yubikey.php:66
 msgid ""
 "The Yubikey provided is not on the list of permitted keys for this user."
 msgstr ""
 
-#: src/processors/loginprotect_yubikey.php:83
+#: src/processors/loginprotect_yubikey.php:68
 #, php-format
 msgid ""
 "User \"%s\" attempted to login but Yubikey ID \"%s\" used was not in list of "
 "authorised keys."
 msgstr ""
 
-#: src/processors/loginprotect_yubikey.php:101
-#: src/processors/loginprotect_yubikey.php:117
+#: src/processors/loginprotect_yubikey.php:86
+#: src/processors/loginprotect_yubikey.php:102
 msgid "The Yubikey authentication was not validated successfully."
 msgstr ""
 
-#: src/processors/loginprotect_yubikey.php:103
+#: src/processors/loginprotect_yubikey.php:88
 #, php-format
 msgid ""
 "User \"%s\" attempted to login but Yubikey One Time Password failed to "
 "validate due to invalid Yubi API."
 msgstr ""
 
-#: src/processors/loginprotect_yubikey.php:119
+#: src/processors/loginprotect_yubikey.php:104
 #, php-format
 msgid ""
 "User \"%s\" attempted to login but Yubikey One Time Password failed to "
 "validate due to invalid Yubi API response status: \"%s\"."
 msgstr ""
 
-#: src/processors/loginprotect_yubikey.php:124
+#: src/processors/loginprotect_yubikey.php:109
 #, php-format
 msgid ""
 "User \"%s\" successfully logged in using a validated Yubikey One Time "
 "Password."
 msgstr ""
 
-#: src/processors/loginprotect_yubikey.php:139
+#: src/processors/loginprotect_yubikey.php:124
 msgid "Yubikey OTP"
 msgstr ""
 
-#: src/processors/plugin.php:193
-#, php-format
-msgid "There is an update available for your WordPress Security plugin: %s."
-msgstr ""
-
-#: src/processors/plugin.php:194
-msgid "Please click to update immediately"
-msgstr ""
-
-#: src/processors/plugin.php:217
-#, php-format
-msgid ""
-"Note: The %s plugin does not automatically turn on features when you install."
-msgstr ""
-
-#: src/processors/plugin.php:223
-#, php-format
-msgid ""
-"Note: The %s plugin has been recently upgraded, but please remember that any "
-"new features are not automatically enabled."
-msgstr ""
-
-#: src/processors/plugin.php:231
-msgid "Click to read about any important updates from the plugin home page."
-msgstr ""
-
-#: src/processors/plugin.php:233
-msgid "Okay, hide this notice and go to the plugin dashboard."
-msgstr ""
-
-#: src/processors/user_management.php:92
-msgid "Last Login"
-msgstr ""
-
-#: src/processors/user_management.php:114
-msgid "Not Recorded"
-msgstr ""
-
-#: src/processors/user_management.php:140
-msgid ""
-"As requested, the WordPress Simple Firewall is notifying you of an "
-"administrator login to a WordPress site that you manage."
-msgstr ""
-
-#: src/processors/user_management.php:141
-msgid "Details for this user are below:"
-msgstr ""
-
-#: src/processors/user_management.php:142
-#, php-format
-msgid "Site URL: %s"
-msgstr ""
-
-#: src/processors/user_management.php:145
-msgid "Thanks."
-msgstr ""
-
-#: src/processors/usermanagement_sessions.php:413
-msgid "Your session has expired."
-msgstr ""
-
-#: src/processors/usermanagement_sessions.php:417
-msgid "Your session was idle for too long."
-msgstr ""
-
-#: src/processors/usermanagement_sessions.php:421
-msgid "Your session was locked to another IP Address."
-msgstr ""
-
-#: src/processors/usermanagement_sessions.php:425
-msgid "You do not currently have a Simple Firewall user session."
-msgstr ""
-
-#: src/processors/usermanagement_sessions.php:429
-msgid "An administrator has terminated this session."
-msgstr ""
-
-#: src/processors/usermanagement_sessions.php:433
-msgid "Not a user."
-msgstr ""
-
-#: src/processors/usermanagement_sessions.php:437
-msgid "Your session was terminated."
-msgstr ""
-
-#: views/config-options-table.php:13
-msgid "Save All Settings"
-msgstr ""
-
-#: views/config_header.php:6 views/subfeature-audit_trail_viewer.php:40
-msgid "WordPress Simple Firewall"
-msgstr ""
-
-#: views/config_header.php:15 views/snippets/state_summary.php:9
-msgid "On"
-msgstr ""
-
-#: views/config_header.php:16 views/snippets/state_summary.php:10
-msgid "Off"
-msgstr ""
-
-#: views/config_summary.php:1
-msgid "Plugin Configuration Summary"
-msgstr ""
-
-#: views/config_summary.php:5
-#, php-format
-msgid "Firewall is %s"
-msgstr ""
-
-#: views/config_summary.php:6 views/config_summary.php:62
-#: views/config_summary.php:84 views/config_summary.php:95
-#: views/config_summary.php:105
-msgid "Configure Now"
-msgstr ""
-
-#: views/config_summary.php:9
-#, php-format
-msgid "Firewall logging is %s"
-msgstr ""
-
-#: views/config_summary.php:10
-msgid "When the firewall blocks a visit, it will:"
-msgstr ""
-
-#: views/config_summary.php:13
-msgid "Die"
-msgstr ""
-
-#: views/config_summary.php:16
-msgid "Die with a message"
-msgstr ""
-
-#: views/config_summary.php:19
-msgid "Redirect to home page"
-msgstr ""
-
-#: views/config_summary.php:22
-msgid "Redirect to 404 page"
-msgstr ""
-
-#: views/config_summary.php:25
-msgid "Unknown"
-msgstr ""
-
-#: views/config_summary.php:31 views/config_summary.php:67
-#, php-format
-msgid "You have %s whitelisted IP addresses"
-msgstr ""
-
-#: views/config_summary.php:34 views/config_summary.php:44
-#: views/config_summary.php:70
-#, php-format
-msgid "%s labelled as %s"
-msgstr ""
-
-#: views/config_summary.php:41
-#, php-format
-msgid "You have %s blacklisted IP addresses"
-msgstr ""
-
-#: views/config_summary.php:49 views/config_summary.php:53
-#, php-format
-msgid "Firewall blocks Directory Traversals: %s"
-msgstr ""
-
-#: views/config_summary.php:50
-#, php-format
-msgid "Firewall blocks SQL Queries: %s"
-msgstr ""
-
-#: views/config_summary.php:51
-#, php-format
-msgid "Firewall blocks WordPress Specific Terms: %s"
-msgstr ""
-
-#: views/config_summary.php:52
-#, php-format
-msgid "Firewall blocks Field Truncation Attacks: %s"
-msgstr ""
-
-#: views/config_summary.php:54
-#, php-format
-msgid "Firewall blocks Executable File Uploads: %s"
-msgstr ""
-
-#: views/config_summary.php:55
-#, php-format
-msgid "Firewall blocks Leading Schemas (HTTPS / HTTP): %s"
-msgstr ""
-
-#: views/config_summary.php:56
-#, php-format
-msgid "Firewall Logging is %s"
-msgstr ""
-
-#: views/config_summary.php:61
-#, php-format
-msgid "Login Protection is %s"
-msgstr ""
-
-#: views/config_summary.php:74
-#, php-format
-msgid "Two Factor Login Authentication: %s"
-msgstr ""
-
-#: views/config_summary.php:75
-#, php-format
-msgid "Two Factor Login By Pass: %s"
-msgstr ""
-
-#: views/config_summary.php:76
-#, php-format
-msgid "Login Cooldown Interval: %s"
-msgstr ""
-
-#: views/config_summary.php:76 views/config_summary.php:88
-#: views/config_summary.php:89
-#, php-format
-msgid "%s seconds"
-msgstr ""
-
-#: views/config_summary.php:77
-#, php-format
-msgid "Login Form GASP Protection: %s"
-msgstr ""
-
-#: views/config_summary.php:78
-#, php-format
-msgid "Login Protect Logging: %s"
-msgstr ""
-
-#: views/config_summary.php:83
-#, php-format
-msgid "Comments Filtering is %s"
-msgstr ""
-
-#: views/config_summary.php:87
-#, php-format
-msgid "Enchanced GASP Protection: %s"
-msgstr ""
-
-#: views/config_summary.php:88
-#, php-format
-msgid "Comments Cooldown Interval: %s"
-msgstr ""
-
-#: views/config_summary.php:89
-#, php-format
-msgid "Comments Token Expire: %s"
-msgstr ""
-
-#: views/config_summary.php:94
-#, php-format
-msgid "WordPress Lockdown is %s"
-msgstr ""
-
-#: views/config_summary.php:98
-#, php-format
-msgid "Disable File Editing: %s"
-msgstr ""
-
-#: views/config_summary.php:99
-#, php-format
-msgid "Mask WordPress Version: %s"
-msgstr ""
-
-#: views/config_summary.php:104
-#, php-format
-msgid "Auto Updates is %s"
-msgstr ""
-
-#: views/config_summary.php:112
-msgid "Minor Versions Only"
-msgstr ""
-
-#: views/config_summary.php:115
-msgid "Major and Minor Versions"
-msgstr ""
-
-#: views/config_summary.php:119
-#, php-format
-msgid "Automatically Update WordPress Simple Firewall Plugin: %s"
-msgstr ""
-
-#: views/config_summary.php:120
-#, php-format
-msgid "Automatically Update WordPress Core: %s"
-msgstr ""
-
-#: views/config_summary.php:121
-#, php-format
-msgid "Automatically Update Plugins: %s"
-msgstr ""
-
-#: views/config_summary.php:122
-#, php-format
-msgid "Automatically Update Themes: %s"
-msgstr ""
-
-#: views/config_summary.php:123
-#, php-format
-msgid "Automatically Update Translations: %s"
-msgstr ""
-
-#: views/config_summary.php:124
-#, php-format
-msgid "Ignore Version Control Systems: %s"
-msgstr ""
-
-#: views/feature-user_management.php:8
-#: views/subfeature-audit_trail_viewer.php:16
-msgid "Username"
-msgstr ""
-
-#: views/feature-user_management.php:9
-msgid "Logged In At"
-msgstr ""
-
-#: views/feature-user_management.php:10
-msgid "Last Activity At"
-msgstr ""
-
-#: views/feature-user_management.php:11
-msgid "Last Activity URI"
-msgstr ""
-
-#: views/feature-user_management.php:12
-msgid "Login IP"
-msgstr ""
-
-#: views/feature-user_management.php:13
-msgid "Login Attempts"
-msgstr ""
-
-#: views/feature-user_management.php:36
-msgid "Current User Sessions"
-msgstr ""
-
-#: views/feature-user_management.php:37
-#, php-format
-msgid "now: %s"
-msgstr ""
-
-#: views/feature-user_management.php:42
-msgid ""
-"You need to enable the User Management feature to view and manage user "
-"sessions."
-msgstr ""
-
-#: views/feature-user_management.php:48
-msgid "Failed or Pending User Sessions"
-msgstr ""
-
-#: views/feature-user_management.php:52
-msgid "There are currently no failed or pending sessions to review."
-msgstr ""
-
-#: views/icwp_options_helper.php:7
-#, php-format
-msgid "WordPress Simple Firewall (from %s)"
-msgstr ""
-
-#: views/icwp_options_helper.php:188
-msgid "Blog"
-msgstr ""
-
-#: views/snippets/admin_notice_override.php:1
-#, php-format
-msgid "Warning - %s."
-msgstr ""
-
-#: views/snippets/admin_notice_override.php:1
-msgid "The Simple Firewall is not currently running"
-msgstr ""
-
-#: views/snippets/admin_notice_translate_plugin.php:5
-msgid ""
-"Would you like to help translate the WordPress Simple Firewall into your "
-"language?"
-msgstr ""
-
-#: views/snippets/admin_notice_translate_plugin.php:6
-#, php-format
-msgid "Head over to: %s"
-msgstr ""
-
-#: views/snippets/admin_notice_translate_plugin.php:8
-msgid "Dismiss this notice"
-msgstr ""
-
-#: views/snippets/admin_notice_vistor_whitelisted.php:3
+#: src/processors/plugin.php:90 src/processors/plugin.php:203
+#: src/processors/plugin.php:209
 #, php-format
 msgid "Notice - %s"
 msgstr ""
 
-#: views/snippets/admin_notice_vistor_whitelisted.php:4
+#: src/processors/plugin.php:91
 msgid ""
 "You should know that your IP address is whitelisted and features you "
 "activate do not apply to you."
 msgstr ""
 
-#: views/snippets/state_summary.php:21
-msgid "See Below"
+#: src/processors/plugin.php:110
+#, php-format
+msgid "Warning - %s."
 msgstr ""
 
-#: views/snippets/state_summary.php:21
-msgid "Go To Settings"
+#: src/processors/plugin.php:110
+#, php-format
+msgid "%s is not currently running"
 msgstr ""
 
-#: views/snippets/state_summary.php:26
-msgid "OFF"
+#: src/processors/plugin.php:111
+#, php-format
+msgid "Please delete the \"%s\" file to reactivate the Firewall processing"
 msgstr ""
 
-#: views/snippets/state_summary.php:104
-msgid "Plugin Activated Features Summary:"
+#: src/processors/plugin.php:141
+msgid "Your Name"
 msgstr ""
 
-#: views/subfeature-access_restricted.php:20
-msgid "What should you enter here?"
+#: src/processors/plugin.php:142
+msgid "Your Email"
 msgstr ""
 
-#: views/subfeature-access_restricted.php:21
+#: src/processors/plugin.php:174
+#, php-format
+msgid "There is an update available for the \"%s\" plugin."
+msgstr ""
+
+#: src/processors/plugin.php:175
+msgid "Please click to update immediately"
+msgstr ""
+
+#: src/processors/plugin.php:217
+msgid "Click to read about any important updates from the plugin home page."
+msgstr ""
+
+#: src/processors/plugin.php:259
+#, php-format
+msgid "Head over to: %s"
+msgstr ""
+
+#: src/processors/plugin.php:261
+msgid "Dismiss this notice"
+msgstr ""
+
+#: src/processors/user_management.php:77
+msgid "Last Login"
+msgstr ""
+
+#: src/processors/user_management.php:99
+msgid "Not Recorded"
+msgstr ""
+
+#: src/processors/user_management.php:125
+#, php-format
 msgid ""
-"At some point you supplied an Admin Access Key - to manage this plugin, you "
-"must supply it here first."
+"As requested, %s is notifying you of an administrator login to a WordPress "
+"site that you manage."
 msgstr ""
 
-#: views/subfeature-access_restricted.php:24
-msgid "Enter Access Key"
+#: src/processors/user_management.php:126
+msgid "Details for this user are below:"
 msgstr ""
 
-#: views/subfeature-access_restricted.php:30
-msgid "To manage this plugin you must enter the access key."
+#: src/processors/user_management.php:127
+#, php-format
+msgid "Site URL: %s"
 msgstr ""
 
-#: views/subfeature-access_restricted.php:37
-msgid "Submit Access Key"
+#: src/processors/user_management.php:130
+msgid "Thanks."
 msgstr ""
 
-#: views/subfeature-audit_trail_viewer.php:7
-msgid "There are currently no audit entries this is section."
+#: src/processors/usermanagement_sessions.php:398
+msgid "Your session has expired."
 msgstr ""
 
-#: views/subfeature-audit_trail_viewer.php:13
-msgid "Time"
+#: src/processors/usermanagement_sessions.php:402
+msgid "Your session was idle for too long."
 msgstr ""
 
-#: views/subfeature-audit_trail_viewer.php:14
-msgid "Event"
+#: src/processors/usermanagement_sessions.php:406
+msgid "Your session was locked to another IP Address."
 msgstr ""
 
-#: views/subfeature-audit_trail_viewer.php:15
-msgid "Message"
+#: src/processors/usermanagement_sessions.php:410
+#, php-format
+msgid "You do not currently have a %s user session."
 msgstr ""
 
-#: views/subfeature-audit_trail_viewer.php:17
-msgid "Category"
+#: src/processors/usermanagement_sessions.php:414
+msgid "An administrator has terminated this session."
 msgstr ""
 
-#: views/subfeature-audit_trail_viewer.php:29
-msgid "You"
+#: src/processors/usermanagement_sessions.php:418
+msgid "Not a user."
 msgstr ""
 
-#: views/subfeature-audit_trail_viewer.php:41
-msgid "Users"
+#: src/processors/usermanagement_sessions.php:422
+msgid "Your session was terminated."
 msgstr ""
 
-#: views/subfeature-audit_trail_viewer.php:44
-msgid "WordPress"
-msgstr ""
-
-#: views/subfeature-audit_trail_viewer.php:45
-msgid "Posts"
+#: templates/php/snippets/icwp_options_helper.php:9
+#, php-format
+msgid "WordPress Simple Firewall (from %s)"
 msgstr ""
